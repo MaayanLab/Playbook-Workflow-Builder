@@ -8,19 +8,19 @@ Anyone who wants to! Please create a pull request to add new content.
 Below is a guide to add a component to the playbook. You can additionally reuse the existing content in the registry and augment it for your own purposes.
 
 1. Clone this repository and checkout a branch for your work.
-  ```bash
-  git clone https://github.com/nih-cfde/playbook-partnership/
-  cd playbook-partnership
-  git checkout -b my-new-component
-  ```
+    ```bash
+    git clone https://github.com/nih-cfde/playbook-partnership/
+    cd playbook-partnership
+    git checkout -b my-new-component
+    ```
 2. For optimal coding experience, use an editor like [Visual Studio Code](https://code.visualstudio.com/) with rich typescript support. Open up the repository directory with it!
-  ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
+    ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
 3. With [NodeJS](https://nodejs.org/) installed, install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
-  ```bash
-  npm i
-  npm run dev
-  ```
-  ![Prototype UI screenshot](./figures/prototype-ui.png)
+    ```bash
+    npm i
+    npm run dev
+    ```
+    ![Prototype UI screenshot](./figures/prototype-ui.png)
 5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run prebuild` which adds it to the full graph.
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.

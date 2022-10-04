@@ -1,0 +1,22 @@
+{
+  "name": "playbook-partnership",
+  "version": "1.0.0",
+  "description": "A repository for the playbook partnership collaboration.",
+  "private": true,
+  "workspaces": [
+    "./components/*"
+  ],
+  "scripts": {
+  },
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/node": "^18.8.0",
+    "@types/react": "^18.0.21",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.0",
+    "typescript": "^4.8.4"
+  }
+}

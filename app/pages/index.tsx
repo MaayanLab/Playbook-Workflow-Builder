@@ -65,18 +65,21 @@ export default function App() {
       </div>
       <div className={styles.Data}>
         <h2>Current Data</h2>
-        <JsonEditor
-          value={data}
-          onValueChange={value => setData(value)}
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 12,
-            flex: '1 0 auto',
-            height: 0,
-            overflow: 'auto',
-            border: '1px solid black',
-          }}
-        />
+        <div style={{
+          flex: '1 0 auto',
+          height: 0,
+          overflow: 'auto',
+        }}>
+          <JsonEditor
+            value={data}
+            onValueChange={value => setData(value)}
+            style={{
+              fontFamily: 'monospace',
+              fontSize: 12,
+              border: '1px solid black',
+            }}
+          />
+        </div>
         <div className={styles.Examples}>
           Load Example:
           {Object.keys(dataNodes)

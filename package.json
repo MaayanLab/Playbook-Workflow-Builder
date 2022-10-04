@@ -7,6 +7,7 @@
     "./components/*"
   ],
   "scripts": {
+    "prebuild": "ts-node cli/sync-component-import.ts"
   },
   "dependencies": {
     "react": "^18.2.0"

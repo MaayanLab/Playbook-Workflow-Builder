@@ -1,9 +1,6 @@
 # Playbook Background
 In an effort to enable parallel development of the playbook, we've organized the playbook to permit several kinds of semantically annotated contributions which can be integrated into a larger application which can be developed in parallel.
 
-## Table of Contents
-[toc]
-
 ## Meta Nodes
 ![An image illustrating the generic data to process to data edge](./figures/process-edge.svg)
 

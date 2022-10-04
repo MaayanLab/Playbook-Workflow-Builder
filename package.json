@@ -4,10 +4,12 @@
   "description": "A repository for the playbook partnership collaboration.",
   "private": true,
   "workspaces": [
+    "./app",
     "./components/*"
   ],
   "scripts": {
-    "prebuild": "ts-node cli/sync-component-import.ts"
+    "prebuild": "ts-node cli/sync-component-import.ts",
+    "dev": "npx --workspace=app next dev"
   },
   "dependencies": {
     "react": "^18.2.0"

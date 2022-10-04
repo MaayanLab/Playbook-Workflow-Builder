@@ -1,0 +1,47 @@
+.App {
+  display: grid;
+  grid-template:  
+            "v d" 1fr
+            "v p" 1fr
+            / 1fr 1fr;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+.App > div {
+  overflow: auto;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.Data {
+  grid-area: d;
+  display: flex;
+  flex-direction: column;
+}
+.Data > textarea {
+  flex: 1 0 auto;
+}
+.Examples {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: row;
+}
+.Examples > * {
+  margin-left: 1em;
+}
+.Process {
+  grid-area: p;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+.Process > * {
+  margin-bottom: 1em;
+}
+.View {
+  grid-area: v;
+  flex-direction: column;
+}
+.View > div {
+  margin-top: 1em;
+}

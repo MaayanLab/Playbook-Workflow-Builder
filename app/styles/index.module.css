@@ -18,9 +18,6 @@
   display: flex;
   flex-direction: column;
 }
-.Data > textarea {
-  flex: 1 0 auto;
-}
 .Examples {
   margin-top: 1em;
   display: flex;

@@ -1,7 +1,10 @@
 import React from 'react'
 import styles from '@/app/styles/index.module.css'
+import dynamic from 'next/dynamic'
 import { dataNodes, processNodes } from '@/app/nodes'
 import { MetaNode, MetaNodeData } from '@/spec/metanode'
+
+const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'))
 
 export default function App() {
   const [data, setData] = React.useState('')
@@ -62,9 +65,17 @@ export default function App() {
       </div>
       <div className={styles.Data}>
         <h2>Current Data</h2>
-        <textarea
+        <JsonEditor
           value={data}
-          onChange={evt => setData(evt.target.value)}
+          onValueChange={value => setData(value)}
+          style={{
+            fontFamily: 'monospace',
+            fontSize: 12,
+            flex: '1 0 auto',
+            height: 0,
+            overflow: 'auto',
+            border: '1px solid black',
+          }}
         />
         <div className={styles.Examples}>
           Load Example:

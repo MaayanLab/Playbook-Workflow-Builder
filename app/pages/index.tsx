@@ -33,11 +33,11 @@ export default function App() {
         {Object.values(processNodes).map(proc =>
           <div key={proc.t.spec}>
             {Object.keys(proc.t.inputs).length > 0 ?
-              <span>{Object.values(proc.t.inputs).map(input => input.t.spec).join(', ')} =&gt;&nbsp;</span>
+              <span>{Object.values(proc.t.inputs).map((i: MetaNode<MetaNodeData>) => i.t.spec).join(', ')} =&gt;&nbsp;</span>
               : null}
             <button
               style={{
-                fontWeight: Object.values(proc.t.inputs).some(i => i.t.spec === dataType) ? 'bold' : 'normal',
+                fontWeight: Object.values(proc.t.inputs).some((i: MetaNode<MetaNodeData>) => i.t.spec === dataType) ? 'bold' : 'normal',
               }}
               onClick={async () => {
                 if ('prompt' in proc.t) {

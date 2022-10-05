@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneInfo } from '@/components/GeneInfo'
-import { SignificantTissues } from '@/components/SignificantTissues'
+import { GeneInfo } from '@/components/mygeneinfo'
+import { SignificantTissues } from '@/components/significant-tissues'
 import python from '@/utils/python'
 
 export const GTExTissueEQTLS = MetaNode.createProcess('GTExTissueEQTLS')
@@ -12,7 +12,7 @@ export const GTExTissueEQTLS = MetaNode.createProcess('GTExTissueEQTLS')
   .output(SignificantTissues)
   .resolve(async (props) => {
     return await python(
-      '@/components/GTExTissueEQTLS/gtex_tissue.py',
+      '@/components/gtex/gtex_tissue.py',
       'gtex_singleTissueEqtl',
       { kargs: [props.inputs.gene_info.symbol], kwargs: { datasetId: 'gtex_v8' } },
     )

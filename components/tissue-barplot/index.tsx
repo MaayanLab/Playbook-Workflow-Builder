@@ -1,7 +1,7 @@
 import python from '@/utils/python'
-import { PlotlyPlot } from '@/components/PlotlyPlot'
+import { PlotlyPlot } from '@/components/plotly'
 import { MetaNode } from '@/spec/metanode'
-import { SignificantTissues } from '@/components/SignificantTissues'
+import { SignificantTissues } from '@/components/significant-tissues'
 
 export const TissueBarplotFromSignificantTissue = MetaNode.createProcess('TissueBarplotFromSignificantTissue')
   .meta({
@@ -12,7 +12,7 @@ export const TissueBarplotFromSignificantTissue = MetaNode.createProcess('Tissue
   .inputs({ tissues: SignificantTissues })
   .output(PlotlyPlot)
   .resolve(async (props) => await python(
-    '@/components/TissueBarplot/tissue_barplot.py',
+    '@/components/tissue-barplot/tissue_barplot.py',
     'tissue_barplot',
     { kargs: [props.inputs.tissues] },
   ))

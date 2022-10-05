@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/Gene'
+import { GeneSymbol } from '@/components/gene'
 
 export type MyGeneInfoHit = {
   _id: string,

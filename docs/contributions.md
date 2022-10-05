@@ -13,7 +13,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
     cd playbook-partnership
     git checkout -b my-new-component
     ```
-2. For optimal coding experience, use an editor like [Visual Studio Code](https://code.visualstudio.com/) with rich typescript support. Open up the repository directory with it!
+2. For optimal coding experience, use an editor like [Visual Studio Code](https://code.visualstudio.com/) with rich typescript support. Open up the repository directory with it.
     ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
 3. With [NodeJS](https://nodejs.org/) installed, install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
     ```bash

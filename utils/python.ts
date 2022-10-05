@@ -12,7 +12,7 @@
  * }
  */
 let spawn, path
-if (!process.browser) {
+if (typeof window === 'undefined') {
   spawn = require('child_process').spawn
   path = require('path')
 }

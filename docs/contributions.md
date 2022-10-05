@@ -25,6 +25,27 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.
 
+### Anatomy of a Component
+
+Components should have their own directory and minimally contain an `index.ts` (typescript) or `index.tsx` (typescript+react) file and a `package.json`. See subsequent sections about `index.tsx` depending on your MetaNode type.
+
+The `package.json` is a standard by the javascript ecosystem and is used to capture the name (which should be the same as the directory), version, license, author, contributors, and npm dependencies.
+
+`components/{mycomponent}/package.json`
+```json
+{
+  "name": "mycomponent",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
+  "contributors": [],
+  "main": "index.tsx",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {}
+}
+```
+
 ### Creating a Data Type / View
 Each data type has a view, the view is a react component capable of meaningfully visualizing a given data type. Some views simply show the data, such as `Gene`, while others are more elaborate, such as `PlotlyPlot` which render a plot.
 
@@ -189,23 +210,7 @@ pip install -r <(sort -u components/*/requirements.txt)
 ### Adding additional dependencies
 
 #### Javascript Dependencies
-If you need additional dependencies, add a `package.json` for the component in its directory. Dependencies should be installed with npm using the workspaces feature.
-
-`components/{componentname}/package.json`
-```json
-{
-  "name": "mycomponent",
-  "version": "1.0.0",
-  "private": true,
-  "main": "index.tsx",
-  "dependencies": {
-    "react": "^18.2.0"
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.21"
-  }
-}
-```
+Additional javascript dependencies for your component should be installed with npm using the workspaces feature.
 
 ```bash
 # install the dependency for the component

@@ -2,20 +2,19 @@
  * Run python scripts/functions from typescript
  * Usage:
  * ```ts
- * import pythonHelper from '@/utils/python_helper'
+ * import python from '@/utils/python'
  * async function run() {
  *   try {
- *     const result = await pythonHelper('@/path/from/root/myscript.py', 'myfunc', { kargs: [ 'myarg' ], kwargs: { 'myarg2': '2' } })
+ *     const result = await python('@/path/from/root/myscript.py', 'myfunc', { kargs: [ 'myarg' ], kwargs: { 'myarg2': '2' } })
  *   } catch (e) {
  *     // e is a ProcessError
  *   }
  * }
  */
-let spawn, path
-if (typeof window === 'undefined') {
-  spawn = require('child_process').spawn
-  path = require('path')
-}
+import type * as child_process_type from 'child_process'
+const spawn = typeof window === 'undefined' ? (require('child_process') as typeof child_process_type).spawn : undefined
+import type * as path_type from 'path'
+const path = typeof window === 'undefined' ? require('child_process') as typeof path_type : undefined
 
 export class ProcessError extends Error {
   constructor(public message: string, public exitcode: number | null) {
@@ -29,6 +28,7 @@ export class ProcessError extends Error {
  * @param args: The kwargs to provide to the file
  */
 export default function python<T>(script_path: string, func_name: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }): Promise<T> {
+  if (typeof window !== 'undefined') throw new Error("python is server side only")
   return new Promise((resolve, reject) => {
     let stdin: string
     try {

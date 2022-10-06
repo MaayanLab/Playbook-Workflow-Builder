@@ -1,3 +1,4 @@
+export * from "./file"
 export * from "./gtex"
 export * from "./gene"
 export * from "./mygeneinfo"

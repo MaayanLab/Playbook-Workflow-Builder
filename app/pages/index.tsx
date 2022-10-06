@@ -48,7 +48,7 @@ export default function App() {
                     formData.append(i, data)
                     // formData[i] = proc.t.inputs[i].t.codec.encode(data)
                   }
-                  const req = await fetch(`/api/${proc.t.spec}`, {
+                  const req = await fetch(`/api/resolver/${proc.t.spec}`, {
                     method: 'POST',
                     body: formData,
                   })

@@ -14,7 +14,7 @@
 import type * as child_process_type from 'child_process'
 const spawn = typeof window === 'undefined' ? (require('child_process') as typeof child_process_type).spawn : undefined
 import type * as path_type from 'path'
-const path = typeof window === 'undefined' ? require('child_process') as typeof path_type : undefined
+const path = typeof window === 'undefined' ? require('path') as typeof path_type : undefined
 
 export class ProcessError extends Error {
   constructor(public message: string, public exitcode: number | null) {

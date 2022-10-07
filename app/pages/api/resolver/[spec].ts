@@ -2,7 +2,7 @@ import fs from 'fs'
 import multiparty from "multiparty"
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { processNodes } from '@/app/nodes'
-import { MetaNode, MetaNodeProcessResolve } from '@/spec/metanode'
+import { MetaNodeProcessResolve } from '@/spec/metanode'
 
 export const config = {
   api: {
@@ -21,7 +21,7 @@ function one<T>(L: T[]): T {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { spec } = req.query
-  const processNode = processNodes[spec as string] as MetaNode<MetaNodeProcessResolve>
+  const processNode = processNodes[spec as string] as MetaNodeProcessResolve
   const form = new multiparty.Form()
   const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {
     form.parse(req, function (err, fields, files) {
@@ -30,11 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
   })
   const inputs = {}
-  for (const i in processNode.t.inputs) {
+  for (const i in processNode.inputs) {
     if (i in raw.fields) {
-      inputs[i] = processNode.t.inputs[i].t.codec.decode(one(raw.fields[i]))
+      inputs[i] = processNode.inputs[i].codec.decode(one(raw.fields[i]))
     } else if (i in raw.files) {
-      inputs[i] = processNode.t.inputs[i].t.codec.decode(
+      inputs[i] = processNode.inputs[i].codec.decode(
         await new Promise((resolve, reject) =>
           fs.readFile(one(raw.files[i]).path, (err, data) => {
             if (err) reject(err)
@@ -44,6 +44,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       )
     }
   }
-  const ouput = await processNode.t.resolve({ inputs })
-  res.status(200).json(processNode.t.output.t.codec.encode(ouput))
+  const ouput = await processNode.resolve({ inputs })
+  res.status(200).json(processNode.output.codec.encode(ouput))
 }

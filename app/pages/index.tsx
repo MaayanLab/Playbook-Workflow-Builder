@@ -2,7 +2,7 @@ import React from 'react'
 import styles from '@/app/styles/index.module.css'
 import dynamic from 'next/dynamic'
 import { dataNodes, processNodes } from '@/app/nodes'
-import { MetaNode, MetaNodeData } from '@/spec/metanode'
+import { MetaNodeData, MetaNodeProcessPrompt } from '@/spec/metanode'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'))
 
@@ -13,17 +13,20 @@ export default function App() {
   const dataNode = dataNodes[dataType]
   let dataNodeView
   if (prompt) {
-    const Prompt = processNodes[prompt].t.prompt
-    dataNodeView = <Prompt submit={(output) => {
-      setDataType(processNodes[prompt].t.output.t.spec)
-      setData(processNodes[prompt].t.output.t.codec.encode(output))
-      setPrompt(undefined)
-    }}/>
+    const Prompt = (processNodes[prompt] as MetaNodeProcessPrompt).prompt
+    dataNodeView = <Prompt
+      inputs={{ [Object.keys(processNodes[prompt].inputs)[0]]: data}}
+      submit={(output) => {
+        setDataType(processNodes[prompt].output.spec)
+        setData(processNodes[prompt].output.codec.encode(output))
+        setPrompt(undefined)
+      }}
+    />
   } else if (dataNode) {
     try {
-      dataNodeView = <div>{dataNode.t.view(dataNode.t.codec.decode(data))}</div>
+      dataNodeView = <div>{dataNode.view(dataNode.codec.decode(data))}</div>
     } catch (e) {
-      dataNodeView = <div>Error rendering {dataNode.t.spec}: {e.toString()}</div>
+      dataNodeView = <div>Error rendering {dataNode.spec}: {e.toString()}</div>
     }
   }
   return (
@@ -31,35 +34,35 @@ export default function App() {
       <div className={styles.Process}>
         <h2>Apply Process</h2>
         {Object.values(processNodes).map(proc =>
-          <div key={proc.t.spec}>
-            {Object.keys(proc.t.inputs).length > 0 ?
-              <span>{Object.values(proc.t.inputs).map((i: MetaNode<MetaNodeData>) => i.t.spec).join(', ')} =&gt;&nbsp;</span>
+          <div key={proc.spec}>
+            {Object.keys(proc.inputs).length > 0 ?
+              <span>{Object.values(proc.inputs).map((i: MetaNodeData) => i.spec).join(', ')} =&gt;&nbsp;</span>
               : null}
             <button
               style={{
-                fontWeight: Object.values(proc.t.inputs).some((i: MetaNode<MetaNodeData>) => i.t.spec === dataType) ? 'bold' : 'normal',
+                fontWeight: Object.values(proc.inputs).some((i: MetaNodeData) => i.spec === dataType) ? 'bold' : 'normal',
               }}
               onClick={async () => {
-                if ('prompt' in proc.t) {
-                  setPrompt(proc.t.spec)
-                } else if ('resolve' in proc.t) {
+                if ('prompt' in proc) {
+                  setPrompt(proc.spec)
+                } else if ('resolve' in proc) {
                   const formData = new FormData()
-                  for (const i in proc.t.inputs) {
+                  for (const i in proc.inputs) {
                     formData.append(i, data)
-                    // formData[i] = proc.t.inputs[i].t.codec.encode(data)
+                    // formData[i] = proc.inputs[i].codec.encode(data)
                   }
-                  const req = await fetch(`/api/resolver/${proc.t.spec}`, {
+                  const req = await fetch(`/api/resolver/${proc.spec}`, {
                     method: 'POST',
                     body: formData,
                   })
                   const res = await req.json()
                   setPrompt(undefined)
                   setData(res)
-                  setDataType(proc.t.output.t.spec)
+                  setDataType(proc.output.spec)
                 }
               }}
-            >{proc.t.spec}</button>
-            <span>&nbsp; =&gt; {proc.t.output.t.spec}</span>
+            >{proc.spec}</button>
+            <span>&nbsp; =&gt; {proc.output.spec}</span>
           </div>
         )}
       </div>
@@ -84,16 +87,16 @@ export default function App() {
           Load Example:
           {Object.keys(dataNodes)
             .map(spec => dataNodes[spec])
-            .filter((node): node is MetaNode<MetaNodeData<unknown, {example: unknown}>> => (node.t.meta as any).example !== undefined)
+            .filter((node): node is MetaNodeData<unknown, {example: unknown}> => (node.meta as any).example !== undefined)
             .map(node => (
               <button
-                key={node.t.spec}
+                key={node.spec}
                 onClick={() => {
                   setPrompt(undefined)
-                  setDataType(node.t.spec)
-                  setData(node.t.codec.encode(node.t.meta.example))
+                  setDataType(node.spec)
+                  setData(node.codec.encode(node.meta.example))
                 }}
-              >{node.t.spec}</button>
+              >{node.spec}</button>
             ))}
         </div>
       </div>
@@ -106,7 +109,7 @@ export default function App() {
             setDataType(evt.target.value)
           }}
         >{Object.values(dataNodes).map(dataNode =>
-          <option key={dataNode.t.spec} value={dataNode.t.spec}>{dataNode.t.spec}</option>
+          <option key={dataNode.spec} value={dataNode.spec}>{dataNode.spec}</option>
         )}</select>
         {dataNodeView ? dataNodeView : null}
       </div>

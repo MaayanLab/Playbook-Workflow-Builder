@@ -3,13 +3,14 @@
  */
 
 import { Codec } from '@/spec/codec'
+import React from 'react'
 
 export type MetaNodeData<C extends {} = unknown, M extends {} = unknown> = {
   spec: string,
   kind: 'data',
   meta: M,
   codec: Codec<C>,
-  view(props: C): any,
+  view(props: C): React.ReactElement,
 }
 
 export type MetaNodeProcess<M extends {} = unknown> = {
@@ -19,23 +20,42 @@ export type MetaNodeProcess<M extends {} = unknown> = {
 }
 
 export type MetaNodeProcessPrompt<IN = unknown, OUT = unknown, M extends {} = unknown> = MetaNodeProcess<M> & {
-  inputs: { [K in keyof IN]: MetaNode<MetaNodeData<IN[K]>> },
-  output: MetaNode<MetaNodeData<OUT>>,
+  inputs: { [K in keyof IN]: MetaNodeData<IN[K]> },
+  output: MetaNodeData<OUT>,
   prompt(props: {
     inputs: {[K in keyof IN]: IN[K]},
     submit: (output: OUT) => void,
-  }): any
+  }): React.ReactElement
 }
 
 export type MetaNodeProcessResolve<IN = unknown, OUT = unknown, M extends {} = unknown> = MetaNodeProcess<M> & {
-  inputs: { [K in keyof IN]: MetaNode<MetaNodeData<IN[K]>> },
-  output: MetaNode<MetaNodeData<OUT>>,
+  inputs: { [K in keyof IN]: MetaNodeData<IN[K]> },
+  output: MetaNodeData<OUT>,
   resolve(props: {
     inputs: {[K in keyof IN]: IN[K]},
   }): OUT
 }
 
 export type MetaNodeAny = MetaNodeData | MetaNodeProcess | MetaNodeProcessPrompt | MetaNodeProcessResolve
+
+// Type helpers
+
+/**
+ * Extract meta type from a metanode
+ */
+export type MetaNodeTypeOfMeta<T> = T extends { meta: infer M } ? M : never
+/**
+ * Extract data type (defined by codec) from a metanode
+ */
+export type MetaNodeTypeOfCodec<T> = T extends { codec: Codec<infer C> } ? C : never
+/**
+ * Extract input types
+ */
+export type MetaNodeTypeOfInputs<T> = T extends { inputs: infer IN } ? { [K in keyof IN]: MetaNodeTypeOfCodec<IN[K]> } : never
+/**
+ * Extract output type
+ */
+export type MetaNodeTypeOfOutput<T> = T extends { output: infer OUT } ? MetaNodeTypeOfCodec<OUT> : never
 
 /**
  * This class is used to help build all the attributes of the MetaNodes in a
@@ -58,7 +78,7 @@ export class MetaNode<T = unknown> {
   /**
    * A codec for the node's underlying data
    */
-  codec<C extends {} = undefined>(codec: Codec<C> = { encode: JSON.stringify, decode: JSON.parse }) {
+  codec<C = undefined>(codec: Codec<C> = { encode: JSON.stringify, decode: JSON.parse }) {
     return new MetaNode({ ...this.t, codec })
   }
 
@@ -66,7 +86,7 @@ export class MetaNode<T = unknown> {
   /**
    * `codec` must be defined before view is definable
    */
-  view<V extends T extends { codec: Codec<infer C> } ? (props: C) => any : never>(view: V) {
+  view<V extends (props: MetaNodeTypeOfCodec<T>) => React.ReactElement>(view: V) {
     return new MetaNode({ ...this.t, view })
   }
 
@@ -81,49 +101,25 @@ export class MetaNode<T = unknown> {
   /**
    * The input types of this action, keys mapped to values
    */
-  inputs<IN extends { [K in keyof IN]: IN[K] }>(inputs: { [K in keyof IN]: MetaNode<IN[K]> } = {} as { [K in keyof IN]: MetaNode<IN[K]> }) {
+  inputs<IN extends { [K in keyof IN]: { codec: Codec<MetaNodeTypeOfCodec<IN[K]>> } }>(inputs: IN = {} as IN) {
     return new MetaNode({ ...this.t, inputs: inputs })
   }
   /**
    * The output type of this action
    */
-  output<OUT extends {}>(output: MetaNode<OUT>) {
+  output<OUT extends { codec: Codec<MetaNodeTypeOfCodec<OUT>> }>(output: OUT) {
     return new MetaNode({ ...this.t, output })
   }
   /**
    * `input`/`output` must be defined before prompt is definable
    */
-  prompt<
-    R extends
-      T extends {
-        inputs: infer IN,
-        output: MetaNode<{ codec: Codec<infer OUT> }>
-      } ? (props: {
-        inputs: {
-          [K in keyof IN]: IN[K] extends MetaNode<{ codec: Codec<infer IN_K> }> ? IN_K : never
-        },
-        output?: OUT,
-        submit: (output: OUT) => void,
-      }) => React.ReactElement
-      : never
-  >(prompt: R) {
+  prompt<P extends (props: { inputs: MetaNodeTypeOfInputs<T>, output?: MetaNodeTypeOfOutput<T>, submit: (output: MetaNodeTypeOfOutput<T>) => void }) => React.ReactElement>(prompt: P) {
     return new MetaNode({ ...this.t, prompt })
   }
   /**
    * `input`/`output` must be defined before resolve is definable
    */
-  resolve<
-    R extends
-      T extends {
-        inputs: infer IN,
-        output: MetaNode<{ codec: Codec<infer OUT> }>
-      } ? (props: {
-        inputs: {
-          [K in keyof IN]: IN[K] extends MetaNode<{ codec: Codec<infer IN_K> }> ? IN_K : never
-        }
-      }) => Promise<OUT>
-      : never
-  >(resolve: R) {
+  resolve<R extends (props: { inputs: MetaNodeTypeOfInputs<T> }) => Promise<MetaNodeTypeOfOutput<T>>>(resolve: R) {
     return new MetaNode({ ...this.t, resolve })
   }
 
@@ -131,6 +127,6 @@ export class MetaNode<T = unknown> {
    * Finalize the metanode spec
    */
   build() {
-    return this
+    return this.t
   }
 }

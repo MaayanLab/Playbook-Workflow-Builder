@@ -1,8 +1,7 @@
 import fs from 'fs'
 import multiparty from "multiparty"
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { processNodes } from '@/app/nodes'
-import { MetaNodeProcessResolve } from '@/spec/metanode'
+import { resolveNodes } from '@/app/nodes'
 
 export const config = {
   api: {
@@ -21,7 +20,7 @@ function one<T>(L: T[]): T {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { spec } = req.query
-  const processNode = processNodes[spec as string] as MetaNodeProcessResolve
+  const processNode = resolveNodes[spec as string]
   const form = new multiparty.Form()
   const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {
     form.parse(req, function (err, fields, files) {
@@ -38,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await new Promise((resolve, reject) =>
           fs.readFile(one(raw.files[i]).path, (err, data) => {
             if (err) reject(err)
-            else resolve(data)
+            else resolve(data.toString())
           })
         )
       )

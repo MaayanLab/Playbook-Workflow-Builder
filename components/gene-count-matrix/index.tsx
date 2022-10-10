@@ -15,33 +15,48 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
     head_index: string[], tail_index: string[],
     head_values: number[], tail_values: number[],
   }>()
-  .view(props => (
-    <div>
-      <h2>Gene Count Matrix: {props.url}</h2>
-      <span>Shape: ({props.shape[0]}, {props.shape[1]})</span>
-      <table>
-        <tr>
-          <th>&nbsp;</th>
-          {props.head_columns.map(col => <th key={col}>{col}</th>)}
-          {props.tail_columns.map(col => <th key={col}>{col}</th>)}
-        </tr>
-        {props.head_index.map((index, i) =>
-          <tr key={index}>
-            <th>{index}</th>
-            {props.head_columns.map((col, j) => <td>{props.head_values[i][j]}</td>)}
-            {props.tail_columns.map((col, j) => <td>{props.head_values[i][j]}</td>)}
+  .view(props => {
+    const column_elipse = props.shape[1] > props.head_columns.length + props.tail_columns.length ? '...' : ''
+    const index_elipse = props.shape[0] > props.head_index.length + props.tail_index.length ? '...' : ''
+    return (
+      <div>
+        <h2>Gene Count Matrix: {props.url}</h2>
+        <span>Shape: ({props.shape[0]}, {props.shape[1]})</span>
+        <table>
+          <tr>
+            <th>&nbsp;</th>
+            {props.head_columns.map(col => <th key={col}>{col}</th>)}
+            <th>{column_elipse}</th>
+            {props.tail_columns.map(col => <th key={col}>{col}</th>)}
           </tr>
-        )}
-        {props.tail_index.map((index, i) =>
-          <tr key={index}>
-            <th>{index}</th>
-            {props.head_columns.map((col, j) => <td>{props.tail_values[i][j]}</td>)}
-            {props.tail_columns.map((col, j) => <td>{props.tail_values[i][j]}</td>)}
-          </tr>
-        )}
-      </table>
-    </div>
-  ))
+          {props.head_index.map((index, i) =>
+            <tr key={index}>
+              <th>{index}</th>
+              {props.head_columns.map((col, j) => <td>{props.head_values[i][j]}</td>)}
+              <th>{column_elipse}</th>
+              {props.tail_columns.map((col, j) => <td>{props.head_values[i][j]}</td>)}
+            </tr>
+          )}
+          {index_elipse ? (
+            <tr>
+              <th>...</th>
+              {props.head_columns.map((col, j) => <td>...</td>)}
+              <th>{column_elipse}</th>
+              {props.tail_columns.map((col, j) => <td>...</td>)}
+            </tr>
+          ) : null}
+          {props.tail_index.map((index, i) =>
+            <tr key={index}>
+              <th>{index}</th>
+              {props.head_columns.map((col, j) => <td>{props.tail_values[i][j]}</td>)}
+              <th>{column_elipse}</th>
+              {props.tail_columns.map((col, j) => <td>{props.tail_values[i][j]}</td>)}
+            </tr>
+          )}
+        </table>
+      </div>
+    )
+  })
   .build()
 
 export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFromFile')

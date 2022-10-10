@@ -49,10 +49,28 @@ def gene_count_matrix(url):
   for visualization. If the file is invalid, reading it will fail.
   '''
   d = anndata_from_path(url)
+  if d.shape[0] >= 10:
+    top = 5
+    bottom = 5
+  elif d.shape[0] > 5:
+    top = 5
+    bottom = d.shape[0] - top
+  else:
+    top = d.shape[0] - 1
+    bottom = 1
+  if d.shape[1] >= 10:
+    left = 5
+    right = 5
+  elif d.shape[1] > 5:
+    left = 5
+    right = d.shape[1] - left
+  else:
+    left = d.shape[1] - 1
+    right = 1
   return dict(
     url=url,
     shape=d.shape,
-    head_columns=d.var_names[:5].tolist(), tail_columns=d.var_names[-5:].tolist(),
-    head_index=d.obs_names[:5].tolist(), tail_index=d.obs_names[-5:].tolist(),
-    head_values=d.X[:5, :5].tolist() + d.X[:5, -5:].tolist(), tail_values=d.X[-5:, :5].tolist() + d.X[-5:, -5:].tolist(),
+    head_index=d.obs_names[:top].tolist(), head_columns=d.var_names[:left].tolist(),
+    tail_index=d.obs_names[-bottom:].tolist(), tail_columns=d.var_names[-right:].tolist(),
+    head_values=d.X[:top, :left].tolist() + d.X[:top, -right:].tolist(), tail_values=d.X[-bottom:, :left].tolist() + d.X[-bottom:, -right:].tolist(),
   )

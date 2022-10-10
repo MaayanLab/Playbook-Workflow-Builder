@@ -1,6 +1,7 @@
 export * from "./file"
 export * from "./gtex"
 export * from "./gene"
+export * from "./gene-count-matrix"
 export * from "./mygeneinfo"
 export * from "./plotly"
 export * from "./significant-tissues"

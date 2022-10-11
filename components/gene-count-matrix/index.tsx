@@ -2,19 +2,24 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/file'
 import python from '@/utils/python'
+import * as t from 'io-ts'
+import codecFrom from '@/utils/io-ts-codec'
 
 export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   .meta({
     label: 'Gene Count Matrix',
     description: 'A gene count matrix file',
   })
-  .codec<{
-    url: string,
-    shape: [number, number],
-    head_columns: string[], tail_columns: string[],
-    head_index: string[], tail_index: string[],
-    head_values: number[], tail_values: number[],
-  }>()
+  .codec(codecFrom(t.type({
+    url: t.string,
+    shape: t.tuple([t.number, t.number]),
+    head_columns: t.array(t.string),
+    tail_columns: t.array(t.string),
+    head_index: t.array(t.string),
+    tail_index: t.array(t.string),
+    head_values: t.array(t.array(t.number)),
+    tail_values: t.array(t.array(t.number)),
+  })))
   .view(props => {
     const column_elipse = props.shape[1] > props.head_columns.length + props.tail_columns.length ? '...' : ''
     const index_elipse = props.shape[0] > props.head_index.length + props.tail_index.length ? '...' : ''

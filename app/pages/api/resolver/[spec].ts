@@ -1,7 +1,7 @@
 import fs from 'fs'
 import multiparty from "multiparty"
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { resolveNodes } from '@/app/nodes'
+import krg from '@/app/krg'
 
 export const config = {
   api: {
@@ -20,7 +20,7 @@ function one<T>(L: T[]): T {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { spec } = req.query
-  const processNode = resolveNodes[spec as string]
+  const processNode = krg.getResolveNode(spec as string)
   const form = new multiparty.Form()
   const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {
     form.parse(req, function (err, fields, files) {

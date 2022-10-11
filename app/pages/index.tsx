@@ -1,8 +1,8 @@
 import React from 'react'
 import styles from '@/app/styles/index.module.css'
 import dynamic from 'next/dynamic'
-import { dataNodes, resolveNodes, promptNodes } from '@/app/nodes'
 import { MetaNodeDataType } from '@/spec/metanode'
+import krg from '@/app/krg'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'))
 
@@ -10,15 +10,21 @@ export default function App() {
   const [data, setData] = React.useState('')
   const [dataType, setDataType] = React.useState('')
   const [prompt, setPrompt] = React.useState(undefined)
-  const dataNode = dataNodes[dataType]
+  const dataNode = krg.getDataNode(dataType)
   let dataNodeView
   if (prompt) {
-    const Prompt = promptNodes[prompt].prompt
+    const promptNode = krg.getPromptNode(prompt)
+    const inputs = {}
+    if (Object.keys(promptNode.inputs).length > 0) {
+      const input0 = Object.keys(promptNode.inputs)[0]
+      inputs[input0] = promptNode.inputs[input0].codec.decode(data)
+    }
+    const Prompt = promptNode.prompt
     dataNodeView = <Prompt
-      inputs={{ [Object.keys(promptNodes[prompt].inputs)[0]]: data}}
+      inputs={inputs}
       submit={(output) => {
-        setDataType(promptNodes[prompt].output.spec)
-        setData(promptNodes[prompt].output.codec.encode(output))
+        setDataType(promptNode.output.spec)
+        setData(promptNode.output.codec.encode(output))
         setPrompt(undefined)
       }}
     />
@@ -33,21 +39,7 @@ export default function App() {
     <div className={styles.App}>
       <div className={styles.Process}>
         <h2>Apply Process</h2>
-        {Object.values(promptNodes).map(proc =>
-          <div key={proc.spec}>
-            {Object.keys(proc.inputs).length > 0 ?
-              <span>{Object.values(proc.inputs).map((i) => i.spec).join(', ')} =&gt;&nbsp;</span>
-              : null}
-            <button
-              style={{
-                fontWeight: Object.values(proc.inputs).some((i) => i.spec === dataType) ? 'bold' : 'normal',
-              }}
-              onClick={() => {setPrompt(proc.spec)}}
-            >{proc.spec}</button>
-            <span>&nbsp; =&gt; {proc.output.spec}</span>
-          </div>
-        )}
-        {Object.values(resolveNodes).map(proc =>
+        {krg.getNextProcess(dataType).map(proc =>
           <div key={proc.spec}>
             {Object.keys(proc.inputs).length > 0 ?
               <span>{Object.values(proc.inputs).map((i) => i.spec).join(', ')} =&gt;&nbsp;</span>
@@ -57,19 +49,23 @@ export default function App() {
                 fontWeight: Object.values(proc.inputs).some((i) => i.spec === dataType) ? 'bold' : 'normal',
               }}
               onClick={async () => {
-                const formData = new FormData()
-                for (const i in proc.inputs) {
-                  formData.append(i, data)
-                  // formData[i] = proc.inputs[i].codec.encode(data)
+                if ('prompt' in proc) {
+                  setPrompt(proc.spec)
+                } else {
+                  const formData = new FormData()
+                  for (const i in proc.inputs) {
+                    formData.append(i, data)
+                    // formData[i] = proc.inputs[i].codec.encode(data)
+                  }
+                  const req = await fetch(`/api/resolver/${proc.spec}`, {
+                    method: 'POST',
+                    body: formData,
+                  })
+                  const res = await req.json()
+                  setPrompt(undefined)
+                  setData(res)
+                  setDataType(proc.output.spec)
                 }
-                const req = await fetch(`/api/resolver/${proc.spec}`, {
-                  method: 'POST',
-                  body: formData,
-                })
-                const res = await req.json()
-                setPrompt(undefined)
-                setData(res)
-                setDataType(proc.output.spec)
               }}
             >{proc.spec}</button>
             <span>&nbsp; =&gt; {proc.output.spec}</span>
@@ -94,9 +90,12 @@ export default function App() {
           />
         </div>
         <div className={styles.Examples}>
-          Load Example:
-          {Object.keys(dataNodes)
-            .map(spec => dataNodes[spec])
+          <button onClick={() => {
+            setPrompt(undefined)
+            setDataType('')
+            setData('')
+          }}>Reset</button>
+          {krg.getDataNodes()
             .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta)
             .map(node => (
               <button
@@ -118,7 +117,7 @@ export default function App() {
             setPrompt(undefined)
             setDataType(evt.target.value)
           }}
-        >{Object.values(dataNodes).map(dataNode =>
+        >{krg.getDataNodes().map(dataNode =>
           <option key={dataNode.spec} value={dataNode.spec}>{dataNode.spec}</option>
         )}</select>
         {dataNodeView ? dataNodeView : null}

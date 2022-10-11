@@ -5,12 +5,13 @@
  *  the UI
  */
 
-import { MetaNodeDataType, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode";
+import { MetaNodeDataType, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
 
 export default class KRG {
   private dataNodes: Record<string, MetaNodeDataType> = {}
   private resolveNodes: Record<string, MetaNodeResolveType> = {}
   private promptNodes: Record<string, MetaNodePromptType> = {}
+  private processNodes: Record<string, MetaNodePromptType | MetaNodeResolveType> = {}
   private processForInput: Record<string, Record<string, MetaNodePromptType | MetaNodeResolveType>> = {}
   private processForOutput: Record<string, Record<string, MetaNodePromptType | MetaNodeResolveType>> = {}
 
@@ -21,6 +22,12 @@ export default class KRG {
   }
   getDataNodes = () => {
     return Object.values(this.dataNodes)
+  }
+  getProcessNode = (spec: string) => {
+    return this.processNodes[spec]
+  }
+  getProcessNodes = () => {
+    return Object.values(this.processNodes)
   }
   getResolveNode = (spec: string) => {
     return this.resolveNodes[spec]
@@ -47,6 +54,7 @@ export default class KRG {
       } else if ('resolve' in node) {
         this.resolveNodes[node.spec] = node
       }
+      this.processNodes[node.spec] = node
       for (const arg in node.inputs) {
         const input = node.inputs[arg]
         if (!(input.spec in this.processForInput)) {

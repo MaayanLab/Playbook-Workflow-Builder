@@ -29,19 +29,20 @@ export default function create_engine(krg: KRG, db: Database) {
               if (value && value.type === 'Error') {
                 throw new Error(`Error in ${instanceProcess.type} caused by error in ${metaProcess.inputs[key as string].spec}`)
               }
-              return { key, value: value ? value.value : undefined }
+              return { key, value: value ? metaProcess.inputs[key as string].codec.decode(value.value) : undefined }
           })),
         }
         if ('prompt' in metaProcess) {
-          console.log(`Output comes from data`)
+          console.debug(`Output comes from data`)
           db.upsertResolved(new Resolved(instanceProcess, instanceProcess.data))
         } else {
           const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
-          console.log(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)} to produce ${JSON.stringify(metaProcess.output.spec)}: ${output}`)
+          console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)} to produce ${JSON.stringify(metaProcess.output.spec)}: ${output}`)
           db.upsertResolved(new Resolved(instanceProcess, new Data(metaProcess.output.spec, output)))
         }
       } catch (e) {
-        db.upsertResolved(new Resolved(instanceProcess, new Data('Error', JSON.stringify(e))))
+        console.error(e)
+        db.upsertResolved(new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString()))))
       }
     }
   })

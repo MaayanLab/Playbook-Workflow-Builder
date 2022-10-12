@@ -14,7 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (fpl === undefined) {
       res.status(404).end()
     } else {
-      res.status(200).json(fpl.resolve().map(fpl => fpl.toJSON()))
+      const output = await fpl.process.output()
+      res.status(200).json(output ? output.toJSON() : null)
     }
   } catch (e) {
     console.error(e)

@@ -21,11 +21,13 @@ export const GeneSymbolInput = MetaNode.createProcess('GeneSymbolInput')
   .meta({
     label: 'Input a Gene',
     description: 'A gene input prompt',
+    default: '',
   })
   .inputs()
   .output(GeneSymbol)
   .prompt(props => {
-    const [gene, setGene] = React.useState(props.output || '')
+    const [gene, setGene] = React.useState('')
+    React.useEffect(() => { setGene(props.output) }, [props.output])
     return (
       <div>
         <input value={gene} onChange={evt => setGene(evt.target.value)} />

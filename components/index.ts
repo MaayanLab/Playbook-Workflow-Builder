@@ -1,3 +1,4 @@
+export * from "./error"
 export * from "./file"
 export * from "./gtex"
 export * from "./gene"

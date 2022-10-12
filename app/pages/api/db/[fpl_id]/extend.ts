@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (old_fpl === undefined) {
       res.status(404).end()
     } else {
-      const fpl = old_fpl.extend(process)
+      const fpl = fpprg.upsertFPL(old_fpl.extend(process))
       res.status(200).json(fpl.id)
     }
   } catch (e) {

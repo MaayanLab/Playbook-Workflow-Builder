@@ -95,7 +95,7 @@ export class Process {
   /**
    * The outputs of all input processes
    */
-  async inputs__outputs(): Promise<Record<string | number | symbol, Data | undefined>> {
+  inputs__outputs = async (): Promise<Record<string | number | symbol, Data | undefined>> => {
     return dict.init<Data | undefined>(
       await Promise.all(
         dict.items(this.inputs).map(async ({ key, value }) =>
@@ -107,7 +107,7 @@ export class Process {
   /**
    * The output of this process
    */
-  async output() {
+  output = async () => {
     if (this.db === undefined) throw new Error('Process not attached to a db')
     const resolved = await this.db.awaitResolved(this.id)
     return resolved.data
@@ -158,7 +158,7 @@ export class FPL {
   /**
    * Resolve the complete list from the FPL data structure
    */
-  resolve() {
+  resolve = () => {
     const fpl: FPL[] = [this]
     let head: FPL = this
     while (head.parent !== undefined) {
@@ -171,13 +171,13 @@ export class FPL {
   /**
    * Extend an LPL with a new process
    */
-  extend(process: Process) {
+  extend = (process: Process) => {
     return new FPL(process, this)
   }
   /**
    * Rebase an LPL, this must deal with invalidated processes
    */
-  rebase(old_process: Process, new_process: Process)  {
+  rebase = (old_process: Process, new_process: Process) => {
     // Same as resolve but only up to old_process
     const fpl: FPL[] = [this]
     let head: FPL | undefined = this
@@ -255,7 +255,7 @@ export class Database {
   /**
    * Listen to changes on the DB
    */
-  listen(cb: DatabaseListenCallback) {
+  listen = (cb: DatabaseListenCallback) => {
     const id = this.id++
     this.listeners[id] = cb
     return () => delete this.listeners[id]
@@ -263,13 +263,13 @@ export class Database {
   /**
    * Inform listeners of changes to the DB
    */
-  private notify<T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) {
+  private notify = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
     for (const listener of Object.values(this.listeners)) {
       listener(table, record)
     }
   }
 
-  resolveProcess(process: IdOrProcess): Process {
+  resolveProcess = (process: IdOrProcess): Process => {
     if ('id' in process) {
       return this.getProcess(process.id) as Process
     } else {
@@ -280,10 +280,10 @@ export class Database {
       ))
     }
   }
-  getProcess(id: string) {
+  getProcess = (id: string) => {
     return this.processTable[id] as Process | undefined
   }
-  upsertProcess(process: Process) {
+  upsertProcess = (process: Process) => {
     if (!(process.id in this.processTable)) {
       process.db = this
       if (process.data !== undefined) {
@@ -295,17 +295,17 @@ export class Database {
     return this.processTable[process.id] as Process
   }
 
-  resolveData(data: IdOrData) {
+  resolveData = (data: IdOrData) => {
     if ('id' in data) {
       return this.getData(data.id) as Data
     } else {
       return this.upsertData(new Data(data.type, data.value))
     }
   }
-  getData(id: string) {
+  getData = (id: string) => {
     return this.dataTable[id] as Data | undefined
   }
-  upsertData(data: Data) {
+  upsertData = (data: Data) => {
     if (!(data.id in this.dataTable)) {
       this.dataTable[data.id] = data
       this.notify('data', data)
@@ -313,13 +313,13 @@ export class Database {
     return this.dataTable[data.id] as Data
   }
 
-  getResolved(id: string) {
+  getResolved = (id: string) => {
     return this.resolvedTable[id] as Resolved | undefined
   }
   /**
    * Like getResolved but if it's not in the db yet, wait for it
    */
-  async awaitResolved(id: string) {
+  awaitResolved = async (id: string) => {
     if (!(id in this.resolvedTable)) {
       await new Promise<void>((resolve, reject) => {
         const unsub = this.listen((table, record) => {
@@ -332,7 +332,7 @@ export class Database {
     }
     return this.resolvedTable[id] as Resolved
   }
-  upsertResolved(resolved: Resolved) {
+  upsertResolved = (resolved: Resolved) => {
     if (!(resolved.id in this.resolvedTable)) {
       if (resolved.data) {
         this.upsertData(resolved.data)
@@ -343,10 +343,10 @@ export class Database {
     return this.resolvedTable[resolved.id] as Resolved
   }
 
-  getFPL(id: string) {
+  getFPL = (id: string) => {
     return this.fplTable[id] as FPL | undefined
   }
-  upsertFPL(fpl: FPL) {
+  upsertFPL = (fpl: FPL) => {
     if (!(fpl.id in this.fplTable)) {
       this.fplTable[fpl.id] = fpl
       fpl.process = this.upsertProcess(fpl.process)
@@ -358,7 +358,7 @@ export class Database {
     return this.fplTable[fpl.id] as FPL
   }
 
-  dump() {
+  dump = () => {
     return {
       dataTable: this.dataTable,
       processTable: this.processTable,

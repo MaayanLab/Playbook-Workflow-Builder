@@ -23,32 +23,43 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return {
     props: {
       id,
-      metapath: fpl.resolve().map(fpl => fpl.toJSON()),
+      metapath: await Promise.all(fpl.resolve().map(fpl => fpl.toJSONWithOutput())),
     }
   }
 }
 
-export default function App({ id, metapath }: { id: string, metapath: Array<ReturnType<FPL['toJSON']>> }) {
+type UnPromise<T> = T extends Promise<infer t> ? t : never
+
+export default function App({ id, metapath }: { id: string, metapath: Array<UnPromise<ReturnType<FPL['toJSONWithOutput']>>> }) {
   const router = useRouter()
-  const current = metapath[metapath.length-1]
-  const processNode = krg.getProcessNode(current.process['@type'])
+  const head = metapath[metapath.length-1]
+  const processNode = krg.getProcessNode(head.process.type)
   if ('prompt' in processNode) {
-    const inputs: any = current.process.inputs
+    const inputs: any = head.process.inputs
     const Prompt = processNode.prompt
     return <Prompt
       inputs={inputs}
+      output={processNode.output.codec.decode(head.process.output.value)}
       submit={async (output) => {
-        const req = await fetch(`/api/db/${id}/resolve`, {
+        const req = await fetch(`/api/db/${id}/rebase/${head.process.id}`, {
           method: 'POST',
-          body: JSON.stringify(processNode.output.codec.encode(output))
+          body: JSON.stringify({
+            type: head.process.type,
+            data: {
+              type: processNode.output.spec,
+              value: processNode.output.codec.encode(output),
+            },
+            inputs,
+          })
         })
-        await req.json()
+        const res = z.string().parse(await req.json())
+        router.push(`/persistent/${res}`)
       }}
     />
   }
   return (
     <div>
-      {current.process['@type']} ({current['@id']})
+      {head.process.type} ({head.id})
     </div>
   )
 }

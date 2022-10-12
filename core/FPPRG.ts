@@ -13,6 +13,7 @@
 
 import { Hash } from "fast-sha256"
 import * as dict from '@/utils/dict'
+import { z } from 'zod'
 
 /**
  * Obtain a unique hash for a arbitrary data
@@ -26,18 +27,18 @@ function sha256(data: any) {
 /**
  * Content-addressable storage
  */
-export class Data<T = unknown> {
+export class Data {
   id: string
 
-  constructor(public type: string, public value: T) {
+  constructor(public type: string, public value: string) {
     this.id = sha256([type, value])
   }
 
   toJSON = () => {
     return {
-      '@id': this.id,
-      '@type': this.type,
-      '@value': this.value,
+      'id': this.id,
+      'type': this.type,
+      'value': this.value,
     }
   }
 }
@@ -51,17 +52,38 @@ export class Process {
   id: string
 
   constructor(
+    /**
+     * The type of process, typically corresponding to the KRG Process Type
+     */
     public type: string,
+    /**
+     * Data associated with this process, can used for configuration / prompts
+     */
+    public data: Data = undefined,
+    /**
+     * The input process objects, corresponding to the dependencies of this process
+     */
     public inputs: Record<string|number, Process> = {},
+    /**
+     * A database instance to operate this class like an ORM
+     */
     public db: Database = undefined,
   ) {
-    this.id = sha256([type, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = sha256([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
 
-  toJSON = (): { '@id': string, '@type': string, 'inputs': object } => {
+  toJSONWithOutput = async () => {
     return {
-      '@id': this.id,
-      '@type': this.type,
+      ...this.toJSON(),
+      output: (await this.output()).toJSON(),
+    }
+  }
+
+  toJSON = (): { 'id': string, 'type': string, 'data'?: ReturnType<Data['toJSON']>, 'inputs': object } => {
+    return {
+      'id': this.id,
+      'type': this.type,
+      'data': this.data !== undefined ? this.data.toJSON() : null,
       'inputs': dict.init(
         dict.items(this.inputs)
           .map(({ key, value }) => ({ key, value: value.toJSON() }))
@@ -72,11 +94,11 @@ export class Process {
   /**
    * The outputs of all input processes
    */
-  async inputs__outputs<O = unknown>(): Promise<Record<string | number | symbol, Data<O>>> {
-    return dict.init<Data<O>>(
+  async inputs__outputs(): Promise<Record<string | number | symbol, Data>> {
+    return dict.init<Data>(
       await Promise.all(
         dict.items(this.inputs).map(async ({ key, value }) =>
-          ({ key, value: await value.output<O>() })
+          ({ key, value: await value.output() })
         )
       )
     )
@@ -84,9 +106,9 @@ export class Process {
   /**
    * The output of this process
    */
-  async output<T = unknown>() {
+  async output() {
     if (this.db === undefined) throw new Error('Process not attached to a db')
-    const resolved = await this.db.awaitResolved<T>(this.id)
+    const resolved = await this.db.awaitResolved(this.id)
     return resolved.data
   }
 }
@@ -94,16 +116,16 @@ export class Process {
 /**
  * Data resolved by a process
  */
-export class Resolved<T = unknown> {
+export class Resolved {
   public id: string
 
-  constructor(public process: Process, public data: Data<T>) {
+  constructor(public process: Process, public data: Data) {
     this.id = process.id
   }
 
   toJSON = () => {
     return {
-      '@id': this.id,
+      'id': this.id,
       'data': this.data.toJSON(),
     }
   }
@@ -115,12 +137,19 @@ export class Resolved<T = unknown> {
 export class FPL {
   id: string
   constructor(public process: Process, public parent: FPL | undefined = undefined) {
-    this.id = sha256([process.id, parent ? parent.id : undefined])
+    this.id = sha256([process.id, parent ? parent.id : null])
+  }
+
+  toJSONWithOutput = async () => {
+    return {
+      id: this.id,
+      process: await this.process.toJSONWithOutput(),
+    }
   }
 
   toJSON = () => {
     return {
-      '@id': this.id,
+      'id': this.id,
       'process': this.process.toJSON(),
     }
   }
@@ -184,6 +213,31 @@ export class FPL {
 type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
 type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
 
+export const IdOrDataC = z.union([
+  z.object({ id: z.string() }),
+  z.object({ type: z.string(), value: z.string() }),
+])
+export type IdOrData = z.infer<typeof IdOrDataC>
+
+export type IdOrProcess = { id: string }
+| { type: string, inputs: Record<string, IdOrProcess> }
+| { type: string, data: IdOrData, inputs: Record<string, IdOrProcess> }
+
+export const IdOrProcessC: z.ZodType<IdOrProcess> = z.lazy(() => z.union([
+  z.object({
+    id: z.string(),
+  }),
+  z.object({
+    type: z.string(),
+    data: IdOrDataC,
+    inputs: z.record(z.string(), IdOrProcessC),
+  }),
+  z.object({
+    type: z.string(),
+    inputs: z.record(z.string(), IdOrProcessC),
+  }),
+]))
+
 /**
  * The database maintains records for each table type
  */
@@ -212,22 +266,43 @@ export class Database {
     }
   }
 
+  resolveProcess(process: IdOrProcess) {
+    if ('id' in process) {
+      return this.getProcess(process.id)
+    } else {
+      return this.upsertProcess(new Process(
+        process.type,
+        'data' in process ? this.resolveData(process.data) : undefined,
+        dict.init(dict.items(process.inputs).map(({ key, value }) => ({ key, value: this.resolveProcess(value) })))
+      ))
+    }
+  }
   getProcess(id: string) {
     return this.processTable[id] as Process | undefined
   }
   upsertProcess(process: Process) {
     if (!(process.id in this.processTable)) {
       process.db = this
+      if (process.data !== undefined) {
+        process.data = this.upsertData(process.data)
+      }
       this.processTable[process.id] = process
       this.notify('process', process)
     }
     return this.processTable[process.id]
   }
 
-  getData<T = unknown>(id: string) {
-    return this.dataTable[id] as Data<T> | undefined
+  resolveData(data: IdOrData) {
+    if ('id' in data) {
+      return this.getData(data.id)
+    } else {
+      return this.upsertData(new Data(data.type, data.value))
+    }
   }
-  upsertData<T>(data: Data<T>) {
+  getData(id: string) {
+    return this.dataTable[id] as Data | undefined
+  }
+  upsertData(data: Data) {
     if (!(data.id in this.dataTable)) {
       this.dataTable[data.id] = data
       this.notify('data', data)
@@ -235,13 +310,13 @@ export class Database {
     return this.dataTable[data.id]
   }
 
-  getResolved<T = unknown>(id: string) {
-    return this.resolvedTable[id] as Resolved<T> | undefined
+  getResolved(id: string) {
+    return this.resolvedTable[id] as Resolved | undefined
   }
   /**
    * Like getResolved but if it's not in the db yet, wait for it
    */
-  async awaitResolved<T = unknown>(id: string) {
+  async awaitResolved(id: string) {
     if (!(id in this.resolvedTable)) {
       await new Promise<void>((resolve, reject) => {
         const unsub = this.listen((table, record) => {
@@ -252,9 +327,9 @@ export class Database {
         })
       })
     }
-    return this.resolvedTable[id] as Resolved<T>
+    return this.resolvedTable[id] as Resolved
   }
-  upsertResolved<T>(resolved: Resolved<T>) {
+  upsertResolved(resolved: Resolved) {
     if (!(resolved.id in this.resolvedTable)) {
       this.upsertData(resolved.data)
       this.resolvedTable[resolved.id] = resolved

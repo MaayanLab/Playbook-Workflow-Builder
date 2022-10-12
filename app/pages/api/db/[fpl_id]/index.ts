@@ -3,17 +3,18 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 
 const QueryType = z.object({
-  id: z.string(),
+  fpl_id: z.string(),
 })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { id } = QueryType.parse(req.query)
-    const fpl = fpprg.getFPL(id)
+    if (req.method !== 'GET') throw new Error('Unsupported method')
+    const { fpl_id } = QueryType.parse(req.query)
+    const fpl = fpprg.getFPL(fpl_id)
     if (fpl === undefined) {
       res.status(404).end()
     } else {
-      res.status(200).json(fpl.resolve().map(fpl => fpl.toJSON()))
+      res.status(200).json(await Promise.all(fpl.resolve().map(fpl => fpl.toJSONWithOutput())))
     }
   } catch (e) {
     console.error(e)

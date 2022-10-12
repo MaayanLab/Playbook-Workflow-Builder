@@ -14,16 +14,16 @@ export default function App() {
             : null}
           <button
             onClick={async () => {
-              const req = await fetch(`/api/db/extend`, {
+              const req = await fetch(`/api/db/fpl`, {
                 method: 'POST',
-                body: JSON.stringify({
+                body: JSON.stringify([{
                   type: proc.spec,
                   inputs: {},
                   data: {
                     type: proc.output.spec,
                     value: proc.output.codec.encode((proc.meta as any).default)
                   },
-                })
+                }])
               })
               const res = z.string().parse(await req.json())
               router.push(`/persistent/${res}`)

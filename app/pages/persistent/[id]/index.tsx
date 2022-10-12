@@ -21,11 +21,11 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   }
   const results = fpl.resolve().map(fpl => fpl.toJSON())
   const fallback: Record<string, unknown> = {
-    [`/api/db/${id}`]: results
+    [`/api/db/fpl/${id}`]: results
   }
   for (const result of results) {
     const output = fpprg.getResolved(result.process.id)
-    if (output)  fallback[`/api/db/${result.id}/output`] = result.process
+    if (output)  fallback[`/api/db/process/${result.process.id}/output`] = result.process
   }
   return {
     props: {
@@ -52,7 +52,7 @@ export default function App({ fallback }: { fallback: any }) {
 
 function Cells({ id }: { id?: string }) {
   const router = useRouter()
-  const { data: metapath, error } = useSWR<Array<Metapath>>(`/api/db/${id}`)
+  const { data: metapath, error } = useSWR<Array<Metapath>>(`/api/db/fpl/${id}`)
   const head = metapath ? metapath[metapath.length - 1] : undefined
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (
@@ -75,7 +75,7 @@ function Cells({ id }: { id?: string }) {
                   inputs[i] = { id: head.process.id }
                 }
               }
-              const req = await fetch(`/api/db/${id}/extend`, {
+              const req = await fetch(`/api/db/fpl/${id}/extend`, {
                 method: 'POST',
                 body: JSON.stringify({
                   type: proc.spec,
@@ -95,7 +95,7 @@ function Cells({ id }: { id?: string }) {
 
 function Cell({ id, head }: { id?: string, head: Metapath }) {
   const router = useRouter()
-  const { data: rawOutput, error: outputError } = useSWR(`/api/db/${head.id}/output`)
+  const { data: rawOutput, error: outputError } = useSWR(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
   const inputs: any = head.process.inputs
   const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : undefined
@@ -109,7 +109,7 @@ function Cell({ id, head }: { id?: string, head: Metapath }) {
         inputs={inputs}
         output={output}
         submit={async (output) => {
-          const req = await fetch(`/api/db/${id}/rebase/${head.process.id}`, {
+          const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
             method: 'POST',
             body: JSON.stringify({
               type: head.process.type,

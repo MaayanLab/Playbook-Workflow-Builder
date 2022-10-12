@@ -80,15 +80,15 @@ export class Process {
     }
   }
 
-  toJSON = (): { 'id': string, 'type': string, 'data': ReturnType<Data['toJSON']> | null, 'inputs': object } => {
+  toJSON = () => {
     return {
       'id': this.id,
       'type': this.type,
       'data': this.data !== undefined ? this.data.toJSON() : null,
       'inputs': dict.init(
         dict.items(this.inputs)
-          .map(({ key, value }) => ({ key, value: value.toJSON() }))
-      ) as object,
+          .map(({ key, value }) => ({ key, value: { id: value.id } }))
+      ),
     }
   }
 
@@ -168,6 +168,21 @@ export class FPL {
     fpl.reverse()
     return fpl
   }
+
+  /**
+   * Opposite of resolve, build a fully persistent list out
+   *  of a list of processes.
+   */
+  static fromProcessArray = (processArray: Array<Process>) => {
+    const P = [...processArray]
+    P.reverse()
+    let head = undefined
+    while (P.length !== 0) {
+      head = new FPL(P.pop() as Process, head)
+    }
+    return head
+  }
+
   /**
    * Extend an LPL with a new process
    */

@@ -6,24 +6,32 @@ import codecFrom from '@/utils/io-ts-codec'
 import decodeOrThrow from '@/utils/decodeOrThrow'
 
 export const MyGeneInfoHitC = t.type({
-  hits: t.array(t.type({
-    _id: t.string,
-    _score: t.number,
-    entrezgene: t.string,
-    name: t.string,
-    symbol: t.union([t.undefined, t.string]),
-    taxid: t.number,
-  })),
+  hits: t.array(t.intersection([
+    t.type({
+      _id: t.string,
+      _score: t.number,
+    }),
+    t.partial({
+      symbol: t.string,
+      name: t.string,
+      taxid: t.number,
+      entrezgene: t.string,
+    }),
+  ]))
 })
 export type MyGeneInfoHit = t.TypeOf<typeof MyGeneInfoHitC>
 
-export const MyGeneInfoC = t.type({
-  _id: t.string,
-  entrezgene: t.string,
-  name: t.string,
-  symbol: t.string,
-  taxid: t.number,
-})
+export const MyGeneInfoC = t.intersection([
+  t.type({
+    _id: t.string,
+    symbol: t.string,
+  }),
+  t.partial({
+    entrezgene: t.string,
+    name: t.string,
+    taxid: t.number,
+  })
+])
 
 export type MyGeneInfo = t.TypeOf<typeof MyGeneInfoC>
 

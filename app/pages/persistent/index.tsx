@@ -19,6 +19,10 @@ export default function App() {
                 body: JSON.stringify({
                   type: proc.spec,
                   inputs: {},
+                  data: {
+                    type: proc.output.spec,
+                    value: proc.output.codec.encode((proc.meta as any).default)
+                  },
                 })
               })
               const res = z.string().parse(await req.json())

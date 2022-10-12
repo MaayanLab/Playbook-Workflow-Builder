@@ -28,36 +28,40 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
         <h2>Gene Count Matrix: {props.url}</h2>
         <span>Shape: ({props.shape[0]}, {props.shape[1]})</span>
         <table>
-          <tr>
-            <th>&nbsp;</th>
-            {props.head_columns.map(col => <th key={col}>{col}</th>)}
-            <th>{column_elipse}</th>
-            {props.tail_columns.map(col => <th key={col}>{col}</th>)}
-          </tr>
-          {props.head_index.map((index, i) =>
-            <tr key={index}>
-              <th>{index}</th>
-              {props.head_columns.map((col, j) => <td>{props.head_values[i][j]}</td>)}
-              <th>{column_elipse}</th>
-              {props.tail_columns.map((col, j) => <td>{props.head_values[i][j]}</td>)}
-            </tr>
-          )}
-          {index_elipse ? (
+          <thead>
             <tr>
-              <th>...</th>
-              {props.head_columns.map((col, j) => <td>...</td>)}
+              <th>&nbsp;</th>
+              {props.head_columns.map((col, j) => <th key={j}>{col}</th>)}
               <th>{column_elipse}</th>
-              {props.tail_columns.map((col, j) => <td>...</td>)}
+              {props.tail_columns.map((col, j) => <th key={j}>{col}</th>)}
             </tr>
-          ) : null}
-          {props.tail_index.map((index, i) =>
-            <tr key={index}>
-              <th>{index}</th>
-              {props.head_columns.map((col, j) => <td>{props.tail_values[i][j]}</td>)}
-              <th>{column_elipse}</th>
-              {props.tail_columns.map((col, j) => <td>{props.tail_values[i][j]}</td>)}
-            </tr>
-          )}
+          </thead>
+          <tbody>
+            {props.head_index.map((index, i) =>
+              <tr key={index}>
+                <th>{index}</th>
+                {props.head_columns.map((col, j) => <td key={j}>{props.head_values[i][j]}</td>)}
+                <th>{column_elipse}</th>
+                {props.tail_columns.map((col, j) => <td key={j}>{props.head_values[i][j]}</td>)}
+              </tr>
+            )}
+            {index_elipse ? (
+              <tr>
+                <th>...</th>
+                {props.head_columns.map((col, j) => <td key={j}>...</td>)}
+                <th>{column_elipse}</th>
+                {props.tail_columns.map((col, j) => <td key={j}>...</td>)}
+              </tr>
+            ) : null}
+            {props.tail_index.map((index, i) =>
+              <tr key={index}>
+                <th>{index}</th>
+                {props.head_columns.map((col, j) => <td key={j}>{props.tail_values[i][j]}</td>)}
+                <th>{column_elipse}</th>
+                {props.tail_columns.map((col, j) => <td key={j}>{props.tail_values[i][j]}</td>)}
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
     )

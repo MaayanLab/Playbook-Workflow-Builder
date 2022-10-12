@@ -22,16 +22,20 @@ export const SignificantTissues = MetaNode.createData('SignificantTissues')
   .codec(codecFrom(SignificantTissueC))
   .view(tissues => (
     <table>
-      <tr>
-        <th>Tissue</th>
-        <th>ZScore</th>
-      </tr>
-      {tissues.map(tissue =>
-        <tr key={tissue.tissue}>
-          <td>{tissue.tissue}</td>
-          <td>{tissue.zscore.toPrecision(3)}</td>
+      <thead>
+        <tr>
+          <th>Tissue</th>
+          <th>ZScore</th>
         </tr>
-      )}
+      </thead>
+      <tbody>
+        {tissues.map(tissue =>
+          <tr key={tissue.tissue}>
+            <td>{tissue.tissue}</td>
+            <td>{tissue.zscore.toPrecision(3)}</td>
+          </tr>
+        )}
+      </tbody>
     </table>
   ))
   .build()

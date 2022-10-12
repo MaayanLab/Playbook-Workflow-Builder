@@ -45,7 +45,7 @@ export default class KRG {
     return Object.values(this.processForInput[spec] || {})
   }
 
-  add = (node: MetaNodeGenericType) => {
+  add = <T extends MetaNodeDataType | MetaNodePromptType | MetaNodeResolveType = MetaNodeGenericType>(node: T) => {
     if (node.kind === 'data') {
       this.dataNodes[node.spec] = node
     } else if (node.kind === 'process') {

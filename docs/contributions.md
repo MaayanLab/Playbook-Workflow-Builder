@@ -1,4 +1,4 @@
-## Contributions
+## Playbook Partnership Contribution Guide
 Please review the [Background](./background.md) to better understand the concepts behind this repo.
 
 ### Who should contribute?

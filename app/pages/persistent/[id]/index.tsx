@@ -25,7 +25,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   }
   for (const result of results) {
     const output = fpprg.getResolved(result.process.id)
-    if (output)  fallback[`/api/db/process/${result.process.id}/output`] = result.process
+    if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
   return {
     props: {

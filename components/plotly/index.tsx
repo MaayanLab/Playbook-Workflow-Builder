@@ -1,8 +1,9 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import type { PlotParams } from 'react-plotly.js'
+import dynamic from 'next/dynamic'
 
-const Plot = React.lazy(() => import('react-plotly.js'))
+const Plot = dynamic(() => import('react-plotly.js'), { ssr: false, loading: () => <div>Loading...</div> })
 
 export type PlotlyJson = {
   data: PlotParams['data'],

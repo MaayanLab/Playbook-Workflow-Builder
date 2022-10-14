@@ -36,10 +36,10 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
     } catch (e) {
       throw new ProcessError(`Process input could not be serialized`, null)
     }
-    const proc = spawn('python3', [
-      path.join(process.env.PYTHON_ROOT, 'utils/helper.py'),
+    const proc = spawn(process.env.PYTHON_BIN || 'python3', [
+      path.join(process.env.PYTHON_ROOT || '', 'utils/helper.py'),
       pathspec,
-    ])
+    ], { env: { ...process.env } })
     let stdout = ''
     let stderr = ''
     proc.stdout.on('data', (chunk: string) => { stdout += chunk })

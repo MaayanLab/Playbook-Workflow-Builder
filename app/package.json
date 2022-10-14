@@ -6,6 +6,7 @@
     "child_process": false
   },
   "dependencies": {
+    "dotenv": "^16.0.3",
     "multiparty": "^4.2.3",
     "next": "^12.3.1",
     "prismjs": "^1.29.0",

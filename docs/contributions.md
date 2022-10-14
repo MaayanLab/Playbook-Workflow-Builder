@@ -1,6 +1,8 @@
 ## Contributions
 Please review the [Background](./background.md) to better understand the concepts behind this repo.
 
+The [component templates directory](./component_templates/) may also be a simple way to get started making different types of Meta Nodes.
+
 ### Who should contribute?
 Anyone who wants to! Please create a pull request to add new content.
 

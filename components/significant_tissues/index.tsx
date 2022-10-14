@@ -1,23 +1,25 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import * as t from 'io-ts'
+import codecFrom from '@/utils/io-ts-codec'
 
-export type SignificantTissue = {
+export const SignificantTissueC = t.array(t.type({
   /**
    * The tissue term
    */
-  tissue: string,
+  tissue: t.string,
   /**
    * A zscore fir the significance
    */
-  zscore: number,
-}
+  zscore: t.number,
+}))
 
 export const SignificantTissues = MetaNode.createData('SignificantTissues')
   .meta({
     label: 'SignificantTissues',
     description: 'Tissues scored using a combined stouffer statistic',
   })
-  .codec<Array<SignificantTissue>>()
+  .codec(codecFrom(SignificantTissueC))
   .view(tissues => (
     <table>
       <tr>

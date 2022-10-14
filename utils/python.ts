@@ -27,7 +27,7 @@ export class ProcessError extends Error {
  * @param script: of the form python_file.py:func_in_file
  * @param args: The kwargs to provide to the file
  */
-export default function python<T>(script_path: string, func_name: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }): Promise<T> {
+export default function python<T>(pathspec: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }): Promise<T> {
   if (typeof window !== 'undefined') throw new Error("python is server side only")
   return new Promise((resolve, reject) => {
     let stdin: string
@@ -38,8 +38,7 @@ export default function python<T>(script_path: string, func_name: string, args: 
     }
     const proc = spawn('python3', [
       path.join(process.env.PYTHON_ROOT, 'utils/helper.py'),
-      path.join(process.env.PYTHON_ROOT, path.relative('@', script_path)),
-      func_name,
+      pathspec,
     ])
     let stdout = ''
     let stderr = ''
@@ -50,7 +49,7 @@ export default function python<T>(script_path: string, func_name: string, args: 
         reject(new ProcessError(stderr || `Process exited with unexpected code ${code}`, code))
       } else {
         if (stderr) {
-          console.warn(`${script_path}[${func_name}]: ${stderr}`)
+          console.warn(`[${pathspec}]: ${stderr}`)
         }
         try {
           resolve(JSON.parse(stdout))

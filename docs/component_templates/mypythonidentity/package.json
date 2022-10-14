@@ -1,8 +1,8 @@
 {
-  "name": "tissue-barplot",
+  "name": "mypythonidentity",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
-  "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
+  "author": "",
   "private": true,
   "main": "index.tsx",
   "dependencies": {

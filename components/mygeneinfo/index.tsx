@@ -1,23 +1,39 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneSymbol } from '@/components/gene'
+import * as t from 'io-ts'
+import codecFrom from '@/utils/io-ts-codec'
+import decodeOrThrow from '@/utils/decodeOrThrow'
 
-export type MyGeneInfoHit = {
-  _id: string,
-  _score: number,
-  entrezgene: string,
-  name: string,
-  symbol?: string,
-  taxid: number,
-}
+export const MyGeneInfoHitC = t.type({
+  hits: t.array(t.intersection([
+    t.type({
+      _id: t.string,
+      _score: t.number,
+    }),
+    t.partial({
+      symbol: t.string,
+      name: t.string,
+      taxid: t.number,
+      entrezgene: t.string,
+    }),
+  ]))
+})
+export type MyGeneInfoHit = t.TypeOf<typeof MyGeneInfoHitC>
 
-export type MyGeneInfo = {
-  _id: string,
-  entrezgene: string,
-  name: string,
-  symbol: string,
-  taxid: number,
-}
+export const MyGeneInfoC = t.intersection([
+  t.type({
+    _id: t.string,
+    symbol: t.string,
+  }),
+  t.partial({
+    entrezgene: t.string,
+    name: t.string,
+    taxid: t.number,
+  })
+])
+
+export type MyGeneInfo = t.TypeOf<typeof MyGeneInfoC>
 
 async function mygeneinfo_query(geneId: string): Promise<{total: number, hits: Array<MyGeneInfoHit>}> {
   const res = await fetch(`https://mygene.info/v3/query?q=${encodeURIComponent(geneId)}`)
@@ -34,7 +50,7 @@ export const GeneInfo = MetaNode.createData('GeneInfo')
     label: 'Gene Information',
     description: 'A Gene resolved with MyGeneInfo',
   })
-  .codec<MyGeneInfo>()
+  .codec(codecFrom(MyGeneInfoC))
   .view(geneinfo => (
     <div>
       <a href={`https://www.ncbi.nlm.nih.gov/gene/${geneinfo.entrezgene}`}>{geneinfo.symbol}</a> {geneinfo.name}
@@ -51,7 +67,7 @@ export const GeneInfoFromGeneSymbol = MetaNode.createProcess('GeneInfoFromGeneSy
   .inputs({ gene: GeneSymbol })
   .output(GeneInfo)
   .resolve(async (props) => {
-    const results = await mygeneinfo_query(props.inputs.gene)
+    const results = decodeOrThrow(MyGeneInfoHitC, await mygeneinfo_query(props.inputs.gene))
     const hits = results.hits.filter(hit => hit.symbol)
     const exactMatch = hits.filter(hit => hit.symbol.toUpperCase() == props.inputs.gene.toUpperCase())[0]
     const _id: string | undefined = exactMatch !== undefined ? exactMatch._id : hits[0]._id

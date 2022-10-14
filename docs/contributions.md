@@ -1,6 +1,8 @@
 ## Playbook Partnership Contribution Guide
 Please review the [Background](./background.md) to better understand the concepts behind this repo.
 
+The [component templates directory](./component_templates/) may also be a simple way to get started making different types of Meta Nodes.
+
 ### Who should contribute?
 Anyone who wants to! Please create a pull request to add new content.
 
@@ -153,7 +155,7 @@ export const ResolverName = MetaNode.createProcess('ResolverName')
 ```
 
 ##### Python Implementation
-As resolvers run in the server process rather than the client, it is possible to call python code for these. As this is more convenient in many cases when data manipulation is required, a helper exists specifically to do this.
+As resolvers run in the server process rather than the client, it is possible to call python code for these. As this is more convenient in many cases when data manipulation is required, helpers exist specifically to do this, and the components directory is set up in a way that makes cross-component importing simpler by convension.
 
 `components/{PromptName}/index.tsx`
 ```ts
@@ -171,10 +173,9 @@ export const ResolverName = MetaNode.createProcess('ResolverName')
   .resolve(async (props) => {
     // here we use the helper to call the python module
     return await python(
-      // the typescript-style import of the python file (absolute w/ @ is mandatory)
-      '@/components/Identity/pyscript.py',
-      // the python function in that script
-      'identity',
+      // the absolute python import from the root of the repo
+      //  with the last part referring to the actual function to run
+      'components.identity.myfunc',
       // here we provide kargs and kwargs for the python function
       //  (i.e.  func(*kargs, **kwargs))
       { kargs: [props.inputs.input], kwargs: {} },
@@ -184,7 +185,7 @@ export const ResolverName = MetaNode.createProcess('ResolverName')
 
 ```
 
-`components/{PromptName}/pyscript.py`
+`components/{PromptName}/__init__.py`
 ```python
 #  **important** arguments must be json serializable with json.dumps/json.loads
 #  **important** logging messages should be sent to sys.stderr, information on sys.stdout (or i.e. print)

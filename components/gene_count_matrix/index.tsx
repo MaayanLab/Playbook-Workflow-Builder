@@ -77,3 +77,17 @@ export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFr
     { kargs: [props.inputs.file] },
   ))
   .build()
+
+  export const Transpose = MetaNode.createProcess('Transpose')
+  .meta({
+    label: 'Transpose',
+    description: 'A demonstrative transpose operation',
+  })
+  .codec()
+  .inputs({ file: GeneCountMatrix })
+  .output(GeneCountMatrix)
+  .resolve(async (props) => await python(
+    'components.gene_count_matrix.transpose',
+    { kargs: [props.inputs.file] },
+  ))
+  .build()

@@ -74,3 +74,11 @@ def gene_count_matrix(url):
     tail_index=d.obs_names[-bottom:].tolist(), tail_columns=d.var_names[-right:].tolist(),
     head_values=d.X[:top, :left].tolist() + d.X[:top, -right:].tolist(), tail_values=d.X[-bottom:, :left].tolist() + d.X[-bottom:, -right:].tolist(),
   )
+
+def transpose(m):
+  from components.file import upsert_file
+  d = anndata_from_path(m['url'])
+  d = d.T
+  with upsert_file('.h5ad') as f:
+    d.write_h5ad(f.file)
+  return gene_count_matrix(f.url)

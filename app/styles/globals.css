@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* sticky footer */
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  min-width: 540px;
+}
+
+#__next {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.col, .flex-grow {
+  flex: 1 1 auto;
+  overflow: hidden;
+}

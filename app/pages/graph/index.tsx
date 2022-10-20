@@ -8,9 +8,9 @@ import { useRouter } from 'next/router'
 
 import { start_icon } from '@/icons'
 
-const Header = dynamic(() => import('@/app/fragments/scg/header'))
-const Home = dynamic(() => import('@/app/fragments/scg/home'))
-const Footer = dynamic(() => import('@/app/fragments/scg/footer'))
+const Header = dynamic(() => import('@/app/fragments/playbook/header'))
+const Home = dynamic(() => import('@/app/fragments/playbook/home'))
+const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 
 export default function App() {

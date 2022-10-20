@@ -11,7 +11,7 @@ const env = dotenv.parse(fs.readFileSync('../.env'))
 env.PYTHON_ROOT = env.PYTHON_ROOT || '../'
 for (const key in env) {
   if (!(key in process.env)) {
-    process.env = env[key]
+    process.env[key] = env[key]
   }
 }
 

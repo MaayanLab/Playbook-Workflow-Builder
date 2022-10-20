@@ -7,30 +7,41 @@ import krg from '@/app/krg'
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'))
 
 export default function App() {
-  const [data, setData] = React.useState('')
-  const [dataType, setDataType] = React.useState('')
+  const [prev, setPrev] = React.useState({ type: '', data: '' })
+  const [current, setCurrent_] = React.useState({ type: '', data: '' })
+  const setCurrent = React.useCallback((current: { type?: string, data?: string }) => {
+    setCurrent_(current_ => {
+      setPrev(current_)
+      return {
+        type: current.type === undefined ? current_.type : current.type,
+        data: current.data === undefined? current_.data : current.data,
+      }
+    })
+  }, [setPrev, setCurrent_])
   const [prompt, setPrompt] = React.useState(undefined)
-  const dataNode = krg.getDataNode(dataType)
+  const dataNode = krg.getDataNode(current.type)
   let dataNodeView
   if (prompt) {
     const promptNode = krg.getPromptNode(prompt)
     const inputs = {}
     if (Object.keys(promptNode.inputs).length > 0) {
       const input0 = Object.keys(promptNode.inputs)[0]
-      inputs[input0] = promptNode.inputs[input0].codec.decode(data)
+      inputs[input0] = promptNode.inputs[input0].codec.decode(current.data)
     }
     const Prompt = promptNode.prompt
     dataNodeView = <Prompt
       inputs={inputs}
       submit={(output) => {
-        setDataType(promptNode.output.spec)
-        setData(promptNode.output.codec.encode(output))
+        setCurrent({
+          type: promptNode.output.spec,
+          data: promptNode.output.codec.encode(output)
+        })
         setPrompt(undefined)
       }}
     />
   } else if (dataNode) {
     try {
-      dataNodeView = <div>{dataNode.view(dataNode.codec.decode(data))}</div>
+      dataNodeView = <div>{dataNode.view(dataNode.codec.decode(current.data))}</div>
     } catch (e) {
       dataNodeView = <div>Error rendering {dataNode.spec}: {e.toString()}</div>
     }
@@ -39,22 +50,27 @@ export default function App() {
     <div className={styles.App}>
       <div className={styles.Process}>
         <h2>Apply Process</h2>
-        {krg.getNextProcess(dataType).map(proc =>
+        {krg.getNextProcess(current.type).map(proc =>
           <div key={proc.spec}>
-            {Object.keys(proc.inputs).length > 0 ?
-              <span>{Object.values(proc.inputs).map((i) => i.spec).join(', ')} =&gt;&nbsp;</span>
-              : null}
+            {Object.keys(proc.inputs).length > 0 ? (
+              <>
+                <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => i.spec).join(', ')}</span>
+                <span> =&gt; </span>
+              </>
+            ) : null}
             <button
-              style={{
-                fontWeight: Object.values(proc.inputs).some((i) => i.spec === dataType) ? 'bold' : 'normal',
-              }}
+              className={[
+                Object.values(proc.inputs)
+                  .some((i) => i.spec === current.type) ? 'font-bold' : '',
+                'bg-primary rounded-sm p-2',
+              ].join(' ')}
               onClick={async () => {
                 if ('prompt' in proc) {
                   setPrompt(proc.spec)
                 } else {
                   const formData = new FormData()
                   for (const i in proc.inputs) {
-                    formData.append(i, data)
+                    formData.append(i, current.data)
                     // formData[i] = proc.inputs[i].codec.encode(data)
                   }
                   const req = await fetch(`/api/resolver/${proc.spec}`, {
@@ -63,12 +79,15 @@ export default function App() {
                   })
                   const res = await req.json()
                   setPrompt(undefined)
-                  setData(res)
-                  setDataType(proc.output.spec)
+                  setCurrent({
+                    type: proc.output.spec,
+                    data: res
+                  })
                 }
               }}
             >{proc.spec}</button>
-            <span>&nbsp; =&gt; {proc.output.spec}</span>
+            <span> =&gt; </span>
+            <span className="bg-secondary rounded-full p-3">{proc.output.spec}</span>
           </div>
         )}
       </div>
@@ -80,8 +99,8 @@ export default function App() {
           overflow: 'auto',
         }}>
           <JsonEditor
-            value={data}
-            onValueChange={value => setData(value)}
+            value={current.data}
+            onValueChange={value => setCurrent({ data: value })}
             style={{
               fontFamily: 'monospace',
               fontSize: 12,
@@ -90,20 +109,33 @@ export default function App() {
           />
         </div>
         <div className={styles.Examples}>
-          <button onClick={() => {
-            setPrompt(undefined)
-            setDataType('')
-            setData('')
-          }}>Reset</button>
+          <button
+            className="bg-primary rounded-md p-2"
+            onClick={() => {
+              setPrompt(undefined)
+              setCurrent(prev)
+            }}>Prev</button>
+          <button
+            className="bg-primary rounded-md p-2"
+            onClick={() => {
+              setPrompt(undefined)
+              setCurrent({
+                type: '',
+                data: ''
+              })
+            }}>Reset</button>
           {krg.getDataNodes()
             .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta)
             .map(node => (
               <button
                 key={node.spec}
+                className="bg-primary rounded-md p-2"
                 onClick={() => {
                   setPrompt(undefined)
-                  setDataType(node.spec)
-                  setData(node.codec.encode(node.meta.example))
+                  setCurrent({
+                    type: node.spec,
+                    data: node.codec.encode(node.meta.example),
+                  })
                 }}
               >{node.spec}</button>
             ))}
@@ -112,10 +144,10 @@ export default function App() {
       <div className={styles.View}>
         <h2>Current View</h2>
         <select
-          value={dataType}
+          value={current.type}
           onChange={evt => {
             setPrompt(undefined)
-            setDataType(evt.target.value)
+            setCurrent(({ type: evt.target.value }))
           }}
         >{krg.getDataNodes().map(dataNode =>
           <option key={dataNode.spec} value={dataNode.spec}>{dataNode.spec}</option>

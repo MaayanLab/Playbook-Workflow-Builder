@@ -11,8 +11,8 @@ import { z } from 'zod'
 import { start_icon, rightarrow_icon } from '@/icons'
 import { MetaNodePromptType, MetaNodeResolveType, MetaNodeType } from '@/spec/metanode'
 
-const Header = dynamic(() => import('@/app/fragments/header'))
-const Footer = dynamic(() => import('@/app/fragments/footer'))
+const Header = dynamic(() => import('@/app/fragments/scg/header'))
+const Footer = dynamic(() => import('@/app/fragments/scg/footer'))
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 import type CatalogType from '@/app/fragments/catalog'
 const Catalog = dynamic(() => import('@/app/fragments/catalog')) as typeof CatalogType

@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <div className="grid grid-flow-row md:grid-cols-4 sm:grid-cols-2 grid-cols-1 justify-items-center items-center text-center space-y-5">
+    <div className="grid grid-flow-row md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4 justify-items-center items-center text-center mb-2">
       <div className="flex flex-col grid-cols-1">
         <a className="text-gray-600" href="mailto:avi.maayan@mssm.edu">Contact Us</a>
         <a className="text-gray-600" href="https://github.com/MaayanLab/signature-commons-graph/blob/master/LICENSE">Usage License</a>

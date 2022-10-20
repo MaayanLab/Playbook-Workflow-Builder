@@ -15,8 +15,8 @@ import useSWRImmutable from 'swr/immutable'
 import { SWRConfig } from 'swr'
 import { start_icon } from '@/icons'
 
-const Header = dynamic(() => import('@/app/fragments/header'))
-const Footer = dynamic(() => import('@/app/fragments/footer'))
+const Header = dynamic(() => import('@/app/fragments/scg/header'))
+const Footer = dynamic(() => import('@/app/fragments/scg/footer'))
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 
 type Metapath = ReturnType<FPL['toJSON']>

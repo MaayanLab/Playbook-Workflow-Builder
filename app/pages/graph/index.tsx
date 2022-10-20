@@ -17,7 +17,7 @@ const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 export default function App() {
   const router = useRouter()
   return (
-    <div>
+    <div className="flex flex-col min-w-screen min-h-screen">
       <Head>
         <title>Playbook</title>
       </Head>
@@ -52,7 +52,7 @@ export default function App() {
         />
       </div>
 
-      <main className="m-4">
+      <main className="flex-grow m-4">
         <div className="bp4-running-text">
           <h1 className="bp4-heading">Welcome to Signature Commons Graph</h1>
           <p className="bp4-text-large bp4-text-muted">An interactive knowledge enrichment tool for user-driven meta-graph traversal</p>

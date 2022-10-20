@@ -22,7 +22,7 @@ const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Bu
 export default function App() {
   const router = useRouter()
   return (
-    <div>
+    <div className="flex flex-col min-w-screen min-h-screen">
       <Head>
         <title>Playbook</title>
       </Head>
@@ -57,7 +57,7 @@ export default function App() {
         />
       </div>
 
-      <main className="m-4">
+      <main className="flex-grow m-4">
         <Catalog<MetaNodePromptType | MetaNodeResolveType>
           items={krg.getNextProcess('')}
           // items={Object.values(metagraph.getNeighbors({ graph: ctx.graph, node: ctx.node })) as SCG.MetaEdge[]}

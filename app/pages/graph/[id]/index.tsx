@@ -59,7 +59,7 @@ export default function App({ fallback }: { fallback: any }) {
   const router = useRouter()
   const { id } = QueryType.parse(router.query)
   return (
-    <div>
+    <div className="flex flex-col min-w-screen min-h-screen">
       <Head>
         <title>Playbook</title>
       </Head>
@@ -67,7 +67,9 @@ export default function App({ fallback }: { fallback: any }) {
       <Header />
 
       <SWRConfig value={{ fallback, fetcher }}>
-        <Graph id={id} />
+        <main className="flex-grow m-4">
+          <Graph id={id} />
+        </main>
       </SWRConfig>
 
       <Footer />

@@ -7,7 +7,7 @@ export default function Footer() {
       </div>
       <div className="grid-cols-1">
         <a href="https://www.nih-cfde.org/" target="_blank">
-          <img className="rounded h-20" src="/CFDE_logo-color-web.png" />
+          <img className="rounded h-20" src="/logos/CFDE.png" />
         </a>
       </div>
       <div className="flex flex-col grid-cols-1">

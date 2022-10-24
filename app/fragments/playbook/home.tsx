@@ -17,11 +17,21 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-2">Contributors</h2>
         <br />
         <div className="max-w-4xl flex flex-row flex-wrap self-center justify-evenly align-middle gap-4">
-          <img className="h-16" src="/logos/exRNA.png" />
-          <img className="h-16 p-2" style={{ backgroundColor: '#2f78b7' }} src="/logos/glygen.svg" />
-          <img className="h-16" src="/logos/LINCS.jpg" />
-          <img className="h-16" src="/logos/KidsFirst.png" />
-          <img className="h-16" src="/logos/Metabolomics.png" />
+          <a href="https://exrna.org/" target="__blank">
+            <img className="h-32" src="/logos/exRNA.png" />
+          </a>
+          <a href="https://www.glygen.org/" target="__blank">
+            <img className="h-32" src="/logos/glygen.svg" />
+          </a>
+          <a href="https://lincs-dcic.org/" target="__blank">
+            <img className="h-32" src="/logos/LINCS-DCIC.png" />
+          </a>
+          <a href="https://kidsfirstdrc.org/" target="__blank">
+            <img className="h-32" src="/logos/KidsFirst.png" />
+          </a>
+          <a href="https://www.metabolomicsworkbench.org/" target="__blank">
+            <img className="h-32" src="/logos/Metabolomics.png" />
+          </a>
         </div>
       </div>
     </>

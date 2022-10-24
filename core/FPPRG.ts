@@ -201,7 +201,6 @@ export class FPL {
       head = head.parent
       fpl.push(head)
     }
-    fpl.reverse()
     // if we didn't end up on the old_proces, it's not in the FPL
     if (head.process !== old_process) {
       throw new Error(`${old_process} not found in FPL`)
@@ -209,7 +208,10 @@ export class FPL {
     // Replace old_process with new process
     const update = { [head.process.id]: new_process }
     // Walk forward updating processes, replacing any dependencies with the updated one
-    head = head.parent
+    head = new FPL(new_process, head.parent)
+    const rebased = head
+    fpl.pop()
+    fpl.reverse()
     for (const el of fpl) {
       const new_proc = new Process(
         (update[el.process.id] || el.process).type,
@@ -224,7 +226,7 @@ export class FPL {
       head = new FPL(new_proc, head)
       update[el.process.id] = new_proc
     }
-    return head
+    return { rebased, head }
   }
 }
 

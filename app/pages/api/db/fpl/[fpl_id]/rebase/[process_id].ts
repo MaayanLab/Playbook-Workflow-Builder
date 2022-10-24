@@ -17,19 +17,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const old_process = fpprg.getProcess(process_id)
     if (old_process === undefined) {
         res.status(404).end()
-      } else {
+    } else {
       const new_process = fpprg.resolveProcess(BodyType.parse(JSON.parse(req.body)))
       const old_fpl = fpprg.getFPL(fpl_id)
       if (old_fpl === undefined) {
         res.status(404).end()
       } else {
-        const new_fpl = old_fpl.rebase(old_process, new_process)
-        if (new_fpl === undefined) {
-          res.status(404).end()
-        } else {
-          const fpl = fpprg.upsertFPL(new_fpl)
-          res.status(200).json(fpl.id)
-        }
+        const { rebased, head } = old_fpl.rebase(old_process, new_process)
+        const fpl = fpprg.upsertFPL(head)
+        res.status(200).json({ head: fpl.id, rebased: rebased.id })
       }
     }
   } catch (e) {

@@ -198,8 +198,8 @@ function Cell({ id, head }: { id: string, head: Metapath }) {
                 inputs,
               })
             })
-            const res = z.string().parse(await req.json())
-            router.push(`/graph/${res}`, undefined, { shallow: true })
+            const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
+            router.push(`/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}`, undefined, { shallow: true })
           }}
         /> : null}
       </div>

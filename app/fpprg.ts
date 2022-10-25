@@ -16,8 +16,6 @@ declare global {
 const fpprg = global.fpprg || new Database()
 if (global.fpprg && global.detach) global.detach()
 const detach = attach(krg, fpprg)
-if (process.env.NODE_ENV !== 'production') {
-  global.fpprg = fpprg
-  global.detach = detach
-}
+global.fpprg = fpprg
+global.detach = detach
 export default fpprg

@@ -26,7 +26,7 @@ export default function App() {
                 }])
               })
               const res = z.string().parse(await req.json())
-              router.push(`/persistent/${res}`)
+              router.push(`/report/${res}`)
             }}
           >{proc.spec}</button>
           <span>&nbsp; =&gt; {proc.output.spec}</span>

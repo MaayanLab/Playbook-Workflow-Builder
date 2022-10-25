@@ -121,8 +121,8 @@ function Cell({ id, head }: { id?: string, head: Metapath }) {
               inputs,
             })
           })
-          const res = z.string().parse(await req.json())
-          router.push(`/persistent/${res}`, undefined, { shallow: true })
+          const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
+          router.push(`/persistent/${res.head}`, undefined, { shallow: true })
         }}
       /> : null}
       {outputNode ? (

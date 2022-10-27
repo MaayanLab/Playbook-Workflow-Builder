@@ -27,6 +27,8 @@ export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./suggest"
+components.push("suggest")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"

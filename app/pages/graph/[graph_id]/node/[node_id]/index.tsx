@@ -24,7 +24,7 @@ const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 import type CatalogType from '@/app/fragments/catalog'
 const Catalog = dynamic(() => import('@/app/fragments/catalog')) as typeof CatalogType
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
 type Metapath = ReturnType<FPL['toJSON']>
 
@@ -182,7 +182,7 @@ function Cell({ id, head }: { id: string, head: Metapath }) {
   return (
     <div className="flex-grow flex flex-col">
       <div className="flex-grow flex-shrink">
-        <h2 className="text-lg mb-1">Process ({processNode.spec})</h2>
+        <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
         {Prompt ? <Prompt
           inputs={inputs}
           output={output}
@@ -206,7 +206,7 @@ function Cell({ id, head }: { id: string, head: Metapath }) {
       <div className="flex-grow">
         {outputNode ? (
           <>
-            <h2 className="text-lg mb-1">View ({outputNode.spec})</h2>
+            <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
             {View && output ? View(output) : null}
           </>
         ) : (
@@ -227,7 +227,30 @@ function Extend({ id, head }: { id: string, head: Metapath }) {
       serialize={item => item.spec}
       // serialize={(item: SCG.MetaEdge) => `${ensureCallable((item.meta || {}).name)(ctx)} ${ensureCallable((item.meta || {}).desc)(ctx)} ${ensureCallable(metagraph.nodes[item.input.spec].meta.name)(ctx)} ${ensureCallable(metagraph.nodes[item.output.spec].meta.name)(ctx)}`}
     >{item =>
-      <div key={item.spec} className="rounded-lg p-1 m-1" style={{ backgroundColor: item.output.meta.color || 'lightgrey' }}>
+      <Card
+        key={item.spec}
+        interactive={true}
+        style={{
+          backgroundColor: item.output.meta.color || 'lightgrey',
+        }}
+        onClick={async () => {
+          const inputs: Record<string, { id: string }> = {}
+          if (head) {
+            for (const arg in item.inputs) {
+              inputs[arg] = { id: head.process.id }
+            }
+          }
+          const req = await fetch(`/api/db/fpl/${id}/extend`, {
+            method: 'POST',
+            body: JSON.stringify({
+              type: item.spec,
+              inputs,
+            })
+          })
+          const res = z.string().parse(await req.json())
+          router.push(`/graph/${res}`)
+        }}
+      >
         <div className="flex flex-row">
           {Object.keys(item.inputs).length === 0 ? (
             <>
@@ -246,30 +269,9 @@ function Extend({ id, head }: { id: string, head: Metapath }) {
             </>
           ))}
         </div>
-        <h5 className="card-title mt-4">{item.meta.label || ''}</h5>
-        <p className="card-text">{item.meta.description || ''}</p>
-        <Button
-          onClick={async () => {
-            const inputs: Record<string, { id: string }> = {}
-            if (head) {
-              for (const arg in item.inputs) {
-                inputs[arg] = { id: head.process.id }
-              }
-            }
-            const req = await fetch(`/api/db/fpl/${id}/extend`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: item.spec,
-                inputs,
-              })
-            })
-            const res = z.string().parse(await req.json())
-            router.push(`/graph/${res}`)
-          }}
-        >
-          Select
-        </Button>
-      </div>
+        <h5 className="bp4-heading">{item.meta.label || ''}</h5>
+        <p className="bp4-text-small">{item.meta.description || ''}</p>
+      </Card>
     }</Catalog>
   )
 }

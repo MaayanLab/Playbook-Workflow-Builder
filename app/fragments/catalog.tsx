@@ -1,8 +1,11 @@
 import React from 'react'
-import { FormGroup, InputGroup } from '@blueprintjs/core'
 import Masonry from 'react-masonry-css'
 import tsvector from "@/utils/tsvector"
+import dynamic from "next/dynamic"
 // import { useQsState } from "@/components/qsstate"
+
+const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
+const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 
 const any = <T extends {}>(L: T[]) => L.some(el => el)
 const all = <T extends {}>(L: T[]) => !any(L)
@@ -77,86 +80,80 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
     }
   }
   return (
-    <div className="flex-grow">
-      <div className="row">
-        <div className="col-sm-12">
-          <FormGroup label="Filter">
-            <InputGroup
-              leftIcon="filter"
-              placeholder="Filter string..."
-              value={search}
-              onChange={evt => setSearch(evt.currentTarget.value)}
-            />
-          </FormGroup>
+    <div className="flex-grow flex flex-col">
+      <FormGroup label="Filter">
+        <InputGroup
+          leftIcon="filter"
+          placeholder="Filter string..."
+          value={search}
+          onChange={evt => setSearch(evt.currentTarget.value)}
+        />
+      </FormGroup>
+      <div className="flex-grow flex flex-row">
+        <div className="sm:col-span-12 md:col-span-4 lg:col-span-3">
+          {Object.keys(_group_values)
+            .filter(group => Object.keys(_group_values[group]).length > 1)
+            .map(group => (
+              <fieldset key={group}>
+                <legend>{group}</legend>
+                <div className="ml-2 mb-4">
+                  {Object.keys(_group_values[group])
+                    .map(value => (
+                      <label key={value} className="bp3-control bp3-switch">
+                        <input
+                          type="checkbox"
+                          checked={(filters[group] || {})[value] === 1}
+                          onChange={evt => {
+                            const _filters = {...filters}
+                            if (!evt.currentTarget.checked) {
+                              if (!(group in _filters)) _filters[group] = {}
+                              else _filters[group] = {...filters[group]}
+                              if (value in _filters[group]) {
+                                delete _filters[group][value]
+                              }
+                              if (Object.keys(_filters[group]).length === 0) {
+                                delete _filters[group]
+                              }
+                            } else {
+                              if (!(group in _filters)) _filters[group] = {}
+                              else _filters[group] = {...filters[group]}
+                              if (!(value in _filters[group])) {
+                                _filters[group][value] = 1
+                              }
+                            }
+                            setFilters(_filters)
+                          }}
+                        />
+                        <span className="bp3-control-indicator"></span>
+                        {value} [{
+                        (_group_values_filtered[group]||{})[value] === _group_values[group][value] ? (
+                          _group_values[group][value]
+                        ) : (
+                          `${(_group_values_filtered[group]||{})[value]||0} / ${_group_values[group][value]}`
+                        )} card{_group_values[group][value] > 1 ? 's' : ''}]
+                      </label>
+                  ))}
+                </div>
+              </fieldset>
+            )
+          )}
         </div>
-        <div className="col-sm-12">
-          <div className="row">
-            <div className="col-sm-12 col-md-4 col-lg-3">
-              {Object.keys(_group_values)
-                .filter(group => Object.keys(_group_values[group]).length > 1)
-                .map(group => (
-                  <fieldset key={group}>
-                    <legend>{group}</legend>
-                    <div className="ml-2 mb-4">
-                      {Object.keys(_group_values[group])
-                        .map(value => (
-                          <label key={value} className="bp3-control bp3-switch">
-                            <input
-                              type="checkbox"
-                              checked={(filters[group] || {})[value] === 1}
-                              onChange={evt => {
-                                const _filters = {...filters}
-                                if (!evt.currentTarget.checked) {
-                                  if (!(group in _filters)) _filters[group] = {}
-                                  else _filters[group] = {...filters[group]}
-                                  if (value in _filters[group]) {
-                                    delete _filters[group][value]
-                                  }
-                                  if (Object.keys(_filters[group]).length === 0) {
-                                    delete _filters[group]
-                                  }
-                                } else {
-                                  if (!(group in _filters)) _filters[group] = {}
-                                  else _filters[group] = {...filters[group]}
-                                  if (!(value in _filters[group])) {
-                                    _filters[group][value] = 1
-                                  }
-                                }
-                                setFilters(_filters)
-                              }}
-                            />
-                            <span className="bp3-control-indicator"></span>
-                            {value} [{
-                            (_group_values_filtered[group]||{})[value] === _group_values[group][value] ? (
-                              _group_values[group][value]
-                            ) : (
-                              `${(_group_values_filtered[group]||{})[value]||0} / ${_group_values[group][value]}`
-                            )} card{_group_values[group][value] > 1 ? 's' : ''}]
-                          </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                )
-              )}
-            </div>
-            <div className="col-sm-12 col-md-8 col-lg-9">
-              <Masonry
-                breakpointCols={{
-                  // note these breakpoints match the bootstrap breakpoints
-                  //  they should only be changed along with the columnClassName spec
-                  default: 4,
-                  1400: 4,
-                  1200: 3,
-                  992: 2,
-                  768: 1,
-                }}
-                className="row"
-                columnClassName="col-sm-12 col-md-6 col-lg-4 col-xl-3 px-1"
-              >
-                {_items_filtered.map(item => children(item))}
-              </Masonry>
-            </div>
-          </div>
+        <div className="flex-grow">
+          <Masonry
+            breakpointCols={{
+              // note these breakpoints match the bootstrap breakpoints
+              //  they should only be changed along with the columnClassName spec
+              default: 4,
+              1400: 4,
+              1200: 3,
+              992: 2,
+              768: 1,
+            }}
+            className="flex flex-row gap-2"
+            columnClassName="flex-grow flex flex-col gap-2"
+          >
+            {_items_filtered.map(item => children(item))}
+          </Masonry>
         </div>
       </div>
     </div>

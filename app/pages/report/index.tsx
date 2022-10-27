@@ -2,6 +2,9 @@ import React from 'react'
 import krg from '@/app/krg'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
+import dynamic from 'next/dynamic'
+
+const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export default function App() {
   const router = useRouter()
@@ -12,7 +15,7 @@ export default function App() {
           {Object.keys(proc.inputs).length > 0 ?
             <span>{Object.values(proc.inputs).map((i) => i.spec).join(', ')} =&gt;&nbsp;</span>
             : null}
-          <button
+          <Button
             onClick={async () => {
               const req = await fetch(`/api/db/fpl`, {
                 method: 'POST',
@@ -28,7 +31,7 @@ export default function App() {
               const res = z.string().parse(await req.json())
               router.push(`/report/${res}`)
             }}
-          >{proc.spec}</button>
+          >{proc.spec}</Button>
           <span>&nbsp; =&gt; {proc.output.spec}</span>
         </div>
       )}

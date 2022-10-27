@@ -7,6 +7,9 @@ import krg from '@/app/krg'
 import { z } from 'zod'
 import useSWRImmutable from 'swr/immutable'
 import { SWRConfig } from 'swr'
+import dynamic from 'next/dynamic'
+
+const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 type Metapath = ReturnType<FPL['toJSON']>
 
@@ -68,7 +71,7 @@ function Cells({ id }: { id?: string }) {
           {Object.keys(proc.inputs).length > 0 ?
             <span>{Object.values(proc.inputs).map((i) => i.spec).join(', ')} =&gt;&nbsp;</span>
             : null}
-          <button
+          <Button
             onClick={async () => {
               const inputs: Record<string, unknown> = {}
               if (head) {
@@ -86,7 +89,7 @@ function Cells({ id }: { id?: string }) {
               const res = z.string().parse(await req.json())
               router.push(`/report/${res}`, undefined, { shallow: true })
             }}
-          >{proc.spec}</button>
+          >{proc.spec}</Button>
           <span>&nbsp; =&gt; {proc.output.spec}</span>
         </div>
       ) : null}

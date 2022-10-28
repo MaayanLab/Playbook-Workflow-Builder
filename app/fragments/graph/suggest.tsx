@@ -6,6 +6,7 @@ import { MetaNode, MetaNodeDataType, MetaNodePromptType, MetaNodeResolveType } f
 import { z } from 'zod'
 import { Intent } from '@blueprintjs/core'
 import dynamic from 'next/dynamic'
+import * as dict from '@/utils/dict'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -263,9 +264,12 @@ export default function Suggest({ id, head }: { id: string, head: Metapath }) {
               label: suggestion.name,
               description: suggestion.description,
             })
-            .inputs() // TODO: based on the actual inputs
+            .inputs(dict.init(suggestion.inputs.split(',').map((spec, ind) =>
+            ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
             .output(OutputNode)
-            .resolve(async () => undefined)
+            .prompt((props) => {
+              return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+            })
             .build()
           krg.add(ProcessNode)
           // extend using those nodes

@@ -1,5 +1,6 @@
 import krg from '@/app/krg'
 import kvdb from '@/app/kvdb'
+import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
@@ -39,9 +40,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         label: suggestion.name,
         description: suggestion.description,
       })
-      .inputs({ input: suggestion.inputs } as any)
+      .inputs(dict.init(suggestion.inputs.split(',').filter(s => s != '').map((spec, ind) =>
+      ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
       .output(OutputNode)
-      .resolve(async () => null)
+      .prompt((props) => {
+        return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+      })
       .build()
     krg.add(ProcessNode)
     // register the suggestion

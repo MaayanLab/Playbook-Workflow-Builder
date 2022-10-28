@@ -16,7 +16,7 @@ export default function Extend({ id, head }: { id: string, head: Metapath }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (
-    <Catalog<MetaNodePromptType | MetaNodeResolveType & ({} | { onClick: (_: { router: NextRouter, id: string }) => void })>
+    <Catalog<MetaNodePromptType | MetaNodeResolveType & ({} | { onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
       items={[
         ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
         ...SuggestionEdges(processNode ? processNode.output : undefined),
@@ -33,7 +33,7 @@ export default function Extend({ id, head }: { id: string, head: Metapath }) {
         }}
         onClick={async () => {
           if ('onClick' in item) {
-            item.onClick({ router, id })
+            item.onClick({ router, id, head })
           } else {
             const inputs: Record<string, { id: string }> = {}
             if (head) {

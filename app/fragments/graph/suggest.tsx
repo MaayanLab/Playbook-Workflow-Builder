@@ -92,8 +92,8 @@ export function SuggestionEdges(input?: MetaNodeDataType) {
   }
   return suggestion_edges.map(element => ({
     ...element,
-    onClick: ({ router, id }: { router: NextRouter, id: string }) => {
-      router.push(`/graph/${id}/suggest`)
+    onClick: ({ router, id, head }: { router: NextRouter, id: string, head: Metapath }) => {
+      router.push(`/graph/${id}/${head ? head.id !== id ? `/node/${head.id}` : '' : '/node/start'}/suggest`)
     }
   }))
 }
@@ -128,59 +128,61 @@ export default function Suggest({ id, head }: { id: string, head: Metapath }) {
             leftIcon="label"
           />
         </FormGroup>
-        <ControlGroup fill>
-          <FormGroup
-            label="Component Inputs"
-            labelInfo="(required)"
-            helperText="A the inputs to this component"
-          >
-            <InputGroup
-              placeholder="Some component"
-              value={suggestion.inputs}
-              readOnly
-              onChange={evt => {
-                setSuggestion(({ ...suggestion }) => ({ ...suggestion, inputs: evt.target.value }))
-              }}
-              leftIcon="many-to-one"
-            />
-          </FormGroup>
-          <FormGroup
-            label="Component Output"
-            labelInfo="(required)"
-            helperText="The output of this component"
-          >
-            <Suggest2
-              fill
-              closeOnSelect
-              selectedItem={suggestion.output}
-              inputValueRenderer={item => item+''}
-              itemRenderer={(item, { modifiers: { active, disabled }, handleClick }: { modifiers: { active: boolean, disabled: boolean }, handleClick: React.MouseEventHandler }) =>
-                <MenuItem
-                  key={item+''}
-                  text={item+''}
-                  onClick={handleClick}
-                  active={active}
-                  disabled={disabled}
-                />
-              }
-              createNewItemFromQuery={(item: string) => item}
-              createNewItemRenderer={(item: string, active: boolean, handleClick: React.MouseEventHandler<HTMLElement>) =>
-                <MenuItem
-                  key={item}
-                  text={item}
-                  active={active}
-                  onClick={handleClick}
-                />
-              }
-              inputProps={{ leftIcon: 'flow-end', placeholder: `Search components` }}
-              items={krg.getDataNodes().map(node => node.spec)}
-              onItemSelect={output => {
-                setSuggestion(({ ...suggestion }) => ({ ...suggestion, output: output+'' }))
-              }}
-              popoverProps={{ minimal: true }}
-            />
-          </FormGroup>
-        </ControlGroup>
+        {suggestion.inputs ?
+          <ControlGroup fill>
+            <FormGroup
+              label="Component Inputs"
+              labelInfo="(required)"
+              helperText="A the inputs to this component"
+            >
+              <InputGroup
+                placeholder="Some component"
+                value={suggestion.inputs}
+                readOnly
+                onChange={evt => {
+                  setSuggestion(({ ...suggestion }) => ({ ...suggestion, inputs: evt.target.value }))
+                }}
+                leftIcon="many-to-one"
+              />
+            </FormGroup>
+            <FormGroup
+              label="Component Output"
+              labelInfo="(required)"
+              helperText="The output of this component"
+            >
+              <Suggest2
+                fill
+                closeOnSelect
+                selectedItem={suggestion.output}
+                inputValueRenderer={item => item+''}
+                itemRenderer={(item, { modifiers: { active, disabled }, handleClick }: { modifiers: { active: boolean, disabled: boolean }, handleClick: React.MouseEventHandler }) =>
+                  <MenuItem
+                    key={item+''}
+                    text={item+''}
+                    onClick={handleClick}
+                    active={active}
+                    disabled={disabled}
+                  />
+                }
+                createNewItemFromQuery={(item: string) => item}
+                createNewItemRenderer={(item: string, active: boolean, handleClick: React.MouseEventHandler<HTMLElement>) =>
+                  <MenuItem
+                    key={item}
+                    text={item}
+                    active={active}
+                    onClick={handleClick}
+                  />
+                }
+                inputProps={{ leftIcon: 'flow-end', placeholder: `Search components` }}
+                items={krg.getDataNodes().map(node => node.spec)}
+                onItemSelect={output => {
+                  setSuggestion(({ ...suggestion }) => ({ ...suggestion, output: output+'' }))
+                }}
+                popoverProps={{ minimal: true }}
+              />
+            </FormGroup>
+          </ControlGroup>
+        : null}
       </ControlGroup>
       <FormGroup
         label="Authorship Information"
@@ -222,7 +224,7 @@ export default function Suggest({ id, head }: { id: string, head: Metapath }) {
       <FormGroup
         label="Description"
         labelInfo="(required)"
-        helperText={`A description about what this algorithm or data transformation does${input ? ` with the ${input.meta.label || input.spec}` : ''} with relevant links`}
+        helperText={input ? `A description about what this algorithm or data transformation does with the ${input.meta.label || input.spec} with relevant links` : `A description of the core data type`}
       >
         <TextArea
           placeholder={`Your component description goes here`}
@@ -239,36 +241,41 @@ export default function Suggest({ id, head }: { id: string, head: Metapath }) {
       <Button
         text="Submit"
         onClick={async () => {
+          const suggestion_final = {...suggestion}
+          if (!suggestion_final.inputs) {
+            suggestion_final.name = `Input ${suggestion.name}`
+            suggestion_final.output = suggestion.name
+          }
           // register the suggestion
           const kvReq = await fetch(`/api/suggest/`, {
             method: 'POST',
-            body: JSON.stringify(suggestion)
+            body: JSON.stringify(suggestion_final)
           })
           // construct the KRG node locally
-          let OutputNode = krg.getDataNode(suggestion.output)
+          let OutputNode = krg.getDataNode(suggestion_final.output)
           if (OutputNode === undefined) {
-            OutputNode = MetaNode.createData(suggestion.output)
+            OutputNode = MetaNode.createData(suggestion_final.output)
               .meta({
-                label: suggestion.output,
-                description: `A data type, suggested as part of ${suggestion.name}`,
+                label: suggestion_final.output,
+                description: `A data type, suggested as part of ${suggestion_final.name}`,
               })
               .codec<any>()
               .view((props) => {
-                return <div>This data type was suggested as part of {suggestion.name}</div>
+                return <div>This data type was suggested as part of {suggestion_final.name}</div>
               })
               .build()
             krg.add(OutputNode)
           }
-          const ProcessNode = MetaNode.createProcess(suggestion.name)
+          const ProcessNode = MetaNode.createProcess(suggestion_final.name)
             .meta({
-              label: suggestion.name,
-              description: suggestion.description,
+              label: suggestion_final.name,
+              description: suggestion_final.description,
             })
-            .inputs(dict.init(suggestion.inputs.split(',').map((spec, ind) =>
+            .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
             ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
             .output(OutputNode)
             .prompt((props) => {
-              return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+              return <div>This was suggested by {suggestion_final.author_name} &lt;{suggestion_final.author_email}&gt; ({suggestion_final.author_org})</div>
             })
             .build()
           krg.add(ProcessNode)

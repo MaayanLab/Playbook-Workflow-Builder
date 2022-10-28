@@ -27,9 +27,10 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   // we expect a uri of the form /[graph_id][/node_id]
   const params = ParamType.parse(ctx.params)
   const extend = ctx.resolvedUrl.endsWith('extend')
+  const suggest = ctx.resolvedUrl.endsWith('suggest')
   if (params === undefined || !('graph_id' in params) || params.graph_id === 'start') {
     return {
-      props: { fallback: {}, extend }
+      props: { fallback: {}, extend, suggest }
     }
   }
   const fpl = fpprg.getFPL(params.graph_id)
@@ -51,6 +52,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     props: {
       fallback,
       extend,
+      suggest,
     }
   }
 }
@@ -60,7 +62,7 @@ async function fetcher(path: string): Promise<Array<Metapath>> {
   return await req.json()
 }
 
-export default function App({ fallback, extend }: { fallback: any, extend: boolean }) {
+export default function App({ fallback, extend, suggest }: { fallback: any, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const params = ParamType.parse(router.query)
   const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
@@ -79,6 +81,7 @@ export default function App({ fallback, extend }: { fallback: any, extend: boole
             graph_id={graph_id}
             node_id={node_id}
             extend={extend}
+            suggest={suggest}
           />
         </main>
       </SWRConfig>

@@ -7,13 +7,14 @@ import type { Metapath } from '@/app/fragments/graph/types'
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 const Home = dynamic(() => import('@/app/fragments/playbook/home'))
 const Extend = dynamic(() => import('@/app/fragments/graph/extend'))
+const Suggest = dynamic(() => import('@/app/fragments/graph/suggest'))
 const Cell = dynamic(() => import('@/app/fragments/graph/cell'))
 
-export default function Graph({ graph_id, node_id, extend }: { graph_id: string, node_id: string, extend: boolean }) {
+export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(() => graph_id !== 'start' ? `/api/db/fpl/${graph_id}` : undefined)
   const metapath = metapath_ || []
-  const head = metapath !== undefined ? metapath.filter(({ id }) => id === node_id)[0] : undefined
+  const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
       <div className="flex w-auto h-40">
@@ -67,13 +68,15 @@ export default function Graph({ graph_id, node_id, extend }: { graph_id: string,
       </div>
       <main className="flex-grow flex flex-col">
         {error ? <div>{error}</div> : null}
-        {head && extend ?
-          <Extend id={graph_id} head={head} />
-          : node_id === 'start' ?
-            <Home />
-            : head ?
-              <Cell id={graph_id} head={head} />
-              : null}
+        {suggest ?
+          <Suggest id={graph_id} head={head} />
+          : extend ?
+            <Extend id={graph_id} head={head} />
+            : node_id === 'start' ?
+              <Home />
+              : head ?
+                <Cell id={graph_id} head={head} />
+                : null}
       </main>
     </>
   )

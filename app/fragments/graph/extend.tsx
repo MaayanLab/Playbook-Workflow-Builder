@@ -1,10 +1,11 @@
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import krg from '@/app/krg'
 import { z } from 'zod'
 import { start_icon, rightarrow_icon } from '@/icons'
 import { MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
 import type { Metapath } from '@/app/fragments/graph/types'
+import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
 const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof CatalogType
@@ -15,8 +16,11 @@ export default function Extend({ id, head }: { id: string, head: Metapath }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (
-    <Catalog<(MetaNodePromptType | MetaNodeResolveType) & ({} | { onClick: (_: { router: any, id: string }) => void })>
-      items={krg.getNextProcess(processNode ? processNode.output.spec : '')}
+    <Catalog<MetaNodePromptType | MetaNodeResolveType & ({} | { onClick: (_: { router: NextRouter, id: string }) => void })>
+      items={[
+        ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
+        ...SuggestionEdges(processNode ? processNode.output : undefined),
+      ]}
       // items={Object.values(metagraph.getNeighbors({ graph: ctx.graph, node: ctx.node })) as SCG.MetaEdge[]}
       serialize={item => item.spec}
       // serialize={(item: SCG.MetaEdge) => `${ensureCallable((item.meta || {}).name)(ctx)} ${ensureCallable((item.meta || {}).desc)(ctx)} ${ensureCallable(metagraph.nodes[item.input.spec].meta.name)(ctx)} ${ensureCallable(metagraph.nodes[item.output.spec].meta.name)(ctx)}`}

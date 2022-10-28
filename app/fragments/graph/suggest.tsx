@@ -240,6 +240,14 @@ export default function Suggest({ id, head }: { id: string, head: Metapath }) {
       </FormGroup>
       <Button
         text="Submit"
+        disabled={
+          !suggestion.name
+          || !suggestion.author_name
+          || !suggestion.author_email
+          || !suggestion.author_org
+          || !suggestion.description
+          || (!!suggestion.inputs && !suggestion.output)
+        }
         onClick={async () => {
           const suggestion_final = {...suggestion}
           if (!suggestion_final.inputs) {

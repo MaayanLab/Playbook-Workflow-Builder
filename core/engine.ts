@@ -2,6 +2,8 @@ import { Data, Database, Process, Resolved } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 
+class UnboundError extends Error {}
+
 /**
  * This is a minimally viable scg engine -- given a database,
  *  we'll reconcile process outputs when they are created.
@@ -25,9 +27,12 @@ export default function create_engine(krg: KRG, db: Database) {
           data: instanceProcess.data,
           inputs: dict.init(
             dict.items(await instanceProcess.inputs__outputs()).map(({ key, value }) => {
-              // propagate errors
-              if (value && value.type === 'Error') {
-                throw new Error(`Error in ${instanceProcess.type} caused by error in ${metaProcess.inputs[key as string].spec}`)
+              if (value === undefined) {
+                // handle nodes
+                throw new UnboundError()
+              } else if (value.type === 'Error') {
+                // propagate errors
+                throw new Error(`${instanceProcess.type} can't run because of error in ${metaProcess.inputs[key as string].spec}`)
               }
               return { key, value: value ? metaProcess.inputs[key as string].codec.decode(value.value) : undefined }
           })),
@@ -41,8 +46,12 @@ export default function create_engine(krg: KRG, db: Database) {
           db.upsertResolved(new Resolved(instanceProcess, new Data(metaProcess.output.spec, output)))
         }
       } catch (e) {
-        console.error(e)
-        db.upsertResolved(new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString()))))
+        if (e instanceof UnboundError) {
+          db.upsertResolved(new Resolved(instanceProcess, undefined))
+        } else {
+          console.error(e)
+          db.upsertResolved(new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString()))))
+        }
       }
     }
   })

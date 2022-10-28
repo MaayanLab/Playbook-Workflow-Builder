@@ -9,8 +9,8 @@ export default function Cell({ id, head }: { id: string, head: Metapath }) {
   const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
   const inputs: any = head.process.inputs
-  const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : undefined
-  const output = outputNode ? outputNode.codec.decode(rawOutput.value) : undefined
+  const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
+  const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
   const View = outputNode ? outputNode.view : undefined
   const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
   return (
@@ -43,7 +43,7 @@ export default function Cell({ id, head }: { id: string, head: Metapath }) {
         {outputNode ? (
           <>
             <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
-            {View && output ? View(output) : null}
+            {View && output ? View(output) : 'Waiting for input'}
           </>
         ) : (
           <div>Loading...</div>

@@ -292,7 +292,7 @@ export class Database {
     } else {
       return this.upsertProcess(new Process(
         process.type,
-        'data' in process ? this.resolveData(process.data) : undefined,
+        'data' in process ? process.data !== undefined ? this.resolveData(process.data) : undefined : undefined,
         dict.init(dict.items(process.inputs).map(({ key, value }) => ({ key, value: this.resolveProcess(value) })))
       ))
     }

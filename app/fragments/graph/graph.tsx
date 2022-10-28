@@ -50,7 +50,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
               id: 'extend',
               kind: 'process' as 'process',
               label: 'Extend',
-              color: extend ? '#B3CFFF' : 'lightgrey',
+              color: extend || suggest ? '#B3CFFF' : 'lightgrey',
               content: '+',
               parents: [head ? `${head.process.id}:output` : 'start'],
             },

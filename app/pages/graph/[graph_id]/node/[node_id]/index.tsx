@@ -6,27 +6,15 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import type { GetServerSidePropsContext } from 'next'
-import { useRouter } from 'next/router'
 import fpprg from '@/app/fpprg'
-import { FPL } from '@/core/FPPRG'
-import krg from '@/app/krg'
 import { z } from 'zod'
-import useSWRImmutable from 'swr/immutable'
+import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
-import { rightarrow_icon, start_icon } from '@/icons'
-import { MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
+import type { Metapath } from '@/app/fragments/graph/types'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
-const Home = dynamic(() => import('@/app/fragments/playbook/home'))
-const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
-
-import type CatalogType from '@/app/fragments/catalog'
-const Catalog = dynamic(() => import('@/app/fragments/catalog')) as typeof CatalogType
-const Icon = dynamic(() => import('@/app/components/icon'))
-const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
-
-type Metapath = ReturnType<FPL['toJSON']>
+const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
 
 const ParamType = z.union([
   z.object({ graph_id: z.string(), node_id: z.string() }),
@@ -97,181 +85,5 @@ export default function App({ fallback, extend }: { fallback: any, extend: boole
 
       <Footer />
     </div>
-  )
-}
-
-function Graph({ graph_id, node_id, extend }: { graph_id: string, node_id: string, extend: boolean }) {
-  const router = useRouter()
-  const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(() => graph_id !== 'start' ? `/api/db/fpl/${graph_id}` : undefined)
-  const metapath = metapath_ || []
-  const head = metapath.filter(({ id }) => id === node_id)[0]
-  return (
-    <>
-      <div className="flex w-auto h-40">
-        <Breadcrumbs
-          graph={[
-            {
-              id: 'start',
-              kind: 'data',
-              label: 'Start',
-              color: node_id === 'start' ? '#B3CFFF' : 'lightgrey',
-              icon: [start_icon],
-              parents: [],
-            },
-            ...(metapath||[]).flatMap((head, i) => [
-              {
-                id: head.process.id,
-                kind: 'process' as 'process',
-                label: head.process.type,
-                color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
-                icon: [],
-                parents: Object.keys(head.process.inputs).length === 0 ? ['start'] : Object.values(head.process.inputs).map(({ id }) => `${id}:output`),
-              },
-              {
-                id: `${head.process.id}:output`,
-                kind: 'data' as 'data',
-                label: '',
-                color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
-                icon: [],
-                parents: [head.process.id],
-              },
-            ]),
-            {
-              id: 'extend',
-              kind: 'process' as 'process',
-              label: 'Extend',
-              color: extend ? '#B3CFFF' : 'lightgrey',
-              content: '+',
-              parents: [head ? `${head.process.id}:output` : 'start'],
-            },
-          ]}
-          onclick={(_evt, id) => {
-            if (id === 'extend') {
-              router.push(`/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
-            } else {
-              const focus_node_process_id = id.split(':')[0]
-              const focus_node_id = id === 'start' ? 'start' : metapath.filter((node) => node.process.id === focus_node_process_id)[0].id
-              router.push(`/graph/${graph_id}${graph_id !== focus_node_id ? `/node/${focus_node_id}` : ''}`, undefined, { shallow: true })
-            }
-          }}
-        />
-      </div>
-      <main className="flex-grow flex flex-col">
-        {error ? <div>{error}</div> : null}
-        {extend ?
-          <Extend id={graph_id} head={head} />
-          : node_id === 'start' ?
-            <Home />
-            : head ?
-              <Cell id={graph_id} head={head} />
-              : null}
-      </main>
-    </>
-  )
-}
-
-function Cell({ id, head }: { id: string, head: Metapath }) {
-  const router = useRouter()
-  const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
-  const processNode = krg.getProcessNode(head.process.type)
-  const inputs: any = head.process.inputs
-  const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : undefined
-  const output = outputNode ? outputNode.codec.decode(rawOutput.value) : undefined
-  const View = outputNode ? outputNode.view : undefined
-  const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
-  return (
-    <div className="flex-grow flex flex-col">
-      <div className="flex-grow flex-shrink">
-        <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
-        {Prompt ? <Prompt
-          inputs={inputs}
-          output={output}
-          submit={async (output) => {
-            const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: head.process.type,
-                data: {
-                  type: processNode.output.spec,
-                  value: processNode.output.codec.encode(output),
-                },
-                inputs,
-              })
-            })
-            const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-            router.push(`/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}`, undefined, { shallow: true })
-          }}
-        /> : null}
-      </div>
-      <div className="flex-grow">
-        {outputNode ? (
-          <>
-            <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
-            {View && output ? View(output) : null}
-          </>
-        ) : (
-          <div>Loading...</div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function Extend({ id, head }: { id: string, head: Metapath }) {
-  const router = useRouter()
-  const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  return (
-    <Catalog<MetaNodePromptType | MetaNodeResolveType>
-      items={krg.getNextProcess(processNode ? processNode.output.spec : '')}
-      // items={Object.values(metagraph.getNeighbors({ graph: ctx.graph, node: ctx.node })) as SCG.MetaEdge[]}
-      serialize={item => item.spec}
-      // serialize={(item: SCG.MetaEdge) => `${ensureCallable((item.meta || {}).name)(ctx)} ${ensureCallable((item.meta || {}).desc)(ctx)} ${ensureCallable(metagraph.nodes[item.input.spec].meta.name)(ctx)} ${ensureCallable(metagraph.nodes[item.output.spec].meta.name)(ctx)}`}
-    >{item =>
-      <Card
-        key={item.spec}
-        interactive={true}
-        style={{
-          backgroundColor: item.output.meta.color || 'lightgrey',
-        }}
-        onClick={async () => {
-          const inputs: Record<string, { id: string }> = {}
-          if (head) {
-            for (const arg in item.inputs) {
-              inputs[arg] = { id: head.process.id }
-            }
-          }
-          const req = await fetch(`/api/db/fpl/${id}/extend`, {
-            method: 'POST',
-            body: JSON.stringify({
-              type: item.spec,
-              inputs,
-            })
-          })
-          const res = z.string().parse(await req.json())
-          router.push(`/graph/${res}`)
-        }}
-      >
-        <div className="flex flex-row">
-          {Object.keys(item.inputs).length === 0 ? (
-            <>
-              <Icon icon={start_icon} />
-              <Icon icon={rightarrow_icon} />
-            </>
-          ) : Object.values(item.inputs).map(input => (
-            <>
-              <Icon icon={input.meta.icon} />
-              {'icon' in item.meta ? (
-                <>
-                  <Icon icon={rightarrow_icon} />
-                  <Icon icon={item.meta.icon} />
-                </>
-              ) : null}
-            </>
-          ))}
-        </div>
-        <h5 className="bp4-heading">{item.meta.label || ''}</h5>
-        <p className="bp4-text-small">{item.meta.description || ''}</p>
-      </Card>
-    }</Catalog>
   )
 }

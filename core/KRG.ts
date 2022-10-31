@@ -6,6 +6,7 @@
  */
 
 import { MetaNodeDataType, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
+import * as dict from '@/utils/dict'
 
 export default class KRG {
   private dataNodes: Record<string, MetaNodeDataType> = {}
@@ -21,7 +22,7 @@ export default class KRG {
     return this.dataNodes[spec]
   }
   getDataNodes = () => {
-    return Object.values(this.dataNodes)
+    return dict.values(this.dataNodes)
   }
   getProcessNode = (spec: string) => {
     return this.processNodes[spec]
@@ -33,16 +34,16 @@ export default class KRG {
     return this.resolveNodes[spec]
   }
   getResolveNodes = () => {
-    return Object.values(this.resolveNodes)
+    return dict.values(this.resolveNodes)
   }
   getPromptNode = (spec: string) => {
     return this.promptNodes[spec]
   }
   getPromptNodes = () => {
-    return Object.values(this.promptNodes)
+    return dict.values(this.promptNodes)
   }
   getNextProcess = (spec: string = '') => {
-    return Object.values(this.processForInput[spec] || {})
+    return dict.values(this.processForInput[spec] || {})
   }
 
   add = <T extends MetaNodeDataType | MetaNodePromptType | MetaNodeResolveType = MetaNodeGenericType>(node: T) => {

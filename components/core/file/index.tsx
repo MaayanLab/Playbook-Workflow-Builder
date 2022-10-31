@@ -2,6 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import dynamic from 'next/dynamic'
+import { file_icon, input_icon } from '@/icons'
 
 const BpFileInput = dynamic(() => import('@blueprintjs/core').then(({ FileInput }) => FileInput))
 const BpButton = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
@@ -10,6 +11,7 @@ export const FileURL = MetaNode.createData('FileURL')
   .meta({
     label: 'File URL',
     description: 'An arbitrary file url',
+    icon: [file_icon],
   })
   .codec(z.string())
   .view(file => (
@@ -24,6 +26,7 @@ export const FileInput = MetaNode.createProcess('FileInput')
     label: 'Input a File',
     description: 'A file upload',
     default: '',
+    icon: [input_icon, file_icon],
   })
   .inputs()
   .output(FileURL)

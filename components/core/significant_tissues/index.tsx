@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { tissue_icon, weighted_icon } from '@/icons'
 
 export const SignificantTissueC = z.array(z.object({
   tissue: z.string().describe('The tissue term'),
@@ -11,6 +12,7 @@ export const SignificantTissues = MetaNode.createData('SignificantTissues')
   .meta({
     label: 'SignificantTissues',
     description: 'Tissues scored using a combined stouffer statistic',
+    icon: [weighted_icon, tissue_icon],
   })
   .codec(SignificantTissueC)
   .view(tissues => (

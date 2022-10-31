@@ -1,5 +1,6 @@
 import useSWRImmutable from 'swr/immutable'
 import levenSort from 'leven-sort'
+import { gene_icon, drug_icon } from '@/icons'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -12,6 +13,7 @@ function useHarmonizomeGeneSuggestions(search: string) {
 export const Gene = {
   name: 'Gene',
   label: 'Gene',
+  icon: [gene_icon],
   color: '#B3CFFF',
   examples: {
     term: 'ACE2',
@@ -33,6 +35,7 @@ function usePubchemDrugSuggestions(search: string) {
 export const Drug = {
   name: 'Drug',
   label: 'Drug',
+  icon: [drug_icon],
   color: '#FFE4A0',
   examples: {
     term: 'imatinib',

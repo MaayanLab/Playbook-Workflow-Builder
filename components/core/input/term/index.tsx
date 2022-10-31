@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative } from '@/components/core/input/primitives'
 import dynamic from 'next/dynamic'
+import { input_icon } from '@/icons'
 
 const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
@@ -13,6 +14,7 @@ const Term_T = (T: Primative) => MetaNode.createData(`Term[${T.name}]`)
     label: T.label,
     description: `${T.label} Term`,
     color: T.color,
+    icon: T.icon,
     example: T.examples.term,
   })
   .codec(z.string())
@@ -49,6 +51,7 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
   .meta({
     label: `${T.label} Input`,
     description: `Start with a ${T.label} term`,
+    icon: [input_icon, ...T.icon],
   })
   .inputs()
   .output(Term_T)

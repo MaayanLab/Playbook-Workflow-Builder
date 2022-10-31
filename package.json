@@ -12,12 +12,14 @@
     "dev": "npx --workspace=app next dev",
     "prebuild": "ts-node cli/sync-component-import.ts",
     "preinstall": "ts-node cli/enumerate-requirements.ts",
+    "convert-icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
     "start": "npx --workspace=app next start"
   },
   "dependencies": {
     "@blueprintjs/core": "^4.11.6",
     "@blueprintjs/icons": "^4.10.0",
     "@blueprintjs/select": "^4.8.6",
+    "@mdi/js": "^7.0.96",
     "fast-sha256": "^1.3.0",
     "glob": "^8.0.3",
     "next": "^12.3.1",

@@ -1,10 +1,10 @@
 import useSWRImmutable from 'swr/immutable'
 import { z } from 'zod'
-import krg from '@/app/krg'
 import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
+import type KRG from '@/core/KRG'
 
-export default function Cell({ id, head }: { id: string, head: Metapath }) {
+export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
   const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)

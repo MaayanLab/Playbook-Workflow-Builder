@@ -1,9 +1,10 @@
+import React from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { start_icon, func_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
-import krg from '@/app/krg'
+import useKRG from '@/app/fragments/graph/krg'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 const Home = dynamic(() => import('@/app/fragments/playbook/home'))
@@ -13,6 +14,7 @@ const Cell = dynamic(() => import('@/app/fragments/graph/cell'))
 
 export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
+  const krg = useKRG()
   const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(() => graph_id !== 'start' ? `/api/db/fpl/${graph_id}` : undefined)
   const metapath = metapath_ || []
   const head = metapath.filter(({ id }) => id === node_id)[0]
@@ -31,6 +33,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             },
             ...metapath.flatMap((head, i) => {
               const process = krg.getProcessNode(head.process.type)
+              if (process === undefined) return []
               return [
                 {
                   id: head.process.id,
@@ -73,13 +76,13 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
       <main className="flex-grow flex flex-col">
         {error ? <div>{error}</div> : null}
         {suggest ?
-          <Suggest id={graph_id} head={head} />
+          <Suggest krg={krg} id={graph_id} head={head} />
           : extend ?
-            <Extend id={graph_id} head={head} />
+            <Extend krg={krg} id={graph_id} head={head} />
             : node_id === 'start' ?
               <Home />
               : head ?
-                <Cell id={graph_id} head={head} />
+                <Cell krg={krg} id={graph_id} head={head} />
                 : null}
       </main>
     </>

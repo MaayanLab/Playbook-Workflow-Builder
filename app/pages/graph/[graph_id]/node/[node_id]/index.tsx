@@ -7,14 +7,18 @@ import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
+import krg from '@/app/krg'
+import db from '@/app/kvdb'
 import { z } from 'zod'
+import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import type { Metapath } from '@/app/fragments/graph/types'
+import { MetaNode } from '@/spec/metanode'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
-const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
+const Graph = dynamic(() => import('@/app/fragments/graph/graph'), { ssr: false })
 
 const ParamType = z.union([
   z.object({ graph_id: z.string(), node_id: z.string() }),
@@ -48,6 +52,44 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     const output = fpprg.getResolved(result.process.id)
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
+  const kvdb: Record<string, string> = {}
+  for await (const { key, value } of db.iterator() as any) {
+    kvdb[key] = value.toString()
+    const suggestion = JSON.parse(kvdb[key])
+    let OutputNode = krg.getDataNode(suggestion.output)
+    if (OutputNode === undefined) {
+      OutputNode = MetaNode.createData(suggestion.output)
+        .meta({
+          label: suggestion.output,
+          description: `A data type, suggested as part of ${suggestion.name}`,
+        })
+        .codec<any>()
+        .view((props) => {
+          return <div>This data type was suggested as part of {suggestion.name}</div>
+        })
+        .build()
+      krg.add(OutputNode)
+    }
+    let ProcessNode = krg.getProcessNode(suggestion.name)
+    if (ProcessNode === undefined) {
+      const ProcessNode = MetaNode.createProcess(suggestion.name)
+        .meta({
+          label: suggestion.name,
+          description: suggestion.description,
+        })
+        .inputs(suggestion.inputs ?
+            dict.init(suggestion.inputs.split(',').map((spec: string, ind: number) =>
+              ({ key: ind.toString(), value: krg.getDataNode(spec) })))
+            : {} as any)
+        .output(OutputNode)
+        .prompt((props) => {
+          return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+        })
+        .build()
+      krg.add(ProcessNode)
+    }
+  }
+  fallback[`/api/suggest`] = kvdb
   return {
     props: {
       fallback,

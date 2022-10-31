@@ -1,12 +1,12 @@
 import { NextRouter, useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
-import krg from '@/app/krg'
 import React from 'react'
 import { MetaNode, MetaNodeDataType, MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
 import { z } from 'zod'
 import { Intent } from '@blueprintjs/core'
 import dynamic from 'next/dynamic'
 import * as dict from '@/utils/dict'
+import type KRG from '@/core/KRG'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -98,7 +98,7 @@ export function SuggestionEdges(input?: MetaNodeDataType) {
   }))
 }
 
-export default function Suggest({ id, head }: { id: string, head: Metapath }) {
+export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined

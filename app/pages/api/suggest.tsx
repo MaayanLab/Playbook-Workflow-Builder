@@ -46,8 +46,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           label: suggestion.name,
           description: suggestion.description,
         })
-        .inputs(dict.init(suggestion.inputs.split(',').filter(s => s != '').map((spec, ind) =>
-        ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
+        .inputs(suggestion.inputs ?
+            dict.init(suggestion.inputs.split(',').map((spec, ind) =>
+              ({ key: ind.toString(), value: krg.getDataNode(spec) })))
+            : {} as any)
         .output(OutputNode)
         .prompt((props) => {
           return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>

@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic'
 import { NextRouter, useRouter } from 'next/router'
-import krg from '@/app/krg'
+import type KRG from '@/core/KRG'
 import { z } from 'zod'
 import { start_icon, rightarrow_icon, func_icon, variable_icon } from '@/icons'
 import { MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
@@ -13,7 +13,7 @@ const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
-export default function Extend({ id, head }: { id: string, head: Metapath }) {
+export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (

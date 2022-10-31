@@ -8,6 +8,7 @@ import { z } from 'zod'
 import useSWRImmutable from 'swr/immutable'
 import { SWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
+import type KRG from '@/core/KRG'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -49,15 +50,16 @@ export default function App({ fallback }: { fallback: any }) {
   const { id } = QueryType.parse(router.query)
   return (
     <SWRConfig value={{ fallback, fetcher }}>
-      <Cells id={id} />
+      <Cells krg={krg} id={id} />
     </SWRConfig>
   )
 }
 
-function Cells({ id }: { id?: string }) {
+function Cells({ krg, id }: { krg: KRG, id?: string }) {
   const router = useRouter()
-  const { data: metapath, error } = useSWRImmutable<Array<Metapath>>(`/api/db/fpl/${id}`)
-  const head = metapath ? metapath[metapath.length - 1] : undefined
+  const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const metapath = metapath_ || []
+  const head = metapath[metapath.length - 1]
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (
     <div>

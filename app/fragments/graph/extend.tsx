@@ -54,21 +54,14 @@ export default function Extend({ id, head }: { id: string, head: Metapath }) {
         }}
       >
         <div className="flex flex-row">
-          {Object.keys(item.inputs).length === 0 ? (
-            <>
-              <Icon icon={start_icon} />
-              <Icon icon={rightarrow_icon} />
-            </>
-          ) : Object.values(item.inputs).map(input => (
-            <>
-              <Icon icon={input.meta.icon} />
-              {'icon' in item.meta ? (
-                <>
-                  <Icon icon={rightarrow_icon} />
-                  <Icon icon={item.meta.icon} />
-                </>
-              ) : null}
-            </>
+          {Object.keys(item.inputs).length === 0 ? <Icon icon={start_icon} /> : null}
+          {Object.keys(item.inputs).length === 0 ? <Icon icon={rightarrow_icon} /> : null}
+          {Object.keys(item.inputs).map(arg => (
+            <span key={arg}>
+              <Icon icon={item.inputs[arg].meta.icon} />
+              {'icon' in item.meta ? <Icon icon={rightarrow_icon} /> : null}
+              {'icon' in item.meta ? <Icon icon={item.meta.icon} /> : null}
+            </span>
           ))}
         </div>
         <h5 className="bp4-heading">{item.meta.label || ''}</h5>

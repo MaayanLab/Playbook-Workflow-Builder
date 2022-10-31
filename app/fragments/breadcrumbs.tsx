@@ -9,7 +9,7 @@ export default function Breadcrumbs(
   { graph, onclick: _onclick }: {
     graph: Array<{
       id: string,
-      kind: 'data' | 'process', 
+      kind: 'data' | 'process',
       label: string,
       color: string,
       parents?: string[],

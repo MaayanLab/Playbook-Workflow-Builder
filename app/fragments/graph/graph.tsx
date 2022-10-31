@@ -1,8 +1,9 @@
 import useSWRImmutable from 'swr/immutable'
-import { start_icon } from '@/icons'
+import { start_icon, func_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
+import krg from '@/app/krg'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 const Home = dynamic(() => import('@/app/fragments/playbook/home'))
@@ -28,24 +29,27 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
               icon: [start_icon],
               parents: [],
             },
-            ...metapath.flatMap((head, i) => [
-              {
-                id: head.process.id,
-                kind: 'process' as 'process',
-                label: head.process.type,
-                color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
-                icon: [],
-                parents: Object.keys(head.process.inputs).length === 0 ? ['start'] : Object.values(head.process.inputs).map(({ id }) => `${id}:output`),
-              },
-              {
-                id: `${head.process.id}:output`,
-                kind: 'data' as 'data',
-                label: '',
-                color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
-                icon: [],
-                parents: [head.process.id],
-              },
-            ]),
+            ...metapath.flatMap((head, i) => {
+              const process = krg.getProcessNode(head.process.type)
+              return [
+                {
+                  id: head.process.id,
+                  kind: 'process' as 'process',
+                  label: process.meta.label,
+                  color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
+                  icon: process.meta.icon || [func_icon],
+                  parents: Object.keys(head.process.inputs).length === 0 ? ['start'] : Object.values(head.process.inputs).map(({ id }) => `${id}:output`),
+                },
+                {
+                  id: `${head.process.id}:output`,
+                  kind: 'data' as 'data',
+                  label: process.output.meta.label,
+                  color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
+                  icon: process.output.meta.icon || [variable_icon],
+                  parents: [head.process.id],
+                },
+              ]
+            }),
             {
               id: 'extend',
               kind: 'process' as 'process',

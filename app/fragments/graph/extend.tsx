@@ -2,10 +2,11 @@ import dynamic from 'next/dynamic'
 import { NextRouter, useRouter } from 'next/router'
 import krg from '@/app/krg'
 import { z } from 'zod'
-import { start_icon, rightarrow_icon } from '@/icons'
+import { start_icon, rightarrow_icon, func_icon, variable_icon } from '@/icons'
 import { MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
 import type { Metapath } from '@/app/fragments/graph/types'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
+import * as dict from '@/utils/dict'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
 const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof CatalogType
@@ -55,14 +56,16 @@ export default function Extend({ id, head }: { id: string, head: Metapath }) {
       >
         <div className="flex flex-row">
           {Object.keys(item.inputs).length === 0 ? <Icon icon={start_icon} /> : null}
-          {Object.keys(item.inputs).length === 0 ? <Icon icon={rightarrow_icon} /> : null}
-          {Object.keys(item.inputs).map(arg => (
+          {dict.keys(item.inputs).map((arg, i) => (
             <span key={arg}>
-              <Icon icon={item.inputs[arg].meta.icon} />
-              {'icon' in item.meta ? <Icon icon={rightarrow_icon} /> : null}
-              {'icon' in item.meta ? <Icon icon={item.meta.icon} /> : null}
+              {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
+              <Icon icon={'icon' in item.inputs[arg].meta ? item.inputs[arg].meta.icon : variable_icon} />
             </span>
           ))}
+          <Icon icon={rightarrow_icon} />
+          <Icon icon={'icon' in item.meta ? item.meta.icon : func_icon} />
+          <Icon icon={rightarrow_icon} />
+          <Icon icon={'icon' in item.output.meta ? item.output.meta.icon : variable_icon} />
         </div>
         <h5 className="bp4-heading">{item.meta.label || ''}</h5>
         <p className="bp4-text-small">{item.meta.description || ''}</p>

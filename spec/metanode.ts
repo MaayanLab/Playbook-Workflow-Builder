@@ -10,9 +10,12 @@ import React from 'react'
  *  built up in a type safe fashion.
  */
 
+type Icon = Array<{ path: string, title: string }>
 export type MetaNodeMetadata = {
   label: string,
   description: string,
+  icon?: Icon,
+  color?: string,
   default?: string,
   example?: string,
   pagerank?: number

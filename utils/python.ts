@@ -12,9 +12,7 @@
  * }
  */
 import type * as child_process_type from 'child_process'
-const spawn = typeof window === 'undefined' ? (require('child_process') as typeof child_process_type).spawn : undefined
 import type * as path_type from 'path'
-const path = typeof window === 'undefined' ? require('path') as typeof path_type : undefined
 
 export class ProcessError extends Error {
   constructor(public message: string, public exitcode: number | null) {
@@ -29,6 +27,8 @@ export class ProcessError extends Error {
  */
 export default function python<T>(pathspec: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }): Promise<T> {
   if (typeof window !== 'undefined') throw new Error("python is server side only")
+  const spawn = typeof window === 'undefined' ? (require('child_process') as typeof child_process_type).spawn : undefined
+  const path = typeof window === 'undefined' ? require('path') as typeof path_type : undefined
   return new Promise((resolve, reject) => {
     let stdin: string
     try {

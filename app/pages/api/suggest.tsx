@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .build()
       krg.add(ProcessNode)
       // register the suggestion
-      await db.put(uuidv4(), JSON.stringify({...suggestion, ts: (new Date()).toString() }))
+      await db.put(`${(new Date()).toString()}-${uuidv4()}`, JSON.stringify(suggestion))
       res.status(200).end()
     } else {
       throw new Error('Unsupported method')

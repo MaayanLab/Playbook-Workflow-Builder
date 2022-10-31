@@ -10,7 +10,16 @@ import React from 'react'
  *  built up in a type safe fashion.
  */
 
-export type MetaNodeGeneric = { kind: 'data', spec: string, meta: object, codec: Codec<unknown> }
+export type MetaNodeMetadata = {
+  label: string,
+  description: string,
+  default?: string,
+  example?: string,
+  pagerank?: number
+  tags?: Record<string, Record<string, number>>,
+}
+
+export type MetaNodeGeneric = { kind: 'data', spec: string, meta: MetaNodeMetadata, codec: Codec<unknown> }
 export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends { kind: infer Kind } ? Kind : never
 export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends { spec: infer Spec } ? Spec : never
 export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends { meta: infer Meta } ? Meta : never
@@ -23,7 +32,7 @@ export type MetaNodeWithCodec<T = MetaNodeGenericData> = { codec: Codec<MetaNode
 export type MetaNodeWithView<T = MetaNodeGenericData> = T extends { view: MetaNodeView<T> } ? T : never
 export type MetaNodeGenericData = MetaNodeGeneric & { view: MetaNodeView<MetaNodeGeneric> }
 export type MetaNodeDataType<T = MetaNodeGenericData> = MetaNodeWithKind<T> & MetaNodeWithSpec<T> & MetaNodeWithMeta<T> & MetaNodeWithCodec<T> & MetaNodeWithView<T>
-export type MetaNodeGenericProcess = { kind: 'process', spec: string, meta: object, inputs: Record<string, MetaNodeGenericData>, output: MetaNodeGenericData }
+export type MetaNodeGenericProcess = { kind: 'process', spec: string, meta: MetaNodeMetadata, inputs: Record<string, MetaNodeGenericData>, output: MetaNodeGenericData }
 export type MetaNodeInputs<T = Record<string, MetaNodeGenericData>> = T extends { [K in keyof T]: MetaNodeDataType<T[K]> } ? T : never
 export type MetaNodeExtractInputs<T = MetaNodeGenericProcess> = T extends { inputs: MetaNodeInputs<infer Inputs> } ? Inputs : never
 export type MetaNodeOutput<T = MetaNodeGenericData> = T extends MetaNodeDataType<T> ? T : never
@@ -58,7 +67,7 @@ export class MetaNode<T = unknown> {
   /**
    * Meta descriptors associated with this node
    */
-  meta<M extends {}>(meta: M) {
+  meta<M extends MetaNodeMetadata>(meta: M & MetaNodeMetadata) {
     return new MetaNode({ ...this.t, meta })
   }
   /**

@@ -1,34 +1,31 @@
 import requests
 import pandas as pd
-import scipy.stats as st
-from functools import partial
 
-def combine_pvalues(pvalues, method='fisher', select='pvalue'):
-  ''' A helper for accessing this method via pd.agg which expects a scaler result
-  '''
-  statistic, pvalue = st.combine_pvalues(pvalues, method=method)
-  return dict(statistic=statistic, pvalue=pvalue)[select]
+def gtex_resolve_genecode_id(geneId):
+  req = requests.get(
+    'https://gtexportal.org/rest/v1/reference/gene',
+    params=dict(
+      geneId=geneId,
+      pageSize=1,
+      format='json',
+    )
+  )
+  res = req.json()
+  return res['gene'][0]['gencodeId']
 
-def gtex_singleTissueEqtl(geneSymbol: str, datasetId: str='gtex_v8'):
-  res = requests.get(
-    'https://gtexportal.org/rest/v1/association/singleTissueEqtl',
+def gtex_gene_expression(geneSymbol: str, datasetId: str='gtex_v8'):
+  gencodeId = gtex_resolve_genecode_id(geneSymbol)
+  req = requests.get(
+    'https://gtexportal.org/rest/v1/expression/medianGeneExpression',
     params=dict(
       format='json',
-      geneSymbol=geneSymbol,
+      gencodeId=gencodeId,
       datasetId=datasetId,
     )
   )
-  gtex_results = res.json()['singleTissueEqtl']
-  if len(gtex_results) == 0: raise Exception(f"No information for gene with identifier {geneSymbol} found in GTEx")
-  gtex_combined_stouffer_statistic = (
-    pd.DataFrame(gtex_results).groupby('tissueSiteDetailId')['pValue']
-      .agg(partial(combine_pvalues, method='stouffer', select='statistic'))
-      .to_frame('combined_stouffer_statistic')
-      .reset_index()
-      .sort_values('combined_stouffer_statistic', ascending=False)
-  )
-  gtex_combined_stouffer_statistic['group'] = gtex_combined_stouffer_statistic['tissueSiteDetailId'].apply(lambda name: name.split('_', maxsplit=1)[0])
-  return [
-    dict(tissue=row['tissueSiteDetailId'], zscore=row['combined_stouffer_statistic'])
-    for _, row in gtex_combined_stouffer_statistic.iterrows()
-  ]
+  res = req.json()['medianGeneExpression']
+  if len(res) == 0: raise Exception(f"No information for gene with identifier {geneSymbol} found in GTEx")
+  res = pd.DataFrame(res)
+  res['zscore'] = (res['median'] - res['median'].mean()) / res['median'].std()
+  res.rename({ 'tissueSiteDetailId': 'tissue' }, axis=1, inplace=True)
+  return res[['tissue', 'zscore']].sort_values('zscore', ascending=False).to_dict(orient='records')

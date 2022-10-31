@@ -30,6 +30,9 @@ export const MyGeneInfoC = t.intersection([
     entrezgene: t.string,
     name: t.string,
     taxid: t.number,
+    ensembl: t.type({
+      gene: t.string,
+    })
   })
 ])
 

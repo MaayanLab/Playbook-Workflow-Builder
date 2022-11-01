@@ -6,6 +6,7 @@ import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
+const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export default function App() {
   const [prev, setPrev] = React.useState([])
@@ -59,7 +60,7 @@ export default function App() {
                 <span> =&gt; </span>
               </>
             ) : null}
-            <button
+            <Button
               className={[
                 Object.values(proc.inputs)
                   .some((i) => i.spec === current.type) ? 'font-bold' : '',
@@ -86,7 +87,7 @@ export default function App() {
                   })
                 }
               }}
-            >{proc.meta.label}</button>
+            >{proc.meta.label}</Button>
             <span> =&gt; </span>
             <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
           </div>
@@ -110,7 +111,7 @@ export default function App() {
           />
         </div>
         <div className={styles.Examples}>
-          <button
+          <Button
             className="bg-primary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
@@ -122,8 +123,8 @@ export default function App() {
                 })
                 return _prev
             })
-            }}>Previous</button>
-          <button
+            }}>Previous</Button>
+          <Button
             className="bg-primary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
@@ -131,11 +132,11 @@ export default function App() {
                 type: '',
                 data: ''
               })
-            }}>Reset</button>
+            }}>Reset</Button>
           {krg.getDataNodes()
             .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta)
             .map(node => (
-              <button
+              <Button
                 key={node.spec}
                 className="bg-primary rounded-md p-2"
                 onClick={() => {
@@ -145,7 +146,7 @@ export default function App() {
                     data: node.codec.encode(node.meta.example),
                   })
                 }}
-              >{node.meta.label}</button>
+              >{node.meta.label}</Button>
             ))}
         </div>
       </div>

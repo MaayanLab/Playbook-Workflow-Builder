@@ -28,7 +28,7 @@ export default class KRG {
     return this.processNodes[spec]
   }
   getProcessNodes = () => {
-    return Object.values(this.processNodes)
+    return dict.values(this.processNodes)
   }
   getResolveNode = (spec: string) => {
     return this.resolveNodes[spec]

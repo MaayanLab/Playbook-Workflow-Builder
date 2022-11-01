@@ -55,7 +55,8 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
   .prompt(props => {
     const [item, setItem] = React.useState('')
     const [query, setQuery] = React.useState('')
-    const items: string[] = []
+    const { items, error } = 'autocomplete' in T && 'term' in T.autocomplete ? T.autocomplete.term(query) : { items: [], error: undefined }
+    if (error) console.warn(error)
     React.useEffect(() => { setItem(props.output || '') }, [props.output])
     return (
       <div>

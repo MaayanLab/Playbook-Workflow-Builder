@@ -1,9 +1,9 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug } from '@/components/core/input/primitives'
+import { Gene, Drug, Primative } from '@/components/core/input/primitives'
 
-const Set_T = (T: typeof Gene) => MetaNode.createData(`Set[${T.name}]`)
+const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,

@@ -5,8 +5,8 @@ import python from '@/utils/python'
 
 export const GTExTissueExpression = MetaNode.createProcess('GTExTissueExpression')
   .meta({
-    label: 'Query GTEx Tissue eQTLs',
-    description: 'Use GTEx API to identify tissue eQTLs associated with a given gene',
+    label: 'Query GTEx Median Tissue Expression',
+    description: 'Use GTEx API to obtain median tissue expression for the given gene',
   })
   .inputs({ gene_info: GeneInfo })
   .output(SignificantTissues)

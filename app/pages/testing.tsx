@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from '@/app/styles/index.module.css'
+import styles from '@/app/styles/testing.module.css'
 import dynamic from 'next/dynamic'
 import { MetaNodeDataType } from '@/spec/metanode'
 import krg from '@/app/krg'

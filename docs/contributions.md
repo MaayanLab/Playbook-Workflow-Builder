@@ -208,7 +208,7 @@ If you run into python import errors trying to run some of the components, all p
 
 ```bash
 # load all unique requirements.txt from all components
-pip install -r <(sort -u components/*/requirements.txt)
+sort -u components/*/requirements.txt | xargs pip install
 
 # Some systems which do not have python3 installed as a default may require the use of `python3 -m pip`
 ```

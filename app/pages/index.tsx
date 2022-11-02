@@ -3,8 +3,9 @@ import styles from '@/app/styles/index.module.css'
 import dynamic from 'next/dynamic'
 import { MetaNodeDataType } from '@/spec/metanode'
 import krg from '@/app/krg'
+import * as dict from '@/utils/dict'
 
-const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'))
+const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
   const [prev, setPrev] = React.useState({ type: '', data: '' })
@@ -54,7 +55,7 @@ export default function App() {
           <div key={proc.spec}>
             {Object.keys(proc.inputs).length > 0 ? (
               <>
-                <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => i.spec).join(', ')}</span>
+                <span className="bg-secondary rounded-full p-3">{dict.values(proc.inputs).map((i) => i.spec).join(', ')}</span>
                 <span> =&gt; </span>
               </>
             ) : null}

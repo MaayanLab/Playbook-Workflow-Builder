@@ -9,15 +9,20 @@ Anyone who wants to! Please create a pull request to add new content.
 ### Contribution Guide
 Below is a guide to add a component to the playbook. You can additionally reuse the existing content in the registry and augment it for your own purposes.
 
+0. Follow the [Installation Guide](./installation.md) to Install the system dependencies required if they are not already installed -- these are:
+  - [Visual Studio Code](https://code.visualstudio.com/)
+  - [NodeJS](https://nodejs.org/)
+  - [Git](https://git-scm.com/)
+  - [Python 3](https://www.python.org/) (optional)
 1. Clone this repository and checkout a branch for your work.
     ```bash
     git clone https://github.com/nih-cfde/playbook-partnership/
     cd playbook-partnership
     git checkout -b my-new-component
     ```
-2. For optimal coding experience, use an editor like [Visual Studio Code](https://code.visualstudio.com/) with rich typescript support. Open up the repository directory with it.
+2. Open up the repository directory with your editor.
     ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
-3. With [NodeJS](https://nodejs.org/) installed, install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
+3. Install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
     ```bash
     npm i
     npm run dev

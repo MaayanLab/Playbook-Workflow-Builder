@@ -1,0 +1,6 @@
+MulticoreTSNE
+scanpy
+numpy
+pandas
+multiprocessing
+bokeh

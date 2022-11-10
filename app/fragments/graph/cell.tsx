@@ -39,7 +39,7 @@ export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Me
         : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>
         : null}
       </div>
-      <div className="flex-grow">
+      <div className="flex-grow py-4">
         {outputNode ? (
           <>
             <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>

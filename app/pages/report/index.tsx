@@ -9,7 +9,7 @@ const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Bu
 export default function App() {
   const router = useRouter()
   return (
-    <div>
+    <div className="container mx-auto">
       {krg.getNextProcess('').map(proc =>
         <div key={proc.spec}>
           {Object.keys(proc.inputs).length > 0 ?

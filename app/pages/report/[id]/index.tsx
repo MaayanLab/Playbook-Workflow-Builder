@@ -62,7 +62,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
   const head = metapath[metapath.length - 1]
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (
-    <div>
+    <div className="container mx-auto py-4">
       {error ? <div>{error}</div> : null}
       {metapath ? metapath.map((head, index) =>
         <Cell key={index} id={id} head={head} />

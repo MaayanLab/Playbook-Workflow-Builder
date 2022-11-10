@@ -118,7 +118,7 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
       <Header />
 
       <SWRConfig value={{ fallback, fetcher }}>
-        <main className="flex-grow m-4 flex flex-col">
+        <main className="flex-grow container mx-auto py-4 flex flex-col">
           <Graph
             graph_id={graph_id}
             node_id={node_id}

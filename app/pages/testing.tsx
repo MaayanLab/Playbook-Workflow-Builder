@@ -49,7 +49,7 @@ export default function App() {
     }
   }
   return (
-    <div className={styles.App}>
+    <div className={`${styles.App} container mx-auto py-4`}>
       <div className={styles.Process}>
         <h2>Apply Process</h2>
         {krg.getNextProcess(current.type).map(proc =>

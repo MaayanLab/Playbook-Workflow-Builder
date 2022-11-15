@@ -46,7 +46,7 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
     proc.stderr.on('data', (chunk: string) => { stderr += chunk })
     proc.on('close', (code) => {
       if (code !== 0) {
-        reject(new ProcessError(stderr || `Process exited with unexpected code ${code}`, code))
+        reject(new ProcessError(`[${pathspec}]: ${stderr || `Process exited with unexpected code ${code}`}`, code))
       } else {
         if (stderr) {
           console.warn(`[${pathspec}]: ${stderr}`)
@@ -54,7 +54,7 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
         try {
           resolve(JSON.parse(stdout))
         } catch (e) {
-          reject(new ProcessError(`Process output could not be parsed as json`, code))
+          reject(new ProcessError(`[${pathspec}]: Process output could not be parsed as json`, code))
         }
       }
     })

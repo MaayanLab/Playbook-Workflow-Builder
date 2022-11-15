@@ -13,16 +13,12 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   .codec(codecFrom(t.type({
     url: t.string,
     shape: t.tuple([t.number, t.number]),
-    head_columns: t.array(t.string),
-    tail_columns: t.array(t.string),
-    head_index: t.array(t.string),
-    tail_index: t.array(t.string),
-    head_values: t.array(t.array(t.union([t.number, t.literal('nan'), t.literal('inf'), t.literal('-inf')]))),
-    tail_values: t.array(t.array(t.union([t.number, t.literal('nan'), t.literal('inf'), t.literal('-inf')]))),
+    columns: t.array(t.string),
+    index: t.array(t.string),
+    values: t.array(t.array(t.union([t.number, t.literal('nan'), t.literal('inf'), t.literal('-inf')]))),
+    ellipses: t.tuple([t.union([t.number, t.null]), t.union([t.number, t.null])]),
   })))
   .view(props => {
-    const column_elipse = props.shape[1] > props.head_columns.length + props.tail_columns.length ? '...' : ''
-    const index_elipse = props.shape[0] > props.head_index.length + props.tail_index.length ? '...' : ''
     return (
       <div>
         <h2>Gene Count Matrix: {props.url}</h2>
@@ -31,36 +27,29 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
           <thead>
             <tr>
               <th>&nbsp;</th>
-              {props.head_columns.map((col, j) => <th key={j}>{col}</th>)}
-              <th>{column_elipse}</th>
-              {props.tail_columns.map((col, j) => <th key={j}>{col}</th>)}
+              {props.columns.flatMap((col, j) => [
+                ...(j === props.ellipses[1] ?
+                  [<th key={`${j}-ellipse`}>...</th>]
+                  : []),
+                <th key={j}>{col}</th>,
+              ])}
             </tr>
           </thead>
           <tbody>
-            {props.head_index.map((index, i) =>
+            {props.index.flatMap((index, i) => [
+              ...(i === props.ellipses[0] ?
+                [<th key={`${i}-ellipse`}>...</th>]
+                : []),
               <tr key={index}>
                 <th>{index}</th>
-                {props.head_columns.map((col, j) => <td key={j}>{props.head_values[i][j]}</td>)}
-                <th>{column_elipse}</th>
-                {props.tail_columns.map((col, j) => <td key={j}>{props.head_values[i][j]}</td>)}
-              </tr>
-            )}
-            {index_elipse ? (
-              <tr>
-                <th>...</th>
-                {props.head_columns.map((col, j) => <td key={j}>...</td>)}
-                <th>{column_elipse}</th>
-                {props.tail_columns.map((col, j) => <td key={j}>...</td>)}
-              </tr>
-            ) : null}
-            {props.tail_index.map((index, i) =>
-              <tr key={index}>
-                <th>{index}</th>
-                {props.head_columns.map((col, j) => <td key={j}>{props.tail_values[i][j]}</td>)}
-                <th>{column_elipse}</th>
-                {props.tail_columns.map((col, j) => <td key={j}>{props.tail_values[i][j]}</td>)}
-              </tr>
-            )}
+                {props.columns.flatMap((col, j) => [
+                  ...(j === props.ellipses[1] ?
+                    [<td key={`${j}-ellipse`}>...</td>]
+                    : []),
+                  <td key={j}>{props.values[i][j]}</td>,
+                ])}
+              </tr>,
+            ])}
           </tbody>
         </table>
       </div>

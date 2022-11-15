@@ -75,12 +75,24 @@ def gene_count_matrix(url):
   else:
     left = d.shape[1] - 1
     right = 1
+
+  index = np.concatenate([d.obs_names[:top], d.obs_names[-bottom:]]).tolist()
+  columns = np.concatenate([d.var_names[:left], d.var_names[-right:]]).tolist()
+  values = np_jsonifyable(np.concatenate([
+    np.concatenate([d.X[:top, :left], d.X[:top, -right:]], axis=1),
+    np.concatenate([d.X[-bottom:, :left], d.X[-bottom:, -right:]], axis=1),
+  ]))
+  ellipses = [
+    top if len(index) != d.shape[0] else None,
+    left if len(columns) != d.shape[1] else None,
+  ]
   return dict(
     url=url,
     shape=d.shape,
-    head_index=d.obs_names[:top].tolist(), head_columns=d.var_names[:left].tolist(),
-    tail_index=d.obs_names[-bottom:].tolist(), tail_columns=d.var_names[-right:].tolist(),
-    head_values=np_jsonifyable(d.X[:top, :left]).tolist() + np_jsonifyable(d.X[:top, -right:]).tolist(), tail_values=np_jsonifyable(d.X[-bottom:, :left]).tolist() + np_jsonifyable(d.X[-bottom:, -right:]).tolist(),
+    index=index,
+    columns=columns,
+    values=values,
+    ellipses=ellipses,
   )
 
 def transpose(m):

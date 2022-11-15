@@ -17,8 +17,8 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
     tail_columns: t.array(t.string),
     head_index: t.array(t.string),
     tail_index: t.array(t.string),
-    head_values: t.array(t.array(t.number)),
-    tail_values: t.array(t.array(t.number)),
+    head_values: t.array(t.array(t.union([t.number, t.literal('nan'), t.literal('inf'), t.literal('-inf')]))),
+    tail_values: t.array(t.array(t.union([t.number, t.literal('nan'), t.literal('inf'), t.literal('-inf')]))),
   })))
   .view(props => {
     const column_elipse = props.shape[1] > props.head_columns.length + props.tail_columns.length ? '...' : ''

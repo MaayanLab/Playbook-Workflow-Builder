@@ -4,7 +4,7 @@ import { z } from 'zod'
 import dynamic from 'next/dynamic'
 import { file_icon, input_icon } from '@/icons'
 
-const BpFileInput = dynamic(() => import('@blueprintjs/core').then(({ FileInput }) => FileInput))
+const BpFileInput = dynamic(() => import('@/app/components/FileInput'))
 const BpButton = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const FileURL = MetaNode.createData('FileURL')

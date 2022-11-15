@@ -25,6 +25,7 @@ interface MatrixProps {
 export default function Matrix(props: MatrixProps) {
   return (
     <Table
+      cellRendererDependencies={[props]}
       numRows={props.values.length + (props.ellipses && props.ellipses[0] ? 1 : 0)}
       enableRowResizing
       enableColumnResizing

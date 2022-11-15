@@ -8,3 +8,11 @@ export function ensureArray<T extends {}>(A?: T | T[]): T[] {
     return [A]
   }
 }
+
+export function arange(n: number) {
+  let R = []
+  for (let i = 0; i < n; i++) {
+    R.push(i)
+  }
+  return R
+}

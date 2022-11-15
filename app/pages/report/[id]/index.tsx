@@ -54,6 +54,17 @@ async function fetcher(path: string): Promise<Array<Metapath>> {
   return await req.json()
 }
 
+function useSticky(value: any) {
+  const ref = React.useRef()
+  if (ref !== undefined && value !== undefined) ref.current = value
+  return ref.current
+}
+
+function useSWRImmutableSticky<T = any>(key?: string) {
+  const swr = useSWRImmutable<T>(key)
+  const stickyData = useSticky(swr.data)
+  return { ...swr, data: swr.data === undefined ? stickyData : swr.data }
+}
 
 export default function App({ fallback }: { fallback: any }) {
   const router = useRouter()
@@ -68,9 +79,7 @@ export default function App({ fallback }: { fallback: any }) {
 
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
-          {!params.id ?
-            <Start />
-            : <Cells krg={krg} id={params.id} />}
+          <Cells krg={krg} id={params.id} />
         </main>
       </SWRConfig>
 
@@ -79,55 +88,18 @@ export default function App({ fallback }: { fallback: any }) {
   )
 }
 
-function Start() {
-  const router = useRouter()
-  return (
-    <div className="container mx-auto py-4">
-      <div className="flex-grow flex-shrink bp4-card my-2">
-        <h2 className="bp4-heading">Actions</h2>
-        {krg.getNextProcess('').map(proc =>
-          <div key={proc.spec}>
-            {Object.keys(proc.inputs).length > 0 ?
-              <span>{Object.values(proc.inputs).map((i) => i.spec).join(', ')} =&gt;&nbsp;</span>
-              : null}
-            <Button
-              onClick={async () => {
-                const req = await fetch(`/api/db/fpl`, {
-                  method: 'POST',
-                  body: JSON.stringify([{
-                    type: proc.spec,
-                    inputs: {},
-                    data: {
-                      type: proc.output.spec,
-                      value: proc.output.codec.encode((proc.meta as any).default)
-                    },
-                  }])
-                })
-                const res = z.string().parse(await req.json())
-                router.push(`/report/${res}`)
-              }}
-            >{proc.spec}</Button>
-            <span>&nbsp; =&gt; {proc.output.spec}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 function Cells({ krg, id }: { krg: KRG, id?: string }) {
   const router = useRouter()
-  const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
-  const metapath = metapath_ || []
-  const head = metapath[metapath.length - 1]
+  const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const head = metapath ? metapath[metapath.length - 1] : undefined
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  const actions = processNode ? krg.getNextProcess(processNode.output.spec) : []
+  const actions = processNode ? krg.getNextProcess(processNode.output.spec) : krg.getNextProcess('')
   return (
     <div className="container mx-auto py-4">
       {error ? <div>{error}</div> : null}
-      {metapath ? metapath.map((head, index) =>
+      {(metapath||[]).map((head, index) =>
         <Cell key={index} krg={krg} id={id} head={head} />
-      ) : null}
+      )}
       {actions.length > 0 ? (
         <div className="flex-grow flex-shrink bp4-card my-2">
           <h2 className="bp4-heading">Actions</h2>
@@ -142,11 +114,13 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
               <Button
                 large
                 onClick={async () => {
-                  const inputs: Record<string, unknown> = {}
-                  for (const i in proc.inputs) {
-                    inputs[i] = { id: head.process.id }
+                  const inputs: Record<string, { id: string }> = {}
+                  if (head) {
+                    for (const i in proc.inputs) {
+                      inputs[i] = { id: head.process.id }
+                    }
                   }
-                  const req = await fetch(`/api/db/fpl/${id}/extend`, {
+                  const req = await fetch(`/api/db/fpl/${id || 'start'}/extend`, {
                     method: 'POST',
                     body: JSON.stringify({
                       type: proc.spec,
@@ -154,7 +128,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
                     })
                   })
                   const res = z.string().parse(await req.json())
-                  router.push(`/report/${res}`, undefined, { shallow: true })
+                  router.push(`/report/${res}`, undefined, { shallow: true, scroll: false })
                 }}
               >{proc.spec}</Button>
               <span> =&gt; </span>
@@ -170,7 +144,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
 
 function Cell({ krg, id, head }: { krg: KRG, id?: string, head: Metapath }) {
   const router = useRouter()
-  const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
+  const { data: rawOutput, error: outputError } = useSWRImmutableSticky<any>(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
   const inputs: any = head.process.inputs
   const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
@@ -197,7 +171,7 @@ function Cell({ krg, id, head }: { krg: KRG, id?: string, head: Metapath }) {
               })
             })
             const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-            router.push(`/report/${res.head}`, undefined, { shallow: true })
+            router.push(`/report/${res.head}`, undefined, { shallow: true, scroll: false })
           }}
         />
         : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>

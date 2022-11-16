@@ -1,6 +1,4 @@
-MulticoreTSNE
-scanpy
+bokeh<3
 numpy
 pandas
-multiprocessing
-bokeh
+scanpy

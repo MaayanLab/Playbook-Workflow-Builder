@@ -1,3 +1,1 @@
-scanpy
-pandas
-maayanlab-bioinformatics @ git+https://github.com/Maayanlab/maayanlab-bioinformatics@v0.4.3
+numpy

@@ -8,24 +8,18 @@ from components.gene_count_matrix import anndata_from_path
 from components.bokeh import interactive_circle_plot
 
 def umap_transformation(gene_count_matrix):
-  anndata_input = anndata_from_path(gene_count_matrix['url'])
-  df = anndata_input.to_df()
+  df = anndata_from_path(gene_count_matrix['url'])
   df = df.transpose()
 
-  # UMAP
-  umap_model = umap.UMAP(n_components=3)
-  transformed_umap = umap_model.fit_transform(df)
-
   # leiden coloring
-  leiden_df = sc.AnnData(df,dtype=np.float32)
-  sc.pp.pca(leiden_df)
-  sc.pp.neighbors(leiden_df)
-  sc.tl.leiden(leiden_df, key_added="leiden")
+  sc.pp.neighbors(df)
+  sc.tl.umap(df, n_components=3)
+  sc.tl.leiden(df, key_added="leiden")
 
-  df_for_visualization = pd.DataFrame({'leiden':leiden_df.obs['leiden'].values,
-                                       'x':transformed_umap[:,0],
-                                       'y':transformed_umap[:,1],
-                                       'z':transformed_umap[:,2]})
+  df_for_visualization = pd.DataFrame({'leiden':df.obs['leiden'].values,
+                                       'x':df.obsm['X_umap'][:,0],
+                                       'y':df.obsm['X_umap'][:,1],
+                                       'z':df.obsm['X_umap'][:,2]})
 
   plot = interactive_circle_plot(df_for_visualization, "UMAP-1", "UMAP-2", df_for_visualization.columns[0])
 

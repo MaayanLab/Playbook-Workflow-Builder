@@ -1,7 +1,8 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import dynamic from 'next/dynamic'
 
-const Plot = React.lazy(() => import('./bokeh'))
+const Plot = dynamic(() => import('./bokeh'), { ssr: false })
 
 export type BokehJson = any
 

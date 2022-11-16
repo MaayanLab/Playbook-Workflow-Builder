@@ -8,11 +8,11 @@ import * as dict from '@/utils/dict'
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
-  const [prev, setPrev] = React.useState({ type: '', data: '' })
+  const [prev, setPrev] = React.useState([])
   const [current, setCurrent_] = React.useState({ type: '', data: '' })
   const setCurrent = React.useCallback((current: { type?: string, data?: string }) => {
     setCurrent_(current_ => {
-      setPrev(current_)
+      setPrev(prev => [...prev, current_])
       return {
         type: current.type === undefined ? current_.type : current.type,
         data: current.data === undefined? current_.data : current.data,
@@ -114,8 +114,15 @@ export default function App() {
             className="bg-primary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
-              setCurrent(prev)
-            }}>Prev</button>
+              setPrev(prev => {
+                const _prev = [...prev]
+                setCurrent_(_prev.pop() || {
+                  type: '',
+                  data: ''
+                })
+                return _prev
+            })
+            }}>Previous</button>
           <button
             className="bg-primary rounded-md p-2"
             onClick={() => {

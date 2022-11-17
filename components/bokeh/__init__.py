@@ -1,10 +1,8 @@
-from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure, show
 from bokeh.transform import factor_cmap
-from bokeh.models import Select
+from bokeh.models import ColumnDataSource, Select, NumeralTickFormatter
 from bokeh.models.callbacks import CustomJS
-from bokeh.layouts import column
+from bokeh.layouts import column, row
 import numpy as np
 import seaborn as sns
 
@@ -25,8 +23,7 @@ def interactive_circle_plot(input_df, x_lab, y_lab, feature):
     ]
 
     n = len(input_df[feature].unique())
-    p = figure(width=800, height=400, tooltips=TOOLTIPS,x_axis_label=x_lab, y_axis_label=y_lab)
-
+    p = figure(height=400,tooltips=TOOLTIPS,x_axis_label=x_lab, y_axis_label=y_lab,sizing_mode="scale_width")
     point_size = 10 if input_df.shape[0] < 100 else 5
     color = generate_colors(input_df, feature)
     p1 = p.circle('x', 'y', size=point_size, source=source, legend_field='legend',fill_color= color, line_color=color)
@@ -39,6 +36,8 @@ def interactive_circle_plot(input_df, x_lab, y_lab, feature):
     p.yaxis.minor_tick_line_color = None
     p.xaxis.axis_label_text_font_size = '12pt'
     p.yaxis.axis_label_text_font_size = '12pt'
+    p.xaxis[0].formatter = NumeralTickFormatter(format="0.000")
+    p.yaxis[0].formatter = NumeralTickFormatter(format="0.000")
 
     return generate_plot(p, p1, source, input_df)
 
@@ -52,7 +51,7 @@ def generate_plot(p, p_circle, source_data, input_df):
     arg = dict(colors=my_colors, plot=p_circle, source = source_data,
            data_category = input_df.reset_index().to_dict(orient='list'), feature = input_df.columns[-2])
 
-    select = Select(title="Plot to show:", options=column_options)
+    select = Select(title="Plot to show:", options=column_options, width=800)
     select.js_on_change("value", CustomJS(args=arg, code="""
 
     plot.glyph.line_color = colors[this.value]
@@ -63,5 +62,6 @@ def generate_plot(p, p_circle, source_data, input_df):
     """))
 
     layout = column(select, p)
+    layout.sizing_mode = "stretch_both"
     return layout
 

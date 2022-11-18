@@ -1,0 +1,4 @@
+bokeh<3
+numpy
+pandas
+scanpy

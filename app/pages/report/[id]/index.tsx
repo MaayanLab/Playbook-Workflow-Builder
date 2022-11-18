@@ -10,6 +10,9 @@ import { SWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
 import Head from 'next/head'
+import Link from 'next/link'
+import Icon from '@/app/components/icon'
+import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon } from '@/icons'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -63,7 +66,7 @@ function useSticky(value: any) {
 function useSWRImmutableSticky<T = any>(key?: string) {
   const swr = useSWRImmutable<T>(key)
   const stickyData = useSticky(swr.data)
-  return { ...swr, data: swr.data === undefined ? stickyData : swr.data }
+  return { ...swr, data: swr.data === undefined ? stickyData : swr.data, isLoading: swr.data === undefined }
 }
 
 export default function App({ fallback }: { fallback: any }) {
@@ -98,10 +101,10 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
     <div className="container mx-auto py-4">
       {error ? <div>{error}</div> : null}
       {(metapath||[]).map((head, index) =>
-        <Cell key={index} krg={krg} id={id} head={head} />
+        <Cell key={index} krg={krg} index={index} id={id} head={head} />
       )}
       {actions.length > 0 ? (
-        <div className="flex-grow flex-shrink bp4-card my-2">
+        <div className="flex-grow flex-shrink bp4-card">
           <h2 className="bp4-heading">Actions</h2>
           {actions.map(proc =>
             <div key={proc.spec}>
@@ -141,10 +144,9 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
   )
 }
 
-
-function Cell({ krg, id, head }: { krg: KRG, id?: string, head: Metapath }) {
+function Cell({ krg, index, id, head }: { krg: KRG, index: number, id?: string, head: Metapath }) {
   const router = useRouter()
-  const { data: rawOutput, error: outputError } = useSWRImmutableSticky<any>(`/api/db/process/${head.process.id}/output`)
+  const { data: rawOutput, error: outputError, isLoading } = useSWRImmutableSticky<any>(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
   const inputs: any = head.process.inputs
   const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
@@ -153,7 +155,7 @@ function Cell({ krg, id, head }: { krg: KRG, id?: string, head: Metapath }) {
   const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
   return (
     <div className="flex-grow flex flex-col">
-      <div className="flex-grow flex-shrink bp4-card my-2">
+      <div className="flex-grow flex-shrink items-center overflow-auto bp4-card">
         <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
         {Prompt ? <Prompt
           inputs={inputs}
@@ -177,15 +179,34 @@ function Cell({ krg, id, head }: { krg: KRG, id?: string, head: Metapath }) {
         : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>
         : null}
       </div>
-      <div className="flex-grow py-4 bp4-card">
-        {outputNode ? (
-          <>
-            <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
-            {View && output ? View(output) : 'Waiting for input'}
-          </>
-        ) : (
-          <div>Loading...</div>
-        )}
+      <div className="flex-grow flex-shrink items-center my-2 overflow-auto bp4-card p-0">
+        <div className="p-4">
+          {outputNode ? <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2> : <div>Loading...</div>}
+          {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
+        </div>
+        <div className="border-t-secondary border-t-2 mt-2">
+          <button className="bp4-button bp4-minimal">
+            {isLoading ?
+              <Icon icon={status_waiting_icon} color="#DAA520" />
+              : (outputNode ?
+                  (output ?
+                    (outputNode.spec === 'Error' ?
+                      <Icon icon={status_alert_icon} color="#DC143C" />
+                      : <Icon icon={status_complete_icon} color="#008000" />)
+                    : <Icon icon={status_awaiting_input_icon} color="#B8860B" />)
+                  : <Icon icon={status_waiting_icon} color="#DAA520" />)}
+          </button>
+          <Link href={`/graph/${id}/node/${head.id}`}>
+            <button className="bp4-button bp4-minimal">
+              <Icon icon={view_in_graph_icon} />
+            </button>
+          </Link>
+          <Link href={`/graph/${id}/node/${head.id}/extend`}>
+            <button className="bp4-button bp4-minimal">
+              <Icon icon={fork_icon} color="black" />
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   )

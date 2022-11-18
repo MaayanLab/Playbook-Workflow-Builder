@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
 import { ensureArray, MaybeArray } from '@/utils/array'
 
-export default function Icon({ icon, size: size_, title, without_svg }: { icon?: MaybeArray<{ path: string, transform?: string, title?: string }>, size?: number, title?: string, without_svg?: boolean }) {
+export default function Icon({ icon, color: color_, size: size_, title, without_svg }: { icon?: MaybeArray<{ path: string, transform?: string, title?: string }>, color?: string, size?: number, title?: string, without_svg?: boolean }) {
+  const color = color_ !== undefined ? color_ : 'auto'
   const size = size_ !== undefined ? size_ : 1
   const icons = ensureArray(icon)
   const transformer = (ind: number) => {
@@ -46,7 +47,7 @@ export default function Icon({ icon, size: size_, title, without_svg }: { icon?:
         return (
           <g key={ind} transform={transformer(ind)}>
             <g transform={transform}>
-              <path d={path} style={{ fill: 'currentcolor' }} />
+              <path d={path} style={{ fill: color || 'currentcolor' }} />
             </g>
           </g>
         )

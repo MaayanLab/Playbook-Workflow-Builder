@@ -8,7 +8,7 @@ import seaborn as sns
 
 def generate_colors(input_df, feature):
     pal = sns.color_palette()
-    color = factor_cmap(feature, palette=pal.as_hex(), factors=np.array(input_df[feature].unique()))
+    color = factor_cmap(feature, palette=pal.as_hex(), factors=input_df[feature].unique().tolist())
 
     return color
 
@@ -22,7 +22,7 @@ def interactive_circle_plot(input_df, x_lab, y_lab, feature):
         ("feature", '@'+feature),
     ]
 
-    n = len(input_df[feature].unique())
+    n = input_df[feature].nunique()
     p = figure(height=400,tooltips=TOOLTIPS,x_axis_label=x_lab, y_axis_label=y_lab,sizing_mode="scale_width")
     point_size = 10 if input_df.shape[0] < 100 else 5
     color = generate_colors(input_df, feature)
@@ -36,8 +36,8 @@ def interactive_circle_plot(input_df, x_lab, y_lab, feature):
     p.yaxis.minor_tick_line_color = None
     p.xaxis.axis_label_text_font_size = '12pt'
     p.yaxis.axis_label_text_font_size = '12pt'
-    p.xaxis[0].formatter = NumeralTickFormatter(format="0.000")
-    p.yaxis[0].formatter = NumeralTickFormatter(format="0.000")
+    p.xaxis[0].formatter = NumeralTickFormatter(format="0.0")
+    p.yaxis[0].formatter = NumeralTickFormatter(format="0.0")
 
     return generate_plot(p, p1, source, input_df)
 

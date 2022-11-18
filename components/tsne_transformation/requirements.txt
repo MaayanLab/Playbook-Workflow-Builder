@@ -1,5 +1,4 @@
 bokeh<3
-numpy
 pandas
 scanpy
-sklearn
+scikit-learn

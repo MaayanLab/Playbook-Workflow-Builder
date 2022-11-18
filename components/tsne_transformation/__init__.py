@@ -1,5 +1,4 @@
 import scanpy as sc
-import numpy as np
 import pandas as pd
 import multiprocessing as mp
 from bokeh.embed import json_item

@@ -20,7 +20,7 @@ export default function BokehPlot({plot}) {
         ref.current.appendChild(div)
         Bokeh.embed.embed_item(plot, id)
         return () => {
-            ref.current
+            if (ref.current) ref.current.removeChild(div)
         }
     }, [ref.current, plot])
     return <div ref={ref} />

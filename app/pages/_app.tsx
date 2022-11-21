@@ -5,7 +5,8 @@ import '@blueprintjs/popover2/lib/css/blueprint-popover2.css'
 import '@/app/styles/styles.css'
 import type { AppProps } from 'next/app'
 import { HotkeysProvider } from '@blueprintjs/core'
+import { SessionProvider } from 'next-auth/react'
 
-export default function App({ Component, pageProps }: AppProps) {
-  return <HotkeysProvider><Component {...pageProps} /></HotkeysProvider>
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps & { pageProps: { session: any } }) {
+  return <SessionProvider session={session}><HotkeysProvider><Component {...pageProps} /></HotkeysProvider></SessionProvider>
 }

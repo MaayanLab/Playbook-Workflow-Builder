@@ -1,7 +1,5 @@
 import scanpy as sc
-import numpy as np
 import pandas as pd
-import umap
 from bokeh.embed import json_item
 
 from components.gene_count_matrix import anndata_from_path

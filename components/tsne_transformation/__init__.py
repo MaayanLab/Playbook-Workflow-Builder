@@ -1,6 +1,5 @@
 import scanpy as sc
 import pandas as pd
-import multiprocessing as mp
 from bokeh.embed import json_item
 from sklearn.manifold import TSNE
 

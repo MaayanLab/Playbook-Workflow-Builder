@@ -1,27 +1,39 @@
 import React from 'react'
 import * as Bokeh from '@bokeh/bokehjs'
+import useAsyncEffect from 'use-async-effect'
 
-
-function randid() {
-    const S4 = function () {
-        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-    };
-    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+/**
+ * Use bokeh embed_item on a div with a unique id.
+ * Note that embed_item appends the plot to the div, BokehPlot (below)
+ *  thus replaces the component entirely when the plot prop changes.
+ */
+function BokehEmbeddedItem({ plot }) {
+    const id = React.useId()
+    useAsyncEffect(async () => {
+        if (!plot) return
+        try {
+            // Give the element to bokeh to manage
+            const views = await Bokeh.embed.embed_item(plot, id)
+            return () => {
+                // on unmount, we tell bokeh to stop managing this element
+                if (views) views.forEach(item => item.remove())
+            }
+        } catch (e) {
+            console.warn(e)
+        }
+    }, [plot])
+    return <div id={id} />
 }
 
-export default function BokehPlot({plot}) {
-    const ref = React.useRef(null)
-
-    React.useEffect(() => {
-        if (!ref.current || !plot) return
-        const id = randid()
-        const div = document.createElement('div')
-        div.id = id
-        ref.current.appendChild(div)
-        Bokeh.embed.embed_item(plot, id)
-        return () => {
-            if (ref.current) ref.current.removeChild(div)
-        }
-    }, [ref.current, plot])
-    return <div ref={ref} />
+/**
+ * Render a BokehPlot json item
+ */
+export default function BokehPlot({ plot }) {
+    // store the currently rendered plot in state
+    const [visablePlot, setVisablePlot] = React.useState({ key: 0, plot })
+    // if plot is updated, we'll update the key as well
+    React.useEffect(() => setVisablePlot(({ key }) => ({ key: key + 1, plot })), [plot])
+    // the updated key invalidates BokehEmbeddedItem forcing a remount, this avoids
+    //  the problem caused by the fact that Bokeh's embed_item appends
+    return visablePlot.plot ? <BokehEmbeddedItem key={visablePlot.key} plot={visablePlot.plot} /> : null
 }

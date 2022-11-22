@@ -1,3 +1,4 @@
+import numpy as np
 import anndata as ad
 
 def anndata_from_gctx(path):
@@ -44,6 +45,13 @@ def anndata_from_path(path):
   else:
     raise NotImplementedError
 
+def np_jsonifyable(x):
+  x_ = x.astype('object')
+  x_[np.isnan(x)] = 'nan'
+  x_[np.isposinf(x)] = 'inf'
+  x_[np.isneginf(x)] = '-inf'
+  return x_.tolist()
+
 def gene_count_matrix(url):
   ''' We'll preserve the file url but include various properties useful
   for visualization. If the file is invalid, reading it will fail.
@@ -67,12 +75,24 @@ def gene_count_matrix(url):
   else:
     left = d.shape[1] - 1
     right = 1
+
+  index = np.concatenate([d.obs_names[:top], d.obs_names[-bottom:]]).tolist()
+  columns = np.concatenate([d.var_names[:left], d.var_names[-right:]]).tolist()
+  values = np_jsonifyable(np.concatenate([
+    np.concatenate([d.X[:top, :left], d.X[:top, -right:]], axis=1),
+    np.concatenate([d.X[-bottom:, :left], d.X[-bottom:, -right:]], axis=1),
+  ]))
+  ellipses = [
+    top if len(index) != d.shape[0] else None,
+    left if len(columns) != d.shape[1] else None,
+  ]
   return dict(
     url=url,
     shape=d.shape,
-    head_index=d.obs_names[:top].tolist(), head_columns=d.var_names[:left].tolist(),
-    tail_index=d.obs_names[-bottom:].tolist(), tail_columns=d.var_names[-right:].tolist(),
-    head_values=d.X[:top, :left].tolist() + d.X[:top, -right:].tolist(), tail_values=d.X[-bottom:, :left].tolist() + d.X[-bottom:, -right:].tolist(),
+    index=index,
+    columns=columns,
+    values=values,
+    ellipses=ellipses,
   )
 
 def transpose(m):

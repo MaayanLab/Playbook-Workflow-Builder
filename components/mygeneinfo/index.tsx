@@ -2,7 +2,6 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneSymbol } from '@/components/gene'
 import { z } from 'zod'
-import codecFrom from '@/utils/zod-codec'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -46,7 +45,7 @@ export const GeneInfo = MetaNode.createData('GeneInfo')
     label: 'Gene Information',
     description: 'A Gene resolved with MyGeneInfo',
   })
-  .codec(codecFrom(MyGeneInfoC))
+  .codec(MyGeneInfoC)
   .view(geneinfo => (
     <div>
       <a href={`https://www.ncbi.nlm.nih.gov/gene/${geneinfo.entrezgene}`}>{geneinfo.symbol}</a> {geneinfo.name}

@@ -3,21 +3,20 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import codecFrom from '@/utils/zod-codec'
 
 export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   .meta({
     label: 'Gene Count Matrix',
     description: 'A gene count matrix file',
   })
-  .codec(codecFrom(z.object({
+  .codec(z.object({
     url: z.string(),
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()),
     index: z.array(z.string()),
     values: z.array(z.array(z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]))),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
-  })))
+  }))
   .view(props => {
     return (
       <div>

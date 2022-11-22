@@ -4,6 +4,8 @@
 
 import { Codec } from '@/spec/codec'
 import React from 'react'
+import { z } from 'zod'
+import codecFrom from '@/utils/zod-codec'
 
 /**
  * These type helpers beak up the meta node definitions in such a way that they can be
@@ -76,8 +78,9 @@ export class MetaNode<T = unknown> {
   /**
    * A codec for the node's underlying data
    */
-  codec<C = undefined>(codec: Codec<C> = { encode: JSON.stringify, decode: JSON.parse }) {
-    return new MetaNode({ ...this.t, codec })
+  codec<C = undefined>(codec: z.ZodType<C> | Codec<C> = { encode: JSON.stringify, decode: JSON.parse }) {
+    const codec_: Codec<C> = ('parse' in codec) ? codecFrom(codec) : codec
+    return new MetaNode({ ...this.t, codec: codec_ })
   }
 
   /* Data */

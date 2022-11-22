@@ -1,7 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import codecFrom from '@/utils/zod-codec'
 
 export const SignificantTissueC = z.array(z.object({
   tissue: z.string().describe('The tissue term'),
@@ -13,7 +12,7 @@ export const SignificantTissues = MetaNode.createData('SignificantTissues')
     label: 'SignificantTissues',
     description: 'Tissues scored using a combined stouffer statistic',
   })
-  .codec(codecFrom(SignificantTissueC))
+  .codec(SignificantTissueC)
   .view(tissues => (
     <table>
       <thead>

@@ -1,7 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import codecFrom from '@/utils/zod-codec'
 
 const example = 'ACE2'
 
@@ -11,7 +10,7 @@ export const GeneSymbol = MetaNode.createData('GeneSymbol')
     description: 'An unresolved Gene Symbol',
     example,
   })
-  .codec(codecFrom(z.string()))
+  .codec(z.string())
   .view(gene => (
     <div>{gene} (gene)</div>
   ))

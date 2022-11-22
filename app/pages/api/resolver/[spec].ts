@@ -2,11 +2,10 @@ import fs from 'fs'
 import multiparty from "multiparty"
 import type { NextApiRequest, NextApiResponse } from 'next'
 import krg from '@/app/krg'
-import * as t from 'io-ts'
-import decodeOrThrow from '@/utils/decodeOrThrow'
+import { z } from 'zod'
 
-const QueryType = t.type({
-  spec: t.string,
+const QueryType = z.object({
+  spec: z.string(),
 })
 
 export const config = {
@@ -26,7 +25,7 @@ function one<T>(L: T[]): T {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { spec } = decodeOrThrow(QueryType, req.query)
+    const { spec } = QueryType.parse(req.query)
     const processNode = krg.getResolveNode(spec)
     const form = new multiparty.Form()
     const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {

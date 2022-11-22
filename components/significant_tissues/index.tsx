@@ -1,17 +1,11 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
+import { z } from 'zod'
+import codecFrom from '@/utils/zod-codec'
 
-export const SignificantTissueC = t.array(t.type({
-  /**
-   * The tissue term
-   */
-  tissue: t.string,
-  /**
-   * A zscore fir the significance
-   */
-  zscore: t.number,
+export const SignificantTissueC = z.array(z.object({
+  tissue: z.string().describe('The tissue term'),
+  zscore: z.number().describe('A zscore for the significance'),
 }))
 
 export const SignificantTissues = MetaNode.createData('SignificantTissues')

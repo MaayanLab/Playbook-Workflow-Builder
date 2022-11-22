@@ -2,11 +2,10 @@
  * Expose component APIs
  */
 import type { NextApiRequest, NextApiResponse } from 'next'
-import * as t from 'io-ts'
-import decodeOrThrow from '@/utils/decodeOrThrow'
+import { z } from 'zod'
 
-const QueryType = t.type({
-  _path: t.array(t.string),
+const QueryType = z.object({
+  _path: z.array(z.string()),
 })
 
 export const config = {
@@ -27,7 +26,7 @@ function sanitize(component: string): string {
  */
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { _path } = decodeOrThrow(QueryType, req.query)
+    const { _path } = QueryType.parse(req.query)
     const [component, ...path] = _path.map(sanitize)
     try {
       const { default: handler } = require(`@/components/${component}/api/${path.join('/')}`)

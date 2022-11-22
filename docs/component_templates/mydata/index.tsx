@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
+import { z } from 'zod'
+import codecFrom from '@/utils/zod-codec'
 
 // A unique name for your data type is used here
 export const MyData = MetaNode.createData('MyData')
@@ -11,11 +11,11 @@ export const MyData = MetaNode.createData('MyData')
     description: 'My data type, rendered',
   })
   // this should have a codec which can encode or decode the data type represented by this node
-  //  using io-ts, a compile-time and runtime type-safe codec can be constructed
-  .codec(codecFrom(t.type({
-    field: t.array(
-      t.partial({
-        maybe: t.string
+  //  using zod, a compile-time and runtime type-safe codec can be constructed
+  .codec(codecFrom(z.object({
+    field: z.array(
+      z.object({
+        maybe: z.string().optional()
       })
     ),
   })))

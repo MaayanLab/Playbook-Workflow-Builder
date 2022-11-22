@@ -2,22 +2,21 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/file'
 import python from '@/utils/python'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
+import { z } from 'zod'
 
 export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   .meta({
     label: 'Gene Count Matrix',
     description: 'A gene count matrix file',
   })
-  .codec(codecFrom(t.type({
-    url: t.string,
-    shape: t.tuple([t.number, t.number]),
-    columns: t.array(t.string),
-    index: t.array(t.string),
-    values: t.array(t.array(t.union([t.number, t.literal('nan'), t.literal('inf'), t.literal('-inf')]))),
-    ellipses: t.tuple([t.union([t.number, t.null]), t.union([t.number, t.null])]),
-  })))
+  .codec(z.object({
+    url: z.string(),
+    shape: z.tuple([z.number(), z.number()]),
+    columns: z.array(z.string()),
+    index: z.array(z.string()),
+    values: z.array(z.array(z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]))),
+    ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
+  }))
   .view(props => {
     return (
       <div>

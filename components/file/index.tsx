@@ -1,14 +1,13 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
+import { z } from 'zod'
 
 export const FileURL = MetaNode.createData('FileURL')
   .meta({
     label: 'File URL',
     description: 'An arbitrary file url',
   })
-  .codec(codecFrom(t.string))
+  .codec(z.string())
   .view(file => (
     <div>
       <h2>File: {file}</h2>

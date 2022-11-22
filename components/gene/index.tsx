@@ -1,7 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
+import { z } from 'zod'
 
 const example = 'ACE2'
 
@@ -11,7 +10,7 @@ export const GeneSymbol = MetaNode.createData('GeneSymbol')
     description: 'An unresolved Gene Symbol',
     example,
   })
-  .codec(codecFrom(t.string))
+  .codec(z.string())
   .view(gene => (
     <div>{gene} (gene)</div>
   ))

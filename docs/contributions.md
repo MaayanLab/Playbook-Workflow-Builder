@@ -62,12 +62,13 @@ Its possible to write one from scratch, especially with the help of the typescri
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import { z } from 'zod'
 
-// a typescript type contract describing your data type
+// a zod type contract describing your data type
 //  this is the "shape" of your data type
-export type DataType = {
-  mydatatype: string[]
-}
+export const DataType = z.object({
+  mydatatype: z.array(z.string())
+})
 
 export const Data = MetaNode.createData('Data')
   // This extra metadata will be used by the ultimate website, types should not have spaces or special symbols
@@ -78,8 +79,8 @@ export const Data = MetaNode.createData('Data')
     description: 'A short description for my data type',
   })
   // The codec is responsible for the conversion of datatype => string and string => datatype
-  //  the default (empty) uses JSON.stringify/JSON.parse and is usually adequate
-  .codec<DataType>()
+  //  with validation. zod-described types should be json serializable
+  .codec(DataType)
   // The view function is a react component for visualizing your data, the type will be the same
   //  as the type your provided to the codec, i.e. data has the properties defined in DataType
   .view(data => (

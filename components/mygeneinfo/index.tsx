@@ -1,42 +1,34 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneSymbol } from '@/components/gene'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
-import decodeOrThrow from '@/utils/decodeOrThrow'
+import { z } from 'zod'
 
-export const MyGeneInfoHitC = t.type({
-  hits: t.array(t.intersection([
-    t.type({
-      _id: t.string,
-      _score: t.number,
+export const MyGeneInfoHitC = z.object({
+  hits: z.array(
+    z.object({
+      _id: z.string(),
+      _score: z.number(),
+      symbol: z.string().optional(),
+      name: z.string().optional(),
+      taxid: z.number().optional(),
+      entrezgene: z.string().optional(),
     }),
-    t.partial({
-      symbol: t.string,
-      name: t.string,
-      taxid: t.number,
-      entrezgene: t.string,
-    }),
-  ]))
+  ),
 })
-export type MyGeneInfoHit = t.TypeOf<typeof MyGeneInfoHitC>
+export type MyGeneInfoHit = z.infer<typeof MyGeneInfoHitC>
 
-export const MyGeneInfoC = t.intersection([
-  t.type({
-    _id: t.string,
-    symbol: t.string,
-  }),
-  t.partial({
-    entrezgene: t.string,
-    name: t.string,
-    taxid: t.number,
-    ensembl: t.type({
-      gene: t.string,
-    })
-  })
-])
+export const MyGeneInfoC = z.object({
+  _id: z.string(),
+  symbol: z.string(),
+  entrezgene: z.string().optional(),
+  name: z.string().optional(),
+  taxid: z.number().optional(),
+  ensembl: z.object({
+    gene: z.string(),
+  }).optional()
+})
 
-export type MyGeneInfo = t.TypeOf<typeof MyGeneInfoC>
+export type MyGeneInfo = z.infer<typeof MyGeneInfoC>
 
 async function mygeneinfo_query(geneId: string): Promise<{total: number, hits: Array<MyGeneInfoHit>}> {
   const res = await fetch(`https://mygene.info/v3/query?q=${encodeURIComponent(geneId)}`)
@@ -53,7 +45,7 @@ export const GeneInfo = MetaNode.createData('GeneInfo')
     label: 'Gene Information',
     description: 'A Gene resolved with MyGeneInfo',
   })
-  .codec(codecFrom(MyGeneInfoC))
+  .codec(MyGeneInfoC)
   .view(geneinfo => (
     <div>
       <a href={`https://www.ncbi.nlm.nih.gov/gene/${geneinfo.entrezgene}`}>{geneinfo.symbol}</a> {geneinfo.name}
@@ -70,8 +62,8 @@ export const GeneInfoFromGeneSymbol = MetaNode.createProcess('GeneInfoFromGeneSy
   .inputs({ gene: GeneSymbol })
   .output(GeneInfo)
   .resolve(async (props) => {
-    const results = decodeOrThrow(MyGeneInfoHitC, await mygeneinfo_query(props.inputs.gene))
-    const hits = results.hits.filter(hit => hit.symbol)
+    const results = MyGeneInfoHitC.parse(await mygeneinfo_query(props.inputs.gene))
+    const hits = results.hits.filter((hit): hit is MyGeneInfoHit['hits'][0] & { symbol: string } => !!hit.symbol)
     const exactMatch = hits.filter(hit => hit.symbol.toUpperCase() == props.inputs.gene.toUpperCase())[0]
     const _id: string | undefined = exactMatch !== undefined ? exactMatch._id : hits[0]._id
     if (_id === undefined) throw new Error(`Could not identify a gene for the symbol ${props.inputs.gene} in mygene.info`)

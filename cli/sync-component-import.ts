@@ -7,8 +7,15 @@ const components = glob.sync(path.join(base, '**/package.json'))
   .map(p => path.dirname(p))
 components.sort()
 
-fs.writeFileSync(path.join(base, 'index.ts'),
-  components
-    .map(component => `export * from ${JSON.stringify(`./${path.relative(base, component)}`)}`)
-    .join('\n')
+fs.writeFileSync(path.join(base, 'index.ts'), [
+  `export const components: string[] = []`,
+  ...components
+    .flatMap(component => {
+      const componentPath = path.relative(base, component)
+      return [
+        `export * from ${JSON.stringify(`./${componentPath}`)}`,
+        `components.push(${JSON.stringify(componentPath)})`,
+      ]
+    }),
+  ].join('\n')
 )

@@ -1,13 +1,14 @@
 import fs from 'fs'
+import glob from 'glob'
 import path from 'path'
 
-const components = fs.readdirSync(path.join(__dirname, '..', 'components'))
-  .filter(p => !p.startsWith('_') && fs.lstatSync(path.join(__dirname, '..', 'components', p)).isDirectory())
-  .map(p => path.basename(p))
+const base = path.join(__dirname, '..', 'components')
+const components = glob.sync(path.join(base, '**/package.json'))
+  .map(p => path.dirname(p))
 components.sort()
 
-fs.writeFileSync('components/index.ts',
+fs.writeFileSync(path.join(base, 'index.ts'),
   components
-    .map(component => `export * from ${JSON.stringify('./' + path.basename(component))}`)
+    .map(component => `export * from ${JSON.stringify(`./${path.relative(base, component)}`)}`)
     .join('\n')
 )

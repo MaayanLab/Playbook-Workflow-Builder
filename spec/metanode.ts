@@ -19,12 +19,12 @@ export type MetaNodeMetadata = {
   icon?: Icon,
   color?: string,
   default?: string,
-  example?: string,
+  example?: unknown,
   pagerank?: number
   tags?: Record<string, Record<string, number>>,
 }
 
-export type MetaNodeGeneric = { kind: 'data', spec: string, meta: MetaNodeMetadata, codec: Codec<unknown> }
+export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata, codec: Codec<T> }
 export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends { kind: infer Kind } ? Kind : never
 export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends { spec: infer Spec } ? Spec : never
 export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends { meta: infer Meta } ? Meta : never

@@ -21,7 +21,7 @@ export const DrugSet = Set_T(Drug)
 
 const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spec}]`)
   .meta({
-    label: `${T.meta.label} Set Input`,
+    label: `${T.meta.label} Input`,
     description: `Start with a set of ${T.meta.label}`,
   })
   .inputs()

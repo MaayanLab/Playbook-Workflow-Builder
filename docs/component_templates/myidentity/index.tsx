@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/gene'
+import { GeneTerm } from '@/components/core/input/term'
 
 // A unique name for your resolver is used here
 export const MyIdentity = MetaNode.createProcess('MyIdentity')
@@ -10,9 +10,9 @@ export const MyIdentity = MetaNode.createProcess('MyIdentity')
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
-  .inputs({ input: GeneSymbol })
+  .inputs({ input: GeneTerm })
   // This should be a single Meta Node Data Type
-  .output(GeneSymbol)
+  .output(GeneTerm)
   // The resolve function uses the inputs and returns output
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {

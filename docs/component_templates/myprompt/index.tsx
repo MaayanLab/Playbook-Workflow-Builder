@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/gene'
+import { GeneTerm } from '@/components/core/input/term'
 
 // A unique name for your prompt is used here
 export const MyPrompt = MetaNode.createProcess('MyPrompt')
@@ -14,7 +14,7 @@ export const MyPrompt = MetaNode.createProcess('MyPrompt')
   // Prompts don't always call for inputs, thus it can be blank.
   .inputs()
   // This must be a single Meta Node Data Type
-  .output(GeneSymbol)
+  .output(GeneTerm)
   // The prompt function is a react component which the user will
   //  engage with. The `submit` function should be used to resolve
   //  the prompt, ultimately providing data in the shape prescribed
@@ -26,7 +26,7 @@ export const MyPrompt = MetaNode.createProcess('MyPrompt')
     //  without remount, using useEffect to update state with the
     //  output when it changes is ideal.
     React.useEffect(() => {
-      setGene(props.output)
+      setGene(props.output || '')
     }, [props.output])
     return (
       <div>

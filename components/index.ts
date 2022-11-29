@@ -3,10 +3,10 @@ export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
 components.push("core/file")
-export * from "./core/gene"
-components.push("core/gene")
 export * from "./core/input/set"
 components.push("core/input/set")
+export * from "./core/input/term"
+components.push("core/input/term")
 export * from "./core/significant_tissues"
 components.push("core/significant_tissues")
 export * from "./data/gene_count_matrix"

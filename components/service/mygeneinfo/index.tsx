@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/core/gene'
+import { GeneTerm } from '@/components/core/input/term'
 import { z } from 'zod'
 
 export const MyGeneInfoHitC = z.object({
@@ -53,13 +53,13 @@ export const GeneInfo = MetaNode.createData('GeneInfo')
   ))
   .build()
 
-export const GeneInfoFromGeneSymbol = MetaNode.createProcess('GeneInfoFromGeneSymbol')
+export const GeneInfoFromGeneTerm = MetaNode.createProcess('GeneInfoFromGeneTerm')
   .meta({
-    label: 'Resolve Gene from Symbol',
-    description: 'Resolve gene info from gene symbol with MyGeneInfo',
+    label: 'Resolve Gene Info from Term',
+    description: 'Resolve gene info from gene term with MyGeneInfo',
   })
   .codec()
-  .inputs({ gene: GeneSymbol })
+  .inputs({ gene: GeneTerm })
   .output(GeneInfo)
   .resolve(async (props) => {
     const results = MyGeneInfoHitC.parse(await mygeneinfo_query(props.inputs.gene))

@@ -101,7 +101,7 @@ A prompt allows the user to have control of the resulting output, and relies on 
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/Gene'
+import { GeneTerm } from '@/components/core/input/term'
 
 export const PromptName = MetaNode.createProcess('PromptName')
   // As with data types, we have metadata for the process
@@ -111,7 +111,7 @@ export const PromptName = MetaNode.createProcess('PromptName')
   })
   // prompts *can* also take inputs like resolvers
   .inputs()
-  .output(GeneSymbol)
+  .output(GeneTerm)
   // the prompt function is a react component responsible for constructing the output based on
   //  user interaction. This output should be provided to the `submit` function passed as an argument
   .prompt(props => {

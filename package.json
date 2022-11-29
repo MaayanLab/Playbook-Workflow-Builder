@@ -11,6 +11,7 @@
     "build": "npx --workspace=app next build",
     "dev": "npx --workspace=app next dev",
     "prebuild": "ts-node cli/sync-component-import.ts",
+    "preinstall": "ts-node cli/enumerate-requirements.ts",
     "start": "npx --workspace=app next start"
   },
   "dependencies": {

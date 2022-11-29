@@ -208,8 +208,8 @@ Absolute imports are used throughout this project and are encouraged.
 If you run into python import errors trying to run some of the components, all pertinent python dependencies can be installed with:
 
 ```bash
-# load all unique requirements.txt from all components
-sort -u components/*/requirements.txt | xargs pip install
+# install python requirements (note requirements.txt only exists after `npm run preinstall` which should be invoked automatically after `npm i`)
+pip install -r requirements.txt
 
 # Some systems which do not have python3 installed as a default may require the use of `python3 -m pip`
 ```

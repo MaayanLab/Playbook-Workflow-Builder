@@ -1,16 +1,33 @@
-export * from "./bokeh"
-export * from "./error"
-export * from "./file"
-export * from "./gene"
-export * from "./gene_count_matrix"
-export * from "./gtex"
-export * from "./log_normalization"
-export * from "./mygeneinfo"
-export * from "./pca_transformation"
-export * from "./plotly"
-export * from "./quantile_normalization"
-export * from "./significant_tissues"
-export * from "./tissue_barplot"
-export * from "./tsne_transformation"
-export * from "./umap_transformation"
-export * from "./z_score_normalization"
+export const components: string[] = []
+export * from "./core/error"
+components.push("core/error")
+export * from "./core/file"
+components.push("core/file")
+export * from "./core/gene"
+components.push("core/gene")
+export * from "./core/significant_tissues"
+components.push("core/significant_tissues")
+export * from "./data/gene_count_matrix"
+components.push("data/gene_count_matrix")
+export * from "./data/log_normalization"
+components.push("data/log_normalization")
+export * from "./data/pca_transformation"
+components.push("data/pca_transformation")
+export * from "./data/quantile_normalization"
+components.push("data/quantile_normalization")
+export * from "./data/tsne_transformation"
+components.push("data/tsne_transformation")
+export * from "./data/umap_transformation"
+components.push("data/umap_transformation")
+export * from "./data/z_score_normalization"
+components.push("data/z_score_normalization")
+export * from "./service/gtex"
+components.push("service/gtex")
+export * from "./service/mygeneinfo"
+components.push("service/mygeneinfo")
+export * from "./viz/bokeh"
+components.push("viz/bokeh")
+export * from "./viz/plotly"
+components.push("viz/plotly")
+export * from "./viz/tissue_barplot"
+components.push("viz/tissue_barplot")

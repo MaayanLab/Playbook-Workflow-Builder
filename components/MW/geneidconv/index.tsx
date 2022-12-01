@@ -1,6 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/gene'
-import { GeneInfo } from '@/components/mygeneinfo'
+import { GeneTerm } from '@/components/core/input/term'
 import { ConvertedGeneID } from '../ConvertedGeneID'
 import { uniqJsonSubset } from '../ConvertedGeneID'
 
@@ -13,7 +12,7 @@ export const GeneIDConv = MetaNode.createProcess('GeneIDConv')
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
-  .inputs({ gene: GeneSymbol })
+  .inputs({ gene: GeneTerm })
   // This should be a single Meta Node Data Type
   .output(ConvertedGeneID)
   // The resolve function uses the inputs and returns output
@@ -40,7 +39,7 @@ export const ConvertedGeneID2GeneInfo = MetaNode.createProcess('ConvertedGeneID2
 
 })
 .inputs({data: ConvertedGeneID})
-.output(GeneSymbol)
+.output(GeneTerm)
 .resolve(async (props) => {
   return uniqJsonSubset(props.inputs.data)[0].SYMBOL;
 })

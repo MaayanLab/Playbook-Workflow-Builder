@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/gene'
+import { GeneTerm } from '@/components/core/input/term'
 import { MetGeneRxnTable } from '../metgene_rxn_table'
 
 // A unique name for your resolver is used here
@@ -11,7 +11,7 @@ export const MetGeneRxns = MetaNode.createProcess('MetGeneRxns')
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
-  .inputs({ gene: GeneSymbol })
+  .inputs({ gene: GeneTerm })
   // This should be a single Meta Node Data Type
   .output(MetGeneRxnTable)
   // The resolve function uses the inputs and returns output

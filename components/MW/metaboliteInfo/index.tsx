@@ -1,6 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/gene'
-import { MetaboliteName } from '@/components/metabolite'
+import { MetaboliteName } from '@/components/MW/metabolite'
 import { MetaboliteSummary } from '../metabolite_summary'
 // A unique name for your resolver is used here
 export const MetaboliteInfo = MetaNode.createProcess('MetaboliteInfo')

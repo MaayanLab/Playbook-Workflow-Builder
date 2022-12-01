@@ -62,12 +62,13 @@ Its possible to write one from scratch, especially with the help of the typescri
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import { z } from 'zod'
 
-// a typescript type contract describing your data type
+// a zod type contract describing your data type
 //  this is the "shape" of your data type
-export type DataType = {
-  mydatatype: string[]
-}
+export const DataType = z.object({
+  mydatatype: z.array(z.string())
+})
 
 export const Data = MetaNode.createData('Data')
   // This extra metadata will be used by the ultimate website, types should not have spaces or special symbols
@@ -78,8 +79,8 @@ export const Data = MetaNode.createData('Data')
     description: 'A short description for my data type',
   })
   // The codec is responsible for the conversion of datatype => string and string => datatype
-  //  the default (empty) uses JSON.stringify/JSON.parse and is usually adequate
-  .codec<DataType>()
+  //  with validation. zod-described types should be json serializable
+  .codec(DataType)
   // The view function is a react component for visualizing your data, the type will be the same
   //  as the type your provided to the codec, i.e. data has the properties defined in DataType
   .view(data => (
@@ -100,7 +101,7 @@ A prompt allows the user to have control of the resulting output, and relies on 
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/Gene'
+import { GeneTerm } from '@/components/core/input/term'
 
 export const PromptName = MetaNode.createProcess('PromptName')
   // As with data types, we have metadata for the process
@@ -110,7 +111,7 @@ export const PromptName = MetaNode.createProcess('PromptName')
   })
   // prompts *can* also take inputs like resolvers
   .inputs()
-  .output(GeneSymbol)
+  .output(GeneTerm)
   // the prompt function is a react component responsible for constructing the output based on
   //  user interaction. This output should be provided to the `submit` function passed as an argument
   .prompt(props => {
@@ -207,8 +208,8 @@ Absolute imports are used throughout this project and are encouraged.
 If you run into python import errors trying to run some of the components, all pertinent python dependencies can be installed with:
 
 ```bash
-# load all unique requirements.txt from all components
-sort -u components/*/requirements.txt | xargs pip install
+# install python requirements (note requirements.txt only exists after `npm run preinstall` which should be invoked automatically after `npm i`)
+pip install -r requirements.txt
 
 # Some systems which do not have python3 installed as a default may require the use of `python3 -m pip`
 ```

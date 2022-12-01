@@ -9,9 +9,9 @@ export function uniqJsonSubset(data) {
   datastr = datastr.replace("]$","");
 
   const dataobj = JSON.parse(datastr);
-  let uniqENTREZID : string[] = [...new Set( dataobj.map(a => a.ENTREZID)) ];
-  let uniqSYMBOL : string[] = [...new Set( dataobj.map(a => a.SYMBOL)) ];
-  let uniqGENENAME : string[] = [...new Set( dataobj.map(a => a.GENENAME)) ];
+  let uniqENTREZID : string[] = Array.from(new Set( dataobj.map(a => a.ENTREZID)));
+  let uniqSYMBOL : string[] = Array.from(new Set( dataobj.map(a => a.SYMBOL)));
+  let uniqGENENAME : string[] = Array.from(new Set( dataobj.map(a => a.GENENAME)));
 
   let uniqdataobj = uniqENTREZID.map((id, idx) => {
    return {
@@ -50,12 +50,12 @@ export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
     let SYMBOL : string[] = dataobj.map(a => a.SYMBOL);
     let GENENAME : string[] = dataobj.map(a => a.GENENAME);
 
-    let uniqENTREZID : string[] = [...new Set( dataobj.map(a => a.ENTREZID)) ];
-    let uniqSYMBOL : string[] = [...new Set( dataobj.map(a => a.SYMBOL)) ];
-    let uniqGENENAME : string[] = [...new Set( dataobj.map(a => a.GENENAME)) ];
+    let uniqENTREZID : string[] = Array.from(new Set( dataobj.map(a => a.ENTREZID)));
+    let uniqSYMBOL : string[] = Array.from(new Set( dataobj.map(a => a.SYMBOL)));
+    let uniqGENENAME : string[] = Array.from(new Set( dataobj.map(a => a.GENENAME)));
 
     // const picked = (({ a, c }) => ({ a, c }))(object);
-    //let dataobj1 = [...new Set(dataobj.map(a => ({"ENTREZID": a.ENTREZID, 
+    //let dataobj1 = Array.from(new Set(dataobj.map(a => ({"ENTREZID": a.ENTREZID, 
     //                  "SYMBOL" : a.SYMBOL, "GENENAME": a.GENENAME}))) ];
 
     let uniqdataobj = uniqENTREZID.map((id, idx) => {

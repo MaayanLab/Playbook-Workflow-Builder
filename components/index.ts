@@ -1,6 +1,28 @@
 export const components: string[] = []
-export * from "./ConvertedGeneID"
-components.push("ConvertedGeneID")
+export * from "./MW/ConvertedGeneID"
+components.push("MW/ConvertedGeneID")
+export * from "./MW/geneidconv"
+components.push("MW/geneidconv")
+export * from "./MW/metabolite"
+components.push("MW/metabolite")
+export * from "./MW/metaboliteInfo"
+components.push("MW/metaboliteInfo")
+export * from "./MW/metabolite_summary"
+components.push("MW/metabolite_summary")
+export * from "./MW/metgene"
+components.push("MW/metgene")
+export * from "./MW/metgene_metabolite_table"
+components.push("MW/metgene_metabolite_table")
+export * from "./MW/metgene_metabolites"
+components.push("MW/metgene_metabolites")
+export * from "./MW/metgene_rxn_table"
+components.push("MW/metgene_rxn_table")
+export * from "./MW/metgene_rxns"
+components.push("MW/metgene_rxns")
+export * from "./MW/metgene_studies"
+components.push("MW/metgene_studies")
+export * from "./MW/metgene_study_table"
+components.push("MW/metgene_study_table")
 export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
@@ -25,28 +47,6 @@ export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
-export * from "./geneidconv"
-components.push("geneidconv")
-export * from "./metabolite"
-components.push("metabolite")
-export * from "./metaboliteInfo"
-components.push("metaboliteInfo")
-export * from "./metabolite_summary"
-components.push("metabolite_summary")
-export * from "./metgene"
-components.push("metgene")
-export * from "./metgene_metabolite_table"
-components.push("metgene_metabolite_table")
-export * from "./metgene_metabolites"
-components.push("metgene_metabolites")
-export * from "./metgene_rxn_table"
-components.push("metgene_rxn_table")
-export * from "./metgene_rxns"
-components.push("metgene_rxns")
-export * from "./metgene_studies"
-components.push("metgene_studies")
-export * from "./metgene_study_table"
-components.push("metgene_study_table")
 export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/mygeneinfo"

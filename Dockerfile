@@ -26,7 +26,6 @@ RUN set -x \
 COPY --from=prepare /app .
 RUN set -x \
   && npm i \
-  && sort -u components/*/requirements.txt > requirements.txt \
   && pip install -r requirements.txt
 
 # we copy the rest over to build

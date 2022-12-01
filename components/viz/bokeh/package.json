@@ -1,0 +1,15 @@
+{
+  "name": "bokeh",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Juncheng Pan <pan_juncheng@yahoo.com>",
+  "private": true,
+  "main": "index.tsx",
+  "dependencies": {
+    "@bokeh/bokehjs": "^2.4.3",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21"
+  }
+}

@@ -8,11 +8,11 @@ import * as dict from '@/utils/dict'
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
-  const [prev, setPrev] = React.useState({ type: '', data: '' })
+  const [prev, setPrev] = React.useState([])
   const [current, setCurrent_] = React.useState({ type: '', data: '' })
   const setCurrent = React.useCallback((current: { type?: string, data?: string }) => {
     setCurrent_(current_ => {
-      setPrev(current_)
+      setPrev(prev => [...prev, current_])
       return {
         type: current.type === undefined ? current_.type : current.type,
         data: current.data === undefined? current_.data : current.data,
@@ -44,7 +44,7 @@ export default function App() {
     try {
       dataNodeView = <div>{dataNode.view(dataNode.codec.decode(current.data))}</div>
     } catch (e) {
-      dataNodeView = <div>Error rendering {dataNode.spec}: {e.toString()}</div>
+      dataNodeView = <div>Error rendering {dataNode.meta.label}: {e.toString()}</div>
     }
   }
   return (
@@ -55,7 +55,7 @@ export default function App() {
           <div key={proc.spec}>
             {Object.keys(proc.inputs).length > 0 ? (
               <>
-                <span className="bg-secondary rounded-full p-3">{dict.values(proc.inputs).map((i) => i.spec).join(', ')}</span>
+                <span className="bg-secondary rounded-full p-3">{dict.values(proc.inputs).map((i) => i.meta.label).join(', ')}</span>
                 <span> =&gt; </span>
               </>
             ) : null}
@@ -86,9 +86,9 @@ export default function App() {
                   })
                 }
               }}
-            >{proc.spec}</button>
+            >{proc.meta.label}</button>
             <span> =&gt; </span>
-            <span className="bg-secondary rounded-full p-3">{proc.output.spec}</span>
+            <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
           </div>
         )}
       </div>
@@ -114,8 +114,15 @@ export default function App() {
             className="bg-primary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
-              setCurrent(prev)
-            }}>Prev</button>
+              setPrev(prev => {
+                const _prev = [...prev]
+                setCurrent_(_prev.pop() || {
+                  type: '',
+                  data: ''
+                })
+                return _prev
+            })
+            }}>Previous</button>
           <button
             className="bg-primary rounded-md p-2"
             onClick={() => {
@@ -138,7 +145,7 @@ export default function App() {
                     data: node.codec.encode(node.meta.example),
                   })
                 }}
-              >{node.spec}</button>
+              >{node.meta.label}</button>
             ))}
         </div>
       </div>
@@ -151,7 +158,7 @@ export default function App() {
             setCurrent(({ type: evt.target.value }))
           }}
         >{krg.getDataNodes().map(dataNode =>
-          <option key={dataNode.spec} value={dataNode.spec}>{dataNode.spec}</option>
+          <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
         )}</select>
         {dataNodeView ? dataNodeView : null}
       </div>

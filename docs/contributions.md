@@ -9,15 +9,20 @@ Anyone who wants to! Please create a pull request to add new content.
 ### Contribution Guide
 Below is a guide to add a component to the playbook. You can additionally reuse the existing content in the registry and augment it for your own purposes.
 
+0. Follow the [Installation Guide](./installation.md) to Install the system dependencies required if they are not already installed -- these are:
+  - [Visual Studio Code](https://code.visualstudio.com/)
+  - [NodeJS](https://nodejs.org/)
+  - [Git](https://git-scm.com/)
+  - [Python 3](https://www.python.org/) (optional)
 1. Clone this repository and checkout a branch for your work.
     ```bash
     git clone https://github.com/nih-cfde/playbook-partnership/
     cd playbook-partnership
     git checkout -b my-new-component
     ```
-2. For optimal coding experience, use an editor like [Visual Studio Code](https://code.visualstudio.com/) with rich typescript support. Open up the repository directory with it.
+2. Open up the repository directory with your editor.
     ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
-3. With [NodeJS](https://nodejs.org/) installed, install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
+3. Install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
     ```bash
     npm i
     npm run dev
@@ -57,12 +62,13 @@ Its possible to write one from scratch, especially with the help of the typescri
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import { z } from 'zod'
 
-// a typescript type contract describing your data type
+// a zod type contract describing your data type
 //  this is the "shape" of your data type
-export type DataType = {
-  mydatatype: string[]
-}
+export const DataType = z.object({
+  mydatatype: z.array(z.string())
+})
 
 export const Data = MetaNode.createData('Data')
   // This extra metadata will be used by the ultimate website, types should not have spaces or special symbols
@@ -73,8 +79,8 @@ export const Data = MetaNode.createData('Data')
     description: 'A short description for my data type',
   })
   // The codec is responsible for the conversion of datatype => string and string => datatype
-  //  the default (empty) uses JSON.stringify/JSON.parse and is usually adequate
-  .codec<DataType>()
+  //  with validation. zod-described types should be json serializable
+  .codec(DataType)
   // The view function is a react component for visualizing your data, the type will be the same
   //  as the type your provided to the codec, i.e. data has the properties defined in DataType
   .view(data => (
@@ -95,7 +101,7 @@ A prompt allows the user to have control of the resulting output, and relies on 
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/Gene'
+import { GeneTerm } from '@/components/core/input/term'
 
 export const PromptName = MetaNode.createProcess('PromptName')
   // As with data types, we have metadata for the process
@@ -105,7 +111,7 @@ export const PromptName = MetaNode.createProcess('PromptName')
   })
   // prompts *can* also take inputs like resolvers
   .inputs()
-  .output(GeneSymbol)
+  .output(GeneTerm)
   // the prompt function is a react component responsible for constructing the output based on
   //  user interaction. This output should be provided to the `submit` function passed as an argument
   .prompt(props => {
@@ -202,8 +208,8 @@ Absolute imports are used throughout this project and are encouraged.
 If you run into python import errors trying to run some of the components, all pertinent python dependencies can be installed with:
 
 ```bash
-# load all unique requirements.txt from all components
-pip install -r <(sort -u components/*/requirements.txt)
+# install python requirements (note requirements.txt only exists after `npm run preinstall` which should be invoked automatically after `npm i`)
+pip install -r requirements.txt
 
 # Some systems which do not have python3 installed as a default may require the use of `python3 -m pip`
 ```

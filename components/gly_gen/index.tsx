@@ -1,12 +1,14 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import { GeneSymbol } from '@/components/gene'
 
-export type GlyGenDataType = {
-  mydatatype: string[]
+export type GlyGenGeneType = {
+  gene_name: typeof GeneSymbol
 }
 
 export type GlyGenResponseType = {
-  mydatatype: string[]
+  queryinfo: string[],
+  results: string[]
 }
 
 export const GlyGenResponse = MetaNode.createData('GlyGenResponse')
@@ -16,7 +18,12 @@ export const GlyGenResponse = MetaNode.createData('GlyGenResponse')
   })
   .codec<GlyGenResponseType>()
   .view(data => (
-    <div>{JSON.stringify(data)}</div>
+    <>
+      <div>Results: {JSON.stringify(data.queryinfo.batch.total_hits)}</div>
+      <div>Limit: {JSON.stringify(data.queryinfo.batch.limit)}</div>
+      <div>{JSON.stringify(data.results)}</div>
+    </>
+    
   ))
   .build()
 
@@ -25,11 +32,13 @@ export const GlyGenQuery = MetaNode.createData('GlyGenQuery')
     label: 'GlyGen Query',
     description: 'Search for records in GlyGen. Must be a JSON input',
   })
-  .codec<GlyGenDataType>()
+  .codec<GlyGenGeneType>()
   .view(data => (
-    <div>{JSON.stringify(data)}</div>
+    <div>{JSON.stringify({data})}</div>
   ))
   .build()
+
+export const GeneToProtein = 
 
 export const ProteinProductInformation = MetaNode.createProcess('ProteinProductInformation')
   .meta({

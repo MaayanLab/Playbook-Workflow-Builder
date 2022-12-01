@@ -9,8 +9,6 @@ export * from "./MW/metaboliteInfo"
 components.push("MW/metaboliteInfo")
 export * from "./MW/metabolite_summary"
 components.push("MW/metabolite_summary")
-export * from "./MW/metgene"
-components.push("MW/metgene")
 export * from "./MW/metgene_metabolite_table"
 components.push("MW/metgene_metabolite_table")
 export * from "./MW/metgene_metabolites"

@@ -7,7 +7,7 @@ import useAsyncEffect from 'use-async-effect'
  * Note that embed_item appends the plot to the div, BokehPlot (below)
  *  thus replaces the component entirely when the plot prop changes.
  */
-function BokehEmbeddedItem({ plot }) {
+function BokehEmbeddedItem({ plot }: { plot: any }) {
     const id = React.useId()
     useAsyncEffect(async () => {
         if (!plot) return
@@ -28,7 +28,7 @@ function BokehEmbeddedItem({ plot }) {
 /**
  * Render a BokehPlot json item
  */
-export default function BokehPlot({ plot }) {
+export default function BokehPlot({ plot }: { plot: any }) {
     // store the currently rendered plot in state
     const [visablePlot, setVisablePlot] = React.useState({ key: 0, plot })
     // if plot is updated, we'll update the key as well

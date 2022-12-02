@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         else resolve({ fields, files })
       })
     })
-    const inputs = {}
+    const inputs: Record<string, unknown> = {}
     for (const i in processNode.inputs) {
       if (i in raw.fields) {
         inputs[i] = processNode.inputs[i].codec.decode(one(raw.fields[i]))

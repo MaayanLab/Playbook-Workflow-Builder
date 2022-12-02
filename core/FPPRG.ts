@@ -59,7 +59,7 @@ export class Process {
     /**
      * Data associated with this process, can used for configuration / prompts
      */
-    public data: Data = undefined,
+    public data: Data | undefined = undefined,
     /**
      * The input process objects, corresponding to the dependencies of this process
      */
@@ -67,7 +67,7 @@ export class Process {
     /**
      * A database instance to operate this class like an ORM
      */
-    public db: Database = undefined,
+    public db: Database | undefined = undefined,
   ) {
     this.id = sha256([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
@@ -79,7 +79,7 @@ export class Process {
     }
   }
 
-  toJSON = (): { 'id': string, 'type': string, 'data'?: ReturnType<Data['toJSON']>, 'inputs': object } => {
+  toJSON = (): { 'id': string, 'type': string, 'data': ReturnType<Data['toJSON']> | null, 'inputs': object } => {
     return {
       'id': this.id,
       'type': this.type,
@@ -197,6 +197,7 @@ export class FPL {
     for (const el of fpl) {
       const new_proc = new Process(
         el.process.type,
+        el.process.data,
         dict.init(
           dict.items(el.process.inputs).map(({ key, value }) =>
             ({ key, value: update[value.id] || value })
@@ -266,9 +267,9 @@ export class Database {
     }
   }
 
-  resolveProcess(process: IdOrProcess) {
+  resolveProcess(process: IdOrProcess): Process {
     if ('id' in process) {
-      return this.getProcess(process.id)
+      return this.getProcess(process.id) as Process
     } else {
       return this.upsertProcess(new Process(
         process.type,
@@ -289,12 +290,12 @@ export class Database {
       this.processTable[process.id] = process
       this.notify('process', process)
     }
-    return this.processTable[process.id]
+    return this.processTable[process.id] as Process
   }
 
   resolveData(data: IdOrData) {
     if ('id' in data) {
-      return this.getData(data.id)
+      return this.getData(data.id) as Data
     } else {
       return this.upsertData(new Data(data.type, data.value))
     }
@@ -307,7 +308,7 @@ export class Database {
       this.dataTable[data.id] = data
       this.notify('data', data)
     }
-    return this.dataTable[data.id]
+    return this.dataTable[data.id] as Data
   }
 
   getResolved(id: string) {
@@ -335,11 +336,11 @@ export class Database {
       this.resolvedTable[resolved.id] = resolved
       this.notify('resolved', resolved)
     }
-    return this.resolvedTable[resolved.id]
+    return this.resolvedTable[resolved.id] as Resolved
   }
 
   getFPL(id: string) {
-    return this.fplTable[id]
+    return this.fplTable[id] as FPL | undefined
   }
   upsertFPL(fpl: FPL) {
     if (!(fpl.id in this.fplTable)) {
@@ -350,7 +351,7 @@ export class Database {
       }
       this.notify('fpl', fpl)
     }
-    return this.fplTable[fpl.id]
+    return this.fplTable[fpl.id] as FPL
   }
 
   dump() {

@@ -179,7 +179,7 @@ export class FPL {
   rebase(old_process: Process, new_process: Process)  {
     // Same as resolve but only up to old_process
     const fpl: FPL[] = [this]
-    let head: FPL = this
+    let head: FPL | undefined = this
     while (head.parent !== undefined) {
       if (head.process === old_process) break
       head = head.parent
@@ -192,17 +192,18 @@ export class FPL {
     }
     // Replace old_process with new process
     const update = { [head.process.id]: new_process }
-    head = new FPL(new_process, head.parent)
     // Walk forward updating processes, replacing any dependencies with the updated one
+    head = head.parent
     for (const el of fpl) {
       const new_proc = new Process(
-        el.process.type,
-        el.process.data,
+        (update[el.process.id] || el.process).type,
+        (update[el.process.id] || el.process).data,
         dict.init(
           dict.items(el.process.inputs).map(({ key, value }) =>
             ({ key, value: update[value.id] || value })
           )
-        )
+        ),
+        el.process.db,
       )
       head = new FPL(new_proc, head)
       update[el.process.id] = new_proc

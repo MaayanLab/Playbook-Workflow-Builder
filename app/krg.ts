@@ -12,7 +12,7 @@ type ValuesOf<T> = T[keyof T]
 const krg = global.krg || new KRG()
 Object.values(components)
   .flatMap(component => ensureArray<ValuesOf<typeof components>>(component))
-  .filter((component): component is MetaNodeType<unknown> => 'spec' in component)
+  .filter((component): component is MetaNodeType<unknown> => typeof component === 'object' && 'spec' in component)
   .forEach(metanode => krg.add(metanode))
 
 global.krg = krg

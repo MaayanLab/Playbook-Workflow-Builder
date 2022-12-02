@@ -5,7 +5,7 @@
  *  the UI
  */
 
-import { MetaNodeDataType, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
+import { MetaNodeDataType, MetaNodeGenericData, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
 import * as dict from '@/utils/dict'
 
 export default class KRG {
@@ -57,7 +57,7 @@ export default class KRG {
       }
       this.processNodes[node.spec] = node
       for (const arg in node.inputs) {
-        const input = node.inputs[arg]
+        const input = node.inputs[arg] as MetaNodeGenericData
         if (!(input.spec in this.processForInput)) {
           this.processForInput[input.spec] = {}
         }

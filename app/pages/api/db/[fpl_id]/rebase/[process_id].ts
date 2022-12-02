@@ -15,9 +15,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method !== 'POST') throw new Error('Unsupported method')
     const { fpl_id, process_id } = QueryType.parse(req.query)
     const old_process = fpprg.getProcess(process_id)
-    const new_process = fpprg.resolveProcess(BodyType.parse(JSON.parse(req.body)))
-    const fpl = fpprg.upsertFPL(fpprg.getFPL(fpl_id).rebase(old_process, new_process))
-    res.status(200).json(fpl.id)
+    if (old_process === undefined) {
+        res.status(404).end()
+      } else {
+      const new_process = fpprg.resolveProcess(BodyType.parse(JSON.parse(req.body)))
+      const old_fpl = fpprg.getFPL(fpl_id)
+      if (old_fpl === undefined) {
+        res.status(404).end()
+      } else {
+        const fpl = fpprg.upsertFPL(old_fpl.rebase(old_process, new_process))
+        res.status(200).json(fpl.id)
+      }
+    }
   } catch (e) {
     console.error(e)
     res.status(500).end((e as Error).toString())

@@ -14,6 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(fpl.id)
   } catch (e) {
     console.error(e)
-    res.status(500).end(e.toString())
+    res.status(500).end((e as Error).toString())
   }
 }

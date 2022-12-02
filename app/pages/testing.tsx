@@ -45,7 +45,7 @@ export default function App() {
     try {
       dataNodeView = <div>{dataNode.view(dataNode.codec.decode(current.data))}</div>
     } catch (e) {
-      dataNodeView = <div>Error rendering {dataNode.meta.label}: {e.toString()}</div>
+      dataNodeView = <div>Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
     }
   }
   return (

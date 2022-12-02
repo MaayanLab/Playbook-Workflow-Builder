@@ -3,6 +3,7 @@ import { Database } from '@/core/FPPRG'
 import attach from '@/core/engine'
 declare global {
   var fpprg: Database | undefined
+  var detach: (() => boolean) | undefined
 }
 
 /**

@@ -73,9 +73,10 @@ export class Process {
   }
 
   toJSONWithOutput = async () => {
+    const output = await this.output()
     return {
       ...this.toJSON(),
-      output: (await this.output()).toJSON(),
+      output: output ? output.toJSON() : null,
     }
   }
 
@@ -94,8 +95,8 @@ export class Process {
   /**
    * The outputs of all input processes
    */
-  async inputs__outputs(): Promise<Record<string | number | symbol, Data>> {
-    return dict.init<Data>(
+  async inputs__outputs(): Promise<Record<string | number | symbol, Data | undefined>> {
+    return dict.init<Data | undefined>(
       await Promise.all(
         dict.items(this.inputs).map(async ({ key, value }) =>
           ({ key, value: await value.output() })
@@ -119,14 +120,14 @@ export class Process {
 export class Resolved {
   public id: string
 
-  constructor(public process: Process, public data: Data) {
+  constructor(public process: Process, public data: Data | undefined) {
     this.id = process.id
   }
 
   toJSON = () => {
     return {
       'id': this.id,
-      'data': this.data.toJSON(),
+      'data': this.data ? this.data.toJSON() : null,
     }
   }
 }
@@ -333,7 +334,9 @@ export class Database {
   }
   upsertResolved(resolved: Resolved) {
     if (!(resolved.id in this.resolvedTable)) {
-      this.upsertData(resolved.data)
+      if (resolved.data) {
+        this.upsertData(resolved.data)
+      }
       this.resolvedTable[resolved.id] = resolved
       this.notify('resolved', resolved)
     }

@@ -39,7 +39,7 @@ export default function App({ id, metapath }: { id: string, metapath: Array<UnPr
     const Prompt = processNode.prompt
     return <Prompt
       inputs={inputs}
-      output={processNode.output.codec.decode(head.process.output.value)}
+      output={head.process.output ? processNode.output.codec.decode(head.process.output.value) : undefined}
       submit={async (output) => {
         const req = await fetch(`/api/db/${id}/rebase/${head.process.id}`, {
           method: 'POST',

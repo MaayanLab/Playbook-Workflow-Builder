@@ -26,10 +26,10 @@ export default function create_engine(krg: KRG, db: Database) {
           inputs: dict.init(
             dict.items(await instanceProcess.inputs__outputs()).map(({ key, value }) => {
               // propagate errors
-              if (value.type === 'Error') {
+              if (value && value.type === 'Error') {
                 throw new Error(`Error in ${instanceProcess.type} caused by error in ${metaProcess.inputs[key as string].spec}`)
               }
-              return { key, value: value.value }
+              return { key, value: value ? value.value : undefined }
           })),
         }
         if ('prompt' in metaProcess) {

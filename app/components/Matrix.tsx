@@ -19,7 +19,7 @@ interface MatrixProps {
    * [optional]: Where to place ellipses, when showing a truncated matrix
    * of the form: [row-elipse-index | null, column-elipse-index | null]
    */
-  ellipses?: [number | undefined, number | undefined]
+  ellipses?: [number | null, number | null]
 }
 
 export default function Matrix(props: MatrixProps) {

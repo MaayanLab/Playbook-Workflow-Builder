@@ -110,7 +110,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
             <div key={proc.spec}>
               {Object.keys(proc.inputs).length > 0 ? (
                 <>
-                  <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => i.spec).join(', ')}</span>
+                  <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => i.meta.label).join(', ')}</span>
                   <span> =&gt; </span>
                 </>
               ) : null}
@@ -133,9 +133,9 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
                   const res = z.string().parse(await req.json())
                   router.push(`/report/${res}`, undefined, { shallow: true, scroll: false })
                 }}
-              >{proc.spec}</Button>
+              >{proc.meta.label}</Button>
               <span> =&gt; </span>
-              <span className="bg-secondary rounded-full p-3">{proc.output.spec}</span>
+              <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
             </div>
           )}
         </div>

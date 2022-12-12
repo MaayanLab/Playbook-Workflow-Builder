@@ -1,98 +1,13 @@
 import { z } from "zod"
+import sha256 from '@/utils/sha256'
 import type KRG from "@/core/KRG"
+import IEE2791schema from '@/spec/bco'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { FPL } from "./FPPRG"
 
-const uriSchema = z.object({
-  uri: z.string(),
-  access_time: z.string().optional(),
-  filename: z.string().optional(),
-})
-export const BCOschema = z.object({
-  etag: z.string(),
-  object_id: z.string(),
-  spec_version: z.string(),
-  usability_domain: z.array(z.string()),
-  provenance_domain: z.object({
-    embargo: z.object({}),
-    name: z.string(),
-    version: z.string(),
-    license: z.string(),
-    derived_from: z.string(),
-    contributors: z.array(
-      z.object({
-        name: z.string(),
-        orcid: z.string().optional(),
-        affiliation: z.string(),
-        contribution: z.array(z.string()),
-        email: z.string()
-      }),
-    ),
-    review: z.array(
-      z.object({
-        reviewer: z.object({
-          name: z.string(),
-          orcid: z.string(),
-          affiliation: z.string(),
-          contribution: z.array(z.string()),
-          email: z.string()
-        }),
-        status: z.string()
-      })
-    ),
-    created: z.string(),
-    modified: z.string()
-  }),
-  description_domain: z.object({
-    keywords: z.array(z.string()),
-    platform: z.array(z.string()),
-    pipeline_steps: z.array(
-      z.object({
-        name: z.string(),
-        description: z.string().optional(),
-        version: z.string().optional(),
-        step_number: z.number(),
-        input_list: z.array(uriSchema),
-        output_list: z.array(uriSchema),
-        prerequisite: z.array(
-          z.object({
-            name: z.string(),
-            uri: uriSchema,
-          })
-        ).optional()
-      }),
-    )
-  }),
-  parametric_domain: z.array(
-    z.object({ step: z.string(), param: z.string(), value: z.string() })
-  ),
-  execution_domain: z.object({
-    external_data_endpoints: z.array(
-      z.object({ name: z.string(), url: z.string() })
-    ),
-    software_prerequisites: z.array(
-      z.object({
-        name: z.string(),
-        version: z.string(),
-        uri: uriSchema,
-      }),
-    ),
-    environment_variables: z.record(z.string(), z.string()),
-    script_driver: z.string(),
-    script: z.array(
-      z.object({ uri: uriSchema })
-    )
-  }),
-  io_domain: z.object({
-    input_subdomain: z.array(z.object({ uri: uriSchema, mediatype: z.string().optional() })),
-    output_subdomain: z.array(z.object({ uri: uriSchema, mediatype: z.string().optional() })),
-  }),
-  error_domain: z.object({
-    algorithmic_error: z.object({}).optional(),
-    empirical_error: z.object({}).optional(),
-  })
-})
+type BCO = z.infer<typeof IEE2791schema>
+type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
 
 function toBCOTimeString(date?: Date) {
   if (date === undefined) date = new Date()
@@ -101,7 +16,7 @@ function toBCOTimeString(date?: Date) {
 type PromiseType<T> = T extends Promise<infer RT> ? RT : never
 type FullFPL = Array<PromiseType<ReturnType<FPL['toJSONWithOutput']>>>
 
-export default function FPL2BCO(krg: KRG, fpl: FullFPL): z.infer<typeof BCOschema> {
+export default function FPL2BCO(krg: KRG, fpl: FullFPL): BCO {
   const processLookup = dict.init(fpl.map((step, index) => ({
     key: step.process.id,
     value: {
@@ -110,10 +25,7 @@ export default function FPL2BCO(krg: KRG, fpl: FullFPL): z.infer<typeof BCOschem
       metanode: krg.getProcessNode(step.process.type)
     }
   })))
-  return {
-    etag: '',// TODO
-    object_id: '', // TODO
-    spec_version: 'https://w3id.org/ieee/ieee-2791-schema/',
+  const baseBCO: BaseBCO = {
     usability_domain: [
       // TODO
       'Some description about this workflow',
@@ -206,7 +118,7 @@ export default function FPL2BCO(krg: KRG, fpl: FullFPL): z.infer<typeof BCOschem
           uri: {
             uri: `${process.env.PUBLIC_URL}/api/db/fpl/${fpl[fpl.length-1].id}`,
           },
-          mediatype: 'application/json',
+          // mediatype: 'application/json',
         },
       ],
       output_subdomain: [
@@ -218,10 +130,12 @@ export default function FPL2BCO(krg: KRG, fpl: FullFPL): z.infer<typeof BCOschem
         }
       ]
     },
-    error_domain: {
-      // TODO
-      algorithmic_error: {},
-      empirical_error: {},
-    },
+    // TODO error_domain
+  }
+  return {
+    spec_version: 'https://w3id.org/ieee/ieee-2791-schema/2791object.json',
+    etag: sha256(baseBCO),
+    object_id: `${process.env.PUBLIC_URL}/api/bco/${fpl[fpl.length-1].id}`,
+    ...baseBCO,
   }
 }

@@ -11,18 +11,9 @@
  *  while the Resolved table corresponds to metanode data types.
  */
 
-import { Hash } from "fast-sha256"
+import sha256 from '@/utils/sha256'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
-
-/**
- * Obtain a unique hash for a arbitrary data
- */
-function sha256(data: any) {
-  const h = new Hash()
-  h.update(Buffer.from(JSON.stringify(data)))
-  return Buffer.from(h.digest()).toString('hex')
-}
 
 /**
  * Content-addressable storage

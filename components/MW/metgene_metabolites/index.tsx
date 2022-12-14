@@ -28,6 +28,6 @@ export const MetgeneMetabolites = MetaNode.createProcess('MetgeneMetabolites')
     
 
     //return props.inputs.input
-    return await res
+    return  res
   })
   .build()

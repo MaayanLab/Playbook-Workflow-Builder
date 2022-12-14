@@ -1,54 +1,43 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneSymbol } from '@/components/gene'
+import { GeneInfo } from '../service/mygeneinfo'
+import { z } from 'zod'
 
-export type GlyGenGeneType = {
-  gene_name: typeof GeneSymbol
+export const GlyGenGeneType = {
+  gene_name: typeof GeneInfo
 }
 
-export type GlyGenResponseType = {
-  queryinfo: string[],
-  results: string[]
-}
+export const GlyGenResponse = z.object({
+  queryinfo: z.any(),
+  results: z.array(z.any())
+})
 
-export const GlyGenResponse = MetaNode.createData('GlyGenResponse')
+export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
+
+export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
   .meta({
     label: 'GlyGen Response',
     description: 'GlyGen response object',
   })
-  .codec<GlyGenResponseType>()
+  .codec(GlyGenResponse)
   .view(data => (
     <>
-      <div>Results: {JSON.stringify(data.queryinfo.batch.total_hits)}</div>
-      <div>Limit: {JSON.stringify(data.queryinfo.batch.limit)}</div>
-      <div>{JSON.stringify(data.results)}</div>
+      <div><pre>{JSON.stringify(data)}</pre></div>
     </>
     
   ))
   .build()
-
-export const GlyGenQuery = MetaNode.createData('GlyGenQuery')
-  .meta({
-    label: 'GlyGen Query',
-    description: 'Search for records in GlyGen. Must be a JSON input',
-  })
-  .codec<GlyGenGeneType>()
-  .view(data => (
-    <div>{JSON.stringify({data})}</div>
-  ))
-  .build()
-
-export const GeneToProtein = 
 
 export const ProteinProductInformation = MetaNode.createProcess('ProteinProductInformation')
   .meta({
     label: 'Protein Product Information',
     description: 'Search for protein records in GlyGen',
   })
-  .inputs({ query: GlyGenQuery })
-  .output(GlyGenResponse)
+  .inputs({ gene: GeneInfo })
+  .output(GlyGenResponseNode)
   .resolve(async (props) => {
-    const query = JSON.stringify(props.inputs.query)
+    const query = encodeURIComponent(`{"recommended_gene_name":"${props.inputs.gene.symbol}"`)
+    console.log('props', props, query)
     const response = await fetch(`https://api.glygen.org/directsearch/protein/?query=${query}`, {
       method: 'GET',
       headers: {

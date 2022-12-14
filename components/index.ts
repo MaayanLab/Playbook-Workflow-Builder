@@ -23,6 +23,8 @@ export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
+export * from "./gly_gen"
+components.push("gly_gen")
 export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/mygeneinfo"

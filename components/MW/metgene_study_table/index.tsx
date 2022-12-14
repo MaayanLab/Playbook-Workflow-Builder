@@ -17,8 +17,7 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
     const heading1 = "Kegg Compound Id"
     const heading2 = "Refmet Name"
     const heading3 = "Study Ids"
-    const refmet_url = "\""
-    const url_close = "\""
+    
     const studyID_url = "https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID="
     return (
       <div>

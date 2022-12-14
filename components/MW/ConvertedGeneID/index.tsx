@@ -73,6 +73,7 @@ export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
         <td><a href = {`https://www.ncbi.nlm.nih.gov/gene/${val.ENTREZID}`}>{val.SYMBOL}</a></td>
         <td>{val.GENENAME}</td>
       </tr>
+    )
     })}
     </table></div>
     )

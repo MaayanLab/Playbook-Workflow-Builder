@@ -2,7 +2,7 @@
   "name": "ConvertedGeneID",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
-  "author": "Mano Maurya",
+  "author": "Mano Maurya <mano@sdsc.edu>",
   "private": true,
   "main": "index.ts",
   "dependencies": {

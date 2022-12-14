@@ -38,12 +38,13 @@ export const ProteinProductInformation = MetaNode.createProcess('ProteinProductI
   .resolve(async (props) => {
     const query = encodeURIComponent(`{"recommended_gene_name":"${props.inputs.gene.symbol}"`)
     console.log('props', props, query)
-    const response = await fetch(`https://api.glygen.org/directsearch/protein/?query=${query}`, {
+    const request = await fetch(`https://api.glygen.org/directsearch/protein/?query=${query}`, {
       method: 'GET',
       headers: {
         accept: 'application/json'
       }
       })
-    return response.json()
+    const response = await request.json()
+    console.log('response', response)
   })
   .build()

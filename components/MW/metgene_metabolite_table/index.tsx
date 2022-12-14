@@ -31,19 +31,19 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
             <th>{heading5}</th>
           </tr>
           {data.map((val, key) => {
-          var all_rxn_ids = val.KEGG_REACTION_ID
-          var cpd_id = val.KEGG_COMPOUND_ID     
-          var rxn_id_arr = all_rxn_ids.split(", ")
+          const all_rxn_ids = val.KEGG_REACTION_ID
+          const cpd_id = val.KEGG_COMPOUND_ID     
+          const rxn_id_arr = all_rxn_ids.split(", ")
           
           function wrapURLRxn(rxn_id) {
             return "https://www.genome.jp/entry/rn:"+rxn_id  
           }
-          var rxn_id_urls = rxn_id_arr.map(wrapURLRxn)
+          let rxn_id_urls = rxn_id_arr.map(wrapURLRxn)
           
-          var rxn_urls = []
+          let rxn_urls = []
           for (var i = 0; i < rxn_id_arr.length; i++){
-            var rxn_id = rxn_id_arr[i]+" "
-            var rxn_url = rxn_id_urls[i]
+            let rxn_id = rxn_id_arr[i]+" "
+            let rxn_url = rxn_id_urls[i]
             
             rxn_urls.push(<a href = {rxn_url} target = "_blank">{rxn_id}</a>)
             

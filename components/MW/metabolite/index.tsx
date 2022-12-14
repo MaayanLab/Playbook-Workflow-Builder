@@ -1,7 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import * as t from 'io-ts'
-import codecFrom from '@/utils/io-ts-codec'
+import { z } from 'zod'
 
 const example = 'Glucose'
 
@@ -11,7 +10,7 @@ export const MetaboliteName = MetaNode.createData('MetaboliteName')
     description: 'An unresolved Metabolite',
     example,
   })
-  .codec(codecFrom(t.string))
+  .codec(z.string())
   .view(metabolite => (
     <div>{metabolite} (metabolite)</div>
   ))

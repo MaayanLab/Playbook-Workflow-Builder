@@ -53,7 +53,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
   const kvdb: Record<string, string> = {}
-  for await (const { key, value } of db.iterator() as any) {
+  for await (const [ key, value ] of db.iterator() as any) {
     kvdb[key] = value.toString()
     const suggestion = JSON.parse(kvdb[key])
     let OutputNode = krg.getDataNode(suggestion.output)

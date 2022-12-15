@@ -22,7 +22,7 @@ export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
   .codec(GlyGenResponse)
   .view(data => (
     <>
-      <div><pre>{JSON.stringify(data)}</pre></div>
+      <div><pre>{JSON.parse(data.results)}</pre></div>
     </>
     
   ))
@@ -36,8 +36,9 @@ export const ProteinProductInformation = MetaNode.createProcess('ProteinProductI
   .inputs({ gene: GeneInfo })
   .output(GlyGenResponseNode)
   .resolve(async (props) => {
-    const query = encodeURIComponent(`{"recommended_gene_name":"${props.inputs.gene.symbol}"`)
-    console.log('props', props, query)
+    const query = encodeURIComponent(JSON.stringify({
+      recommended_gene_name: props.inputs.gene.symbol,
+    }))
     const request = await fetch(`https://api.glygen.org/directsearch/protein/?query=${query}`, {
       method: 'GET',
       headers: {
@@ -45,6 +46,5 @@ export const ProteinProductInformation = MetaNode.createProcess('ProteinProductI
       }
       })
     const response = await request.json()
-    console.log('response', response)
   })
   .build()

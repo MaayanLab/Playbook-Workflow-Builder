@@ -34,23 +34,16 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
                 
           var study_id_arr = all_study_ids.split(", ")
           
-          function wrapURL(study_id) {
-            return "https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID="+study_id  
-          }
-          var study_id_urls = study_id_arr.map(wrapURL)
-          var urls = []
-          for (var i = 0; i < study_id_arr.length; i++){
-            var study_id = study_id_arr[i]+" "
-            var study_url = study_id_urls[i]
-            
-            urls.push(<a href = {study_url} target = "_blank">{study_id}</a>)
-            
-          }
+          
           return (
             <tr key={key}>
               <td>{val.KEGG_COMPOUND_ID}</td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
-              <td>{urls}</td>
+              <td>
+                {study_id_arr.map((study_id, i) =>
+                  <a key={i} href = {`https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=${study_id}`} target = "_blank">{study_id}</a>
+                )}
+              </td>
             </tr>
           )
         })}

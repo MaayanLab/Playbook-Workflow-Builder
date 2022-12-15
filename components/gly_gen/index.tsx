@@ -22,7 +22,7 @@ export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
   .codec(GlyGenResponse)
   .view(data => (
     <>
-      <div><pre>{JSON.parse(data.results)}</pre></div>
+      <div>{data.results}</div>
     </>
     
   ))

@@ -26,7 +26,7 @@ export const GeneIDConv = MetaNode.createProcess('GeneIDConv')
     const res = await req.json()
 
     //return props.inputs.gene
-    return await res
+    return res
   })
   .build()
 

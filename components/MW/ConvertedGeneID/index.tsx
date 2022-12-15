@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
+//import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 
 export function uniqJsonSubset(data) {
   //let datastr = JSON.stringify(data);  datastr = datastr.replace("^[","");  datastr = datastr.replace("]$","");  const dataobj = JSON.parse(datastr);

@@ -35,24 +35,15 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
           var cpd_id = val.KEGG_COMPOUND_ID     
           var rxn_id_arr = all_rxn_ids.split(", ")
           
-          function wrapURLRxn(rxn_id) {
-            return "https://www.genome.jp/entry/rn:"+rxn_id  
-          }
-          var rxn_id_urls = rxn_id_arr.map(wrapURLRxn)
-          
-          var rxn_urls = []
-          for (var i = 0; i < rxn_id_arr.length; i++){
-            var rxn_id = rxn_id_arr[i]+" "
-            var rxn_url = rxn_id_urls[i]
-            
-            rxn_urls.push(<a href = {rxn_url} target = "_blank">{rxn_id}</a>)
-            
-          }
           return (
             <tr key={key}>
               <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "__blank">{val.KEGG_COMPOUND_ID}</a></td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
-              <td>{rxn_urls}</td>
+              <td>
+                {rxn_id_arr.map((rxn_id, i) =>
+                  <a key={i} href = {`https://www.genome.jp/entry/rn:${rxn_id}`} target = "_blank">{rxn_id}</a>
+                )}
+              </td>
               <td><a href = {val.METSTAT_LINK} target = "__blank">METSTAT</a></td>
             </tr>
           )

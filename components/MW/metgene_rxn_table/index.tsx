@@ -16,13 +16,13 @@ export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
   // react component rendering your data goes here
   
   .view(data => {
-    //return (
+    
     const heading1 = "Gene"
     const heading2 = "Kegg Rxn Id"
     const heading3 = "Kegg Rxn Name"
     
     return (
-      //<div>{JSON.stringify(data)}</div>
+
       <div>
         <h2>MetGENE Reactions</h2>
         <table>

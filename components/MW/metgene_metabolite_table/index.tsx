@@ -31,10 +31,11 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
             <th>{heading5}</th>
           </tr>
           {data.map((val, key) => {
-          var all_rxn_ids = val.KEGG_REACTION_ID
-          var cpd_id = val.KEGG_COMPOUND_ID     
-          var rxn_id_arr = all_rxn_ids.split(", ")
+          const all_rxn_ids = val.KEGG_REACTION_ID
+          const cpd_id = val.KEGG_COMPOUND_ID     
+          const rxn_id_arr = all_rxn_ids.split(", ")
           
+
           return (
             <tr key={key}>
               <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "__blank">{val.KEGG_COMPOUND_ID}</a></td>

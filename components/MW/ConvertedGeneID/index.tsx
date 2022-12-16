@@ -6,10 +6,12 @@ import { z } from 'zod'
 export function uniqJsonSubset(data) {
   //let datastr = JSON.stringify(data);  datastr = datastr.replace("^[","");  datastr = datastr.replace("]$","");  const dataobj = JSON.parse(datastr);
   
-  const [dataobj] = data;
-  let uniqENTREZID : string[] = Array.from(new Set( dataobj.map(a => a.ENTREZID)));
-  let uniqSYMBOL : string[] = Array.from(new Set( dataobj.map(a => a.SYMBOL)));
-  let uniqGENENAME : string[] = Array.from(new Set( dataobj.map(a => a.GENENAME)));
+  //const [dataobj] = data; // did not work
+  //const dataobj = data; //const dataobj = [data][0];
+
+  let uniqENTREZID : string[] = Array.from(new Set( data.map(a => a.ENTREZID)));
+  let uniqSYMBOL : string[] = Array.from(new Set( data.map(a => a.SYMBOL)));
+  let uniqGENENAME : string[] = Array.from(new Set( data.map(a => a.GENENAME)));
 
   let uniqdataobj = uniqENTREZID.map((id, idx) => {
    return {
@@ -34,24 +36,29 @@ export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
   // react component rendering your data goes here
   .view(data => {
     //return (...data) => {
-    const [dataobj] = data;
+    //window.alert("Type of data is:" + typeof(data));
+    //const dataobj = [data][0];
+    const dataobj = data; //const dataobj = [data][0];
+    //window.alert(dataobj[0]);
 
     //for (let i=0; i<arr.length; i++) {document.writeln(arr[i]);}
     // extract all SYMBOL and ENTREZID: https://stackoverflow.com/questions/19590865/from-an-array-of-objects-extract-value-of-a-property-as-array
     // var, let, const: https://www.tutorialsteacher.com/typescript/typescript-variable
-    let ENTREZID : string[] = dataobj.map(a => a.ENTREZID);
-    let SYMBOL : string[] = dataobj.map(a => a.SYMBOL);
-    let GENENAME : string[] = dataobj.map(a => a.GENENAME);
+    // not used but keeping for knowing the syntax
+    //let ENTREZID : string[] = dataobj.map(a => a.ENTREZID);
+    //let SYMBOL : string[] = dataobj.map(a => a.SYMBOL);
+    //let GENENAME : string[] = dataobj.map(a => a.GENENAME);
 
-    let uniqENTREZID : string[] = Array.from(new Set( dataobj.map(a => a.ENTREZID)));
-    let uniqSYMBOL : string[] = Array.from(new Set( dataobj.map(a => a.SYMBOL)));
-    let uniqGENENAME : string[] = Array.from(new Set( dataobj.map(a => a.GENENAME)));
+    let uniqENTREZID : string[] = Array.from(new Set( data.map(a => a.ENTREZID)));
+    let uniqSYMBOL : string[] = Array.from(new Set( data.map(a => a.SYMBOL)));
+    let uniqGENENAME : string[] = Array.from(new Set( data.map(a => a.GENENAME)));
 
     // const picked = (({ a, c }) => ({ a, c }))(object);
     //let dataobj1 = Array.from(new Set(dataobj.map(a => ({"ENTREZID": a.ENTREZID, 
     //                  "SYMBOL" : a.SYMBOL, "GENENAME": a.GENENAME}))) ];
 
-    let uniqdataobj = uniqENTREZID.map((id, idx) => {
+    let uniqdataobj = uniqJsonSubset(data);
+    let uniqdataobj2 = uniqENTREZID.map((id, idx) => {
      return {
       ENTREZID : uniqENTREZID[idx], 
       SYMBOL : uniqSYMBOL[idx],

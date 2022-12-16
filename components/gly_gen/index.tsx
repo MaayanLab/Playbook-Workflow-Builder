@@ -21,10 +21,18 @@ export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
   })
   .codec(GlyGenResponse)
   .view(data => (
-    <>
-      <pre>{JSON.stringify(data.results)}</pre>
-    </>
-    
+    <div>
+      Query:
+      <pre >
+        {JSON.stringify(data.queryinfo.query, undefined, 2)}
+      </pre>
+      Results:
+      {data.results.map((result, index) => (
+        <div key={index}>
+          {JSON.stringify(result.uniprot_canonical_ac, undefined, 2)}
+        </div>
+      ))}
+    </div>
   ))
   .build()
 
@@ -46,5 +54,6 @@ export const ProteinProductInformation = MetaNode.createProcess('ProteinProductI
       }
       })
     const response = await request.json()
+    return response
   })
   .build()

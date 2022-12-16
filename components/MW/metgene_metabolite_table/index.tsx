@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { valHooks } from 'jquery'
+
 
 // A unique name for your data type is used here
 export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTable')

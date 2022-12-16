@@ -22,7 +22,7 @@ export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
     const heading3 = "Kegg Rxn Name"
     
     return (
-     
+
       <div>
         <h2>MetGENE Reactions</h2>
         <table>

@@ -20,7 +20,7 @@ export const MetaboliteInfo = MetaNode.createProcess('MetaboliteInfo')
     const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
     const res = await req.json()
     
-    return await res
+    return  res
     //return props.inputs.input
   })
   .build()

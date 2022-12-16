@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
-//import { MetGeneRxn } from '../metgene_rxns'
+
 import { MetGeneStudyTable } from '../metgene_study_table'
 
 // A unique name for your resolver is used here
@@ -22,14 +22,14 @@ export const MetGeneStudies = MetaNode.createProcess('MetGeneStudies')
   .resolve(async (props) => {
     const species_id = "hsa"
     const geneID_type = "SYMBOL"
-    //const gene_ID = "3098"
+    
     const gene_ID = props.inputs.gene
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/studies/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
     
 
-    //return props.inputs.input
-    return await res
+    
+    return  res
   })
   .build()

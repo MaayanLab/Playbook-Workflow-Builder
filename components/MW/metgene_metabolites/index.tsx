@@ -20,7 +20,6 @@ export const MetgeneMetabolites = MetaNode.createProcess('MetgeneMetabolites')
   .resolve(async (props) => {
     const species_id = "hsa"
     const geneID_type = "SYMBOL"
-    //const gene_ID = "3098"
     const gene_ID = props.inputs.gene
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/metabolites/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
@@ -28,6 +27,6 @@ export const MetgeneMetabolites = MetaNode.createProcess('MetgeneMetabolites')
     
 
     //return props.inputs.input
-    return await res
+    return  res
   })
   .build()

@@ -3,13 +3,15 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneInfo } from '../service/mygeneinfo'
 import { z } from 'zod'
 
-export const GlyGenGeneType = {
-  gene_name: typeof GeneInfo
-}
-
 export const GlyGenResponse = z.object({
-  queryinfo: z.any(),
-  results: z.array(z.any())
+  queryinfo: z.object({
+    query: z.object({
+      recommended_gene_name: z.string()
+    }),
+  }),
+  results: z.array(z.object({
+    uniprot_canonical_ac: z.string()
+  }))
 })
 
 export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
@@ -53,7 +55,7 @@ export const ProteinProductInformation = MetaNode.createProcess('ProteinProductI
         accept: 'application/json'
       }
       })
-    const response = await request.json()
+    const response = GlyGenResponse.parse(await request.json())
     return response
   })
   .build()

@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 //import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 
-export function uniqJsonSubset(data) {
+export function uniqJsonSubset(data:any) {
   //let datastr = JSON.stringify(data);  datastr = datastr.replace("^[","");  datastr = datastr.replace("]$","");  const dataobj = JSON.parse(datastr);
   
   //const [dataobj] = data; // did not work
@@ -49,22 +49,11 @@ export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
     //let SYMBOL : string[] = dataobj.map(a => a.SYMBOL);
     //let GENENAME : string[] = dataobj.map(a => a.GENENAME);
 
-    let uniqENTREZID : string[] = Array.from(new Set( data.map(a => a.ENTREZID)));
-    let uniqSYMBOL : string[] = Array.from(new Set( data.map(a => a.SYMBOL)));
-    let uniqGENENAME : string[] = Array.from(new Set( data.map(a => a.GENENAME)));
-
     // const picked = (({ a, c }) => ({ a, c }))(object);
     //let dataobj1 = Array.from(new Set(dataobj.map(a => ({"ENTREZID": a.ENTREZID, 
     //                  "SYMBOL" : a.SYMBOL, "GENENAME": a.GENENAME}))) ];
 
     let uniqdataobj = uniqJsonSubset(data);
-    let uniqdataobj2 = uniqENTREZID.map((id, idx) => {
-     return {
-      ENTREZID : uniqENTREZID[idx], 
-      SYMBOL : uniqSYMBOL[idx],
-      GENENAME : uniqGENENAME[idx],
-    };
-    });
 
     return(
           <div><table>

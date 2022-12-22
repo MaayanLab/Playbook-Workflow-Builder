@@ -25,24 +25,37 @@ export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
       
       <div>
         <h2>MetGENE Reactions</h2>
-        
-        <table>
-          <tr>
-            <th>{heading1}</th>
-            <th>{heading2}</th>
-            <th>{heading3}</th>
-          </tr>
-          {data.map((val, key) => {
-          return (
-            <tr key={key}>
-              <td>{val.Gene}</td>
-              <td>{val.KEGG_REACTION_ID}</td>
-              <td>{val.KEGG_REACTION_NAME}</td>
+        {data.map((geneval:any, index:number) => (
+          <div key={index}>
+          <table>
+            
+            <thead>
+            <tr>
+              <th>{heading1}</th>
+              <th>{heading2}</th>
+              <th>{heading3}</th>
             </tr>
-          )
-        })}
-        </table>
+            </thead>
+             
+            <tbody>    
+            {geneval.map((val:any, index:number) => {
+            
+              return (
+                <tr key={index}>
+                  <td>{val.Gene}</td>
+                  <td><a href = {`https://www.kegg.jp/entry/rn:${val.KEGG_REACTION_ID}`} target = "__blank">{val.KEGG_REACTION_ID}</a></td>
+                  <td>{val.KEGG_REACTION_NAME}</td>
+                </tr>
+              )
+            })}
+            </tbody>
+          </table>
+          </div>
+          
+        ))}
+        
       </div>
-    )
+   )
   })
+  
   .build()

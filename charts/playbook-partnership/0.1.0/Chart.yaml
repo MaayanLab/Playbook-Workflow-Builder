@@ -1,0 +1,4 @@
+apiVersion: v2
+name: playbook-partnership
+version: 0.1.0
+description: Playbook Partnership

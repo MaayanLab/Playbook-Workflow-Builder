@@ -1,0 +1,111 @@
+{{- if .Values.accountsEnabled }}
+{{- $nextauthSecretName = print .Release.Name "-nextauth" }}
+{{- $nextauthSecretObj := (lookup "v1" "Secret" .Release.Namespace $nextauthSecretName) | default dict }}
+{{- $nextauthSecretData := (get $nextauthSecretObj "data") | default dict }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $nextauthSecretName }}
+  annotations:
+    "helm.sh/resource-policy": keep
+type: Opaque
+data:
+  nextauthSecret: {{ ((get $nextauthSecretData "secret") | default (randAlphaNum 32 | b64enc)) | b64enc | quote }}
+  access
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ .Values.imageRepository }}:{{ coalesce .Values.imageTag .Chart.Version }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: PUBLIC_URL
+          value: https://{{ .Values.ingressHost }}
+{{- if .Values.accountsEnabled }}
+        - name: EMAIL_SERVER
+          value: {{ .Values.emailServer }}
+        - name: EMAIL_FROM
+          value: {{ .Values.emailFrom }}
+        - name: NEXTAUTH_URL
+          value: https://{{ .Values.ingressHost }}
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ $nextauthSecretName }}
+              key: secret
+              optional: false
+{{- end }}
+        resources: {{ .Values.resources | toJson }}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: {{ .Release.Name }}
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: {{ .Release.Name }}
+{{- if .Values.ingress.enabled }}
+{{- if .Values.ingress.type == "standard" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  rules:
+  - host: {{ .Values.ingressHost }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - {{ .Values.ingressHost }}
+    secretName: {{ .Release.Name }}-tls
+{{- else if .Values.ingress.apiVersion == "traefik" }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Release.Name }}-websecure
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.ingressHost }}`)
+    services:
+    - kind: Service
+      name: {{ .Release.Name }}
+      port: 80
+  tls:
+    secretName: {{ .Release.Name }}-tls
+{{- end }}
+{{- end }}

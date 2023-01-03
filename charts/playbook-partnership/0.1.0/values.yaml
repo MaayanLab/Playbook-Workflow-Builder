@@ -1,0 +1,28 @@
+# how many replicas of the deployment to maintain
+replicaCount: 1
+# the deployment image pull policy
+imagePullPolicy: IfNotPresent
+# the deployment image repository/image
+imageRepository: maayanlab/playbook-partnership
+# the deployment image tag/version
+imageTag: null
+# the deployment resource constraints
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 50m
+    memory: 256Mi
+# whether or not the accounts feature should be enabled
+accountsEnabled: true
+# the email server
+emailServer: smtps://user:pass@email.com:465
+# the origin email account
+emailFrom: playbook-partnership@email.com
+# whether or not we should use an ingress
+ingressEnabled: true
+# type should be standard or traefik
+ingressType: standard
+# host is how it will be accessed
+ingressHost: playbook-partnership.localhost

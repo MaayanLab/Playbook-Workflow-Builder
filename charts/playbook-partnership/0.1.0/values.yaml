@@ -26,3 +26,11 @@ ingressEnabled: true
 ingressType: standard
 # host is how it will be accessed
 ingressHost: playbook-partnership.localhost
+# whether or not the app data should be persisted to object storage
+objectStorageEnabled: false
+# The secret should contain config to access the object storage including:
+objectStorageEndpoint: https://s3.amazonaws.com
+# the bucket name to use
+objectStorageBucket: ""
+# the name of the secret containing accessKeyId & secretAccessKey
+objectStorageSecret: ""

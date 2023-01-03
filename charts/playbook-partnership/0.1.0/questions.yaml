@@ -32,3 +32,23 @@ questions:
     required: true
     label: Ingress Host
     description: Host for this ingress
+- variable: objectStorageEnabled
+  type: boolean
+  required: true
+  label: Enable Object Storage
+  show_subquestions_if: true
+  subquestions:
+  - variable: objectStorageEndpoint
+    type: string
+    required: true
+    label: Object Storage Endpoint
+    default: https://s3.amazonaws.com
+  - variable: objectStorageBucket
+    type: string
+    required: true
+    label: Object Storage Bucket
+  - variable: objectStorageSecret
+    type: secret
+    required: true
+    label: Object Storage Secret Credentials
+    description: Should define accessKeyId & secretAccessKey

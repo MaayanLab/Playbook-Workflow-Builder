@@ -50,6 +50,24 @@ spec:
               key: secret
               optional: false
 {{- end }}
+{{- if .Values.objectStorageEnabled }}
+        - name: S3_ENDPOINT
+          value: {{ .Values.objectStorageEndpoint }}
+        - name: S3_BUCKET
+          value: {{ .Values.objectStorageBucket }}
+        - name: S3_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.objectStorageSecret }}
+              key: accessKeyId
+              optional: false
+        - name: S3_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.objectStorageSecret }}
+              key: secretAccessKey
+              optional: false
+{{- end }}
         resources: {{ .Values.resources | toJson }}
       restartPolicy: Always
 ---

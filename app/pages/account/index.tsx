@@ -3,7 +3,7 @@ import Head from 'next/head'
 import * as Auth from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import { Session } from 'next-auth'
-import { Icon, Tab, Tabs } from '@blueprintjs/core'
+import { Alert, ControlGroup, FormGroup, Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -22,13 +22,23 @@ export default function Account() {
       <Header homepage="/account" />
       
       <main className="flex-grow container mx-auto py-4 flex flex-row">
-        {(session && session.user) ? <AccountUI session={session as SessionWithUser} /> : <>
-          Not signed in <br/>
-          <Button onClick={() => Auth.signIn()}>Sign in</Button>
-        </>}
+        {(session && session.user) ?
+          <AccountUI session={session as SessionWithUser} />
+          : <AccountSignIn />}
       </main>
 
       <Footer />
+    </div>
+  )
+}
+
+function AccountSignIn() {
+  return (
+    <div className="flex-grow flex items-center justify-center">
+      <div className="text-center">
+        <p className="mb-2">You must sign in to view this page.</p>
+        <Button onClick={() => Auth.signIn()}>Sign in</Button>
+      </div>
     </div>
   )
 }
@@ -50,8 +60,8 @@ function AccountUI({ session }: { session: SessionWithUser }) {
       vertical
     >
       <span className='font-bold'>{session.user.email}</span>
-      <Tab id="profile" title={<><Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIProfile />} />
-      <Tab id="account" title={<><Icon icon="cog" /> Account</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIAccount />} />
+      <Tab id="profile" title={<><Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIProfile session={session}  />} />
+      <Tab id="account" title={<><Icon icon="cog" /> Account</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIAccount session={session}  />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Data</span>
       <Tab id="uploads" title={<><Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIUploads />} />
@@ -67,20 +77,93 @@ function AccountUI({ session }: { session: SessionWithUser }) {
   )
 }
 
-function AccountUIProfile() {
+function AccountUIProfile({ session }: { session: SessionWithUser }) {
+  const [userDraft, setUserDraft] = React.useState(session.user)
   return (
     <>
       <h3 className="bp4-heading">Profile Settings</h3>
-      TODO
+      <div>
+        <FormGroup
+          label="Authorship Information"
+          helperText="Let us know who you are and how to contact you"
+        >
+          <ControlGroup fill vertical>
+            <ControlGroup fill>
+              <InputGroup
+                type="text"
+                placeholder="Name"
+                value={userDraft.name || ''}
+                onChange={evt => {
+                  setUserDraft(({ ...user }) => ({ ...user, name: evt.target.value }))
+                }}
+                leftIcon="person"
+              />
+              <InputGroup
+                type="email"
+                placeholder="Email"
+                readOnly
+                value={userDraft.email || ''}
+                onChange={evt => {
+                  setUserDraft(({ ...user }) => ({ ...user, email: evt.target.value }))
+                }}
+                leftIcon="envelope"
+              />
+            </ControlGroup>
+            <InputGroup
+              type="text"
+              placeholder="Affiliation"
+              value={userDraft.org || ''}
+              onChange={evt => {
+                setUserDraft(({ ...user }) => ({ ...user, org: evt.target.value }))
+              }}
+              leftIcon="office"
+            />
+          </ControlGroup>
+        </FormGroup>
+        <Button
+          intent="success"
+          onClick={() => {
+            // TODO: Update profile
+          }}
+        >Update Profile</Button>
+      </div>
     </>
   )
 }
 
-function AccountUIAccount() {
+function AccountUIAccount({ session }: { session: SessionWithUser }) {
   return (
     <>
-      <h3 className="bp4-heading">Account Settings</h3>
-      TODO
+      <div className="mb-2"><AccountUIAccountDeleteAccount session={session} /></div>
+    </>
+  )
+}
+
+function AccountUIAccountDeleteAccount({ session }: { session: SessionWithUser }) {
+  const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
+  return (
+    <>
+      <h3 className="bp4-heading text-red-600">Delete Account</h3>
+      <Button
+        intent="danger"
+        onClick={() => setDeletionConfirmation(true)}
+      >Delete your account</Button>
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete Account"
+        icon="delete"
+        intent="danger"
+        isOpen={deletionConfirmation}
+        canEscapeKeyCancel
+        canOutsideClickCancel
+        onCancel={() => {setDeletionConfirmation(false)}}
+        onConfirm={() => {
+          // TODO: actually delete account
+        }}
+      >
+        Are you sure you want to delete your account?
+        After clicking Delete Account, your account <b>and all associated content including uploads and saved graphs</b> will be subject to deletion and <b>cannot be restored</b>.<br />
+      </Alert>
     </>
   )
 }

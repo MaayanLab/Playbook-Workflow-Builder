@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { Session } from 'next-auth'
 import { Alert, ControlGroup, FormGroup, Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -198,11 +199,58 @@ function AccountUIBioCompute() {
   )
 }
 
+import CAVATICAProjectGuide from '@/app/public/CAVATICA-guide-project.png'
+import CAVATICAAPIKeyGuide from '@/app/public/CAVATICA-guide-apikey.png'
+
 function AccountUICAVATICA() {
   return (
     <>
       <h3 className="bp4-heading">CAVATICA Integration</h3>
-      TODO
+      <p className="bp4-running-text">
+        <a href="https://www.cavatica.org/">CAVATICA</a> is a data analysis and sharing platform designed to accelerate discovery in a scalable, cloud-based compute environment where data, results, and workflows are shared among the world's research community. Developed by Seven Bridges and funded in-part by a grant from the National Institutes of Health (NIH) Common Fund, CAVATICA is continuously updated with new tools and datasets.</p>
+        <p className="my-2">CAVATICA offers secure storage and compute in a cloud environment. Appyter integration with CAVATICA enables you to execute Appyters against data in a CAVATICA project and use CAVATICA-managed computational resources.</p>
+        <p className="my-2">To use CAVATICA, you must <a href="https://pgc-accounts.sbgenomics.com/auth/login" target="_blank">login or create an account</a>, then a project should be established which will be used for file storage and executions that are configured.</p>
+        <Image src={CAVATICAProjectGuide} alt="CAVATICA Project Creation Guide" />
+        <p className="my-2">To use CAVATICA you must register your CAVATICA API Key with Appyters, this key can be located at <a href="https://cavatica.sbgenomics.com/developer/token" target="_blank">https://cavatica.sbgenomics.com/developer/token</a></p>
+        <Image src={CAVATICAAPIKeyGuide} alt="CAVATICA API Key Guide" />
+        <div className="my-4">
+          <FormGroup
+            label="API Key"
+            labelFor="cavatica-api-key"
+            helperText="Provide your CAVATICA credentials"
+          >
+            <InputGroup
+              id="cavatica-api-key"
+              type="string"
+              placeholder="e.g. 08cd35123..."
+              leftIcon="key"
+            />
+          </FormGroup>
+          <FormGroup
+            label="CAVATICA Project"
+            labelFor="cavatica-project"
+            helperText="Specify the default project in CAVATICA"
+          >
+            <InputGroup
+              id="cavatica-project"
+              type="string"
+              placeholder="e.g. youruser/yourproject"
+              leftIcon="projects"
+            />
+          </FormGroup>
+          <ControlGroup>
+            <Button
+              intent="success"
+              onClick={() => {
+                // TODO
+              }}>Save</Button>
+            <Button
+              intent="danger"
+              onClick={() => {
+                // TODO
+              }}>Delete</Button>
+          </ControlGroup>
+        </div>
     </>
   )
 }

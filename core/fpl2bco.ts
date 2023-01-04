@@ -36,6 +36,8 @@ export default function FPL2BCO(krg: KRG, fpl: FullFPL): BCO {
       version: '1.0',
       license: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
       derived_from: 'NA',
+      // TODO: replace with user account info
+      //       & authors of components in the workflow
       contributors: [
         {
           name: 'Daniel Clarke',
@@ -135,7 +137,8 @@ export default function FPL2BCO(krg: KRG, fpl: FullFPL): BCO {
   return {
     spec_version: 'https://w3id.org/ieee/ieee-2791-schema/2791object.json',
     etag: sha256(baseBCO),
-    object_id: `${process.env.PUBLIC_URL}/api/bco/${fpl[fpl.length-1].id}`,
+    // Note: Object IDs will be minted upstream
+    object_id: "",
     ...baseBCO,
   }
 }

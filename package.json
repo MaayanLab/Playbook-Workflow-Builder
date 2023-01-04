@@ -12,6 +12,7 @@
     "dev": "npx --workspace=app next dev",
     "prebuild": "ts-node cli/sync-component-import.ts",
     "preinstall": "ts-node cli/enumerate-requirements.ts",
+    "build:sql": "mkdir -p db/migrations && ts-node -r tsconfig-paths/register cli/build-sql.ts > db/migrations/00_init.sql",
     "convert-icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
     "start": "npx --workspace=app next start"
   },

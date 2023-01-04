@@ -4,6 +4,7 @@ import * as Auth from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import { Session } from 'next-auth'
 import { Alert, ControlGroup, FormGroup, Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
+import { useRouter } from 'next/router'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -44,16 +45,17 @@ function AccountSignIn() {
 }
 
 function AccountUI({ session }: { session: SessionWithUser }) {
-  const [tab, setTab] = React.useState('profile')
+  const router = useRouter()
+  const tab = (router.query.tab as string) || 'profile'
   return (
     <Tabs
       className="flex-grow"
       selectedTabId={tab}
       onChange={(tab) => {
         if (tab === 'signout') {
-          Auth.signOut()
+          Auth.signOut({ callbackUrl: '/account' })
         } else {
-          setTab(tab.toString())
+          router.push(`/account/${tab}`, undefined, { shallow: true })
         }
       }}
       renderActiveTabPanelOnly
@@ -61,7 +63,7 @@ function AccountUI({ session }: { session: SessionWithUser }) {
     >
       <span className='font-bold'>{session.user.email}</span>
       <Tab id="profile" title={<><Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIProfile session={session}  />} />
-      <Tab id="account" title={<><Icon icon="cog" /> Account</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIAccount session={session}  />} />
+      <Tab id="settings" title={<><Icon icon="cog" /> Settings</>} panelClassName="flex-grow flex flex-col" panel={<AccountUISettings session={session}  />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Data</span>
       <Tab id="uploads" title={<><Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIUploads />} />
@@ -131,15 +133,15 @@ function AccountUIProfile({ session }: { session: SessionWithUser }) {
   )
 }
 
-function AccountUIAccount({ session }: { session: SessionWithUser }) {
+function AccountUISettings({ session }: { session: SessionWithUser }) {
   return (
     <>
-      <div className="mb-2"><AccountUIAccountDeleteAccount session={session} /></div>
+      <div className="mb-2"><AccountUISettingsDeleteAccount session={session} /></div>
     </>
   )
 }
 
-function AccountUIAccountDeleteAccount({ session }: { session: SessionWithUser }) {
+function AccountUISettingsDeleteAccount({ session }: { session: SessionWithUser }) {
   const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
   return (
     <>

@@ -28,6 +28,7 @@
     "levelup": "^5.1.1",
     "next": "^12.3.1",
     "pg": "^8.8.0",
+    "pg-listen": "^1.7.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "subleveldown": "^6.0.1",

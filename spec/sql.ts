@@ -102,3 +102,26 @@ export class View<T extends {} = {}> {
     return { ...type, name, field_types, schema_up, schema_down } as unknown as TypedSchema<T>
   }
 }
+
+
+export type SQLSchema = {
+  schema_up: string
+  schema_down: string
+}
+
+export class SQL {
+  constructor(public t: SQLSchema) {}
+  static create() {
+    return new SQL({ schema_up: '', schema_down: '' })
+  }
+  up(...sql: string[]) {
+    return new SQL({ ...this.t, schema_up: sql.join('\n'), })
+  }
+  down(...sql: string[]) {
+    return new SQL({ ...this.t, schema_down: sql.join('\n'), })
+  }
+  build() {
+    const { schema_up, schema_down } = this.t
+    return { schema_up, schema_down }
+  }
+}

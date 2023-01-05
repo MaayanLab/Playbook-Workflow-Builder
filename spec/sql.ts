@@ -4,10 +4,21 @@
  **/
 import { z } from "zod"
 import * as dict from '@/utils/dict'
+import { Codec, Decoded, Encoded } from "./codec"
 
-export type TypedSchema<T = {}> = z.ZodType<T> & {
+const identityZodCodec = <T>(z: z.ZodType<T>): Codec<T, T> => ({ encode: z.parse, decode: z.parse })
+
+const ObjectCodec = <T>(field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}) => ({
+  encode: (data: { [K in keyof T]: Decoded<T[K]> }) =>
+    dict.init(dict.items(data).map(({ key, value }) => ({ key, value: field_codecs[key as keyof T].encode(value as any) }))) as { [K in keyof T]: Encoded<T[K]> },
+  decode: (data: { [K in keyof T]: Encoded<T[K]> }) =>
+    dict.init(dict.items(data).map(({ key, value }) => ({ key, value: field_codecs[key as keyof T].decode(value as any) }))) as { [K in keyof T]: Decoded<T[K]> },
+})
+
+export type TypedSchema<T = {}> = {
   name: string
-  field_types: {[K in keyof T]: z.ZodType<T[K]>}
+  codec: Codec<{[K in keyof T]: Decoded<T[K]>}, {[K in keyof T]: Encoded<T[K]>}>
+  field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}
   field_sql: {[K in keyof T]: string}
   extra_insert_sql?: string,
   schema_up: string
@@ -16,32 +27,35 @@ export type TypedSchema<T = {}> = z.ZodType<T> & {
 
 export type TableSchema<T = {}> = {
   name: string
-  field_types: {[K in keyof T]: z.ZodType<T[K]>}
+  field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}
   field_sql: {[K in keyof T]: string}
   field_extra_sql: {[K in keyof T]: string}
   extra_sql: string[]
-  extra_insert_sql: string[],
+  extra_insert_sql: string,
 }
 
 /**
  * Usage:
  * const table_name = Table.createTable('table_name')
- *   .field('fieldname', z.string(), 'varchar') // fieldname, zod schema and pg schema
+ *   // fieldname, pg schema, and a codec to determine how it should be treated in and out of the db
+ *   .field('fieldname', 'varchar', { encode: z.string().transform(s => s|0).parse, decode: z.int().transform(i => i+'').parse }) 
+ *   // in the case of storing it equally both ways, a zod schema can be used
+ *   .field('fieldname', 'varchar', z.string())
  *   .extra('') // any extra sql in the table definition like primary key/constraints
  *   .build()
  */
 export class Table<T = {}> {
   constructor(public t: TableSchema<T>) {}
   static create(name: string) {
-    return new Table({ name, field_types: {}, field_sql: {}, field_extra_sql: {}, extra_sql: [], extra_insert_sql: [] })
+    return new Table({ name, field_codecs: {}, field_sql: {}, field_extra_sql: {}, extra_sql: [], extra_insert_sql: '' })
   }
-  field<S extends string, C = undefined>(name: S, sql: string, extra_sql: string, type: z.ZodType<C>) {
+  field<S extends string, D, E = D>(name: S, sql: string, extra_sql: string, type: z.ZodType<D> | Codec<D, E>) {
     return new Table({
       ...this.t,
-      field_types: { ...this.t.field_types, [name]: type },
+      field_codecs: { ...this.t.field_codecs, [name]: 'parse' in type ? identityZodCodec(type): type },
       field_sql: { ...this.t.field_sql, [name]: sql },
       field_extra_sql: { ...this.t.field_extra_sql, [name]: extra_sql },
-    } as TableSchema<T & { [K in S]: C }>)
+    } as TableSchema<T & { [K in S]: Codec<D, E> }>)
   }
   extra(extra_sql: string) {
     return new Table({
@@ -52,17 +66,17 @@ export class Table<T = {}> {
   extra_insert(extra_insert_sql: string) {
     return new Table({
       ...this.t,
-      extra_insert_sql: [...this.t.extra_insert_sql, extra_insert_sql],
+      extra_insert_sql,
     })
   }
   build() {
-    const { name, field_types, extra_insert_sql } = this.t
-    const type = z.object(this.t.field_types)
+    const { name, field_codecs, field_sql, extra_insert_sql, field_extra_sql } = this.t
+    const codec = ObjectCodec(field_codecs)
     const schema_up = [
       `create table ${this.t.name} (`,
       [
-        ...dict.keys(this.t.field_sql).map(field =>
-          `  ${JSON.stringify(field)} ${this.t.field_sql[field]} ${this.t.field_extra_sql[field]}`
+        ...dict.keys(field_sql).map(field =>
+          `  ${JSON.stringify(field)} ${field_sql[field]} ${field_extra_sql[field]}`
         ),
         ...this.t.extra_sql.map(sql => `  ${sql}`),
       ].join(',\n'),
@@ -70,36 +84,36 @@ export class Table<T = {}> {
     ].join('\n')
     
     const schema_down = `drop table ${this.t.name};`
-    return { ...type, name, field_types, extra_insert_sql, schema_up, schema_down } as unknown as TypedSchema<T>
+    return { codec, name, field_sql, field_codecs, extra_insert_sql, schema_up, schema_down } as TypedSchema<T>
   }
 }
 
 export type ViewSchema<T = {}> = {
   name: string
-  field_types: {[K in keyof T]: z.ZodType<T[K]>}
+  field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}
   sql: string
 }
 
 export class View<T extends {} = {}> {
   constructor(public t: ViewSchema<T>) {}
   static create(name: string) {
-    return new View({ name, field_types: {}, sql: '' })
+    return new View({ name, field_codecs: {}, sql: '' })
   }
-  field<S extends string, C = undefined>(name: S, type: z.ZodType<C>) {
+  field<S extends string, D, E = D>(name: S, type: z.ZodType<D> | Codec<D, E>) {
     return new View({
       ...this.t,
-      field_types: { ...this.t.field_types, [name]: type },
-    } as ViewSchema<T & { [K in S]: C }>)
+      field_codecs: { ...this.t.field_codecs, [name]: 'parse' in type ? identityZodCodec(type): type },
+    } as ViewSchema<T & { [K in S]: Codec<D, E> }>)
   }
   sql(...sql: string[]) {
     return new View({ ...this.t, sql: sql.join('\n'), })
   }
   build() {
-    const { name, field_types } = this.t
-    const type = z.object(this.t.field_types)
+    const { name, field_codecs } = this.t
+    const codec = ObjectCodec(field_codecs)
     const schema_up = `create view ${this.t.name} as ${this.t.sql}`
     const schema_down = `drop view ${this.t.name};`
-    return { ...type, name, field_types, schema_up, schema_down } as unknown as TypedSchema<T>
+    return { codec, name, field_codecs, schema_up, schema_down } as TypedSchema<T>
   }
 }
 

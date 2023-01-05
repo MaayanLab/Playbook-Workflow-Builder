@@ -10,7 +10,7 @@
  *  while the Resolved table corresponds to metanode data types.
  */
 
-import sha1 from '@/utils/sha1'
+import uuid from '@/utils/uuid'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
 
@@ -44,7 +44,7 @@ export class Process {
      */
     public persisted = false,
   ) {
-    this.id = sha1([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = uuid([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
 
   toJSONWithOutput = async () => {
@@ -113,7 +113,7 @@ export class Resolved {
 export class FPL {
   id: string
   constructor(public process: Process, public parent: FPL | undefined = undefined, public persisted = false) {
-    this.id = sha1([process.id, parent ? parent.id : null])
+    this.id = uuid([process.id, parent ? parent.id : null])
   }
 
   toJSONWithOutput = async () => {
@@ -212,7 +212,7 @@ export class Data {
   id: string
 
   constructor(public type: string, public value: string, public persisted = false) {
-    this.id = sha1([type, value])
+    this.id = uuid([type, value])
   }
 
   toJSON = () => {

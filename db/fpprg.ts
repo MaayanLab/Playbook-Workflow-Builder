@@ -1,7 +1,7 @@
 import { SQL, Table, View } from '@/spec/sql'
 import * as z from 'zod'
 
-const z_uuid = z.string
+const z_uuid = () => z.string()
 
 export const pg_uuids = SQL.create()
   .up(`create extension if not exists "uuid-ossp";`)
@@ -28,7 +28,7 @@ export const notify_insertion_trigger = SQL.create()
           'schema', TG_TABLE_SCHEMA,
           'table', TG_TABLE_NAME,
           'label', array_to_json(TG_ARGV),
-          'body', row_to_json(rec)
+          'id', rec.id
         )::text
       );
 
@@ -40,14 +40,21 @@ export const notify_insertion_trigger = SQL.create()
   `)
   .build()
 
-export const notify_insertion_trigger_payload = z.object({
+const z_notify_insertion_trigger_payload = z.object({
   'timestamp': z.string(),
   'operation': z.string(),
   'schema': z.string(),
   'table': z.string(),
   'label': z.array(z.string()),
-  'body': z.record(z.string(), z.any()),
+  'id': z.string(),
 })
+
+export const notify_insertion_trigger_payload = {
+  codec: {
+    encode: z_notify_insertion_trigger_payload.parse,
+    decode: z_notify_insertion_trigger_payload.parse,
+  }
+}
 
 export const data = Table.create('data')
   .field('id', 'uuid', 'primary key', z_uuid())

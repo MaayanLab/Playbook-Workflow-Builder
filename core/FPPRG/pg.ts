@@ -7,7 +7,6 @@ import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/fpprg'
 import * as dict from '@/utils/dict'
 import { Database, Process, FPL, Resolved, Data, DatabaseListenCallback, DatabaseKeyedTables, IdOrProcess, IdOrData } from '@/core/FPPRG/spec'
-import { sha1_to_uuid, uuid_to_sha1 } from '@/utils/sha1'
 
 /**
  * The database maintains records for each table type
@@ -26,28 +25,17 @@ export class PgDatabase implements Database {
     this.pool = new pg.Pool({ connectionString })
     this.subscriber = createSubscriber({ connectionString })
     this.subscriber.notifications.on('on_insert', async (rawPayload) => {
-      const payload = db.notify_insertion_trigger_payload.parse(rawPayload)
-      const { table, operation, body } = payload
+      const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
+      const { table, operation, id } = payload
       if (operation === 'INSERT') {
         if (table === 'data') {
-          const rawRecord = db.data.parse(body)
-          rawRecord.id = uuid_to_sha1(rawRecord.id)
-          if (!(rawRecord.id in this.dataTable)) {
-            this.dataTable[rawRecord.id] = new Data(rawRecord.type, rawRecord.value, true)
-          }
-          this.notify(table, this.dataTable[rawRecord.id] as Data)
+          this.notify(table, (await this.getData(id)) as Data)
         } else if (table === 'process') {
-          const rawRecord = db.process.parse(body)
-          rawRecord.id = uuid_to_sha1(rawRecord.id)
-          this.notify(table, (await this.getProcess(rawRecord.id)) as Process)
+          this.notify(table, (await this.getProcess(id)) as Process)
         } else if (table === 'resolved') {
-          const rawRecord = db.resolved.parse(body)
-          rawRecord.id = uuid_to_sha1(rawRecord.id)
-          this.notify(table, (await this.getResolved(rawRecord.id)) as Resolved)
+          this.notify(table, (await this.getResolved(id)) as Resolved)
         } else if (table === 'fpl') {
-          const rawRecord = db.fpl.parse(body)
-          rawRecord.id = uuid_to_sha1(rawRecord.id)
-          this.notify(table, (await this.getFPL(rawRecord.id)) as FPL)
+          this.notify(table, (await this.getFPL(id)) as FPL)
         }
       }
     })
@@ -80,7 +68,8 @@ export class PgDatabase implements Database {
    * Inform listeners of changes to the DB
    */
   private notify = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
-    for (const listener of Object.values(this.listeners)) {
+      console.log(`notify: ${JSON.stringify({ table, record })}`)
+      for (const listener of Object.values(this.listeners)) {
       listener(table, record)
     }
   }
@@ -98,10 +87,9 @@ export class PgDatabase implements Database {
   }
   getProcess = async (id: string) => {
     if (!(id in this.processTable)) {
-      const results = await this.pool.query('select * from process_complete where id = $1', [sha1_to_uuid(id)])
+      const results = await this.pool.query('select * from process_complete where id = $1', [id])
       if (results.rowCount > 0) {
-        const result = await db.process_complete.parse(results.rows[0])
-        result.id = uuid_to_sha1(result.id)
+        const result = await db.process_complete.codec.decode(results.rows[0])
         this.processTable[result.id] = new Process(
           result.type,
           result.data !== null ? await this.getData(result.data) : undefined,
@@ -122,7 +110,6 @@ export class PgDatabase implements Database {
         }
         process.persisted = true
         this.processTable[process.id] = process
-
         const client = await this.pool.connect()
         try {
           await client.query('BEGIN')
@@ -130,14 +117,14 @@ export class PgDatabase implements Database {
             insert into process ("id", "type", "data")
             values ($1, $2, $3)
             on conflict ("id") do nothing;
-          `, [sha1_to_uuid(process.id), process.type, process.data !== undefined ? sha1_to_uuid(process.data.id) : undefined])
+          `, [process.id, process.type, process.data !== undefined ? process.data.id : undefined])
           for (const key in process.inputs) {
             const value = process.inputs[key]
             await client.query(`
               insert into process_input ("id", "key", "value")
               values ($1, $2, $3)
               on conflict ("id", "key") do nothing;
-            `, [sha1_to_uuid(process.id), key, sha1_to_uuid(value.id)])
+            `, [process.id, key, value.id])
           }
           await client.query('COMMIT')
         } catch (e) {
@@ -160,10 +147,9 @@ export class PgDatabase implements Database {
   }
   getData = async (id: string) => {
     if (!(id in this.dataTable)) {
-      const results = await this.pool.query('select * from data where id = $1', [sha1_to_uuid(id)])
+      const results = await this.pool.query('select * from data where id = $1', [id])
       if (results.rowCount > 0) {
-        const result = await db.data.parse(results.rows[0])
-        result.id = uuid_to_sha1(result.id)
+        const result = await db.data.codec.decode(results.rows[0])
         this.dataTable[result.id] = new Data(
           result.type,
           result.value,
@@ -182,7 +168,7 @@ export class PgDatabase implements Database {
           insert into data ("id", "type", "value")
           values ($1, $2, $3)
           on conflict ("id") do nothing;
-        `, [sha1_to_uuid(data.id), data.type, data.value])
+        `, [data.id, data.type, data.value])
       }
     }
     return this.dataTable[data.id] as Data
@@ -190,10 +176,9 @@ export class PgDatabase implements Database {
 
   getResolved = async (id: string) => {
     if (!(id in this.resolvedTable)) {
-      const results = await this.pool.query('select * from resolved where id = $1', [sha1_to_uuid(id)])
+      const results = await this.pool.query('select * from resolved where id = $1', [id])
       if (results.rowCount > 0) {
-        const result = await db.resolved.parse(results.rows[0])
-        result.id = uuid_to_sha1(result.id)
+        const result = await db.resolved.codec.decode(results.rows[0])
         this.resolvedTable[result.id] = new Resolved(
           (await this.getProcess(result.id)) as Process,
           result.data !== null ? (await this.getData(result.data)) as Data : undefined,
@@ -231,7 +216,7 @@ export class PgDatabase implements Database {
           insert into resolved ("id", "data")
           values ($1, $2)
           on conflict ("id") do nothing;
-        `, [sha1_to_uuid(resolved.id), resolved.data !== undefined ? sha1_to_uuid(resolved.data.id) : undefined])
+        `, [resolved.id, resolved.data !== undefined ? resolved.data.id : undefined])
       }
     }
     return this.resolvedTable[resolved.id] as Resolved
@@ -239,12 +224,11 @@ export class PgDatabase implements Database {
 
   getFPL = async (id: string) => {
     if (!(id in this.fplTable)) {
-      const results = await this.pool.query('select * from fpl where id = $1', [sha1_to_uuid(id)])
+      const results = await this.pool.query('select * from fpl where id = $1', [id])
       if (results.rowCount > 0) {
-        const result = await db.fpl.parse(results.rows[0])
-        result.id = uuid_to_sha1(result.id)
+        const result = await db.fpl.codec.decode(results.rows[0])
         this.fplTable[result.id] = new FPL(
-          (await this.getProcess(result.id)) as Process,
+          (await this.getProcess(result.process)) as Process,
           result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
           true,
         )
@@ -265,7 +249,7 @@ export class PgDatabase implements Database {
           insert into fpl ("id", "process", "parent")
           values ($1, $2, $3)
           on conflict ("id") do nothing;
-        `, [sha1_to_uuid(fpl.id), sha1_to_uuid(fpl.process.id), fpl.parent !== undefined ? sha1_to_uuid(fpl.parent.id) : undefined])
+        `, [fpl.id, fpl.process.id, fpl.parent !== undefined ? fpl.parent.id : undefined])
       }
     }
     return this.fplTable[fpl.id] as FPL

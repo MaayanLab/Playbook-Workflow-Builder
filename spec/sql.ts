@@ -40,7 +40,7 @@ export class Table<T = {}> {
       ...this.t,
       field_types: { ...this.t.field_types, [name]: type },
       field_sql: { ...this.t.field_sql, [name]: sql },
-      field_extra_sql: { ...this.t.field_sql, [name]: extra_sql },
+      field_extra_sql: { ...this.t.field_extra_sql, [name]: extra_sql },
     } as TableSchema<T & { [K in S]: C }>)
   }
   extra(extra_sql: string) {

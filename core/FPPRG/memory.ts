@@ -271,57 +271,57 @@ export class Database {
   /**
    * Inform listeners of changes to the DB
    */
-  private notify = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
+  private notify = async <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
     for (const listener of Object.values(this.listeners)) {
       listener(table, record)
     }
   }
 
-  resolveProcess = (process: IdOrProcess): Process => {
+  resolveProcess = async (process: IdOrProcess): Promise<Process> => {
     if ('id' in process) {
-      return this.getProcess(process.id) as Process
+      return await this.getProcess(process.id) as Process
     } else {
-      return this.upsertProcess(new Process(
+      return await this.upsertProcess(new Process(
         process.type,
-        'data' in process ? process.data !== undefined ? this.resolveData(process.data) : undefined : undefined,
-        dict.init(dict.items(process.inputs).map(({ key, value }) => ({ key, value: this.resolveProcess(value) })))
+        'data' in process ? process.data !== undefined ? await this.resolveData(process.data) : undefined : undefined,
+        dict.init(await Promise.all(dict.items(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) }))))
       ))
     }
   }
-  getProcess = (id: string) => {
+  getProcess = async (id: string) => {
     return this.processTable[id] as Process | undefined
   }
-  upsertProcess = (process: Process) => {
+  upsertProcess = async (process: Process) => {
     if (!(process.id in this.processTable)) {
       process.db = this
       if (process.data !== undefined) {
-        process.data = this.upsertData(process.data)
+        process.data = await this.upsertData(process.data)
       }
       this.processTable[process.id] = process
-      this.notify('process', process)
+      await this.notify('process', process)
     }
     return this.processTable[process.id] as Process
   }
 
-  resolveData = (data: IdOrData) => {
+  resolveData = async (data: IdOrData) => {
     if ('id' in data) {
-      return this.getData(data.id) as Data
+      return await this.getData(data.id) as Data
     } else {
-      return this.upsertData(new Data(data.type, data.value))
+      return await this.upsertData(new Data(data.type, data.value))
     }
   }
-  getData = (id: string) => {
+  getData = async (id: string) => {
     return this.dataTable[id] as Data | undefined
   }
-  upsertData = (data: Data) => {
+  upsertData = async (data: Data) => {
     if (!(data.id in this.dataTable)) {
       this.dataTable[data.id] = data
-      this.notify('data', data)
+      await this.notify('data', data)
     }
     return this.dataTable[data.id] as Data
   }
 
-  getResolved = (id: string) => {
+  getResolved = async (id: string) => {
     return this.resolvedTable[id] as Resolved | undefined
   }
   /**
@@ -340,33 +340,33 @@ export class Database {
     }
     return this.resolvedTable[id] as Resolved
   }
-  upsertResolved = (resolved: Resolved) => {
+  upsertResolved = async (resolved: Resolved) => {
     if (!(resolved.id in this.resolvedTable)) {
       if (resolved.data) {
-        this.upsertData(resolved.data)
+        await this.upsertData(resolved.data)
       }
       this.resolvedTable[resolved.id] = resolved
-      this.notify('resolved', resolved)
+      await this.notify('resolved', resolved)
     }
     return this.resolvedTable[resolved.id] as Resolved
   }
 
-  getFPL = (id: string) => {
+  getFPL = async (id: string) => {
     return this.fplTable[id] as FPL | undefined
   }
-  upsertFPL = (fpl: FPL) => {
+  upsertFPL = async (fpl: FPL) => {
     if (!(fpl.id in this.fplTable)) {
       this.fplTable[fpl.id] = fpl
-      fpl.process = this.upsertProcess(fpl.process)
+      fpl.process = await this.upsertProcess(fpl.process)
       if (fpl.parent !== undefined) {
-        fpl.parent = this.upsertFPL(fpl.parent)
+        fpl.parent = await this.upsertFPL(fpl.parent)
       }
-      this.notify('fpl', fpl)
+      await this.notify('fpl', fpl)
     }
     return this.fplTable[fpl.id] as FPL
   }
 
-  dump = () => {
+  dump = async () => {
     return {
       dataTable: this.dataTable,
       processTable: this.processTable,

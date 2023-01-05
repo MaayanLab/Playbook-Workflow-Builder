@@ -39,18 +39,18 @@ export default function create_engine(krg: KRG, db: Database) {
         }
         if ('prompt' in metaProcess) {
           console.debug(`Output comes from data`)
-          db.upsertResolved(new Resolved(instanceProcess, instanceProcess.data))
+          await db.upsertResolved(new Resolved(instanceProcess, instanceProcess.data))
         } else {
           const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
           console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)} to produce ${JSON.stringify(metaProcess.output.spec)}: ${output}`)
-          db.upsertResolved(new Resolved(instanceProcess, new Data(metaProcess.output.spec, output)))
+          await db.upsertResolved(new Resolved(instanceProcess, new Data(metaProcess.output.spec, output)))
         }
       } catch (e) {
         if (e instanceof UnboundError) {
-          db.upsertResolved(new Resolved(instanceProcess, undefined))
+          await db.upsertResolved(new Resolved(instanceProcess, undefined))
         } else {
           console.error(e)
-          db.upsertResolved(new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString()))))
+          await db.upsertResolved(new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString()))))
         }
       }
     }

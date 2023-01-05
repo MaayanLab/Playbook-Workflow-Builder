@@ -37,7 +37,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       props: { fallback: {}, extend, suggest }
     }
   }
-  const fpl = fpprg.getFPL(params.graph_id)
+  const fpl = await fpprg.getFPL(params.graph_id)
   if (fpl === undefined) {
     return { notFound: true }
   }
@@ -49,7 +49,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     [`/api/db/fpl/${params.graph_id}`]: results
   }
   for (const result of results) {
-    const output = fpprg.getResolved(result.process.id)
+    const output = await fpprg.getResolved(result.process.id)
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
   const kvdb: Record<string, string> = {}

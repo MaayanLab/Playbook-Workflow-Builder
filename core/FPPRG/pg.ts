@@ -51,6 +51,21 @@ export class PgDatabase implements Database {
         }
       }
     })
+    this.subscriber.events.on('error', (error) => {
+      console.error("Fatal database connection error:", error)
+      process.exit(1)
+    })
+    process.on("exit", () => {
+      this.subscriber.close()
+    })
+    ;(async (subscriber) => {
+      await subscriber.connect()
+      await subscriber.listenTo('on_insert')
+      console.log('ready')
+    })(this.subscriber).catch((error) => {
+      console.error('Failed to initialize subscriber', error)
+      process.exit(1)
+    })
   }
 
   /**

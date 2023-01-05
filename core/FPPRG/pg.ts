@@ -89,7 +89,7 @@ export class PgDatabase implements Database {
         result.id = uuid_to_sha1(result.id)
         this.processTable[result.id] = new Process(
           result.type,
-          result.data !== undefined ? await this.getData(result.data) : undefined,
+          result.data !== null ? await this.getData(result.data) : undefined,
           dict.init(await Promise.all(dict.items(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
           this,
           true,
@@ -181,7 +181,7 @@ export class PgDatabase implements Database {
         result.id = uuid_to_sha1(result.id)
         this.resolvedTable[result.id] = new Resolved(
           (await this.getProcess(result.id)) as Process,
-          result.data !== undefined ? (await this.getData(result.data)) as Data : undefined,
+          result.data !== null ? (await this.getData(result.data)) as Data : undefined,
           true,
         )
       }
@@ -230,7 +230,7 @@ export class PgDatabase implements Database {
         result.id = uuid_to_sha1(result.id)
         this.fplTable[result.id] = new FPL(
           (await this.getProcess(result.id)) as Process,
-          result.parent !== undefined ? (await this.getFPL(result.parent)) as FPL : undefined,
+          result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
           true,
         )
       }

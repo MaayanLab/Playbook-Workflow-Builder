@@ -69,7 +69,7 @@ export const data_trigger = SQL.create()
 export const process = Table.create('process')
   .field('id', 'uuid', 'primary key', z_uuid())
   .field('type', 'varchar', 'not null', z.string())
-  .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().optional())
+  .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
   .extra_insert('on conflict ("id") do nothing')
   .build()
 
@@ -94,23 +94,27 @@ export const process_input = Table.create('process_input')
 export const process_complete = View.create('process_complete')
   .field('id', z_uuid())
   .field('type', z.string())
-  .field('data', z.string().optional())
+  .field('data', z.string().nullable())
   .field('inputs', z.record(z.string(), z_uuid()))
   .sql(`
     select
       process."id",
       process."type",
       process."data",
-      jsonb_object_agg(process_input."key", process_input."value") as "inputs"
+      coalesce(
+        (select jsonb_object_agg(process_input."key", process_input."value")
+         from process_input
+         where process."id" = process_input."id"),
+        '{}'::jsonb
+      ) as "inputs"
     from process
-    left join process_input on process."id" = process_input."id"
     group by process."id";
   `)
   .build()
 
 export const resolved = Table.create('resolved')
   .field('id', 'uuid', 'primary key references process ("id") on delete cascade', z_uuid())
-  .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().optional())
+  .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
   .extra_insert('on conflict ("id") do nothing')
   .build()
 
@@ -127,7 +131,7 @@ export const resolved_trigger = SQL.create()
 export const fpl = Table.create('fpl')
   .field('id', 'uuid', 'primary key', z_uuid())
   .field('process', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
-  .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().optional())
+  .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().nullable())
   .extra_insert('on conflict ("id") do nothing')
   .build()
 

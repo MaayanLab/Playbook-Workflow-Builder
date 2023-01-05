@@ -105,17 +105,17 @@ export const process_complete = View.create('process_complete')
   .field('inputs', z.record(z.string(), z_uuid()))
   .sql(`
     select
-      process."id",
-      process."type",
-      process."data",
+      "process"."id",
+      "process"."type",
+      "process"."data",
       coalesce(
-        (select jsonb_object_agg(process_input."key", process_input."value")
-         from process_input
-         where process."id" = process_input."id"),
+        (select jsonb_object_agg("process_input"."key", "process_input"."value")
+         from "process_input"
+         where process."id" = "process_input"."id"),
         '{}'::jsonb
       ) as "inputs"
-    from process
-    group by process."id";
+    from "process"
+    group by "process"."id";
   `)
   .build()
 

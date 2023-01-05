@@ -7,11 +7,15 @@ export default function PgAdapter(connectionString: string): Adapter {
   return {
     createUser: async (data) => {
       const results = await pool.query(`
-        insert into user ("name", "email", "emailVerified", "image")
-        values ($1, $2, $3, $4) returning id
+        insert into "user" ("name", "email", "emailVerified", "image")
+        values ($1, $2, $3, $4)
+        returning *
       `, [data.name, data.email, data.emailVerified, data.image])
-      const [[id]] = results.rows
-      return { ...data, id }
+      if (results.rowCount === 0) throw new Error('Error creating user')
+      else {
+        const user: AdapterUser = db.user.codec.decode(results.rows[0])
+        return user
+      }
     },
     getUser: async (id) => {
       try {
@@ -56,7 +60,7 @@ export default function PgAdapter(connectionString: string): Adapter {
     },
     updateUser: async (data) => {
       const results = await pool.query(`
-        update user
+        update "user"
         set "name" = coalesce($2, "name"),
             "email" = coalesce($3, "email"),
             "emailVerified" = coalesce($4, "emailVerified"),
@@ -72,48 +76,66 @@ export default function PgAdapter(connectionString: string): Adapter {
     },
     deleteUser: async (id) => {
       await pool.query(`
-        delete from user
+        delete from "user"
         where "id" = $1;
       `, [id])
     },
     linkAccount: async (data) => {
       await pool.query(`
-        insert into account ("userId", "type", "provider", "providerAccountId", "refresh_token", "access_token", "expires_at", "token_type", "scope", "id_token", "session_state", "oauth_token_secret", "oauth_token")
+        insert into "account" ("userId", "type", "provider", "providerAccountId", "refresh_token", "access_token", "expires_at", "token_type", "scope", "id_token", "session_state", "oauth_token_secret", "oauth_token")
         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
       `, [data.userId, data.type, data.provider, data.providerAccountId, data.refresh_token, data.access_token, data.expires_at, data.token_type, data.scope, data.id_token, data.session_state, data.oauth_token_secret, data.oauth_token])
     },
     unlinkAccount: async (provider_providerAccountId) => {
       await pool.query(`
-        delete from account
+        delete from "account"
         where "provider" = $1 and providerAccountId = $2;
       `, [provider_providerAccountId.provider, provider_providerAccountId.providerAccountId])
     },
     async getSessionAndUser(sessionToken) {
       const results = await pool.query(`
         select
-          row_to_jsonb(session.*) as session,
-          row_to_jsonb(user.*) as user
-        from session
-        inner join user on session.userId = user.id
-        where session.sessionToken = $1;
+          "session"."id" as "session_id",
+          "session"."expires" as "session_expires",
+          "session"."sessionToken" as "session_sessionToken",
+          "session"."userId" as "session_userId",
+          "user"."id" as "user_id",
+          "user"."name" as "user_name",
+          "user"."email" as "user_email",
+          "user"."emailVerified" as "user_emailVerified",
+          "user"."image" as "user_image"
+        from "session"
+        inner join "user" on "session"."userId" = "user"."id"
+        where "session"."sessionToken" = $1;
         `, [sessionToken])
       if (results.rowCount === 0) return null
       else {
-        const session: AdapterSession = db.session.codec.decode(results.rows[0].session)
-        const user: AdapterUser = db.user.codec.decode(results.rows[0].user)
+        const session: AdapterSession = db.session.codec.decode({
+          id: results.rows[0].session_id,
+          expires: results.rows[0].session_expires,
+          sessionToken: results.rows[0].session_sessionToken,
+          userId: results.rows[0].session_userId,
+        })
+        const user: AdapterUser = db.user.codec.decode({
+          id: results.rows[0].user_id,
+          name: results.rows[0].user_name,
+          email: results.rows[0].user_email,
+          emailVerified: results.rows[0].user_emailVerified,
+          image: results.rows[0].user_image,
+        })
         return { session, user }
       }
     },
     createSession: async (data) => {
       await pool.query(`
-        insert into session ("expires", "sessionToken", "userId")
+        insert into "session" ("expires", "sessionToken", "userId")
         values ($1, $2, $3);
       `, [data.expires, data.sessionToken, data.userId])
       return data
     },
     updateSession: async (data) => {
       const results = await pool.query(`
-        update session
+        update "session"
         set "userId" = coalesce($2, "userId"),
             "expires" = coalesce($3, "expires")
         where "sessionToken" = $1
@@ -127,20 +149,20 @@ export default function PgAdapter(connectionString: string): Adapter {
     },
     deleteSession: async (sessionToken) => {
       await pool.query(`
-        delete from session
+        delete from "session"
         where "sessionToken" = $1;
       `, [sessionToken])
     },
     createVerificationToken: async (data) => {
       await pool.query(`
-        insert into verification_token ("identifier", "token", "expires")
+        insert into "verification_token" ("identifier", "token", "expires")
         values ($1, $2, $3);
       `, [data.identifier, data.token, data.expires])
       return data
     },
     useVerificationToken: async (identifier_token) => {
       const results = await pool.query(`
-        delete from verification_token
+        delete from "verification_token"
         where "identifier" = $1 and "token" = $2
         returning *;
       `, [identifier_token.identifier, identifier_token.token])

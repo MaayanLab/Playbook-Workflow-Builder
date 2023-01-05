@@ -73,7 +73,7 @@ export class Table<T = {}> {
     const { name, field_codecs, field_sql, extra_insert_sql, field_extra_sql } = this.t
     const codec = ObjectCodec(field_codecs)
     const schema_up = [
-      `create table ${this.t.name} (`,
+      `create table ${JSON.stringify(this.t.name)} (`,
       [
         ...dict.keys(field_sql).map(field =>
           `  ${JSON.stringify(field)} ${field_sql[field]} ${field_extra_sql[field]}`
@@ -83,7 +83,7 @@ export class Table<T = {}> {
       `);`,
     ].join('\n')
     
-    const schema_down = `drop table ${this.t.name};`
+    const schema_down = `drop table ${JSON.stringify(this.t.name)};`
     return { codec, name, field_sql, field_codecs, extra_insert_sql, schema_up, schema_down } as TypedSchema<T>
   }
 }
@@ -111,8 +111,8 @@ export class View<T extends {} = {}> {
   build() {
     const { name, field_codecs } = this.t
     const codec = ObjectCodec(field_codecs)
-    const schema_up = `create view ${this.t.name} as ${this.t.sql}`
-    const schema_down = `drop view ${this.t.name};`
+    const schema_up = `create view ${JSON.stringify(this.t.name)} as ${this.t.sql}`
+    const schema_down = `drop view ${JSON.stringify(this.t.name)};`
     return { codec, name, field_codecs, schema_up, schema_down } as TypedSchema<T>
   }
 }

@@ -1,9 +1,9 @@
 import krg from '@/app/krg'
-import { Database } from '@/core/FPPRG'
+import { MemoryDatabase, Database } from '@/core/FPPRG'
 import attach from '@/core/engine'
 declare global {
   var fpprg: Database | undefined
-  var detach: (() => boolean) | undefined
+  var detach: (() => void) | undefined
 }
 
 /**
@@ -13,7 +13,7 @@ declare global {
  * If the global objects exist, we'll detach the old engine
  *  and attach the new one to the persistent fpprg
  */
-const fpprg = global.fpprg || new Database()
+const fpprg = global.fpprg || new MemoryDatabase()
 if (global.fpprg && global.detach) global.detach()
 const detach = attach(krg, fpprg)
 global.fpprg = fpprg

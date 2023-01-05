@@ -18,6 +18,9 @@ export const GeneIDConv = MetaNode.createProcess('GeneIDConv')
   // The resolve function uses the inputs and returns output
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
+    // example 1: https://bdcw.org/geneid/rest/species/hsa/GeneIDType/SYMBOL_OR_ALIAS/GeneListStr/ITPR3__IL6__KLF4/View/json
+    // example 2: https://bdcw.org/geneid/rest/species/hsa/GeneIDType/SYMBOL/GeneListStr/ITPR3__IL6__KLF4/View/json
+    // example 3: https://bdcw.org/geneid/rest/species/hsa/GeneIDType/ENTREZID/GeneListStr/3569,3710,9314/View/json
     const species_id = "hsa"
     const geneid_type = "SYMBOL_OR_ALIAS"
     const gene_id = props.inputs.gene // "HK1" //"${props.inputs.gene}"

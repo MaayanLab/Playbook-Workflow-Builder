@@ -3,7 +3,31 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 //import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 
-export function uniqJsonSubset(data:any) {
+// How the schema validation works: https://codex.so/zod-validation-en
+export const MyGeneIDOutputC = z.object({
+  SYMBOL_OR_ALIAS: z.string().optional(),
+  MATCH_SOURCE: z.string().optional(),
+  ALIAS: z.string().optional(),
+  ENSEMBL: z.string(),
+  ENTREZID: z.string(),
+  GENENAME: z.string(),
+  REFSEQ: z.string().optional(),
+  SYMBOL: z.string(),
+  UNIPROT: z.string().optional(),
+  KEGG: z.string().optional(),
+  MARRVEL: z.string().optional()
+})
+
+export type MyGeneIDOutput = z.infer<typeof MyGeneIDOutputC>
+
+// important ref: https://rsinohara.github.io/json-to-zod-react/
+export const MyGeneIDOutputArrayC = z.array(
+  MyGeneIDOutputC
+)
+
+export type MyGeneIDOutputArray = z.infer<typeof MyGeneIDOutputArrayC>
+
+export function uniqJsonSubset(data:MyGeneIDOutputArray) {
   //let datastr = JSON.stringify(data);  datastr = datastr.replace("^[","");  datastr = datastr.replace("]$","");  const dataobj = JSON.parse(datastr);
   
   //const [dataobj] = data; // did not work
@@ -32,7 +56,7 @@ export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(z.any())
+  .codec(MyGeneIDOutputArrayC)
   // react component rendering your data goes here
   .view(data => {
     //return (...data) => {

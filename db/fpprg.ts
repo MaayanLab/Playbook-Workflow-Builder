@@ -3,6 +3,11 @@ import * as z from 'zod'
 
 const z_uuid = z.string
 
+export const pg_uuids = SQL.create()
+  .up(`create extension if not exists "uuid-ossp";`)
+  .down(`drop extension "uuid-ossp";`)
+  .build()
+
 export const notify_insertion_trigger = SQL.create()
   .up(`
     create or replace function notify_trigger() returns trigger as $$
@@ -64,7 +69,7 @@ export const data_trigger = SQL.create()
 export const process = Table.create('process')
   .field('id', 'uuid', 'primary key', z_uuid())
   .field('type', 'varchar', 'not null', z.string())
-  .field('data', 'uuid', 'foreign key references data ("id") on delete cascade', z_uuid().optional())
+  .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().optional())
   .extra_insert('on conflict ("id") do nothing')
   .build()
 
@@ -79,9 +84,9 @@ export const process_trigger = SQL.create()
   .build()
 
 export const process_input = Table.create('process_input')
-  .field('id', 'uuid', 'foreign key references process ("id") on delete cascade', z_uuid())
+  .field('id', 'uuid', 'references process ("id") on delete cascade', z_uuid())
   .field('key', 'varchar', 'not null', z.string())
-  .field('value', 'uuid', 'not null foreign key references process ("id") on delete cascade', z_uuid())
+  .field('value', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
   .extra('primary key ("id", "key")')
   .extra_insert('on conflict ("id", "key") do nothing')
   .build()
@@ -96,16 +101,16 @@ export const process_complete = View.create('process_complete')
       process."id",
       process."type",
       process."data",
-      jsonb_object_agg(process_inputs."key", process_inputs."value") as "inputs"
+      jsonb_object_agg(process_input."key", process_input."value") as "inputs"
     from process
-    left join process_inputs on process."id" = process_inputs."id"
+    left join process_input on process."id" = process_input."id"
     group by process."id";
   `)
   .build()
 
 export const resolved = Table.create('resolved')
-  .field('id', 'uuid', 'primary key foreign key references process ("id") on delete cascade', z_uuid())
-  .field('data', 'uuid', 'foreign key references data ("id") on delete cascade', z_uuid().optional())
+  .field('id', 'uuid', 'primary key references process ("id") on delete cascade', z_uuid())
+  .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().optional())
   .extra_insert('on conflict ("id") do nothing')
   .build()
 
@@ -121,8 +126,8 @@ export const resolved_trigger = SQL.create()
 
 export const fpl = Table.create('fpl')
   .field('id', 'uuid', 'primary key', z_uuid())
-  .field('process', 'uuid', 'not null foreign key references process ("id") on delete cascade', z_uuid())
-  .field('parent', 'uuid', 'foreign key references fpl ("id") on delete cascade', z_uuid().optional())
+  .field('process', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
+  .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().optional())
   .extra_insert('on conflict ("id") do nothing')
   .build()
 

@@ -21,7 +21,7 @@ import { z } from 'zod'
 export class Data {
   id: string
 
-  constructor(public type: string, public value: string) {
+  constructor(public type: string, public value: string, public persisted = false) {
     this.id = sha256([type, value])
   }
 
@@ -59,6 +59,10 @@ export class Process {
      * A database instance to operate this class like an ORM
      */
     public db: Database | undefined = undefined,
+    /**
+     * Whether or not this has been persisted to the db
+     */
+    public persisted = false,
   ) {
     this.id = sha256([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
@@ -111,7 +115,7 @@ export class Process {
 export class Resolved {
   public id: string
 
-  constructor(public process: Process, public data: Data | undefined) {
+  constructor(public process: Process, public data: Data | undefined, public persisted = false) {
     this.id = process.id
   }
 
@@ -128,7 +132,7 @@ export class Resolved {
  */
 export class FPL {
   id: string
-  constructor(public process: Process, public parent: FPL | undefined = undefined) {
+  constructor(public process: Process, public parent: FPL | undefined = undefined, public persisted = false) {
     this.id = sha256([process.id, parent ? parent.id : null])
   }
 
@@ -292,13 +296,16 @@ export class Database {
     return this.processTable[id] as Process | undefined
   }
   upsertProcess = async (process: Process) => {
-    if (!(process.id in this.processTable)) {
-      process.db = this
-      if (process.data !== undefined) {
-        process.data = await this.upsertData(process.data)
+    if (!process.persisted) {
+      if (!(process.id in this.processTable)) {
+        process.db = this
+        if (process.data !== undefined) {
+          process.data = await this.upsertData(process.data)
+        }
+        process.persisted = true
+        this.processTable[process.id] = process
+        await this.notify('process', process)
       }
-      this.processTable[process.id] = process
-      await this.notify('process', process)
     }
     return this.processTable[process.id] as Process
   }
@@ -314,9 +321,12 @@ export class Database {
     return this.dataTable[id] as Data | undefined
   }
   upsertData = async (data: Data) => {
-    if (!(data.id in this.dataTable)) {
-      this.dataTable[data.id] = data
-      await this.notify('data', data)
+    if (!data.persisted) {
+      if (!(data.id in this.dataTable)) {
+        data.persisted = true
+        this.dataTable[data.id] = data
+        await this.notify('data', data)
+      }
     }
     return this.dataTable[data.id] as Data
   }
@@ -341,12 +351,15 @@ export class Database {
     return this.resolvedTable[id] as Resolved
   }
   upsertResolved = async (resolved: Resolved) => {
-    if (!(resolved.id in this.resolvedTable)) {
-      if (resolved.data) {
-        await this.upsertData(resolved.data)
+    if (!resolved.persisted) {
+      if (!(resolved.id in this.resolvedTable)) {
+        if (resolved.data) {
+          await this.upsertData(resolved.data)
+        }
+        resolved.persisted = true
+        this.resolvedTable[resolved.id] = resolved
+        await this.notify('resolved', resolved)
       }
-      this.resolvedTable[resolved.id] = resolved
-      await this.notify('resolved', resolved)
     }
     return this.resolvedTable[resolved.id] as Resolved
   }
@@ -355,13 +368,16 @@ export class Database {
     return this.fplTable[id] as FPL | undefined
   }
   upsertFPL = async (fpl: FPL) => {
-    if (!(fpl.id in this.fplTable)) {
-      this.fplTable[fpl.id] = fpl
-      fpl.process = await this.upsertProcess(fpl.process)
-      if (fpl.parent !== undefined) {
-        fpl.parent = await this.upsertFPL(fpl.parent)
+    if (!fpl.persisted) {
+      if (!(fpl.id in this.fplTable)) {
+        fpl.process = await this.upsertProcess(fpl.process)
+        if (fpl.parent !== undefined) {
+          fpl.parent = await this.upsertFPL(fpl.parent)
+        }
+        fpl.persisted = true
+        this.fplTable[fpl.id] = fpl
+        await this.notify('fpl', fpl)
       }
-      await this.notify('fpl', fpl)
     }
     return this.fplTable[fpl.id] as FPL
   }

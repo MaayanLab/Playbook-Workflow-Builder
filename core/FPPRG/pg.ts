@@ -7,6 +7,7 @@ import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/fpprg'
 import * as dict from '@/utils/dict'
 import { Database, Process, FPL, Resolved, Data, DatabaseListenCallback, DatabaseKeyedTables, IdOrProcess, IdOrData } from '@/core/FPPRG/spec'
+import { sha1_to_uuid, uuid_to_sha1 } from '@/utils/sha1'
 
 /**
  * The database maintains records for each table type
@@ -30,18 +31,22 @@ export class PgDatabase implements Database {
       if (operation === 'INSERT') {
         if (table === 'data') {
           const rawRecord = db.data.parse(body)
+          rawRecord.id = uuid_to_sha1(rawRecord.id)
           if (!(rawRecord.id in this.dataTable)) {
             this.dataTable[rawRecord.id] = new Data(rawRecord.type, rawRecord.value, true)
           }
           this.notify(table, this.dataTable[rawRecord.id] as Data)
         } else if (table === 'process') {
           const rawRecord = db.process.parse(body)
+          rawRecord.id = uuid_to_sha1(rawRecord.id)
           this.notify(table, (await this.getProcess(rawRecord.id)) as Process)
         } else if (table === 'resolved') {
           const rawRecord = db.resolved.parse(body)
+          rawRecord.id = uuid_to_sha1(rawRecord.id)
           this.notify(table, (await this.getResolved(rawRecord.id)) as Resolved)
         } else if (table === 'fpl') {
           const rawRecord = db.fpl.parse(body)
+          rawRecord.id = uuid_to_sha1(rawRecord.id)
           this.notify(table, (await this.getFPL(rawRecord.id)) as FPL)
         }
       }
@@ -78,9 +83,10 @@ export class PgDatabase implements Database {
   }
   getProcess = async (id: string) => {
     if (!(id in this.processTable)) {
-      const results = await this.pool.query('select * from process_complete where id = $1', [id])
+      const results = await this.pool.query('select * from process_complete where id = $1', [sha1_to_uuid(id)])
       if (results.rowCount > 0) {
         const result = await db.process_complete.parse(results.rows[0])
+        result.id = uuid_to_sha1(result.id)
         this.processTable[result.id] = new Process(
           result.type,
           result.data !== undefined ? await this.getData(result.data) : undefined,
@@ -105,19 +111,19 @@ export class PgDatabase implements Database {
         const client = await this.pool.connect()
         try {
           await client.query('BEGIN')
+          await client.query(`
+            insert into process ("id", "type", "data")
+            values ($1, $2, $3)
+            on conflict ("id") do nothing;
+          `, [sha1_to_uuid(process.id), process.type, process.data !== undefined ? sha1_to_uuid(process.data.id) : undefined])
           for (const key in process.inputs) {
             const value = process.inputs[key]
             await client.query(`
               insert into process_input ("id", "key", "value")
               values ($1, $2, $3)
               on conflict ("id", "key") do nothing;
-            `, [process.id, key, value])
+            `, [sha1_to_uuid(process.id), key, sha1_to_uuid(value.id)])
           }
-          await client.query(`
-            insert into process ("id", "type", "data")
-            values ($1, $2, $3)
-            on conflict ("id") do nothing;
-          `, [process.id, process.type, process.data !== undefined ? process.data.id : undefined])
           await client.query('COMMIT')
         } catch (e) {
           await client.query('ROLLBACK')
@@ -139,9 +145,10 @@ export class PgDatabase implements Database {
   }
   getData = async (id: string) => {
     if (!(id in this.dataTable)) {
-      const results = await this.pool.query('select * from data where id = $1', [id])
+      const results = await this.pool.query('select * from data where id = $1', [sha1_to_uuid(id)])
       if (results.rowCount > 0) {
         const result = await db.data.parse(results.rows[0])
+        result.id = uuid_to_sha1(result.id)
         this.dataTable[result.id] = new Data(
           result.type,
           result.value,
@@ -160,7 +167,7 @@ export class PgDatabase implements Database {
           insert into data ("id", "type", "value")
           values ($1, $2, $3)
           on conflict ("id") do nothing;
-        `, [data.id, data.type, data.value])
+        `, [sha1_to_uuid(data.id), data.type, data.value])
       }
     }
     return this.dataTable[data.id] as Data
@@ -168,9 +175,10 @@ export class PgDatabase implements Database {
 
   getResolved = async (id: string) => {
     if (!(id in this.resolvedTable)) {
-      const results = await this.pool.query('select * from resolved where id = $1', [id])
+      const results = await this.pool.query('select * from resolved where id = $1', [sha1_to_uuid(id)])
       if (results.rowCount > 0) {
         const result = await db.resolved.parse(results.rows[0])
+        result.id = uuid_to_sha1(result.id)
         this.resolvedTable[result.id] = new Resolved(
           (await this.getProcess(result.id)) as Process,
           result.data !== undefined ? (await this.getData(result.data)) as Data : undefined,
@@ -208,7 +216,7 @@ export class PgDatabase implements Database {
           insert into resolved ("id", "data")
           values ($1, $2)
           on conflict ("id") do nothing;
-        `, [resolved.id, resolved.data !== undefined ? resolved.data.id : undefined])
+        `, [sha1_to_uuid(resolved.id), resolved.data !== undefined ? sha1_to_uuid(resolved.data.id) : undefined])
       }
     }
     return this.resolvedTable[resolved.id] as Resolved
@@ -216,9 +224,10 @@ export class PgDatabase implements Database {
 
   getFPL = async (id: string) => {
     if (!(id in this.fplTable)) {
-      const results = await this.pool.query('select * from fpl where id = $1', [id])
+      const results = await this.pool.query('select * from fpl where id = $1', [sha1_to_uuid(id)])
       if (results.rowCount > 0) {
         const result = await db.fpl.parse(results.rows[0])
+        result.id = uuid_to_sha1(result.id)
         this.fplTable[result.id] = new FPL(
           (await this.getProcess(result.id)) as Process,
           result.parent !== undefined ? (await this.getFPL(result.parent)) as FPL : undefined,
@@ -241,7 +250,7 @@ export class PgDatabase implements Database {
           insert into fpl ("id", "process", "parent")
           values ($1, $2, $3)
           on conflict ("id") do nothing;
-        `, [fpl.id, fpl.process.id, fpl.parent !== undefined ? fpl.parent.id : undefined])
+        `, [sha1_to_uuid(fpl.id), sha1_to_uuid(fpl.process.id), fpl.parent !== undefined ? sha1_to_uuid(fpl.parent.id) : undefined])
       }
     }
     return this.fplTable[fpl.id] as FPL

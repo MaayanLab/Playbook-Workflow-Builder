@@ -1,6 +1,6 @@
 import krg from '@/app/krg'
 import { PgDatabase, MemoryDatabase, Database } from '@/core/FPPRG'
-import { process_insertion_dispatch } from '@/core/engine'
+import { process_insertion_dispatch, start_workers } from '@/core/engine'
 declare global {
   var fpprg: Database | undefined
   var detach: (() => void) | undefined
@@ -16,7 +16,8 @@ const fpprg = global.fpprg || (process.env.DATABASE_URL ? new PgDatabase(process
 if (global.fpprg && global.detach) global.detach()
 global.fpprg = fpprg
 if (!process.env.DATABASE_URL) {
-  const detach = process_insertion_dispatch(krg, fpprg)
-  global.detach = detach
+  global.detach = process_insertion_dispatch(krg, fpprg)
+} else if (process.env.N_WORKERS && +process.env.N_WORKERS) {
+  global.detach = start_workers(+process.env.N_WORKERS)
 }
 export default fpprg

@@ -2,6 +2,22 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 
+const MetGeneStudyObjC = z.object({
+  KEGG_COMPOUND_ID: z.string(),
+  REFMET_NAME: z.string(),
+  STUDY_ID: z.string(),
+});
+
+export type  MetGeneStudyObj = z.infer<typeof  MetGeneStudyObjC>
+
+// important ref: https://rsinohara.github.io/json-to-zod-react/
+// array of objects: [{}]
+export const MetGeneStudyObjArrayC = z.array(
+  MetGeneStudyObjC
+)
+
+export type MetGeneStudyObjArray = z.infer<typeof MetGeneStudyObjArrayC>
+
 // A unique name for your data type is used here
 export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
   // Human readble descriptors about this node should go here
@@ -11,7 +27,7 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(z.any())
+  .codec(MetGeneStudyObjArrayC)
   // react component rendering your data goes here
   .view(data => {
     const heading1 = "Kegg Compound Id"
@@ -28,7 +44,7 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
             <th>{heading2}</th>
             <th>{heading3}</th>
           </tr>
-          {data.map((val, key) => {
+          {data.map((val : MetGeneStudyObj, key : number) => {
           var all_study_ids = val.STUDY_ID
                 
           var study_id_arr = all_study_ids.split(", ")
@@ -39,9 +55,14 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
               <td>{val.KEGG_COMPOUND_ID}</td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
-                {study_id_arr.map((study_id, i) =>
-                  <a key={i} href = {`https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=${study_id}`} target = "_blank">{study_id}</a>
-                )}
+                {study_id_arr.map((study_id: string, i: number) => {
+                  let sep_char = ", ";
+                  if (i == (study_id_arr.length-1)) {
+                    sep_char = "";
+                  }
+                  return (
+                  <a key={i} href = {`https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=${study_id}`} target = "_blank">{study_id}{sep_char}</a>
+                )})}
               </td>
             </tr>
           )

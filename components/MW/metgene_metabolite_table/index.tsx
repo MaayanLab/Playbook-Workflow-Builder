@@ -3,6 +3,31 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { SERVER_PROPS_ID } from 'next/dist/shared/lib/constants'
 
+const MetGeneMetObjC = z.object({
+  Gene: z.string(),
+  KEGG_COMPOUND_ID: z.string(),
+  REFMET_NAME: z.string(),
+  KEGG_REACTION_ID: z.string(),
+  METSTAT_LINK: z.string(),
+});
+
+export type  MetGeneMetObj = z.infer<typeof  MetGeneMetObjC>
+
+// important ref: https://rsinohara.github.io/json-to-zod-react/
+// array of objects: [{}]
+export const MetGeneMetObjArrayC = z.array(
+  MetGeneMetObjC
+)
+
+export type MetGeneMetObjArray = z.infer<typeof MetGeneMetObjArrayC>
+
+// array of array of objects: [[{}]]
+export const MetGeneMetObjArray2C = z.array(
+  MetGeneMetObjArrayC
+)
+
+export type MetGeneMetObjArray2 = z.infer<typeof MetGeneMetObjArray2C>
+
 
 // A unique name for your data type is used here
 export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTable')
@@ -13,7 +38,7 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(z.any())
+  .codec(MetGeneMetObjArray2C)
   // react component rendering your data goes here
   .view(data => {
     const heading1 = "Gene"
@@ -25,7 +50,7 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
     return (
       <div>
         <h2>MetGENE metabolites</h2>
-        {data.map((geneval:any, index:number) => (
+        {data.map((arrayVal:MetGeneMetObjArray, index:number) => (
           <div key={index}>
             
             <table>
@@ -40,19 +65,19 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
               </thead>
               <tbody>
               
-                {geneval.map((val:any, index:number) => {
+                {arrayVal.map((val:MetGeneMetObj, j:number) => {
                   const all_rxn_ids = val.KEGG_REACTION_ID
                   const cpd_id = val.KEGG_COMPOUND_ID 
                   const rxn_id_arr = all_rxn_ids.split(", ")
                             
                   
                     return (
-                      <tr key={index}>
+                      <tr key={j}>
                         <td>{val.Gene}</td>
                         <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "__blank">{val.KEGG_COMPOUND_ID}</a></td>
                         <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
                         <td>
-                          {rxn_id_arr.map((rxn_id:any, i:number) => {
+                          {rxn_id_arr.map((rxn_id:string, i:number) => {
                             let sep_char = ", ";
                             if (i == (rxn_id_arr.length-1)) {
                               sep_char = "";

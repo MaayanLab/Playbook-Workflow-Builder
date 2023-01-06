@@ -8,12 +8,14 @@
     "./components/**"
   ],
   "scripts": {
-    "build": "npx --workspace=app next build",
-    "dev": "npx --workspace=app next dev",
-    "prebuild": "ts-node cli/sync-component-import.ts",
-    "preinstall": "ts-node cli/enumerate-requirements.ts",
     "build:sql": "mkdir -p db/migrations && ts-node -r tsconfig-paths/register cli/build-sql.ts > db/migrations/00_init.sql",
-    "convert-icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
+    "build": "npx --workspace=app next build",
+    "codegen:components": "ts-node cli/sync-component-import.ts",
+    "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
+    "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
+    "dev": "npx --workspace=app next dev",
+    "start:dispatcher": "ts-node -r tsconfig-paths/register cli/resolve-process-dispatcher.ts",
+    "start:worker": "ts-node -r tsconfig-paths/register cli/resolve-process-worker.ts",
     "start": "npx --workspace=app next start"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "levelup": "^5.1.1",
     "next": "^12.3.1",
     "pg": "^8.8.0",
+    "pg-boss": "^8.3.0",
     "pg-listen": "^1.7.0",
     "pg-query-stream": "^4.2.4",
     "prop-types": "^15.8.1",

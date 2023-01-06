@@ -3,6 +3,7 @@
  */
 
 import * as pg from 'pg'
+import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/fpprg'
 import * as dict from '@/utils/dict'
@@ -20,10 +21,13 @@ export class PgDatabase implements Database {
   private id = 0
   private pool: pg.Pool
   private subscriber: Subscriber
+  private boss: PgBoss
 
   constructor(connectionString: string) {
     this.pool = new pg.Pool({ connectionString })
     this.subscriber = createSubscriber({ connectionString })
+    this.boss = new PgBoss(connectionString)
+    this.boss.on('error', error => console.error(error))
     this.subscriber.notifications.on('on_insert', async (rawPayload) => {
       const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
       const { table, operation, id } = payload
@@ -43,14 +47,18 @@ export class PgDatabase implements Database {
       console.error("Fatal database connection error:", error)
       process.exit(1)
     })
+    this.boss.on('error', (error) => {
+      console.error("PgBoss error:", error)
+    })
     process.on("exit", () => {
       this.subscriber.close()
     })
-    ;(async (subscriber) => {
-      await subscriber.connect()
-      await subscriber.listenTo('on_insert')
+    ;(async (self) => {
+      await self.boss.start()
+      await self.subscriber.connect()
+      await self.subscriber.listenTo('on_insert')
       console.log('ready')
-    })(this.subscriber).catch((error) => {
+    })(this).catch((error) => {
       console.error('Failed to initialize subscriber', error)
       process.exit(1)
     })
@@ -202,7 +210,7 @@ export class PgDatabase implements Database {
     return this.resolvedTable[id] as Resolved | undefined
   }
   /**
-   * Like getResolved but if it's not in the db yet, wait for it
+   * Like getResolved but if it's not in the db yet, request & wait for it
    */
   awaitResolved = async (id: string) => {
     if (!(id in this.resolvedTable)) {
@@ -213,6 +221,7 @@ export class PgDatabase implements Database {
             unsub()
           }
         })
+        return this.boss.send('work-queue', { id })
       })
     }
     return this.resolvedTable[id] as Resolved

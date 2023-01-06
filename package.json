@@ -14,7 +14,6 @@
     "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "dev": "npx --workspace=app next dev",
-    "start:dispatcher": "ts-node -r tsconfig-paths/register cli/resolve-process-dispatcher.ts",
     "start:worker": "ts-node -r tsconfig-paths/register cli/resolve-process-worker.ts",
     "start": "npx --workspace=app next start"
   },

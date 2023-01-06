@@ -13,18 +13,6 @@ services:
     - DATABASE_URL=${DATABASE_URL}
     ports:
     - 3000:3000
-  # the singular dispatcher should not be replicated,
-  #  it's a lightweight process which sees incoming Processes inserted into
-  #  the database and submits jobs. It's possible this can eventually just
-  #  become a database trigger.
-  dispatcher:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: maayanlab/playbook-partnership-ui
-    command: ["npm", "run", "start:dispatcher"]
-    environment:
-    - DATABASE_URL=${DATABASE_URL}
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   worker:

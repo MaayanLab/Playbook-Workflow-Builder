@@ -2,6 +2,18 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 
+const MetSummaryObjC = z.object({
+  name: z.string(),
+  pubchem_cid: z.string(),
+  inchi_key: z.string(),
+  exactmass: z.string(),
+  formula: z.string(),
+  super_class: z.string(),
+  main_class: z.string(),
+  sub_class: z.string(),
+});
+
+export type  MetSummaryObj = z.infer<typeof  MetSummaryObjC>
 
 // A unique name for your data type is used here
 export const MetaboliteSummary = MetaNode.createData('MetaboliteSummary')
@@ -12,7 +24,7 @@ export const MetaboliteSummary = MetaNode.createData('MetaboliteSummary')
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(z.any())
+  .codec(MetSummaryObjC)
   // react component rendering your data goes here
   .view(data => {
     var data1 = [data];
@@ -29,7 +41,7 @@ export const MetaboliteSummary = MetaNode.createData('MetaboliteSummary')
           <th> Main class </th>
           <th> Sub class </th>
           <th> InChI</th>
-        {data1.map((val, key) => {
+        {data1.map((val: MetSummaryObj, key: number) => {
           return (
             <tr key={key}>
               <td>{val.name}</td>

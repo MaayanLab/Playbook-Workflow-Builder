@@ -2,7 +2,7 @@
   "name": "metgene_metabolites",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
-  "author": "Sumana Srinivasan",
+  "author": "Sumana Srinivasan <susrinivasan@eng.ucsd.edu>",
   "private": true,
   "main": "index.tsx",
   "dependencies": {

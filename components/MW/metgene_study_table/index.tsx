@@ -55,14 +55,12 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
               <td>{val.KEGG_COMPOUND_ID}</td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
-                {study_id_arr.map((study_id: string, i: number) => {
-                  let sep_char = ", ";
-                  if (i == (study_id_arr.length-1)) {
-                    sep_char = "";
-                  }
-                  return (
-                  <a key={i} href = {`https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=${study_id}`} target = "_blank">{study_id}{sep_char}</a>
-                )})}
+                {study_id_arr.map((study_id: string, i: number) => 
+                  <>
+                  {i > 0 ? <span>, </span> : null}
+                  <a key={i} href = {`https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=${study_id}`} target = "_blank">{study_id}</a>
+                  </>
+                )}
               </td>
             </tr>
           )

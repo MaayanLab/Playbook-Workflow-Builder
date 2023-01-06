@@ -77,15 +77,12 @@ export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTabl
                         <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "__blank">{val.KEGG_COMPOUND_ID}</a></td>
                         <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
                         <td>
-                          {rxn_id_arr.map((rxn_id:string, i:number) => {
-                            let sep_char = ", ";
-                            if (i == (rxn_id_arr.length-1)) {
-                              sep_char = "";
-                            }
-                            return (
-                            <a key={i} href = {`https://www.genome.jp/entry/rn:${rxn_id}`} target = "_blank">{rxn_id}{sep_char}</a>
-                          
-                          )})}
+                          {rxn_id_arr.map((rxn_id:string, i:number) => 
+                            <>
+                            {i > 0 ? <span>, </span> : null}
+                            <a key={i} href = {`https://www.genome.jp/entry/rn:${rxn_id}`} target = "_blank">{rxn_id}</a>
+                            </>
+                          )}
                         </td>
                         <td><a href = {val.METSTAT_LINK} target = "__blank">METSTAT</a></td>
                       </tr>

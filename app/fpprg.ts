@@ -12,12 +12,20 @@ declare global {
  * If the global objects exist, we'll detach the old engine
  *  and attach the new one to the persistent fpprg
  */
-const fpprg = global.fpprg || (process.env.DATABASE_URL ? new PgDatabase(process.env.DATABASE_URL) : new MemoryDatabase())
-if (global.fpprg && global.detach) global.detach()
-global.fpprg = fpprg
-if (!process.env.DATABASE_URL) {
+let fpprg = global.fpprg
+if (process.env.DATABASE_URL) {
+  if (!fpprg) {
+    global.fpprg = fpprg = new PgDatabase(process.env.DATABASE_URL)
+  }
+  if (process.env.N_WORKERS && +process.env.N_WORKERS) {
+    global.detach = start_workers(krg, fpprg as PgDatabase, +process.env.N_WORKERS)
+  }
+} else {
+  if (!fpprg) {
+    global.fpprg = fpprg = new MemoryDatabase()
+  }
+  if (global.detach) global.detach()
   global.detach = process_insertion_dispatch(krg, fpprg)
-} else if (process.env.N_WORKERS && +process.env.N_WORKERS) {
-  global.detach = start_workers(+process.env.N_WORKERS)
 }
+
 export default fpprg

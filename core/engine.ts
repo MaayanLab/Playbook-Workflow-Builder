@@ -1,8 +1,10 @@
 import { Data, Database, Process, Resolved } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
-import PgBoss from 'pg-boss'
 import { PgDatabase } from '@/core/FPPRG'
+import * as z from 'zod'
+
+const JobC = z.object({ id: z.string() })
 
 class UnboundError extends Error {}
 
@@ -65,20 +67,17 @@ export function process_insertion_dispatch(krg: KRG, db: Database) {
  *  submitted jobs are given to one and only one worker. This should
  *  be run with several replicas in production.
  */
-export function start_workers(n_workers: number) {
-  if (!process.env.DATABASE_URL) throw new Error('Missing `DATABASE_URL`')
-  const boss = new PgBoss(process.env.DATABASE_URL)
-  const db = new PgDatabase(process.env.DATABASE_URL)
-  const krg = new KRG()
-  boss.on('error', error => console.error(error))
+export function start_workers(krg: KRG, db: PgDatabase, n_workers: number) {
+  db.boss.on('error', error => console.error(error))
   ;(async () => {
-    await boss.start()
-    await boss.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
+    console.log(`starting worker(s)..`)
+    await db.boss.start()
+    await db.boss.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
       // the job.data should contain the process id
-      const processId = job.data as string
-      console.log(`Processing ${processId}...`)
+      const { id: processId } = JobC.parse(job.data)
+      console.log(`processing ${processId}...`)
       // we fetch it from the db
-      const instanceProcess = await db.getProcess(job.data as string)
+      const instanceProcess = await db.getProcess(processId)
       if (!instanceProcess) throw new Error(`Process ${job.data} not found`)
       if (instanceProcess.resolved === undefined) {
         // resolve the process
@@ -89,6 +88,6 @@ export function start_workers(n_workers: number) {
     })
   })().catch(error => console.error(error))
   return () => {
-    boss.stop().catch(error => console.error(error))
+    db.boss.stop().catch(error => console.error(error))
   }
 }

@@ -21,7 +21,7 @@ export class PgDatabase implements Database {
   private id = 0
   private pool: pg.Pool
   private subscriber: Subscriber
-  private boss: PgBoss
+  public boss: PgBoss
 
   constructor(connectionString: string) {
     this.pool = new pg.Pool({ connectionString })
@@ -221,6 +221,7 @@ export class PgDatabase implements Database {
             unsub()
           }
         })
+        console.log(`requesting ${id}`)
         return this.boss.send('work-queue', { id })
       })
     }

@@ -14,7 +14,9 @@ declare global {
  */
 const fpprg = global.fpprg || (process.env.DATABASE_URL ? new PgDatabase(process.env.DATABASE_URL) : new MemoryDatabase())
 if (global.fpprg && global.detach) global.detach()
-const detach = process_insertion_dispatch(krg, fpprg)
 global.fpprg = fpprg
-global.detach = detach
+if (!process.env.DATABASE_URL) {
+  const detach = process_insertion_dispatch(krg, fpprg)
+  global.detach = detach
+}
 export default fpprg

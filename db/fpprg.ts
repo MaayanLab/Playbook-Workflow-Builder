@@ -103,6 +103,8 @@ export const process_complete = View.create('process_complete')
   .field('type', z.string())
   .field('data', z.string().nullable())
   .field('inputs', z.record(z.string(), z_uuid()))
+  .field('resolved', z.boolean())
+  .field('output', z_uuid().nullable())
   .sql(`
     select
       "process"."id",
@@ -113,8 +115,11 @@ export const process_complete = View.create('process_complete')
          from "process_input"
          where process."id" = "process_input"."id"),
         '{}'::jsonb
-      ) as "inputs"
+      ) as "inputs",
+      ("resolved"."id" is not null) as "resolved",
+      "resolved"."data" as "output"
     from "process"
+    left join "resolved" on "process"."id" = "resolved"."id"
     group by "process"."id";
   `)
   .build()

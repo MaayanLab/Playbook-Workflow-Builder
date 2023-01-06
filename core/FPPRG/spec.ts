@@ -21,6 +21,7 @@ import { z } from 'zod'
  */
 export class Process {
   id: string
+  resolved: Resolved | undefined = undefined
 
   constructor(
     /**
@@ -83,9 +84,10 @@ export class Process {
    * The output of this process
    */
   output = async () => {
+    if (this.resolved !== undefined) return this.resolved.data
     if (this.db === undefined) throw new Error('Process not attached to a db')
-    const resolved = await this.db.awaitResolved(this.id)
-    return resolved.data
+    this.resolved = await this.db.awaitResolved(this.id)
+    return this.resolved.data
   }
 }
 

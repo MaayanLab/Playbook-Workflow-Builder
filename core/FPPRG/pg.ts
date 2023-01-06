@@ -90,13 +90,26 @@ export class PgDatabase implements Database {
       const results = await this.pool.query('select * from process_complete where id = $1', [id])
       if (results.rowCount > 0) {
         const result = await db.process_complete.codec.decode(results.rows[0])
-        this.processTable[result.id] = new Process(
+        const process = new Process(
           result.type,
           result.data !== null ? await this.getData(result.data) : undefined,
           dict.init(await Promise.all(dict.items(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
           this,
           true,
         )
+        this.processTable[id] = process
+        // this process was already resolved?
+        // save that information, saves a lookup or two
+        if (result.resolved) {
+          if (!(id in this.resolvedTable)) {
+            const resolved = new Resolved(
+              process,
+              result.output !== null ? (await this.getData(result.output)) : undefined,
+            )
+            this.resolvedTable[id] = resolved
+            process.resolved = resolved
+          }
+        }
       }
     }
     return this.processTable[id] as Process | undefined

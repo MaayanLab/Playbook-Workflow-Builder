@@ -129,6 +129,12 @@ export class PgDatabase implements Database {
         if (process.data !== undefined) {
           process.data = await this.upsertData(process.data)
         }
+        for (const key in process.inputs) {
+          const value = process.inputs[key]
+          if (!value.persisted) {
+            await this.upsertProcess(value)
+          }
+        }
         process.persisted = true
         this.processTable[process.id] = process
         const client = await this.pool.connect()

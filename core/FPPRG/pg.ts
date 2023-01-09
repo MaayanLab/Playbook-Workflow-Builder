@@ -7,7 +7,7 @@ import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/fpprg'
 import * as dict from '@/utils/dict'
-import { Database, Process, FPL, Resolved, Data, DatabaseListenCallback, DatabaseKeyedTables, IdOrProcess, IdOrData } from '@/core/FPPRG/spec'
+import { Database, Process, FPL, Resolved, Data, DatabaseListenCallback, DatabaseKeyedTables, IdOrProcess, IdOrData, TimeoutError } from '@/core/FPPRG/spec'
 
 /**
  * The database maintains records for each table type
@@ -228,15 +228,25 @@ export class PgDatabase implements Database {
     const resolved = await this.getResolved(id)
     if (!resolved) {
       await new Promise<void>(async (resolve, reject) => {
-        // TODO: timeout
+        const ctx = { resolved: false }
         const unsub = this.listen((table, record) => {
           if (table === 'resolved' && record.id === id) {
-            resolve()
-            unsub()
+            if (!ctx.resolved) {
+              ctx.resolved = true
+              unsub()
+              resolve()
+            }
           }
         })
         console.debug(`requesting ${id}`)
         await this.boss.send('work-queue', { id })
+        setTimeout(() => {
+          if (!ctx.resolved) {
+            ctx.resolved = true
+            unsub()
+            reject(new TimeoutError())
+          }
+        }, 5000)
       })
     }
     return this.resolvedTable[id] as Resolved

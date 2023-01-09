@@ -15,6 +15,12 @@ import * as dict from '@/utils/dict'
 import { z } from 'zod'
 
 /**
+ * This timeout error is used to ensure we don't wait too long for dependencies
+ *  fortunately, even if it occurs the job will requeue still making progress.
+ */
+export class TimeoutError extends Error {}
+
+/**
  * A process is unique by its own data (configuration) and process outputs
  *  which come before it. In that way, Processes operate like their own
  *  DAG alongside the FPL.

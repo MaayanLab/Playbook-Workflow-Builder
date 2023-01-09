@@ -1,4 +1,4 @@
-import { Data, Database, Process, Resolved } from '@/core/FPPRG'
+import { Data, Database, Process, Resolved, TimeoutError } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 import { PgDatabase } from '@/core/FPPRG'
@@ -6,6 +6,9 @@ import * as z from 'zod'
 
 const JobC = z.object({ id: z.string() })
 
+/**
+ * This error occurs when the input node is not populated yet
+ */
 class UnboundError extends Error {}
 
 /**
@@ -34,12 +37,15 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
       console.debug(`Output comes from data`)
       return new Resolved(instanceProcess, instanceProcess.data)
     } else {
+      // TODO: add a timeout here
       const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
       console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)}`)
       return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
     }
   } catch (e) {
-    if (e instanceof UnboundError) {
+    if (e instanceof TimeoutError) {
+      throw e
+    } else if (e instanceof UnboundError) {
       return new Resolved(instanceProcess, undefined)
     } else {
       console.error(e)

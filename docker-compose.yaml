@@ -7,10 +7,16 @@ services:
       context: .
       dockerfile: Dockerfile.minimal
     deploy:
-      # this can be safely replicated if necessary
+      # this can be safely replicated if necessary but an ingress will be required
       replicas: 1
     environment:
+    - PUBLIC_URL=${PUBLIC_URL}
+    - NEXTAUTH_URL=${NEXTAUTH_URL}
+    - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    - EMAIL_SERVER=${EMAIL_SERVER}
+    - EMAIL_FROM=${EMAIL_FROM}
     - DATABASE_URL=${DATABASE_URL}
+    - N_WORKERS=0
     ports:
     - 3000:3000
   # the workers should be replicated,
@@ -22,10 +28,12 @@ services:
       dockerfile: Dockerfile
     deploy:
       # this can be safely replicated as necessary
-      replicas: 4
+      replicas: 2
     command: ["npm", "run", "start:worker"]
     environment:
+    - PUBLIC_URL=${PUBLIC_URL}
     - DATABASE_URL=${DATABASE_URL}
+    - N_WORKERS=5
   # the database is used by everything it can be provisioned with
   #  dbmate (`dbmate up`)
   pg:

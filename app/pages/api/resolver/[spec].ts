@@ -18,7 +18,7 @@ function one<T>(L: T[]): T {
   if (L.length === 0) { throw new Error('Expected value, got none') }
   else if (L.length === 1) return L[0]
   else {
-    console.log('Expected one, got multiple, using first')
+    console.warn('Expected one, got multiple, using first')
     return L[0]
   }
 }

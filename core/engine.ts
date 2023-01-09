@@ -35,7 +35,7 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
       return new Resolved(instanceProcess, instanceProcess.data)
     } else {
       const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
-      console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)} to produce ${JSON.stringify(metaProcess.output.spec)}: ${output}`)
+      console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)}`)
       return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
     }
   } catch (e) {

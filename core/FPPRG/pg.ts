@@ -31,6 +31,7 @@ export class PgDatabase implements Database {
     this.subscriber.notifications.on('on_insert', async (rawPayload) => {
       const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
       const { table, operation, id } = payload
+      console.debug(`received on_insert from ${table}: ${id}`)
       if (operation === 'INSERT') {
         if (table === 'data') {
           this.notify(table, (await this.getData(id)) as Data)
@@ -76,8 +77,8 @@ export class PgDatabase implements Database {
    * Inform listeners of changes to the DB
    */
   private notify = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
-      console.log(`notify: ${JSON.stringify({ table, record })}`)
-      for (const listener of Object.values(this.listeners)) {
+    console.debug(`notify: ${JSON.stringify({ table, record })}`)
+    for (const listener of Object.values(this.listeners)) {
       listener(table, record)
     }
   }
@@ -126,6 +127,8 @@ export class PgDatabase implements Database {
     if (!process.persisted) {
       if (!(process.id in this.processTable)) {
         process.db = this
+        // TODO: get these things done in the context manager
+        //       in a single transaction
         if (process.data !== undefined) {
           process.data = await this.upsertData(process.data)
         }

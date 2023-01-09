@@ -1,6 +1,8 @@
 import React from 'react'
 import Head from 'next/head'
 import * as Auth from 'next-auth/react'
+import * as db from '@/db/accounts'
+import { Decoded } from '@/spec/codec'
 import dynamic from 'next/dynamic'
 import { Session } from 'next-auth'
 import { Alert, ControlGroup, FormGroup, Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
@@ -11,7 +13,7 @@ const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
-type SessionWithUser = Session & { user: NonNullable<Session['user']> }
+type SessionWithUser = Session & { user: NonNullable<Decoded<typeof db.user['codec']>> }
 
 export default function Account() {
   const { data: session } = Auth.useSession()
@@ -115,7 +117,7 @@ function AccountUIProfile({ session }: { session: SessionWithUser }) {
             <InputGroup
               type="text"
               placeholder="Affiliation"
-              value={userDraft.org || ''}
+              value={userDraft.affiliation || ''}
               onChange={evt => {
                 setUserDraft(({ ...user }) => ({ ...user, org: evt.target.value }))
               }}

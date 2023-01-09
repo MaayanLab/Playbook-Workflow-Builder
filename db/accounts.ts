@@ -13,6 +13,7 @@ export const user = Table.create('user')
   .field('email', 'varchar', 'not null', z.string())
   .field('emailVerified', 'timestamp', '', z.date())
   .field('image', 'varchar', '', nullable_undefined_codec(z.string()))
+  .field('affiliation', 'varchar', '', nullable_undefined_codec(z.string()))
   .build()
 
 export const user_email_index = SQL.create()

@@ -9,7 +9,7 @@ export default function useKRG() {
   const [krg_, setKrg_] = React.useState({ krg })
   React.useEffect(() => {
     if (!suggestions) return
-    for (const suggestion of dict.values(suggestions).map(suggestion => JSON.parse(suggestion))) {
+    for (const suggestion of dict.values(suggestions)) {
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {
         OutputNode = MetaNode.createData(suggestion.output)

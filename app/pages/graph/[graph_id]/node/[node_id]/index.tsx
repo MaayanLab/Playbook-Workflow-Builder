@@ -8,7 +8,7 @@ import Head from 'next/head'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
 import krg from '@/app/krg'
-import db from '@/app/kvdb'
+import suggestiondb from '@/app/suggestionsdb'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
@@ -52,10 +52,9 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     const output = await fpprg.getResolved(result.process.id)
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
-  const kvdb: Record<string, string> = {}
-  for await (const [ key, value ] of db.iterator() as any) {
-    kvdb[key] = value.toString()
-    const suggestion = JSON.parse(kvdb[key])
+  const suggestions = await suggestiondb.suggestions()
+  for (const key in suggestions) {
+    const suggestion = suggestions[key]
     let OutputNode = krg.getDataNode(suggestion.output)
     if (OutputNode === undefined) {
       OutputNode = MetaNode.createData(suggestion.output)
@@ -89,7 +88,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       krg.add(ProcessNode)
     }
   }
-  fallback[`/api/suggest`] = kvdb
+  fallback[`/api/suggest`] = suggestions
   return {
     props: {
       fallback,

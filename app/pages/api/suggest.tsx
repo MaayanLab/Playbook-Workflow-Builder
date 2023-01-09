@@ -1,13 +1,9 @@
 import krg from '@/app/krg'
-import db from '@/app/kvdb'
+import suggestionsdb from '@/app/suggestionsdb'
 import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
-import { v4 as uuidv4 } from 'uuid'
-import sub from 'subleveldown'
-
-const dbSuggest = sub(db, 'suggest')
 
 const BodyType = z.object({
   name: z.string(),
@@ -22,11 +18,7 @@ const BodyType = z.object({
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET')  {
-      const kvdb: Record<string, string> = {}
-      for await (const [key, value] of dbSuggest.iterator() as any) {
-        kvdb[key] = value.toString()
-      }
-      res.status(200).json(kvdb)
+      res.status(200).json(await suggestionsdb.suggestions())
     } else if (req.method === 'POST') {
       const suggestion = BodyType.parse(JSON.parse(req.body))
       // add the suggested KRG node(s)
@@ -59,8 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
         .build()
       krg.add(ProcessNode)
-      // register the suggestion
-      await dbSuggest.put(`${(new Date()).toString()}-${uuidv4()}`, JSON.stringify(suggestion))
+      await suggestionsdb.suggest(suggestion)
       res.status(200).end()
     } else {
       throw new Error('Unsupported method')

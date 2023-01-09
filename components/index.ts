@@ -1,4 +1,26 @@
 export const components: string[] = []
+export * from "./MW/ConvertedGeneID"
+components.push("MW/ConvertedGeneID")
+export * from "./MW/geneidconv"
+components.push("MW/geneidconv")
+export * from "./MW/metabolite"
+components.push("MW/metabolite")
+export * from "./MW/metaboliteInfo"
+components.push("MW/metaboliteInfo")
+export * from "./MW/metabolite_summary"
+components.push("MW/metabolite_summary")
+export * from "./MW/metgene_metabolite_table"
+components.push("MW/metgene_metabolite_table")
+export * from "./MW/metgene_metabolites"
+components.push("MW/metgene_metabolites")
+export * from "./MW/metgene_rxn_table"
+components.push("MW/metgene_rxn_table")
+export * from "./MW/metgene_rxns"
+components.push("MW/metgene_rxns")
+export * from "./MW/metgene_studies"
+components.push("MW/metgene_studies")
+export * from "./MW/metgene_study_table"
+components.push("MW/metgene_study_table")
 export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
@@ -23,6 +45,8 @@ export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
+export * from "./gly_gen"
+components.push("gly_gen")
 export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/mygeneinfo"

@@ -19,7 +19,7 @@ if (process.env.DATABASE_URL) {
   } else {
     fpprg = global.fpprg
   }
-  if (process.env.N_WORKERS && +process.env.N_WORKERS) {
+  if (process.env.N_WORKERS && (+process.env.N_WORKERS) > 0) {
     global.detach = start_workers(krg, fpprg as PgDatabase, +process.env.N_WORKERS)
   }
 } else {

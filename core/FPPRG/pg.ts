@@ -77,7 +77,7 @@ export class PgDatabase implements Database {
    * Inform listeners of changes to the DB
    */
   private notify = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
-    console.debug(`notify: ${JSON.stringify({ table, record })}`)
+    console.debug(`notify: ${JSON.stringify({ table, record: { id: record.id } })}`)
     for (const listener of Object.values(this.listeners)) {
       listener(table, record)
     }

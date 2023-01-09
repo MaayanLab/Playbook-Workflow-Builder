@@ -174,12 +174,12 @@ export class FPL {
     const fpl: FPL[] = [this]
     let head: FPL | undefined = this
     while (head.parent !== undefined) {
-      if (head.process === old_process) break
+      if (head.process.id === old_process.id) break
       head = head.parent
       fpl.push(head)
     }
     // if we didn't end up on the old_proces, it's not in the FPL
-    if (head.process !== old_process) {
+    if (head.process.id !== old_process.id) {
       throw new Error(`${old_process} not found in FPL`)
     }
     // Replace old_process with new process

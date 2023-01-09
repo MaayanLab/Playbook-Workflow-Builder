@@ -75,15 +75,16 @@ export function start_workers(krg: KRG, db: PgDatabase, n_workers: number) {
     await db.boss.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
       // the job.data should contain the process id
       const { id: processId } = JobC.parse(job.data)
-      console.log(`processing ${processId}...`)
+      console.debug(`checking ${processId}..`)
       // we fetch it from the db
-      const instanceProcess = await db.getProcess(processId)
+      const instanceProcess = await db.getProcess(processId, true)
       if (!instanceProcess) throw new Error(`Process ${job.data} not found`)
       if (instanceProcess.resolved === undefined) {
-        // resolve the process
+        console.debug(`resolving ${processId}..`)
         const resolved = await resolve_process(krg, instanceProcess)
         // store the result in the db
         await db.upsertResolved(resolved)
+        console.debug(`completed ${processId}`)
       }
     })
   })().catch(error => console.error(error))

@@ -93,8 +93,8 @@ export class PgDatabase implements Database {
       ))
     }
   }
-  getProcess = async (id: string) => {
-    if (!(id in this.processTable)) {
+  getProcess = async (id: string, force = false) => {
+    if (!(id in this.processTable) || force) {
       const results = await this.pool.query('select * from process_complete where id = $1', [id])
       if (results.rowCount > 0) {
         const result = await db.process_complete.codec.decode(results.rows[0])
@@ -206,11 +206,14 @@ export class PgDatabase implements Database {
       const results = await this.pool.query('select * from resolved where id = $1', [id])
       if (results.rowCount > 0) {
         const result = await db.resolved.codec.decode(results.rows[0])
-        this.resolvedTable[result.id] = new Resolved(
-          (await this.getProcess(result.id)) as Process,
+        const process = (await this.getProcess(result.id)) as Process
+        const resolved = new Resolved(
+          process,
           result.data !== null ? (await this.getData(result.data)) as Data : undefined,
           true,
         )
+        process.resolved = resolved
+        this.resolvedTable[result.id] = resolved
       }
     }
     return this.resolvedTable[id] as Resolved | undefined
@@ -219,16 +222,18 @@ export class PgDatabase implements Database {
    * Like getResolved but if it's not in the db yet, request & wait for it
    */
   awaitResolved = async (id: string) => {
-    if (!(id in this.resolvedTable)) {
-      await new Promise<void>((resolve, reject) => {
+    const resolved = await this.getResolved(id)
+    if (!resolved) {
+      await new Promise<void>(async (resolve, reject) => {
+        // TODO: timeout
         const unsub = this.listen((table, record) => {
           if (table === 'resolved' && record.id === id) {
             resolve()
             unsub()
           }
         })
-        console.log(`requesting ${id}`)
-        return this.boss.send('work-queue', { id })
+        console.debug(`requesting ${id}`)
+        await this.boss.send('work-queue', { id })
       })
     }
     return this.resolvedTable[id] as Resolved
@@ -241,6 +246,7 @@ export class PgDatabase implements Database {
         }
         resolved.persisted = true
         this.resolvedTable[resolved.id] = resolved
+        resolved.process.resolved = resolved
         await this.pool.query(`
           insert into resolved ("id", "data")
           values ($1, $2)

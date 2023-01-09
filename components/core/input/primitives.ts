@@ -1,5 +1,5 @@
 import useSWRImmutable from 'swr/immutable'
-import levenSort from 'leven-sort'
+import levenSort from '@/utils/leven-sort'
 import { gene_icon, drug_icon } from '@/icons'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())

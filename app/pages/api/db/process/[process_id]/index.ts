@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (req.method !== 'GET') throw new Error('Unsupported method')
     const { process_id } = QueryType.parse(req.query)
-    const process = fpprg.getProcess(process_id)
+    const process = await fpprg.getProcess(process_id)
     if (process === undefined) {
       res.status(404).end()
     } else {

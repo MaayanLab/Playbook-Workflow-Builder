@@ -9,12 +9,12 @@ const BodyType = z.array(IdOrProcessC)
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== 'POST') throw new Error('Unsupported method')
-    const processArray = BodyType.parse(JSON.parse(req.body)).map(fpprg.resolveProcess)
+    const processArray = await Promise.all(BodyType.parse(JSON.parse(req.body)).map(fpprg.resolveProcess))
     const processArrayFPL = FPL.fromProcessArray(processArray)
     if (!processArrayFPL) {
       res.status(404).end()
     } else {
-      const fpl = fpprg.upsertFPL(processArrayFPL)
+      const fpl = await fpprg.upsertFPL(processArrayFPL)
       res.status(200).json(fpl.id)
     }
   } catch (e) {

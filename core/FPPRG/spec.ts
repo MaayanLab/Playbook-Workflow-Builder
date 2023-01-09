@@ -1,7 +1,6 @@
 /**
  * Fully Persistent Process Resolution Graph (FPKRG)
  * 
- * This is an in-memory database implementation of a fully persistent process resolution graph.
  * This consists of:
  * - a fully persistent list data structure for deduplicated lists of processes
  * - process nodes with parent links forming a process graph
@@ -11,37 +10,15 @@
  *  while the Resolved table corresponds to metanode data types.
  */
 
-import { Hash } from "fast-sha256"
+import uuid from '@/utils/uuid'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
 
 /**
- * Obtain a unique hash for a arbitrary data
+ * This timeout error is used to ensure we don't wait too long for dependencies
+ *  fortunately, even if it occurs the job will requeue still making progress.
  */
-function sha256(data: any) {
-  const h = new Hash()
-  h.update(Buffer.from(JSON.stringify(data)))
-  return Buffer.from(h.digest()).toString('hex')
-}
-
-/**
- * Content-addressable storage
- */
-export class Data {
-  id: string
-
-  constructor(public type: string, public value: string) {
-    this.id = sha256([type, value])
-  }
-
-  toJSON = () => {
-    return {
-      'id': this.id,
-      'type': this.type,
-      'value': this.value,
-    }
-  }
-}
+export class TimeoutError extends Error {}
 
 /**
  * A process is unique by its own data (configuration) and process outputs
@@ -50,6 +27,7 @@ export class Data {
  */
 export class Process {
   id: string
+  resolved: Resolved | undefined = undefined
 
   constructor(
     /**
@@ -68,8 +46,12 @@ export class Process {
      * A database instance to operate this class like an ORM
      */
     public db: Database | undefined = undefined,
+    /**
+     * Whether or not this has been persisted to the db
+     */
+    public persisted = false,
   ) {
-    this.id = sha256([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = uuid([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
 
   toJSONWithOutput = async () => {
@@ -108,9 +90,10 @@ export class Process {
    * The output of this process
    */
   output = async () => {
+    if (this.resolved !== undefined) return this.resolved.data
     if (this.db === undefined) throw new Error('Process not attached to a db')
-    const resolved = await this.db.awaitResolved(this.id)
-    return resolved.data
+    this.resolved = await this.db.awaitResolved(this.id)
+    return this.resolved.data
   }
 }
 
@@ -120,7 +103,7 @@ export class Process {
 export class Resolved {
   public id: string
 
-  constructor(public process: Process, public data: Data | undefined) {
+  constructor(public process: Process, public data: Data | undefined, public persisted = false) {
     this.id = process.id
   }
 
@@ -137,8 +120,8 @@ export class Resolved {
  */
 export class FPL {
   id: string
-  constructor(public process: Process, public parent: FPL | undefined = undefined) {
-    this.id = sha256([process.id, parent ? parent.id : null])
+  constructor(public process: Process, public parent: FPL | undefined = undefined, public persisted = false) {
+    this.id = uuid([process.id, parent ? parent.id : null])
   }
 
   toJSONWithOutput = async () => {
@@ -197,12 +180,12 @@ export class FPL {
     const fpl: FPL[] = [this]
     let head: FPL | undefined = this
     while (head.parent !== undefined) {
-      if (head.process === old_process) break
+      if (head.process.id === old_process.id) break
       head = head.parent
       fpl.push(head)
     }
     // if we didn't end up on the old_proces, it's not in the FPL
-    if (head.process !== old_process) {
+    if (head.process.id !== old_process.id) {
       throw new Error(`${old_process} not found in FPL`)
     }
     // Replace old_process with new process
@@ -230,8 +213,25 @@ export class FPL {
   }
 }
 
-type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
-type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
+/**
+ * Content-addressable storage
+ */
+export class Data {
+  id: string
+
+  constructor(public type: string, public value: string, public persisted = false) {
+    this.id = uuid([type, value])
+  }
+
+  toJSON = () => {
+    return {
+      'id': this.id,
+      'type': this.type,
+      'value': this.value,
+    }
+  }
+}
+
 
 export const IdOrDataC = z.union([
   z.object({ id: z.string() }),
@@ -258,129 +258,20 @@ export const IdOrProcessC: z.ZodType<IdOrProcess> = z.lazy(() => z.union([
   }),
 ]))
 
-/**
- * The database maintains records for each table type
- */
-export class Database {
-  private processTable: Record<string, Process> = {}
-  private fplTable: Record<string, FPL> = {}
-  private resolvedTable: Record<string, Resolved> = {}
-  private dataTable: Record<string, Data> = {}
-  private listeners: Record<number, DatabaseListenCallback> = {}
-  private id = 0
+export type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
+export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
 
-  /**
-   * Listen to changes on the DB
-   */
-  listen = (cb: DatabaseListenCallback) => {
-    const id = this.id++
-    this.listeners[id] = cb
-    return () => delete this.listeners[id]
-  }
-  /**
-   * Inform listeners of changes to the DB
-   */
-  private notify = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => {
-    for (const listener of Object.values(this.listeners)) {
-      listener(table, record)
-    }
-  }
-
-  resolveProcess = (process: IdOrProcess): Process => {
-    if ('id' in process) {
-      return this.getProcess(process.id) as Process
-    } else {
-      return this.upsertProcess(new Process(
-        process.type,
-        'data' in process ? process.data !== undefined ? this.resolveData(process.data) : undefined : undefined,
-        dict.init(dict.items(process.inputs).map(({ key, value }) => ({ key, value: this.resolveProcess(value) })))
-      ))
-    }
-  }
-  getProcess = (id: string) => {
-    return this.processTable[id] as Process | undefined
-  }
-  upsertProcess = (process: Process) => {
-    if (!(process.id in this.processTable)) {
-      process.db = this
-      if (process.data !== undefined) {
-        process.data = this.upsertData(process.data)
-      }
-      this.processTable[process.id] = process
-      this.notify('process', process)
-    }
-    return this.processTable[process.id] as Process
-  }
-
-  resolveData = (data: IdOrData) => {
-    if ('id' in data) {
-      return this.getData(data.id) as Data
-    } else {
-      return this.upsertData(new Data(data.type, data.value))
-    }
-  }
-  getData = (id: string) => {
-    return this.dataTable[id] as Data | undefined
-  }
-  upsertData = (data: Data) => {
-    if (!(data.id in this.dataTable)) {
-      this.dataTable[data.id] = data
-      this.notify('data', data)
-    }
-    return this.dataTable[data.id] as Data
-  }
-
-  getResolved = (id: string) => {
-    return this.resolvedTable[id] as Resolved | undefined
-  }
-  /**
-   * Like getResolved but if it's not in the db yet, wait for it
-   */
-  awaitResolved = async (id: string) => {
-    if (!(id in this.resolvedTable)) {
-      await new Promise<void>((resolve, reject) => {
-        const unsub = this.listen((table, record) => {
-          if (table === 'resolved' && record.id === id) {
-            resolve()
-            unsub()
-          }
-        })
-      })
-    }
-    return this.resolvedTable[id] as Resolved
-  }
-  upsertResolved = (resolved: Resolved) => {
-    if (!(resolved.id in this.resolvedTable)) {
-      if (resolved.data) {
-        this.upsertData(resolved.data)
-      }
-      this.resolvedTable[resolved.id] = resolved
-      this.notify('resolved', resolved)
-    }
-    return this.resolvedTable[resolved.id] as Resolved
-  }
-
-  getFPL = (id: string) => {
-    return this.fplTable[id] as FPL | undefined
-  }
-  upsertFPL = (fpl: FPL) => {
-    if (!(fpl.id in this.fplTable)) {
-      this.fplTable[fpl.id] = fpl
-      fpl.process = this.upsertProcess(fpl.process)
-      if (fpl.parent !== undefined) {
-        fpl.parent = this.upsertFPL(fpl.parent)
-      }
-      this.notify('fpl', fpl)
-    }
-    return this.fplTable[fpl.id] as FPL
-  }
-
-  dump = () => {
-    return {
-      dataTable: this.dataTable,
-      processTable: this.processTable,
-      resolvedTable: this.resolvedTable,
-      fplTable: this.fplTable,
-    }
-  }
+export interface Database {
+  listen: (cb: DatabaseListenCallback) => () => void
+  resolveProcess: (process: IdOrProcess) => Promise<Process>
+  getProcess: (id: string) => Promise<Process | undefined>
+  upsertProcess: (process: Process) => Promise<Process>
+  resolveData: (data: IdOrData) => Promise<Data>
+  getData: (id: string) => Promise<Data | undefined>
+  upsertData: (data: Data) => Promise<Data>
+  getResolved: (id: string) => Promise<Resolved | undefined>
+  awaitResolved: (id: string) => Promise<Resolved>
+  upsertResolved: (resolved: Resolved) => Promise<Resolved>
+  getFPL: (id: string) => Promise<FPL | undefined>
+  upsertFPL: (fpl: FPL) => Promise<FPL>
 }

@@ -33,7 +33,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       }
     }
   }
-  const fpl = fpprg.getFPL(params.id)
+  const fpl = await fpprg.getFPL(params.id)
   if (fpl === undefined) {
     return { notFound: true }
   }
@@ -42,7 +42,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     [`/api/db/fpl/${params.id}`]: results
   }
   for (const result of results) {
-    const output = fpprg.getResolved(result.process.id)
+    const output = await fpprg.getResolved(result.process.id)
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
   return {

@@ -98,32 +98,6 @@ export const process_input = Table.create('process_input')
   .extra_insert('on conflict ("id", "key") do nothing')
   .build()
 
-export const process_complete = View.create('process_complete')
-  .field('id', z_uuid())
-  .field('type', z.string())
-  .field('data', z.string().nullable())
-  .field('inputs', z.record(z.string(), z_uuid()))
-  .field('resolved', z.boolean())
-  .field('output', z_uuid().nullable())
-  .sql(`
-    select
-      "process"."id",
-      "process"."type",
-      "process"."data",
-      coalesce(
-        (select jsonb_object_agg("process_input"."key", "process_input"."value")
-         from "process_input"
-         where process."id" = "process_input"."id"),
-        '{}'::jsonb
-      ) as "inputs",
-      ("resolved"."id" is not null) as "resolved",
-      "resolved"."data" as "output"
-    from "process"
-    left join "resolved" on "process"."id" = "resolved"."id"
-    group by "process"."id";
-  `)
-  .build()
-
 export const resolved = Table.create('resolved')
   .field('id', 'uuid', 'primary key references process ("id") on delete cascade', z_uuid())
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
@@ -139,6 +113,31 @@ export const resolved_trigger = SQL.create()
     drop trigger resolved_notify on resolved cascade;
   `)
   .build()
+
+export const process_complete = View.create('process_complete')
+    .field('id', z_uuid())
+    .field('type', z.string())
+    .field('data', z.string().nullable())
+    .field('inputs', z.record(z.string(), z_uuid()))
+    .field('resolved', z.boolean())
+    .field('output', z_uuid().nullable())
+    .sql(`
+      select
+        "process"."id",
+        "process"."type",
+        "process"."data",
+        coalesce(
+          (select jsonb_object_agg("process_input"."key", "process_input"."value")
+           from "process_input"
+           where process."id" = "process_input"."id"),
+          '{}'::jsonb
+        ) as "inputs",
+        ("resolved"."id" is not null) as "resolved",
+        "resolved"."data" as "output"
+      from "process"
+      left join "resolved" on "process"."id" = "resolved"."id";
+    `)
+    .build()
 
 export const fpl = Table.create('fpl')
   .field('id', 'uuid', 'primary key', z_uuid())

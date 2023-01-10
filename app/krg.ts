@@ -6,8 +6,10 @@ declare global {
 }
 
 const krg = global.krg || new KRG()
-Object.values(components)
-  .flatMap(ensureArray)
-  .forEach((metanode: any) => krg.add(metanode))
+Object.keys(components)
+  .filter(k => k !== 'component')
+  .flatMap(k => ensureArray(components[k]))
+  .forEach(metanode => krg.add(metanode))
+
 global.krg = krg
 export default krg

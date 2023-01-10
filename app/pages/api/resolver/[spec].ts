@@ -18,7 +18,7 @@ function one<T>(L: T[]): T {
   if (L.length === 0) { throw new Error('Expected value, got none') }
   else if (L.length === 1) return L[0]
   else {
-    console.log('Expected one, got multiple, using first')
+    console.warn('Expected one, got multiple, using first')
     return L[0]
   }
 }
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         else resolve({ fields, files })
       })
     })
-    const inputs = {}
+    const inputs: Record<string, unknown> = {}
     for (const i in processNode.inputs) {
       if (i in raw.fields) {
         inputs[i] = processNode.inputs[i].codec.decode(one(raw.fields[i]))
@@ -53,6 +53,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(processNode.output.codec.encode(ouput))
   } catch (e) {
     console.error(e)
-    res.status(500).end(e.toString())
+    res.status(500).end((e as Error).toString())
   }
 }

@@ -28,7 +28,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
     npm run dev
     ```
     ![Prototype UI screenshot](./figures/prototype-ui.png)
-5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run prebuild` which adds it to the full graph.
+5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run codegen:components` which adds it to the full graph.
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.
 
@@ -208,7 +208,8 @@ Absolute imports are used throughout this project and are encouraged.
 If you run into python import errors trying to run some of the components, all pertinent python dependencies can be installed with:
 
 ```bash
-# install python requirements (note requirements.txt only exists after `npm run preinstall` which should be invoked automatically after `npm i`)
+# install python requirements
+npm run codegen:requirements
 pip install -r requirements.txt
 
 # Some systems which do not have python3 installed as a default may require the use of `python3 -m pip`

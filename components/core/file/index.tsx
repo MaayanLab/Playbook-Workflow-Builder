@@ -1,11 +1,17 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import dynamic from 'next/dynamic'
+import { file_icon, input_icon } from '@/icons'
+
+const BpFileInput = dynamic(() => import('@/app/components/FileInput'))
+const BpButton = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const FileURL = MetaNode.createData('FileURL')
   .meta({
     label: 'File URL',
     description: 'An arbitrary file url',
+    icon: [file_icon],
   })
   .codec(z.string())
   .view(file => (
@@ -20,23 +26,24 @@ export const FileInput = MetaNode.createProcess('FileInput')
     label: 'Input a File',
     description: 'A file upload',
     default: '',
+    icon: [input_icon, file_icon],
   })
   .inputs()
   .output(FileURL)
   .prompt(props => {
     return (
-      <div>
-        <form onSubmit={async (evt) => {
+      <form
+        onSubmit={async (evt) => {
           evt.preventDefault()
           const formData = new FormData(evt.currentTarget)
           const res = await fetch(`/api/components/core/file/upload`, { method: 'POST', body: formData })
           const records: { file: string[] } = await res.json()
           props.submit(records.file[0])
-        }}>
-          <input type="file" name="file" />
-          <input type="submit" />
-        </form>
-      </div>
+        }}
+      >
+        <div><BpFileInput inputProps={{ name: "file" }} /></div>
+        <div><BpButton type="submit">Submit</BpButton></div>
+      </form>
     )
   })
   .build()

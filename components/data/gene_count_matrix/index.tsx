@@ -3,11 +3,16 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
+import { datafile_icon, file_transfer_icon } from '@/icons'
+import dynamic from 'next/dynamic'
+
+const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
 export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   .meta({
     label: 'Gene Count Matrix',
     description: 'A gene count matrix file',
+    icon: [datafile_icon],
   })
   .codec(z.object({
     url: z.string(),
@@ -20,37 +25,14 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   .view(props => {
     return (
       <div>
-        <h2>Gene Count Matrix: {props.url}</h2>
-        <span>Shape: ({props.shape[0]}, {props.shape[1]})</span>
-        <table>
-          <thead>
-            <tr>
-              <th>&nbsp;</th>
-              {props.columns.flatMap((col, j) => [
-                ...(j === props.ellipses[1] ?
-                  [<th key={`${j}-ellipse`}>...</th>]
-                  : []),
-                <th key={j}>{col}</th>,
-              ])}
-            </tr>
-          </thead>
-          <tbody>
-            {props.index.flatMap((index, i) => [
-              ...(i === props.ellipses[0] ?
-                [<th key={`${i}-ellipse`}>...</th>]
-                : []),
-              <tr key={index}>
-                <th>{index}</th>
-                {props.columns.flatMap((col, j) => [
-                  ...(j === props.ellipses[1] ?
-                    [<td key={`${j}-ellipse`}>...</td>]
-                    : []),
-                  <td key={j}>{props.values[i][j]}</td>,
-                ])}
-              </tr>,
-            ])}
-          </tbody>
-        </table>
+        <Matrix
+          index={props.index}
+          columns={props.columns}
+          values={props.values}
+          ellipses={props.ellipses}
+        />
+        <p>Shape: ({props.shape[0]}, {props.shape[1]})</p>
+        <a style={{ display: 'none' }} href={props.url}>{props.url}</a>
       </div>
     )
   })
@@ -60,6 +42,7 @@ export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFr
   .meta({
     label: 'Resolve A Gene Count Matrix from a File',
     description: 'Ensure a file contains a gene count matrix, load it into a standard format',
+    icon: [file_transfer_icon],
   })
   .codec()
   .inputs({ file: FileURL })

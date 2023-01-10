@@ -2,6 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 import { z } from 'zod'
+import { gene_icon, mygeneinfo_icon } from '@/icons'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -44,6 +45,7 @@ export const GeneInfo = MetaNode.createData('GeneInfo')
   .meta({
     label: 'Gene Information',
     description: 'A Gene resolved with MyGeneInfo',
+    icon: [gene_icon],
   })
   .codec(MyGeneInfoC)
   .view(geneinfo => (
@@ -57,6 +59,7 @@ export const GeneInfoFromGeneTerm = MetaNode.createProcess('GeneInfoFromGeneTerm
   .meta({
     label: 'Resolve Gene Info from Term',
     description: 'Resolve gene info from gene term with MyGeneInfo',
+    icon: [mygeneinfo_icon],
   })
   .codec()
   .inputs({ gene: GeneTerm })

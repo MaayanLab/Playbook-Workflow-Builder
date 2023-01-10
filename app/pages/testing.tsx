@@ -1,14 +1,15 @@
 import React from 'react'
-import styles from '@/app/styles/index.module.css'
+import styles from '@/app/styles/testing.module.css'
 import dynamic from 'next/dynamic'
 import { MetaNodeDataType } from '@/spec/metanode'
 import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
+const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export default function App() {
-  const [prev, setPrev] = React.useState([])
+  const [prev, setPrev] = React.useState<{ type: string, data: string }[]>([])
   const [current, setCurrent_] = React.useState({ type: '', data: '' })
   const setCurrent = React.useCallback((current: { type?: string, data?: string }) => {
     setCurrent_(current_ => {
@@ -19,12 +20,12 @@ export default function App() {
       }
     })
   }, [setPrev, setCurrent_])
-  const [prompt, setPrompt] = React.useState(undefined)
+  const [prompt, setPrompt] = React.useState<string|undefined>(undefined)
   const dataNode = krg.getDataNode(current.type)
   let dataNodeView
   if (prompt) {
     const promptNode = krg.getPromptNode(prompt)
-    const inputs = {}
+    const inputs: Record<string, unknown> = {}
     if (Object.keys(promptNode.inputs).length > 0) {
       const input0 = Object.keys(promptNode.inputs)[0]
       inputs[input0] = promptNode.inputs[input0].codec.decode(current.data)
@@ -44,11 +45,11 @@ export default function App() {
     try {
       dataNodeView = <div>{dataNode.view(dataNode.codec.decode(current.data))}</div>
     } catch (e) {
-      dataNodeView = <div>Error rendering {dataNode.meta.label}: {e.toString()}</div>
+      dataNodeView = <div>Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
     }
   }
   return (
-    <div className={styles.App}>
+    <div className={`${styles.App} container mx-auto py-4`}>
       <div className={styles.Process}>
         <h2>Apply Process</h2>
         {krg.getNextProcess(current.type).map(proc =>
@@ -59,7 +60,7 @@ export default function App() {
                 <span> =&gt; </span>
               </>
             ) : null}
-            <button
+            <Button
               className={[
                 Object.values(proc.inputs)
                   .some((i) => i.spec === current.type) ? 'font-bold' : '',
@@ -86,7 +87,7 @@ export default function App() {
                   })
                 }
               }}
-            >{proc.meta.label}</button>
+            >{proc.meta.label}</Button>
             <span> =&gt; </span>
             <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
           </div>
@@ -110,7 +111,7 @@ export default function App() {
           />
         </div>
         <div className={styles.Examples}>
-          <button
+          <Button
             className="bg-primary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
@@ -122,8 +123,8 @@ export default function App() {
                 })
                 return _prev
             })
-            }}>Previous</button>
-          <button
+            }}>Previous</Button>
+          <Button
             className="bg-primary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
@@ -131,11 +132,11 @@ export default function App() {
                 type: '',
                 data: ''
               })
-            }}>Reset</button>
+            }}>Reset</Button>
           {krg.getDataNodes()
             .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta)
             .map(node => (
-              <button
+              <Button
                 key={node.spec}
                 className="bg-primary rounded-md p-2"
                 onClick={() => {
@@ -145,7 +146,7 @@ export default function App() {
                     data: node.codec.encode(node.meta.example),
                   })
                 }}
-              >{node.meta.label}</button>
+              >{node.meta.label}</Button>
             ))}
         </div>
       </div>

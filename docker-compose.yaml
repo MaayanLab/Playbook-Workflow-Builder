@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  # app serves the UI & API, it registers user interactions into the database (pg)
+  app:
+    image: maayanlab/playbook-partnership-ui
+    build:
+      context: .
+      dockerfile: Dockerfile.minimal
+    deploy:
+      # this can be safely replicated if necessary but an ingress will be required
+      replicas: 1
+    environment:
+    - PUBLIC_URL=${PUBLIC_URL}
+    - NEXTAUTH_URL=${NEXTAUTH_URL}
+    - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    - EMAIL_SERVER=${EMAIL_SERVER}
+    - EMAIL_FROM=${EMAIL_FROM}
+    - DATABASE_URL=${DATABASE_URL}
+    - N_WORKERS=0
+    ports:
+    - 3000:3000
+  # the workers should be replicated,
+  #   they deal with creating "Resolved" entries for submitted Processes.
+  worker:
+    image: maayanlab/playbook-partnership
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      # this can be safely replicated as necessary
+      replicas: 2
+    command: ["npm", "run", "start:worker"]
+    environment:
+    - PUBLIC_URL=${PUBLIC_URL}
+    - DATABASE_URL=${DATABASE_URL}
+    - N_WORKERS=5
+  # the database is used by everything it can be provisioned with
+  #  dbmate (`dbmate up`)
+  pg:
+    image: postgres
+    environment:
+    - POSTGRES_DB=${POSTGRES_DB}
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+    - 5432:5432

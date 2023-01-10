@@ -36,6 +36,8 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
     } catch (e) {
       throw new ProcessError(`Process input could not be serialized`, null)
     }
+    if (typeof spawn === 'undefined') throw new Error("python is server side only")
+    if (typeof path === 'undefined') throw new Error("python is server side only")
     const proc = spawn(process.env.PYTHON_BIN || 'python3', [
       path.join(process.env.PYTHON_ROOT || '', 'utils/helper.py'),
       pathspec,

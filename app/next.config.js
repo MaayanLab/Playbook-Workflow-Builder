@@ -19,6 +19,9 @@ module.exports = {
   experimental: {
     externalDir: true,
   },
+  typescript: {
+    ignoreBuildErrors: process.env.STRICT_TS!=='true',
+  },
   async redirects() {
     return [
       {

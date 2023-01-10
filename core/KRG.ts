@@ -5,7 +5,7 @@
  *  the UI
  */
 
-import { MetaNodeDataType, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
+import { MetaNodeDataType, MetaNodeGenericData, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
 import * as dict from '@/utils/dict'
 
 export default class KRG {
@@ -48,8 +48,22 @@ export default class KRG {
 
   add = <T extends MetaNodeDataType | MetaNodePromptType | MetaNodeResolveType = MetaNodeGenericType>(node: T) => {
     if (node.kind === 'data') {
+      if (node.spec in this.dataNodes) {
+        if (this.dataNodes[node.spec] === node) {
+          return
+        } else {
+          this.rm(node.spec)
+        }
+      }
       this.dataNodes[node.spec] = node
     } else if (node.kind === 'process') {
+      if (node.spec in this.processNodes) {
+        if (this.processNodes[node.spec] === node) {
+          return
+        } else {
+          this.rm(node.spec)
+        }
+      }
       if ('prompt' in node) {
         this.promptNodes[node.spec] = node
       } else if ('resolve' in node) {
@@ -57,7 +71,7 @@ export default class KRG {
       }
       this.processNodes[node.spec] = node
       for (const arg in node.inputs) {
-        const input = node.inputs[arg]
+        const input = node.inputs[arg] as MetaNodeGenericData
         if (!(input.spec in this.processForInput)) {
           this.processForInput[input.spec] = {}
         }
@@ -73,6 +87,57 @@ export default class KRG {
         this.processForOutput[node.output.spec] = {}
       }
       this.processForOutput[node.output.spec][node.spec] = node
+    }
+  }
+
+  /**
+   * Remove a node from the KRG, pruning connections accordingly
+   */
+  rm = (spec: string) => {
+    const dataNode = this.getDataNode(spec)
+    if (dataNode) {
+      delete this.dataNodes[spec]
+      if (spec in this.processForInput) {
+        delete this.processForInput[spec]
+      }
+      if (spec in this.processForOutput) {
+        delete this.processForOutput[spec]
+      }
+    } else {
+      const processNode = this.getProcessNode(spec)
+      if (processNode) {
+        if ('prompt' in processNode) {
+          delete this.promptNodes[spec]
+        } else if ('resolve' in processNode) {
+          delete this.resolveNodes[spec]
+        }
+        delete this.processNodes[spec]
+        if ('' in this.processForInput) {
+          if (spec in this.processForInput['']) {
+            delete this.processForInput[''][spec]
+          }
+        }
+        for (const arg in processNode.inputs) {
+          const processNodeInput = processNode.inputs[arg]
+          if (processNodeInput.spec in this.processForInput) {
+            if (spec in this.processForInput[processNodeInput.spec]) {
+              delete this.processForInput[processNodeInput.spec][spec]
+              if (Object.keys(this.processForInput[processNodeInput.spec]).length === 0) {
+                delete this.processForInput[processNodeInput.spec]
+              }
+            }
+          }
+        }
+        const processNodeOutput = processNode.output
+        if (processNodeOutput.spec in this.processForOutput) {
+          if (spec in this.processForOutput[processNodeOutput.spec]) {
+            delete this.processForOutput[processNodeOutput.spec][spec]
+            if (Object.keys(this.processForOutput[processNodeOutput.spec]).length === 0) {
+              delete this.processForOutput[processNodeOutput.spec]
+            }
+          }
+        }
+      }
     }
   }
 }

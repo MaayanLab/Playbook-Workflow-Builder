@@ -16,3 +16,9 @@ export function arange(n: number) {
   }
   return R
 }
+
+export function unique<T>(array: T[]) {
+  const set = new Set<T>()
+  array.forEach(element => set.add(element))
+  return Array.from(set)
+}

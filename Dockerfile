@@ -6,7 +6,7 @@ RUN find /app -type f -a \! \( -name "package.json" -o -name "package-lock.json"
 FROM node:latest as prepare_requirements_txt
 WORKDIR /app
 COPY . /app
-RUN find /app -type f -a \! \( -name "requirements.txt" -o "enumerate-requirements.ts" \) | xargs rm -f
+RUN find /app -type f -a \! \( -name "requirements.txt" -o -name "enumerate-requirements.ts" \) | xargs rm -f
 
 FROM node:latest as prepare_npm_i
 WORKDIR /app

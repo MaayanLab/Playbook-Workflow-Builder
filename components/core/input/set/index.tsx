@@ -2,6 +2,8 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative } from '@/components/core/input/primitives'
+import { Button, TextArea } from '@blueprintjs/core'
+import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
 
 const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
@@ -12,7 +14,20 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   })
   .codec(z.array(z.string()))
   .view(set => {
-    return <textarea readOnly value={set.join('\n')} />
+    return (
+      <div style={{ height: 500 }}>
+        <Table
+          cellRendererDependencies={[set]}
+          numRows={set.length}
+          enableGhostCells={true} enableFocusedCell={true}
+        >
+          <Column
+            name="Terms"
+            cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
+          />
+        </Table>
+      </div>
+    )
   })
   .build()
 
@@ -31,9 +46,16 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
     React.useEffect(() => { setSet((props.output||[]).join('\n')) }, [props.output])
     return (
       <div>
-        <textarea value={set} onChange={evt => setSet(evt.target.value)} />
-        <button onClick={evt => props.submit(set.split(/\r?\n/g))}>Submit</button>
-        <button onClick={evt => props.submit(T.meta.example)}>Example</button>
+        <TextArea
+          placeholder="Newline separated set of terms"
+          rows={8}
+          fill
+          large
+          onChange={evt => setSet(evt.target.value)}
+          value={set}
+        />
+        <Button large rightIcon="bring-data" onClick={evt => props.submit(set.split(/\r?\n/g))}>Submit</Button>
+        <Button large rightIcon="send-to-graph" onClick={evt => props.submit(T.meta.example)}>Example</Button>
       </div>
     )
   })

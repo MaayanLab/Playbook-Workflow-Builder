@@ -47,6 +47,8 @@ export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
 export * from "./gly_gen"
 components.push("gly_gen")
+export * from "./service/enrichr"
+components.push("service/enrichr")
 export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/mygeneinfo"

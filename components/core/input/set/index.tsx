@@ -19,7 +19,8 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
         <Table
           cellRendererDependencies={[set]}
           numRows={set.length}
-          enableGhostCells={true} enableFocusedCell={true}
+          enableGhostCells
+          enableFocusedCell
         >
           <Column
             name="Terms"

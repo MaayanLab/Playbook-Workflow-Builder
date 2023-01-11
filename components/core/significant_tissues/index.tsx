@@ -18,19 +18,23 @@ export const SignificantTissues = MetaNode.createData('SignificantTissues')
   .codec(SignificantTissueC)
   .view(tissues => {
     return (
-      <Table
-        cellRendererDependencies={[tissues]}
-        numRows={tissues.length}
-      >
-        <Column
-          name="Tissue"
-          cellRenderer={row => <Cell key={row+''}>{tissues[row].tissue}</Cell>}
-        />
-        <Column
-          name="ZScore"
-          cellRenderer={row => <Cell key={row+''}>{tissues[row].zscore.toPrecision(3)}</Cell>}
-        />
-      </Table>
+      <div style={{ height: 500 }}>
+        <Table
+          cellRendererDependencies={[tissues]}
+          numRows={tissues.length}
+          enableGhostCells
+          enableFocusedCell
+        >
+          <Column
+            name="Tissue"
+            cellRenderer={row => <Cell key={row+''}>{tissues[row].tissue}</Cell>}
+          />
+          <Column
+            name="ZScore"
+            cellRenderer={row => <Cell key={row+''}>{tissues[row].zscore.toPrecision(3)}</Cell>}
+          />
+        </Table>
+      </div>
     )
   })
   .build()

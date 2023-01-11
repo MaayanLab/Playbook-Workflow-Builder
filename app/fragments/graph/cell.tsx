@@ -15,7 +15,7 @@ export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Me
   const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
   return (
     <div className="flex-grow flex flex-col">
-      <div className="flex-grow flex-shrink">
+      <div className="mb-4">
         <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
         {Prompt ? <Prompt
           inputs={inputs}
@@ -39,7 +39,7 @@ export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Me
         : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>
         : null}
       </div>
-      <div className="flex-grow py-4">
+      <div className="flex-grow flex flex-col py-4">
         {outputNode ? (
           <>
             <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>

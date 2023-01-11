@@ -84,23 +84,19 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
           popoverProps={{ minimal: true }}
           onQueryChange={q => setQuery(q)}
         />
-        <div>
-          <Button
-            large
-            type="submit"
-            text="Submit"
-            rightIcon="send-to-graph"
-            onClick={evt => props.submit(item)}
-          />
-        </div>
-        <div>
-          <Button
-            large
-            text="Example"
-            rightIcon="bring-data"
-            onClick={evt => props.submit(T.examples.term)}
-          />
-        </div>
+        <Button
+          large
+          type="submit"
+          text="Submit"
+          rightIcon="send-to-graph"
+          onClick={evt => props.submit(item)}
+        />
+        <Button
+          large
+          text="Example"
+          rightIcon="bring-data"
+          onClick={evt => props.submit(T.examples.term)}
+        />
       </div>
     )
   })

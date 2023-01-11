@@ -43,7 +43,7 @@ export default function App() {
     />
   } else if (dataNode) {
     try {
-      dataNodeView = <div>{dataNode.view(dataNode.codec.decode(current.data))}</div>
+      dataNodeView = dataNode.view(dataNode.codec.decode(current.data))
     } catch (e) {
       dataNodeView = <div>Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
     }
@@ -161,7 +161,9 @@ export default function App() {
         >{krg.getDataNodes().map(dataNode =>
           <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
         )}</select>
-        {dataNodeView ? dataNodeView : null}
+        <div className="m-2 flex-grow flex flex-col">
+          {dataNodeView ? dataNodeView : null}
+        </div>
       </div>
     </div>
   )

@@ -37,8 +37,6 @@
 }
 .View {
   grid-area: v;
+  display: flex;
   flex-direction: column;
-}
-.View > div {
-  margin-top: 1em;
 }

@@ -3,18 +3,8 @@
 @tailwind utilities;
 
 body, html {
-  font-family: 'Arial', sans-serif;
   height: 100vh;
   max-width: 100vw;
   margin: 0;
   padding: 0;
 }
-
-/* sticky footer */
-/* body {
-  font-family: 'Arial', sans-serif;
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-  min-width: 540px;
-} */

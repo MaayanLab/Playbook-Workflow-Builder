@@ -1,14 +1,5 @@
 const colors = require('tailwindcss/colors')
 
-module.exports = {
-  theme: {
-    colors: {
-      primary: colors.indigo,
-      secondary: colors.yellow,
-      neutral: colors.gray,
-    }
-  }
-}
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -18,8 +9,12 @@ module.exports = {
   ],
   theme: {
     colors: {
+      ...colors,
       primary: '#B3CFFF',
       secondary: '#DDDDDD',
+    },
+    fontFamily: {
+      sans: ['Arial', 'sans-serif'],
     },
     extend: {},
   },

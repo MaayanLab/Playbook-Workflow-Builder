@@ -11,8 +11,6 @@
 }
 .App > div {
   overflow: auto;
-  margin-left: 1em;
-  margin-right: 1em;
 }
 .Data {
   grid-area: d;
@@ -21,22 +19,10 @@
   height: 50vh;
   resize: vertical;
 }
-.Examples {
-  margin-top: 1em;
-  display: flex;
-  flex-direction: row;
-}
-.Examples > * {
-  margin-left: 1em;
-}
 .Process {
   grid-area: p;
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
-}
-.Process > * {
-  margin-bottom: 1em;
 }
 .View {
   grid-area: v;

@@ -31,7 +31,7 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/testing',
+        destination: '/sitemap',
         permanent: false,
       },
     ]

@@ -128,12 +128,12 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
           {error ? <div className="alert alert-error">{error}</div> : null}
         </div>
         <div className="border-t-secondary border-t-2 mt-2">
-          <Link href={`/graph/${id}/node/start`}>
+          <Link href={`/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} />
             </button>
           </Link>
-          <Link href={`/graph/${id}/node/start/extend`}>
+          <Link href={`/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={fork_icon} color="black" />
             </button>
@@ -182,7 +182,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
             )}
           </div>
           <div className="border-t-secondary border-t-2 mt-2">
-            <Link href={`/graph/${id}/node/${id}/extend`}>
+            <Link href={`/graph${id ? `/${id}/node/${id}/extend` : `/start/extend`}`}>
               <button className="bp4-button bp4-minimal">
                 <Icon icon={view_in_graph_icon} />
               </button>

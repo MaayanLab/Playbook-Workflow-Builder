@@ -46,7 +46,7 @@ export const GeneSetIDConv = MetaNode.createProcess('GeneSetIDConv')
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
-  .inputs({ geneset: GeneSet })
+  .inputs({ geneset : GeneSet  })
   // This should be a single Meta Node Data Type
   .output(ConvertedGeneID)
   // The resolve function uses the inputs and returns output

@@ -46,4 +46,15 @@ export const Drug = {
   },
 }
 
-export type Primative = typeof Gene | typeof Drug
+export const Metabolite = {
+  name: 'Metabolite',
+  label: 'Metabolite',
+  icon: [drug_icon],
+  color: '#A7B0EC',
+  examples: {
+    term: 'Glucose',
+    set: [],
+  },
+}
+
+export type Primative = typeof Gene | typeof Drug | typeof Metabolite

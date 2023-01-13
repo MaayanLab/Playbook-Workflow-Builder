@@ -53,6 +53,7 @@ export const Metabolite = {
   color: '#A7B0EC',
   examples: {
     term: 'Glucose',
+    set: [],
   },
 }
 

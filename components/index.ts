@@ -3,8 +3,6 @@ export * from "./MW/ConvertedGeneID"
 components.push("MW/ConvertedGeneID")
 export * from "./MW/geneidconv"
 components.push("MW/geneidconv")
-export * from "./MW/metabolite"
-components.push("MW/metabolite")
 export * from "./MW/metaboliteInfo"
 components.push("MW/metaboliteInfo")
 export * from "./MW/metabolite_summary"

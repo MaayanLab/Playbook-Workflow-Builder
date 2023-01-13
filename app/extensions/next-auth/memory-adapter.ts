@@ -19,7 +19,7 @@ export default function MemoryAdapter(): Adapter {
     },
     getUserByAccount: async (provider_providerAccountId) => {
       const account = accounts[`${provider_providerAccountId.provider}_${provider_providerAccountId.providerAccountId}`] || null
-      const user = users[`${account.userId}`] || null
+      const user = account !== null ? users[`${account.userId}`] || null : null
       return user
     },
     updateUser: async (data) => {

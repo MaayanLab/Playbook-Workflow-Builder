@@ -6,7 +6,7 @@ import { MetGeneRxnTable } from '../metgene_rxn_table'
 export const MetGeneRxns = MetaNode.createProcess('MetGeneRxns')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'Metgene Reactions',
+    label: 'MetGENE Reactions',
     description: 'Compute the MetGENE Reactions',
   })
   // This should be a mapping from argument name to argument type

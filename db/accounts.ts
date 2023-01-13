@@ -11,7 +11,7 @@ export const user = Table.create('user')
   .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
   .field('name', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('email', 'varchar', 'not null', z.string())
-  .field('emailVerified', 'timestamp', '', z.date())
+  .field('emailVerified', 'timestamp', '', z.date().nullable())
   .field('image', 'varchar', '', nullable_undefined_codec(z.string()))
   .build()
 

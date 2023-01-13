@@ -6,10 +6,10 @@ import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
-const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export default function App() {
   const [prev, setPrev] = React.useState<{ type: string, data: string }[]>([])
+  const [loading, setLoading] = React.useState<boolean>(false)
   const [current, setCurrent_] = React.useState({ type: '', data: '' })
   const setCurrent = React.useCallback((current: { type?: string, data?: string }) => {
     setCurrent_(current_ => {
@@ -49,52 +49,61 @@ export default function App() {
     }
   }
   return (
-    <div className={`${styles.App} container mx-auto py-4`}>
+    <div className={`${styles.App} container mx-auto py-2`}>
       <div className={styles.Process}>
-        <h2>Apply Process</h2>
-        {krg.getNextProcess(current.type).map(proc =>
-          <div key={proc.spec}>
-            {Object.keys(proc.inputs).length > 0 ? (
-              <>
-                <span className="bg-secondary rounded-full p-3">{dict.values(proc.inputs).map((i) => i.meta.label).join(', ')}</span>
-                <span> =&gt; </span>
-              </>
-            ) : null}
-            <Button
-              className={[
-                Object.values(proc.inputs)
-                  .some((i) => i.spec === current.type) ? 'font-bold' : '',
-                'bg-primary rounded-sm p-2',
-              ].join(' ')}
-              onClick={async () => {
-                if ('prompt' in proc) {
-                  setPrompt(proc.spec)
-                } else {
-                  const formData = new FormData()
-                  for (const i in proc.inputs) {
-                    formData.append(i, current.data)
-                    // formData[i] = proc.inputs[i].codec.encode(data)
+        <progress className="progress w-100" value={loading ? undefined : 0}></progress>
+        <div className="prose mb-2">
+          <h2>Apply Process</h2>
+        </div>
+        <div className="flex flex-col gap-1">
+          {krg.getNextProcess(current.type).map(proc =>
+            <div key={proc.spec} className="whitespace-nowrap">
+              {Object.keys(proc.inputs).length > 0 ? (
+                <>
+                  <span className="btn btn-sm btn-secondary rounded-full">{dict.values(proc.inputs).map((i) => i.meta.label).join(', ')}</span>
+                  <span> =&gt; </span>
+                </>
+              ) : null}
+              <button
+                className={[
+                  Object.values(proc.inputs)
+                    .some((i) => i.spec === current.type) ? 'font-bold' : '',
+                  'btn btn-sm btn-secondary rounded-sm',
+                ].join(' ')}
+                onClick={async () => {
+                  if ('prompt' in proc) {
+                    setPrompt(proc.spec)
+                  } else {
+                    setLoading(() => true)
+                    const formData = new FormData()
+                    for (const i in proc.inputs) {
+                      formData.append(i, current.data)
+                      // formData[i] = proc.inputs[i].codec.encode(data)
+                    }
+                    const req = await fetch(`/api/resolver/${proc.spec}`, {
+                      method: 'POST',
+                      body: formData,
+                    })
+                    const res = await req.json()
+                    setPrompt(undefined)
+                    setCurrent({
+                      type: proc.output.spec,
+                      data: res
+                    })
+                    setLoading(() => false)
                   }
-                  const req = await fetch(`/api/resolver/${proc.spec}`, {
-                    method: 'POST',
-                    body: formData,
-                  })
-                  const res = await req.json()
-                  setPrompt(undefined)
-                  setCurrent({
-                    type: proc.output.spec,
-                    data: res
-                  })
-                }
-              }}
-            >{proc.meta.label}</Button>
-            <span> =&gt; </span>
-            <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
-          </div>
-        )}
+                }}
+              >{proc.meta.label}</button>
+              <span> =&gt; </span>
+              <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
+            </div>
+          )}
+        </div>
       </div>
       <div className={styles.Data}>
-        <h2>Current Data</h2>
+        <div className="prose">
+          <h2>Current Data</h2>
+        </div>
         <div style={{
           flex: '1 0 auto',
           height: 0,
@@ -110,9 +119,9 @@ export default function App() {
             }}
           />
         </div>
-        <div className={styles.Examples}>
-          <Button
-            className="bg-primary rounded-md p-2"
+        <div className="flex flex-row flex-wrap mt-1 gap-1">
+          <button
+            className="btn btn-sm btn-secondary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
               setPrev(prev => {
@@ -123,22 +132,22 @@ export default function App() {
                 })
                 return _prev
             })
-            }}>Previous</Button>
-          <Button
-            className="bg-primary rounded-md p-2"
+            }}>Previous</button>
+          <button
+            className="btn btn-sm btn-secondary rounded-md p-2"
             onClick={() => {
               setPrompt(undefined)
               setCurrent({
                 type: '',
                 data: ''
               })
-            }}>Reset</Button>
+            }}>Reset</button>
           {krg.getDataNodes()
             .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta)
             .map(node => (
-              <Button
+              <button
                 key={node.spec}
-                className="bg-primary rounded-md p-2"
+                className="btn btn-sm btn-secondary rounded-md p-2"
                 onClick={() => {
                   setPrompt(undefined)
                   setCurrent({
@@ -146,21 +155,32 @@ export default function App() {
                     data: node.codec.encode(node.meta.example),
                   })
                 }}
-              >{node.meta.label}</Button>
+              >{node.meta.label}</button>
             ))}
         </div>
       </div>
       <div className={styles.View}>
-        <h2>Current View</h2>
-        <select
-          value={current.type}
-          onChange={evt => {
-            setPrompt(undefined)
-            setCurrent(({ type: evt.target.value }))
-          }}
-        >{krg.getDataNodes().map(dataNode =>
-          <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
-        )}</select>
+        <div className="prose">
+          <h2>Current View</h2>
+        </div>
+        <div className="form-control w-full max-w-xs">
+          <label className="label">
+            <span className="label-text">Change the current renderer</span>
+          </label>
+          <select
+            className="select select-bordered"
+            value={current.type}
+            onChange={evt => {
+              setPrompt(undefined)
+              setCurrent(({ type: evt.target.value }))
+            }}
+          >
+            <option disabled selected></option>
+            {krg.getDataNodes().map(dataNode =>
+              <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
+            )}
+          </select>
+        </div>
         <div className="m-2 flex-grow flex flex-col">
           {dataNodeView ? dataNodeView : null}
         </div>

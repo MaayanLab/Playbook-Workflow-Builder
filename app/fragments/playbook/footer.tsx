@@ -10,16 +10,14 @@ export default function Footer() {
           <img className="rounded h-20" src="/logos/CFDE.png" />
         </a>
       </div>
-      <div className="flex flex-col grid-cols-1">
-        <a className="bg-gray-500 rounded-lg text-white flex p-1 m-1 hover:no-underline hover:text-white" href="https://github.com/nih-cfde/playbook-partnership" target="_blank">
-          <img className="rounded-md w-5" src="/GitHub-Mark.png" />
-          &nbsp;
-          View source code
+      <div className="flex flex-col grid-cols-1 gap-1">
+        <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/nih-cfde/playbook-partnership" target="_blank">
+          <img className="rounded-md w-4 justify-self-start" src="/GitHub-Mark.png" />
+          <span className="flex-grow">View source code</span>
         </a>
-        <a className="bg-gray-500 rounded-lg text-white flex p-1 m-1 hover:no-underline hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/issues/new" target="_blank">
-          <img className="rounded-md w-5" src="/GitHub-Mark.png" />
-          &nbsp;
-          Submit an issue
+        <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/nih-cfde/playbook-partnership/issues/new" target="_blank">
+          <img className="rounded-md w-4 justify-self-start" src="/GitHub-Mark.png" />
+          <span className="flex-grow">Submit an issue</span>
         </a>
       </div>
     </div>

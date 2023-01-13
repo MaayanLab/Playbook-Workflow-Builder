@@ -1,6 +1,7 @@
 import { IconSvgPaths20 } from '@blueprintjs/icons'
 export const fork_icon = { path: IconSvgPaths20.Fork.join(' '), title: 'Expand From this Step' }
 export const view_in_graph_icon = { path: IconSvgPaths20.SendToGraph.join(' '), title: 'View in Graph' }
+export const view_report_icon = { path: IconSvgPaths20.SendToMap.join(' '), title: 'View Report' }
 import { mdiArrowRight } from '@mdi/js'; export const rightarrow_icon = { path: mdiArrowRight }
 import { mdiCameraMeteringMatrix } from '@mdi/js'; export const tissue_icon = { path: mdiCameraMeteringMatrix, title: 'Tissue' }
 import { mdiChartBar } from '@mdi/js'; export const barchart_icon = { path: mdiChartBar, title: 'Bar Chart' }
@@ -17,5 +18,6 @@ import { mdiProgressAlert } from '@mdi/js'; export const status_alert_icon = { p
 import { mdiProgressCheck } from '@mdi/js'; export const status_complete_icon = { path: mdiProgressCheck, title: 'Completed' }
 import { mdiProgressClock } from '@mdi/js'; export const status_waiting_icon = { path: mdiProgressClock, title: 'Waiting for output...' }
 import { mdiProgressPencil } from '@mdi/js'; export const status_awaiting_input_icon = { path: mdiProgressPencil, title: 'Waiting for input' }
+import { mdiLink } from '@mdi/js'; export const share_icon = { path: mdiLink, title: 'Share' }
 import { mdiVariable } from '@mdi/js'; export const variable_icon = { path: mdiVariable, title: 'Variable' }
 import { mdiViewList } from '@mdi/js'; export const weighted_icon = { path: mdiViewList, title: 'Weighted' }

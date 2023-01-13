@@ -82,7 +82,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             : node_id === 'start' ?
               <Home />
               : head ?
-                <Cell krg={krg} id={graph_id} head={head} />
+                <Cell krg={krg} id={graph_id} head={head} autoextend />
                 : null}
       </main>
     </>

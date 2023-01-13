@@ -12,7 +12,7 @@ import type KRG from '@/core/KRG'
 import Head from 'next/head'
 import Link from 'next/link'
 import Icon from '@/app/components/icon'
-import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon } from '@/icons'
+import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon } from '@/icons'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -91,6 +91,29 @@ export default function App({ fallback }: { fallback: any }) {
   )
 }
 
+function ShareButton({ id }: { id: string | undefined }) {
+  const [share, setShare] = React.useState(false)
+  const onClick = React.useCallback(() => {
+    const graphUrl = document.getElementById('graph-url') as HTMLInputElement
+    graphUrl.select()
+    graphUrl.setSelectionRange(0, 99999)
+    navigator.clipboard.writeText(graphUrl.value)
+  }, [id])
+  React.useEffect(() => { if (share) { onClick() } }, [share])
+  return (
+    <>
+      <button className={`bp4-button bp4-minimal${share ? ' hidden' : ''}`} onClick={() => {setShare(true)}}>
+        <Icon icon={share_icon} color="black" />
+      </button>
+      <div className={`bp4-control-group inline-block${share ? '': ' hidden'}`}>
+        <input id="graph-url" type="text" className="bp4-input" value={`${process.env.NEXT_PUBLIC_URL}/graph${id ? `/${id}` : ''}`} readOnly />
+        <button className="bp4-button bp4-icon-link" onClick={onClick} />
+        <button className="bp4-button bp4-icon-cross" onClick={() => {setShare(false)}} />
+      </div>
+    </>
+  )
+}
+
 function Cells({ krg, id }: { krg: KRG, id?: string }) {
   const router = useRouter()
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
@@ -115,6 +138,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
               <Icon icon={fork_icon} color="black" />
             </button>
           </Link>
+          <ShareButton id={id} />
         </div>
       </div>
       {(metapath||[]).map((head, index) =>

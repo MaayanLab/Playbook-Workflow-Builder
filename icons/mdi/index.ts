@@ -17,5 +17,6 @@ import { mdiProgressAlert } from '@mdi/js'; export const status_alert_icon = { p
 import { mdiProgressCheck } from '@mdi/js'; export const status_complete_icon = { path: mdiProgressCheck, title: 'Completed' }
 import { mdiProgressClock } from '@mdi/js'; export const status_waiting_icon = { path: mdiProgressClock, title: 'Waiting for output...' }
 import { mdiProgressPencil } from '@mdi/js'; export const status_awaiting_input_icon = { path: mdiProgressPencil, title: 'Waiting for input' }
+import { mdiLink } from '@mdi/js'; export const share_icon = { path: mdiLink, title: 'Share' }
 import { mdiVariable } from '@mdi/js'; export const variable_icon = { path: mdiVariable, title: 'Variable' }
 import { mdiViewList } from '@mdi/js'; export const weighted_icon = { path: mdiViewList, title: 'Weighted' }

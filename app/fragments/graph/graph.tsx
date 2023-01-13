@@ -1,10 +1,12 @@
 import React from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { start_icon, func_icon, variable_icon } from '@/icons'
+import { start_icon, func_icon, variable_icon, view_report_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
 import useKRG from '@/app/fragments/graph/krg'
+import Icon from '@/app/components/icon'
+import Link from 'next/link'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 const Home = dynamic(() => import('@/app/fragments/playbook/home'))
@@ -72,6 +74,13 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             }
           }}
         />
+        <div className="flex items-center">
+          <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
+            <button className='bp4-button bp4-minimal'>
+              <Icon icon={view_report_icon} />
+            </button>
+          </Link>
+        </div>
       </div>
       <main className="flex-grow flex flex-col">
         {error ? <div>{error}</div> : null}
@@ -82,7 +91,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             : node_id === 'start' ?
               <Home />
               : head ?
-                <Cell krg={krg} id={graph_id} head={head} />
+                <Cell krg={krg} id={graph_id} head={head} autoextend />
                 : null}
       </main>
     </>

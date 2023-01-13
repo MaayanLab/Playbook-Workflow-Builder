@@ -51,8 +51,8 @@ export function uniqJsonSubset(data:MyGeneIDOutputArray) {
 export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'Json for converted gene IDs table',
-    description: 'Json for converted gene IDs table',
+    label: 'JSON for converted gene IDs table',
+    description: 'JSON for converted gene IDs table',
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

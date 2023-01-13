@@ -33,8 +33,8 @@ export type MetGeneMetObjArray2 = z.infer<typeof MetGeneMetObjArray2C>
 export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTable')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'Metgene metabolite table',
-    description: 'Metgene metabolite table, rendered',
+    label: 'MetGENE metabolite table',
+    description: 'MetGENE metabolite table, rendered',
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

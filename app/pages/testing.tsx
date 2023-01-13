@@ -49,7 +49,7 @@ export default function App() {
     }
   }
   return (
-    <div className={`${styles.App} container mx-2 py-2`}>
+    <div className={`${styles.App} container mx-auto py-2`}>
       <div className={styles.Process}>
         <progress className="progress w-100" value={loading ? undefined : 0}></progress>
         <div className="prose mb-2">

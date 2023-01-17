@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative, Metabolite } from '@/components/core/input/primitives'
+import { Gene, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
 
@@ -23,10 +23,13 @@ const Term_T = (T: Primative) => MetaNode.createData(`Term[${T.name}]`)
   })
   .build()
 
-export const GeneTerm = Term_T(Gene)
+export const DiseaseTerm = Term_T(Disease)
 export const DrugTerm = Term_T(Drug)
+export const GeneTerm = Term_T(Gene)
 export const MetaboliteTerm = Term_T(Metabolite)
-
+export const PathwayTerm = Term_T(Pathway)
+export const PhenotypeTerm = Term_T(Phenotype)
+export const TissueTerm = Term_T(Tissue)
 
 const itemRenderer = (item: unknown, { modifiers: { active, disabled }, handleClick }: { modifiers: { active: boolean, disabled: boolean }, handleClick: React.MouseEventHandler }) => (
   <MenuItem
@@ -92,17 +95,23 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
           rightIcon="send-to-graph"
           onClick={evt => props.submit(item)}
         />
-        <Button
-          large
-          text="Example"
-          rightIcon="bring-data"
-          onClick={evt => props.submit(T.examples.term)}
-        />
+        {T.examples.term !== undefined ?
+          <Button
+            large
+            text="Example"
+            rightIcon="bring-data"
+            onClick={evt => {
+              if (T.examples.term !== undefined) {
+                props.submit(T.examples.term)
+              }
+            }}
+          />
+          : null}
       </div>
     )
   })
   .build()
 
-export const InputGeneTerm = Input_Term_T(Gene, GeneTerm)
 export const InputDrugTerm = Input_Term_T(Drug, DrugTerm)
+export const InputGeneTerm = Input_Term_T(Gene, GeneTerm)
 export const InputMetaboliteTerm = Input_Term_T(Metabolite, MetaboliteTerm)

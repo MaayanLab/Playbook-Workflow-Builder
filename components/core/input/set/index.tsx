@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative } from '@/components/core/input/primitives'
+import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
 
@@ -32,8 +32,12 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   })
   .build()
 
-export const GeneSet = Set_T(Gene)
+export const DiseaseSet = Set_T(Disease)
 export const DrugSet = Set_T(Drug)
+export const GeneSet = Set_T(Gene)
+export const PathwaySet = Set_T(Pathway)
+export const PhenotypeSet = Set_T(Phenotype)
+export const TissueSet = Set_T(Tissue)
 
 const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spec}]`)
   .meta({
@@ -56,7 +60,16 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
           value={set}
         />
         <Button large rightIcon="bring-data" onClick={evt => props.submit(set.split(/\r?\n/g))}>Submit</Button>
-        <Button large rightIcon="send-to-graph" onClick={evt => props.submit(T.meta.example)}>Example</Button>
+        {T.meta.example !== undefined ?
+          <Button
+            large
+            rightIcon="send-to-graph"
+            onClick={evt => {
+              if (T.meta.example !== undefined) {
+                props.submit(T.meta.example)
+              }
+            }}>Example</Button>
+          : null}
       </div>
     )
   })

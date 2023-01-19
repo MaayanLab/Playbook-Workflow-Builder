@@ -4,9 +4,10 @@ import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } fro
 import { z } from 'zod'
 import { gene_icon, enrichr_icon } from '@/icons'
 import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
-import { GeneTerm } from '@/components/core/input/term'
+import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import * as array from '@/utils/array'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
+import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
@@ -302,6 +303,147 @@ export const EnrichrGeneSearchT = [
       .output(GeneSet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
+      })
+      .build()
+  ),
+]
+
+
+export const EnrichrTermSearchResults = MetaNode.createData(`EnrichrTermSearchResults`)
+  .meta({
+    label: `Enrichr Term Search Results`,
+    description: `Results of an Enrichr Term Search`,
+  })
+  .codec(z.string())
+  .view(term => {
+    return (
+      <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
+        <iframe
+          className="flex-grow border-0"
+          src={`${enrichr_url}/#meta!meta=${encodeURIComponent(term)}`}
+        />
+      </div>
+    )
+  })
+  .build()
+
+
+export const EnrichrTermTSearch = [
+  { T: Disease, TermT: DiseaseTerm },
+  { T: Drug, TermT: DrugTerm },
+  { T: Gene, TermT: GeneTerm },
+  { T: Metabolite, TermT: MetaboliteTerm },
+  { T: Pathway, TermT: PathwayTerm },
+  { T: Phenotype, TermT: PhenotypeTerm },
+  { T: Tissue, TermT: TissueTerm },
+].map(({ T, TermT }) =>
+  MetaNode.createProcess(`EnrichrTermSearch[${T.name}]`)
+  .meta({
+    label: `Enrichr ${T.label} Term Search`,
+    icon: [...T.icon, enrichr_icon],
+    description: `Find ${T.label} terms in Enrichr Libraries`,
+  })
+  .inputs({ term: TermT })
+  .output(EnrichrTermSearchResults)
+  .resolve(async (props) => props.inputs.term)
+  .build()
+)
+
+const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
+  const response = await fetch(
+    `${enrichr_url}/termmap?json=true&meta=${encodeURIComponent(searchResults)}`,
+  )
+  const results = z.object({ terms: z.record(z.string(), z.array(z.string())) }).parse(await response.json())
+  const terms = results.terms[bg.name] || []
+  return array.unique(terms.map((term: string) => {
+    const m = bg.termRe.exec(term)
+    if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
+    else return term
+  }))
+}
+
+export const EnrichrTermSearchT = [
+  ...Disease_backgrounds.map(bg =>
+    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+      .meta({
+        label: `Extract ${bg.label} Signatures`,
+        icon: [enrichr_icon],
+        description: `Extract terms from ${bg.label} libraries`,
+      })
+      .inputs({ searchResults: EnrichrTermSearchResults })
+      .output(DiseaseSet)
+      .resolve(async (props) => {
+        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
+      })
+      .build()
+  ),
+  ...Drug_backgrounds.map(bg =>
+    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+      .meta({
+        label: `Extract ${bg.label} Signatures`,
+        icon: [enrichr_icon],
+        description: `Extract terms from ${bg.label} libraries`,
+      })
+      .inputs({ searchResults: EnrichrTermSearchResults })
+      .output(DrugSet)
+      .resolve(async (props) => {
+        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
+      })
+      .build()
+  ),
+  ...Pathway_backgrounds.map(bg =>
+    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+      .meta({
+        label: `Extract ${bg.label} Signatures`,
+        icon: [enrichr_icon],
+        description: `Extract terms from ${bg.label} libraries`,
+      })
+      .inputs({ searchResults: EnrichrTermSearchResults })
+      .output(PathwaySet)
+      .resolve(async (props) => {
+        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
+      })
+      .build()
+  ),
+  ...Phenotype_backgrounds.map(bg =>
+    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+      .meta({
+        label: `Extract ${bg.label} Signatures`,
+        icon: [enrichr_icon],
+        description: `Extract terms from ${bg.label} libraries`,
+      })
+      .inputs({ searchResults: EnrichrTermSearchResults })
+      .output(PhenotypeSet)
+      .resolve(async (props) => {
+        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
+      })
+      .build()
+  ),
+  ...Tissue_backgrounds.map(bg =>
+    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+      .meta({
+        label: `Extract ${bg.label} Signatures`,
+        icon: [enrichr_icon],
+        description: `Extract terms from ${bg.label} libraries`,
+      })
+      .inputs({ searchResults: EnrichrTermSearchResults })
+      .output(TissueSet)
+      .resolve(async (props) => {
+        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
+      })
+      .build()
+  ),
+  ...TranscriptionFactor_backgrounds.map(bg =>
+    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+      .meta({
+        label: `Extract ${bg.label} Signatures`,
+        icon: [enrichr_icon],
+        description: `Extract terms from ${bg.label} libraries`,
+      })
+      .inputs({ searchResults: EnrichrTermSearchResults })
+      .output(GeneSet)
+      .resolve(async (props) => {
+        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })
       .build()
   ),

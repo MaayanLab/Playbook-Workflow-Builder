@@ -23,7 +23,7 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
           enableFocusedCell
         >
           <Column
-            name="Terms"
+            name={T.label}
             cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
           />
         </Table>

@@ -23,12 +23,12 @@ export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
 components.push("core/file")
+export * from "./core/input/scored"
+components.push("core/input/scored")
 export * from "./core/input/set"
 components.push("core/input/set")
 export * from "./core/input/term"
 components.push("core/input/term")
-export * from "./core/significant_tissues"
-components.push("core/significant_tissues")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
 export * from "./data/log_normalization"

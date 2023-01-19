@@ -1,19 +1,124 @@
 import React from 'react'
-import { MetaNode } from '@/spec/metanode'
+import { MetaNode, MetaNodeDataType, MetaNodeMetadata } from '@/spec/metanode'
 import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon } from '@/icons'
 import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
 import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import * as array from '@/utils/array'
+import * as dict from '@/utils/dict'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
 import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
+import { Table2 as Table, Cell, Column } from '@blueprintjs/table'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
-export const EnrichrUserList = MetaNode.createData('EnrichrUserList')
+export const GMT = MetaNode.createData(`GMT`)
   .meta({
-    label: 'Enrichr User List',
+    label: `GMT`,
+    description: 'Terms mapped to genes',
+    icon: [],
+  })
+  .codec(z.record(z.string(), z.array(z.string())))
+  .view(gmt => {
+    const gmt_items = dict.items(gmt)
+    return (
+      <div style={{ height: 500 }}>
+        <Table
+          cellRendererDependencies={[gmt_items]}
+          numRows={gmt_items.length}
+          enableGhostCells
+          enableFocusedCell
+        >
+          <Column
+            name="Term"
+            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key}</Cell>}
+          />
+          <Column
+            name="Geneset"
+            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.join('\t')}</Cell>}
+          />
+        </Table>
+      </div>
+    )
+  })
+  .build()
+
+function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata }) {
+  return MetaNode.createData(`Enrichr[${SetT.spec}]`)
+    .meta({
+      label: `Enrichr ${SetT.meta.label}`,
+      description: SetT.meta.description,
+      icon: [enrichr_icon, ...(SetT.meta.icon||[])],
+      color: SetT.meta.color,
+    })
+    .codec(z.object({ background: z.string(), set: z.array(z.string()) }))
+    .view(enrichrset => (
+      <div style={{ height: 500 }}>
+        <Table
+          cellRendererDependencies={[enrichrset.set]}
+          numRows={enrichrset.set.length}
+          enableGhostCells
+          enableFocusedCell
+        >
+          <Column
+            name={enrichrset.background}
+            cellRenderer={row => <Cell key={row+''}>{enrichrset.set[row]}</Cell>}
+          />
+        </Table>
+      </div>
+    ))
+    .build()
+}
+
+export const EnrichrDiseaseSet = EnrichrSet_T(DiseaseSet)
+export const EnrichrDrugSet = EnrichrSet_T(DrugSet)
+export const EnrichrPathwaySet = EnrichrSet_T(PathwaySet)
+export const EnrichrPhenotypeSet = EnrichrSet_T(PhenotypeSet)
+export const EnrichrTissueSet = EnrichrSet_T(TissueSet)
+export const EnrichrGeneSet = EnrichrSet_T(GeneSet)
+
+async function resolveGenesetLibrary({ set, background }: { background: string, set: string[] }) {
+  const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${background}`)
+  const res = z.object({ [background]: z.object({ terms: z.record(z.string(), z.record(z.string(), z.number())) }) }).parse(await req.json())
+  const gmt = res[background].terms
+  return dict.init(set.map(term => ({ key: term, value: Object.keys(gmt[term]) })))
+}
+export const EnrichrSetTToSetT = [
+  { T: Disease, EnrichrSetT: EnrichrDiseaseSet, SetT: DiseaseSet },
+  { T: Drug, EnrichrSetT: EnrichrDrugSet, SetT: DrugSet },
+  { T: Pathway, EnrichrSetT: EnrichrPathwaySet, SetT: PathwaySet },
+  { T: Phenotype, EnrichrSetT: EnrichrPhenotypeSet, SetT: PhenotypeSet },
+  { T: Tissue, EnrichrSetT: EnrichrTissueSet, SetT: TissueSet },
+  { T: Gene, EnrichrSetT: EnrichrGeneSet, SetT: GeneSet },
+].flatMap(({ T, EnrichrSetT, SetT }) => [
+    MetaNode.createProcess(`EnrichrSetTToSetT[${T.name}]`)
+      .meta({
+        label: `Enrichr Set of ${T.label} as Set`,
+        icon: [enrichr_icon],
+        description: `Treat enrichr set as standard set`,
+      })
+      .inputs({ enrichrset: EnrichrSetT })
+      .output(SetT)
+      .resolve(async (props) => props.inputs.enrichrset.set)
+      .build(),
+    MetaNode.createProcess(`EnrichrSetTToGMT[${T.name}]`)
+      .meta({
+        label: `Enrichr Set of ${T.label} as GMT`,
+        icon: [enrichr_icon],
+        description: `Treat enrichr set as gmt`,
+      })
+      .inputs({ enrichrset: EnrichrSetT })
+      .output(GMT)
+      .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
+      .build(),
+    
+  ]
+)
+
+export const EnrichrEnrichmentAnalysis = MetaNode.createData('EnrichrEnrichmentAnalysis')
+  .meta({
+    label: 'Enrichr Enrichment Analysis',
     description: 'A gene set submitted to Enrichr',
     icon: [enrichr_icon, gene_icon],
   })
@@ -56,7 +161,7 @@ export const EnrichrGenesetSearch = MetaNode.createProcess('EnrichrGenesetSearch
     description: "Fisher's exact test, odd ratio, Jaccard index",
   })
   .inputs({ geneset: GeneSet })
-  .output(EnrichrUserList)
+  .output(EnrichrEnrichmentAnalysis)
   .resolve(async (props) => {
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.join('\n'))
@@ -98,7 +203,7 @@ export const EnrichrGenesetSearchT = [
         icon: [enrichr_icon],
         description: `Extract significant terms from ${bg.label} libraries`,
       })
-      .inputs({ searchResults: EnrichrUserList })
+      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
       .output(ScoredDiseases)
       .resolve(async (props) => {
         return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
@@ -112,7 +217,7 @@ export const EnrichrGenesetSearchT = [
         icon: [enrichr_icon],
         description: `Extract significant terms from ${bg.label} libraries`,
       })
-      .inputs({ searchResults: EnrichrUserList })
+      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
       .output(ScoredDrugs)
       .resolve(async (props) => {
         return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
@@ -126,7 +231,7 @@ export const EnrichrGenesetSearchT = [
         icon: [enrichr_icon],
         description: `Extract significant terms from ${bg.label} libraries`,
       })
-      .inputs({ searchResults: EnrichrUserList })
+      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
       .output(ScoredPathways)
       .resolve(async (props) => {
         return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
@@ -140,7 +245,7 @@ export const EnrichrGenesetSearchT = [
         icon: [enrichr_icon],
         description: `Extract significant terms from ${bg.label} libraries`,
       })
-      .inputs({ searchResults: EnrichrUserList })
+      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
       .output(ScoredPhenotypes)
       .resolve(async (props) => {
         return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
@@ -154,7 +259,7 @@ export const EnrichrGenesetSearchT = [
         icon: [enrichr_icon],
         description: `Extract significant terms from ${bg.label} libraries`,
       })
-      .inputs({ searchResults: EnrichrUserList })
+      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
       .output(ScoredTissues)
       .resolve(async (props) => {
         return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
@@ -168,7 +273,7 @@ export const EnrichrGenesetSearchT = [
         icon: [enrichr_icon],
         description: `Extract significant terms from ${bg.label} libraries`,
       })
-      .inputs({ searchResults: EnrichrUserList })
+      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
       .output(ScoredGenes)
       .resolve(async (props) => {
         return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
@@ -214,11 +319,14 @@ const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   )
   const results = z.object({ gene: z.record(z.string(), z.array(z.string())) }).parse(await response.json())
   const terms = results.gene[bg.name] || []
-  return array.unique(terms.map((term: string) => {
-    const m = bg.termRe.exec(term)
-    if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
-    else return term
-  }))
+  return {
+    background: bg.name,
+    set: array.unique(terms.map((term: string) => {
+      const m = bg.termRe.exec(term)
+      if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
+      else return term
+    })),
+  }
 }
 
 export const EnrichrGeneSearchT = [
@@ -230,7 +338,7 @@ export const EnrichrGeneSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(DiseaseSet)
+      .output(EnrichrDiseaseSet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
       })
@@ -244,7 +352,7 @@ export const EnrichrGeneSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(DrugSet)
+      .output(EnrichrDrugSet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
       })
@@ -258,7 +366,7 @@ export const EnrichrGeneSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(PathwaySet)
+      .output(EnrichrPathwaySet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
       })
@@ -272,7 +380,7 @@ export const EnrichrGeneSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(PhenotypeSet)
+      .output(EnrichrPhenotypeSet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
       })
@@ -286,7 +394,7 @@ export const EnrichrGeneSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(TissueSet)
+      .output(EnrichrTissueSet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
       })
@@ -300,7 +408,7 @@ export const EnrichrGeneSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(GeneSet)
+      .output(EnrichrGeneSet)
       .resolve(async (props) => {
         return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
       })
@@ -355,11 +463,14 @@ const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   )
   const results = z.object({ terms: z.record(z.string(), z.array(z.string())) }).parse(await response.json())
   const terms = results.terms[bg.name] || []
-  return array.unique(terms.map((term: string) => {
-    const m = bg.termRe.exec(term)
-    if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
-    else return term
-  }))
+  return {
+    background: bg.name,
+    set: array.unique(terms.map((term: string) => {
+      const m = bg.termRe.exec(term)
+      if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
+      else return term
+    }))
+  }
 }
 
 export const EnrichrTermSearchT = [
@@ -371,7 +482,7 @@ export const EnrichrTermSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(DiseaseSet)
+      .output(EnrichrDiseaseSet)
       .resolve(async (props) => {
         return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })
@@ -385,7 +496,7 @@ export const EnrichrTermSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(DrugSet)
+      .output(EnrichrDrugSet)
       .resolve(async (props) => {
         return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })
@@ -399,7 +510,7 @@ export const EnrichrTermSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(PathwaySet)
+      .output(EnrichrPathwaySet)
       .resolve(async (props) => {
         return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })
@@ -413,7 +524,7 @@ export const EnrichrTermSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(PhenotypeSet)
+      .output(EnrichrPhenotypeSet)
       .resolve(async (props) => {
         return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })
@@ -427,7 +538,7 @@ export const EnrichrTermSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(TissueSet)
+      .output(EnrichrTissueSet)
       .resolve(async (props) => {
         return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })
@@ -441,7 +552,7 @@ export const EnrichrTermSearchT = [
         description: `Extract terms from ${bg.label} libraries`,
       })
       .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(GeneSet)
+      .output(EnrichrGeneSet)
       .resolve(async (props) => {
         return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
       })

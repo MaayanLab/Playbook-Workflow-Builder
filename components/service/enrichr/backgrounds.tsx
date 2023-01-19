@@ -30,27 +30,6 @@ export const Drug_backgrounds = [
   },
 ]
 
-export const Molecule_backgrounds = [
-  {
-    name: 'MSigDB_Computational',
-    label: 'MSigDB Computational',
-    termType: 'Molecule',
-    termRe: /^(?<term>.+)$/,
-  },
-  {
-    name: 'MSigDB_Hallmark_2020',
-    label: 'MSigDB Hallmark 2020',
-    termType: 'Molecule',
-    termRe: /^(?<term>.+)$/,
-  },
-  {
-    name: 'MSigDB_Oncogenic_Signatures',
-    label: 'MSigDB Oncogenic Signatures',
-    termType: 'Molecule',
-    termRe: /^(?<term>.+)$/,
-  },
-]
-
 export const Pathway_backgrounds = [
   {
     name: 'GO_Biological_Process_2021',
@@ -86,6 +65,12 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
+  },
+  {
+    name: 'MSigDB_Hallmark_2020',
+    label: 'MSigDB Hallmark 2020',
+    termType: 'Pathway',
+    termRe: /^(?<term>.+)$/,
   },
   {
     name: 'WikiPathway_2021_Human',
@@ -201,7 +186,6 @@ export const TranscriptionFactor_backgrounds = [
 
 export const backgrounds = dict.init([
   ...Drug_backgrounds,
-  ...Molecule_backgrounds,
   ...Pathway_backgrounds,
   ...Phenotype_backgrounds,
   ...Tissue_backgrounds,

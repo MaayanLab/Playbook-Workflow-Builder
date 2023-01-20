@@ -13,18 +13,18 @@ import codecFrom from '@/utils/zod-codec'
  */
 
 type Icon = Array<{ path: string, title: string }>
-export type MetaNodeMetadata = {
+export type MetaNodeMetadata<T = unknown> = {
   label: string,
   description: string,
   icon?: Icon,
   color?: string,
-  default?: string,
-  example?: unknown,
+  default?: T,
+  example?: T,
   pagerank?: number
   tags?: Record<string, Record<string, number>>,
 }
 
-export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata, codec: Codec<T> }
+export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata<T>, codec: Codec<T> }
 export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends { kind: infer Kind } ? Kind : never
 export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends { spec: infer Spec } ? Spec : never
 export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends { meta: infer Meta } ? Meta : never

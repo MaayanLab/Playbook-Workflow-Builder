@@ -9,6 +9,14 @@ const Scored_T = (T: Primative) => MetaNode.createData(`Scored[${T.name}]`)
     label: `Scored ${T.label}s`,
     description: `ZScores of ${T.label}s`,
     color: T.color,
+    tags: {
+      Type: {
+        [T.label]: 1,
+      },
+      Cardinality: {
+        Scored: 1,
+      },
+    },
   })
   .codec(z.array(z.object({ term: z.string(), zscore: z.number() })))
   .view(scored => {

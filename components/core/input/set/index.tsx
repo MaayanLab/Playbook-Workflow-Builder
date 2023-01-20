@@ -10,9 +10,17 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,
-    icon: [...T.icon, set_icon],
+    icon: [...(T.icon||[]), set_icon],
     color: T.color,
-    example: T.examples.set,
+    tags: {
+      Type: {
+        [T.label]: 1,
+      },
+      Cardinality: {
+        Set: 1,
+      },
+    },
+    ...(T.extra?.set?.meta || {}),
   })
   .codec(z.array(z.string()))
   .view(set => {
@@ -41,14 +49,23 @@ export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
 export const TissueSet = Set_T(Tissue)
 
-const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spec}]`)
+const Input_Set_T = (T: Primative, SetT: typeof GeneSet) => MetaNode.createProcess(`Input[${SetT.spec}]`)
   .meta({
-    label: `${T.meta.label} Input`,
-    description: `Start with a set of ${T.meta.label}`,
+    label: `${T.label} Set Input`,
+    description: `Start with a set of ${T.label}s`,
     icon: [input_icon],
+    tags: {
+      Type: {
+        [T.label]: 1,
+      },
+      Cardinality: {
+        Set: 1,
+      },
+    },
+    ...(T.extra?.set?.meta || {}),
   })
   .inputs()
-  .output(T)
+  .output(SetT)
   .prompt(props => {
     const [set, setSet] = React.useState('')
     React.useEffect(() => { setSet((props.output||[]).join('\n')) }, [props.output])
@@ -63,13 +80,13 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
           value={set}
         />
         <Button large rightIcon="bring-data" onClick={evt => props.submit(set.split(/\r?\n/g))}>Submit</Button>
-        {T.meta.example !== undefined ?
+        {T.extra?.set?.meta?.example !== undefined ?
           <Button
             large
             rightIcon="send-to-graph"
             onClick={evt => {
-              if (T.meta.example !== undefined) {
-                props.submit(T.meta.example)
+              if (T.extra?.set?.meta?.example !== undefined) {
+                props.submit(T.extra.set.meta.example)
               }
             }}>Example</Button>
           : null}
@@ -78,5 +95,5 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
   })
   .build()
 
-export const InputGeneSet = Input_Set_T(GeneSet)
-export const InputDrugSet = Input_Set_T(DrugSet)
+export const InputGeneSet = Input_Set_T(Gene, GeneSet)
+export const InputDrugSet = Input_Set_T(Drug, DrugSet)

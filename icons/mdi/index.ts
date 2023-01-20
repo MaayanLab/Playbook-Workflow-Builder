@@ -11,6 +11,7 @@ import { mdiEmoticonCryOutline } from '@mdi/js'; export const disease_icon = { p
 import { mdiFile } from '@mdi/js'; export const file_icon = { path: mdiFile, title: 'File' }
 import { mdiFileSwap } from '@mdi/js'; export const file_transfer_icon = { path: mdiFileSwap, title: 'File Transfer' }
 import { mdiFileTable } from '@mdi/js'; export const datafile_icon = { path: mdiFileTable, title: 'Data File' }
+import { mdiFormatAlignJustify } from '@mdi/js'; export const set_icon = { path: mdiFormatAlignJustify, title: 'Set' }
 import { mdiFunctionVariant } from '@mdi/js'; export const func_icon = { path: mdiFunctionVariant, title: 'Function' }
 import { mdiHexagonMultiple } from '@mdi/js'; export const drug_icon = { path: mdiHexagonMultiple, title: 'Drug' }
 import { mdiHome } from '@mdi/js'; export const start_icon = { path: mdiHome, title: 'Start' }

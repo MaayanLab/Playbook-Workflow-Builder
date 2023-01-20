@@ -4,13 +4,13 @@ import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
-import { input_icon } from '@/icons'
+import { input_icon, set_icon } from '@/icons'
 
 const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,
-    icon: T.icon,
+    icon: [...T.icon, set_icon],
     color: T.color,
     example: T.examples.set,
   })

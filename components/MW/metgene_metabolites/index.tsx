@@ -20,7 +20,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
     const species_id = "hsa"
-    const geneID_type = "SYMBOL"
+    const geneID_type = "SYMBOL_OR_ALIAS"
     const gene_ID = props.inputs.gene
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/metabolites/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
@@ -50,7 +50,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
     const species_id = "hsa"
-    const geneID_type = "SYMBOL"
+    const geneID_type = "SYMBOL_OR_ALIAS"
     const gene_ID = props.inputs.geneset.join(",");
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/metabolites/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)

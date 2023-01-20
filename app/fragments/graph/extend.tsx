@@ -22,9 +22,13 @@ export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: 
         ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
         ...SuggestionEdges(processNode ? processNode.output : undefined),
       ]}
-      // items={Object.values(metagraph.getNeighbors({ graph: ctx.graph, node: ctx.node })) as SCG.MetaEdge[]}
-      serialize={item => item.spec}
-      // serialize={(item: SCG.MetaEdge) => `${ensureCallable((item.meta || {}).name)(ctx)} ${ensureCallable((item.meta || {}).desc)(ctx)} ${ensureCallable(metagraph.nodes[item.input.spec].meta.name)(ctx)} ${ensureCallable(metagraph.nodes[item.output.spec].meta.name)(ctx)}`}
+      serialize={item => [
+        item.spec,
+        item.meta.label,
+        item.meta.description,
+        dict.values(item.meta.tags || {})
+          .flatMap(tagGroup => dict.items(tagGroup).filter(({ value }) => value).map(({ key }) => key)),
+      ].join(' ')}
     >{item =>
       <Card
         key={item.spec}

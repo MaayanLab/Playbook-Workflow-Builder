@@ -112,6 +112,10 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
   })
   .build()
 
+export const InputDiseaseTerm = Input_Term_T(Disease, DiseaseTerm)
 export const InputDrugTerm = Input_Term_T(Drug, DrugTerm)
 export const InputGeneTerm = Input_Term_T(Gene, GeneTerm)
 export const InputMetaboliteTerm = Input_Term_T(Metabolite, MetaboliteTerm)
+export const InputPathwayTerm = Input_Term_T(Pathway, PathwayTerm)
+export const InputPhenotypeTerm = Input_Term_T(Phenotype, PhenotypeTerm)
+export const InputTissueTerm = Input_Term_T(Tissue, TissueTerm)

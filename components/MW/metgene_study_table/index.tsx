@@ -52,7 +52,8 @@ export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
           
           return (
             <tr key={key}>
-              <td>{val.KEGG_COMPOUND_ID}</td>
+              
+              <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "_blank">{val.KEGG_COMPOUND_ID}</a></td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
                 {study_id_arr.map((study_id: string, i: number) => 

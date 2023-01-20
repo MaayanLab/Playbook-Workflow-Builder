@@ -4,11 +4,13 @@ import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
+import { input_icon } from '@/icons'
 
 const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,
+    icon: T.icon,
     color: T.color,
     example: T.examples.set,
   })
@@ -43,6 +45,7 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
   .meta({
     label: `${T.meta.label} Input`,
     description: `Start with a set of ${T.meta.label}`,
+    icon: [input_icon],
   })
   .inputs()
   .output(T)

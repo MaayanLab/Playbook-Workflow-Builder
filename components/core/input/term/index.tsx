@@ -55,7 +55,7 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
   .meta({
     label: `${T.label} Input`,
     description: `Start with a ${T.label} term`,
-    icon: [input_icon, ...T.icon],
+    icon: [input_icon],
   })
   .inputs()
   .output(Term_T)

@@ -8,7 +8,7 @@ export const Disease = {
   name: 'Disease',
   label: 'Disease',
   icon: [disease_icon],
-  color: '#aacf28',
+  color: '#B4F8C8',
   examples: {
     term: 'Diabetic Nephropathy',
     set: undefined,
@@ -27,7 +27,7 @@ export const Drug = {
   name: 'Drug',
   label: 'Drug',
   icon: [drug_icon],
-  color: '#FFE4A0',
+  color: '#FBE7C6',
   examples: {
     term: 'imatinib',
     set: ['ac1ndss5', 'adoprazine', 'ai-10-49', 'alisporivir', 'almitrine', 'alvocidib', 'am 580', 'amg-9810', 'amuvatinib', 'amuvatinib', 'antimycin a', 'apixaban', 'as-252424', 'avasimibe', 'avatrombopag', 'bp-897', 'brexpiprazole', 'brivanib', 'camostat', 'carboxyamidotriazole', 'cbipes', 'cc-223', 'cetylpyridinium chloride', 'chlormidazole', 'ci-1040', 'cloconazole', 'convallatoxin', 'cycloheximide', 'cyclopiazonic acid', 'cypermethrin', 'dapivirine', 'dcpib', 'deguelin', 'digoxigenin', 'dihydromunduletone', 'dihydrorotenone', 'diydroxyflavone', 'drotaverine', 'ethaverine', 'etifoxine', 'fenretinide', 'flunarizine', 'gedunin', 'gitoxigenin diacetate', 'gsk2606414', 'harringtonine', 'hematoporphyrin', 'homoharringtonine', 'imd0354', 'ipag', 'isorotenone', 'jte-013', 'ketoconazole', 'lde225', 'leoidin', 'lgk-974', 'lidoflazine', 'lonafarnib', 'lopinavir', 'loratadine', 'loteprednol etabonate', 'ly2228820', 'mefloquine', 'methylene blue', 'mibampator', 'mk-886', 'mundulone', 'nafamostat', 'nsc319726', 'octenidine', 'oxiconazole', 'papaverine', 'pevonedistat', 'pexidartinib', 'pf-670462', 'ph-797804', 'polidocanol', 'posaconazole', 'proscillaridin', 'raf265 derivative', 'ravuconazole', 'regorafenib', 'sb-612111', 'silmitasertib', 'sorafenib', 'stf-62247', 'strophanthidin', 'strophanthidinic acid', 'thapsigargin', 'thimerosal', 'thioguanosine', 'tioguanine', 'torin 1', 'torin 2', 'tyrphostin', 'vatalanib', 'vlx600', 'voxtalisib', 'vu 0155069', 'way-600', 'zk-93423'],
@@ -61,7 +61,7 @@ export const Metabolite = {
   name: 'Metabolite',
   label: 'Metabolite',
   icon: [drug_icon],
-  color: '#A7B0EC',
+  color: '#A0E7E5',
   examples: {
     term: 'Glucose',
     set: undefined,
@@ -72,7 +72,7 @@ export const Pathway = {
   name: 'Pathway',
   label: 'Pathway or Biological Process',
   icon: [pathway_icon],
-  color: '#66aa06',
+  color: '#FFAEBC',
   examples: {
     term: undefined,
     set: undefined,
@@ -83,7 +83,7 @@ export const Phenotype = {
   name: 'Phenotype',
   label: 'Phenotype',
   icon: [phenotype_icon],
-  color: '#7b481f',
+  color: '#FCB5AC',
   examples: {
     term: undefined,
     set: undefined,
@@ -94,7 +94,7 @@ export const Tissue = {
   name: 'Tissue',
   label: 'Tissue',
   icon: [tissue_icon],
-  color: '#c48aa0',
+  color: '#98D7C2',
   examples: {
     term: 'Brain',
     set: undefined,

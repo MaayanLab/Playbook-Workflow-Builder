@@ -7,8 +7,8 @@ import dynamic from "next/dynamic"
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 
-const any = <T extends {}>(L: T[]) => L.some(el => el)
-const all = <T extends {}>(L: T[]) => !any(L)
+const any = <T extends {}>(L: T[]) => L.some(el => !!el)
+const all = <T extends {}>(L: T[]) => !L.some(el => !el)
 
 type KVCounts = { [key: string]: { [val: string]: number } }
 

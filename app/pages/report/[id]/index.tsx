@@ -78,7 +78,7 @@ export default function App({ fallback }: { fallback: any }) {
         <title>Playbook</title>
       </Head>
 
-      <Header homepage="/report" />
+      <Header />
 
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">

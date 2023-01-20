@@ -20,6 +20,8 @@ if (!process.env.PUBLIC_URL) process.env.PUBLIC_URL = 'http://127.0.0.1:3000'
 if (!process.env.NEXT_PUBLIC_URL) process.env.NEXT_PUBLIC_URL = process.env.PUBLIC_URL
 if (!process.env.NEXTAUTH_URL_INTERNAL) process.env.NEXTAUTH_URL_INTERNAL = 'http://127.0.0.1:3000'
 if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
+if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
+if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 
 module.exports = {
   experimental: {
@@ -32,7 +34,7 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/sitemap',
+        destination: process.env.LANDING_PAGE,
         permanent: false,
       },
     ]

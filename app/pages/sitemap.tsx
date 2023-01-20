@@ -13,7 +13,7 @@ export default function SiteMap() {
       <Head>
         <title>Playbook</title>
       </Head>
-      <Header homepage="/" />
+      <Header />
       <main className="flex-grow container mx-auto py-4 flex flex-col">
         <div className="hero">
           <div className="hero-content prose">

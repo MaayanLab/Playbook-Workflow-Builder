@@ -114,7 +114,7 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
         <title>Playbook</title>
       </Head>
 
-      <Header homepage="/graph" />
+      <Header />
 
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">

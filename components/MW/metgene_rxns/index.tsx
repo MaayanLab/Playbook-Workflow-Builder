@@ -19,7 +19,7 @@ export const MetGeneRxns = MetaNode.createProcess('MetGeneRxns')
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
     const species_id = "hsa"
-    const geneID_type = "SYMBOL"
+    const geneID_type = "SYMBOL_OR_ALIAS"
     
     const gene_ID = props.inputs.gene
     const vtf = "json"
@@ -48,7 +48,7 @@ export const MetGeneRxns = MetaNode.createProcess('MetGeneRxns')
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
     const species_id = "hsa"
-    const geneID_type = "SYMBOL"
+    const geneID_type = "SYMBOL_OR_ALIAS"
     
     const gene_ID = props.inputs.geneset.join(",");
     const vtf = "json"

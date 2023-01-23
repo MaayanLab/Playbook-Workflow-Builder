@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative } from '@/components/core/input/primitives'
+import { Gene, Drug, Metabolite, Primative } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
 
@@ -34,6 +34,7 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
 
 export const GeneSet = Set_T(Gene)
 export const DrugSet = Set_T(Drug)
+export const MetaboliteSet = Set_T(Metabolite)
 
 const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spec}]`)
   .meta({
@@ -64,3 +65,4 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
 
 export const InputGeneSet = Input_Set_T(GeneSet)
 export const InputDrugSet = Input_Set_T(DrugSet)
+export const InputMetaboliteSet = Input_Set_T(MetaboliteSet)

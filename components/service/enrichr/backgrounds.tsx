@@ -181,6 +181,12 @@ export const TranscriptionFactor_backgrounds = [
     label: 'ENCODE TF ChIP-seq 2015',
     termType: 'TranscriptionFactor',
     termRe: /^(?<term>[^ ]+) (?<origin>.+) (?<organism>[^ ]+)$/,
+  },
+  {
+    name: 'ARCHS4_TFs_Coexp',
+    label: 'ARCHS4 TF Co-Expression',
+    termType: 'TranscriptionFactor',
+    termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$$/,
   }
 ]
 

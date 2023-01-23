@@ -13,6 +13,12 @@ export const Disease_backgrounds = [
     termType: 'Disease',
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
   },
+  {
+    name: 'GTEx_Aging_Signatures_2021',
+    label: 'GTEx Aging Signatures 2021',
+    termType: 'Disease',
+    termRe: /^GTEx (?<term>.+)$/,
+  },
 ]
 
 export const Drug_backgrounds = [

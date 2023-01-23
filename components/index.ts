@@ -31,6 +31,8 @@ export * from "./core/input/term"
 components.push("core/input/term")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
+export * from "./data/gene_matrix_transpose"
+components.push("data/gene_matrix_transpose")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
 export * from "./data/pca_transformation"

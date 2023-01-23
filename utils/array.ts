@@ -22,3 +22,11 @@ export function unique<T>(array: T[]) {
   array.forEach(element => set.add(element))
   return Array.from(set)
 }
+
+export function intersection<T>(As: T[], Bs: T[]) {
+  const A = new Set<T>()
+  const B = new Set<T>()
+  As.forEach(a => A.add(a))
+  Bs.forEach(b => B.add(b))
+  return Array.from(A).filter(a => B.has(a))
+}

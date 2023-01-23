@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { gene_icon, enrichr_icon } from '@/icons'
 import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
 import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
+import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
@@ -12,37 +13,6 @@ import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/c
 import { Table2 as Table, Cell, Column } from '@blueprintjs/table'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
-
-export const GMT = MetaNode.createData(`GMT`)
-  .meta({
-    label: `GMT`,
-    description: 'Terms mapped to genes',
-    icon: [],
-  })
-  .codec(z.record(z.string(), z.array(z.string())))
-  .view(gmt => {
-    const gmt_items = dict.items(gmt)
-    return (
-      <div style={{ height: 500 }}>
-        <Table
-          cellRendererDependencies={[gmt_items]}
-          numRows={gmt_items.length}
-          enableGhostCells
-          enableFocusedCell
-        >
-          <Column
-            name="Term"
-            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key}</Cell>}
-          />
-          <Column
-            name="Geneset"
-            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.join('\t')}</Cell>}
-          />
-        </Table>
-      </div>
-    )
-  })
-  .build()
 
 function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata }) {
   return MetaNode.createData(`Enrichr[${SetT.spec}]`)

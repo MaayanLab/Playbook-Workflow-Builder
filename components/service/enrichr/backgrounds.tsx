@@ -3,13 +3,13 @@ import * as dict from '@/utils/dict'
 export const Disease_backgrounds = [
   {
     name: 'Disease_Signatures_from_GEO_down_2014',
-    label: 'Disease Signatures from GEO up',
+    label: 'Disease Signatures from GEO down',
     termType: 'Disease',
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
   },
   {
     name: 'Disease_Signatures_from_GEO_up_2014',
-    label: 'Disease Signatures from GEO down',
+    label: 'Disease Signatures from GEO up',
     termType: 'Disease',
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
   },

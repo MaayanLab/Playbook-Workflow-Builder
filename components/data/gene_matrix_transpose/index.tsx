@@ -9,9 +9,8 @@ export const GMT = MetaNode.createData(`GMT`)
   .meta({
     label: `Gene Matrix Transpose`,
     description: 'Terms mapped to genes',
-    example: {'A': ['B', 'C', 'D'], 'F': ['G', 'H']},
   })
-  .codec(z.record(z.string(), z.array(z.string())))
+  .codec(z.record(z.string(), z.object({ description: z.string().optional(), set: z.array(z.string()) })))
   .view(gmt => {
     const gmt_items = dict.items(gmt)
     return (
@@ -27,8 +26,12 @@ export const GMT = MetaNode.createData(`GMT`)
             cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key.toString()}</Cell>}
           />
           <Column
+            name="Descrition"
+            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.description||''}</Cell>}
+          />
+          <Column
             name="Geneset"
-            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.join('\t')}</Cell>}
+            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.set.join('\t')}</Cell>}
           />
         </Table>
       </div>
@@ -44,7 +47,7 @@ export const GMTUnion = MetaNode.createProcess('GMTUnion')
   .inputs({ gmt: GMT })
   .output(GeneSet)
   .resolve(async (props) => {
-    return array.unique(dict.values(props.inputs.gmt).flatMap(geneset => geneset))
+    return array.unique(dict.values(props.inputs.gmt).flatMap(({ set: geneset }) => geneset))
   })
   .build()
 
@@ -56,7 +59,7 @@ export const GMTIntersection = MetaNode.createProcess('GMTIntersection')
   .inputs({ gmt: GMT })
   .output(GeneSet)
   .resolve(async (props) => {
-    return dict.values(props.inputs.gmt).reduce((A, B) => array.intersection(A, B))
+    return dict.values(props.inputs.gmt).reduce(({ set: A }, { set: B }) => ({ set: array.intersection(A, B) })).set
   })
   .build()
 
@@ -70,7 +73,7 @@ export const GMTConsensus = MetaNode.createProcess('GMTConsensus')
   .resolve(async (props) => {
     const gene_counts: Record<string, number> = {}
     dict.values(props.inputs.gmt)
-      .forEach(geneset =>
+      .forEach(({ set: geneset }) =>
         geneset.forEach(gene =>
           gene_counts[gene] = (gene_counts[gene]||0)+1
         )

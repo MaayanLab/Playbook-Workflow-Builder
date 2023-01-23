@@ -52,7 +52,13 @@ async function resolveGenesetLibrary({ terms, background }: { background: string
   const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${background}`)
   const res = z.object({ [background]: z.object({ terms: z.record(z.string(), z.record(z.string(), z.number())) }) }).parse(await req.json())
   const gmt = res[background].terms
-  return dict.init(terms.map(term => ({ key: term, value: Object.keys(gmt[term]) })))
+  return dict.init(
+    terms.map(rawTerm => {
+      const m = bg.termRe.exec(rawTerm)
+      const term = (m && m.groups && 'term' in m.groups && m.groups.term && m.groups.term) || rawTerm
+      return { key: rawTerm, value: { description: term, set: Object.keys(gmt[term]) } }
+    })
+  )
 }
 export const EnrichrSetTToSetT = [
   { T: Disease, EnrichrSetT: EnrichrDiseaseSet, SetT: DiseaseSet },

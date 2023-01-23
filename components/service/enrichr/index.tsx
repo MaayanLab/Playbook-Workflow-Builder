@@ -52,7 +52,7 @@ function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata })
       icon: [enrichr_icon, ...(SetT.meta.icon||[])],
       color: SetT.meta.color,
     })
-    .codec(z.object({ background: z.string(), set: z.array(z.string()) }))
+    .codec(z.object({ background: z.string(), terms: z.array(z.string()), set: z.array(z.string()) }))
     .view(enrichrset => (
       <div style={{ height: 500 }}>
         <Table
@@ -78,11 +78,11 @@ export const EnrichrPhenotypeSet = EnrichrSet_T(PhenotypeSet)
 export const EnrichrTissueSet = EnrichrSet_T(TissueSet)
 export const EnrichrGeneSet = EnrichrSet_T(GeneSet)
 
-async function resolveGenesetLibrary({ set, background }: { background: string, set: string[] }) {
+async function resolveGenesetLibrary({ terms, background }: { background: string, terms: string[] }) {
   const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${background}`)
   const res = z.object({ [background]: z.object({ terms: z.record(z.string(), z.record(z.string(), z.number())) }) }).parse(await req.json())
   const gmt = res[background].terms
-  return dict.init(set.map(term => ({ key: term, value: Object.keys(gmt[term]) })))
+  return dict.init(terms.map(term => ({ key: term, value: Object.keys(gmt[term]) })))
 }
 export const EnrichrSetTToSetT = [
   { T: Disease, EnrichrSetT: EnrichrDiseaseSet, SetT: DiseaseSet },
@@ -321,6 +321,7 @@ const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   const terms = results.gene[bg.name] || []
   return {
     background: bg.name,
+    terms,
     set: array.unique(terms.map((term: string) => {
       const m = bg.termRe.exec(term)
       if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term

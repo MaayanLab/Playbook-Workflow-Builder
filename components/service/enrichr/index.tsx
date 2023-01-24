@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode, MetaNodeDataType, MetaNodeMetadata } from '@/spec/metanode'
 import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { gene_icon, enrichr_icon } from '@/icons'
+import { gene_icon, enrichr_icon, search_icon } from '@/icons'
 import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
 import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import { GMT } from '@/components/data/gene_matrix_transpose'
@@ -261,6 +261,7 @@ export const EnrichrGenesetSearchT = [
 export const EnrichrGeneSearchResults = MetaNode.createData(`EnrichrGeneSearchResults`)
   .meta({
     label: `Enrichr Gene Search Results`,
+    icon: [enrichr_icon, search_icon, gene_icon],
     description: `Results of an Enrichr Gene Search`,
   })
   .codec(z.string())
@@ -279,7 +280,7 @@ export const EnrichrGeneSearchResults = MetaNode.createData(`EnrichrGeneSearchRe
 export const EnrichrGeneSearch = MetaNode.createProcess(`EnrichrGeneSearch`)
   .meta({
     label: `Enrichr Gene Search`,
-    icon: [enrichr_icon],
+    icon: [enrichr_icon, search_icon, gene_icon],
     description: `Find terms in Enrichr Libraries containing the gene`,
   })
   .inputs({ gene: GeneTerm })
@@ -397,6 +398,7 @@ export const EnrichrGeneSearchT = [
 export const EnrichrTermSearchResults = MetaNode.createData(`EnrichrTermSearchResults`)
   .meta({
     label: `Enrichr Term Search Results`,
+    icon: [enrichr_icon, search_icon],
     description: `Results of an Enrichr Term Search`,
   })
   .codec(z.string())

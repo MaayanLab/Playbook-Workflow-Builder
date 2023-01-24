@@ -11,8 +11,7 @@ import * as dict from '@/utils/dict'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
 import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
 import { Table2 as Table, Cell, Column } from '@blueprintjs/table'
-
-type ValuesOf<T> = T[keyof T]
+import type { ValuesOf } from '@/utils/types'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 

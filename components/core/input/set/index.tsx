@@ -5,12 +5,13 @@ import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/co
 import { Button, TextArea } from '@blueprintjs/core'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
 import { input_icon, set_icon } from '@/icons'
+import * as array from '@/utils/array'
 
 const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,
-    icon: [...(T.icon||[]), set_icon],
+    icon: [...array.ensureArray(T.icon), set_icon],
     color: T.color,
     tags: {
       Type: {

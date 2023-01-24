@@ -5,6 +5,7 @@
 import { Codec } from '@/spec/codec'
 import React from 'react'
 import { z } from 'zod'
+import type { Icon } from '@/icons'
 import codecFrom from '@/utils/zod-codec'
 
 /**
@@ -12,7 +13,6 @@ import codecFrom from '@/utils/zod-codec'
  *  built up in a type safe fashion.
  */
 
-type Icon = Array<{ path: string, title: string }>
 export type MetaNodeMetadata<T = unknown> = {
   label: string,
   description: string,

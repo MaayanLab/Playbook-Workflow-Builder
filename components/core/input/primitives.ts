@@ -1,12 +1,12 @@
 import useSWRImmutable from 'swr/immutable'
 import levenSort from '@/utils/leven-sort'
-import { gene_icon, drug_icon, tissue_icon, pathway_icon, phenotype_icon, disease_icon } from '@/icons'
+import { Icon, gene_icon, drug_icon, tissue_icon, pathway_icon, phenotype_icon, disease_icon } from '@/icons'
 import { MetaNodeMetadata } from '@/spec/metanode'
 
 export type Primative = {
   name: string,
   label: string,
-  icon?: { path: string, title: string }[],
+  icon?: Icon,
   color?: string,
   extra?: {
     term?: {

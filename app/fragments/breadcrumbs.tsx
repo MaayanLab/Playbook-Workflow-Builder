@@ -1,9 +1,8 @@
 import styles from './breadcrumbs.module.css'
+import type { Icon as IconT } from '@/icons'
 import Icon from '@/app/components/icon'
 import * as dict from '@/utils/dict'
 import { ensureArray } from '@/utils/array'
-
-type Icon = Array<{ path: string, title: string }>
 
 export default function Breadcrumbs(
   { graph, onclick: _onclick }: {
@@ -13,7 +12,7 @@ export default function Breadcrumbs(
       label: string,
       color: string,
       parents?: string[],
-    } & ({ icon: Icon } | { content: string })>,
+    } & ({ icon: IconT } | { content: string })>,
     onclick?: (evt: React.MouseEvent, node: string) => void
   }
 ) {

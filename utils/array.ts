@@ -9,6 +9,14 @@ export function ensureArray<T extends {}>(A?: MaybeArray<T>): Array<T> {
   }
 }
 
+export function ensureOne<T>(A: T | T[]): T {
+  if (typeof A === 'object' && Array.isArray(A)) {
+    return A[0]
+  } else {
+    return A
+  }
+}
+
 export function arange(n: number) {
   let R = []
   for (let i = 0; i < n; i++) {

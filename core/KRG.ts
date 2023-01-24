@@ -119,7 +119,7 @@ export default class KRG {
           }
         }
         for (const arg in processNode.inputs) {
-          const processNodeInput = processNode.inputs[arg]
+          const processNodeInput = array.ensureOne(processNode.inputs[arg])
           if (processNodeInput.spec in this.processForInput) {
             if (spec in this.processForInput[processNodeInput.spec]) {
               delete this.processForInput[processNodeInput.spec][spec]

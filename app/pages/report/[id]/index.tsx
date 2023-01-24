@@ -13,6 +13,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Icon from '@/app/components/icon'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon } from '@/icons'
+import * as array from '@/utils/array'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -152,7 +153,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
               <div key={proc.spec}>
                 {Object.keys(proc.inputs).length > 0 ? (
                   <>
-                    <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => i.meta.label).join(', ')}</span>
+                    <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
                     <span> =&gt; </span>
                   </>
                 ) : null}

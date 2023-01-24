@@ -7,6 +7,7 @@
 
 import { MetaNodeDataType, MetaNodeGenericData, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
 import * as dict from '@/utils/dict'
+import * as array from '@/utils/array'
 
 export default class KRG {
   private dataNodes: Record<string, MetaNodeDataType> = {}
@@ -71,7 +72,7 @@ export default class KRG {
       }
       this.processNodes[node.spec] = node
       for (const arg in node.inputs) {
-        const input = node.inputs[arg] as MetaNodeGenericData
+        const input = array.ensureOne(node.inputs[arg]) as MetaNodeGenericData
         if (!(input.spec in this.processForInput)) {
           this.processForInput[input.spec] = {}
         }

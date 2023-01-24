@@ -64,7 +64,7 @@ export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: 
           {dict.items(item.inputs).map(({ key, value }, i) => (
             <span key={key.toString()}>
               {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
-              <Icon icon={value.meta.icon || variable_icon} />
+              <Icon icon={array.ensureOne(value).meta.icon || variable_icon} />
             </span>
           ))}
           <Icon icon={rightarrow_icon} />

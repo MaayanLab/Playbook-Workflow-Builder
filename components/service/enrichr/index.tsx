@@ -54,7 +54,7 @@ async function resolveGenesetLibrary({ terms, background }: { background: string
   const gmt = res[background].terms
   return dict.init(
     terms.map(rawTerm => {
-      const m = bg.termRe.exec(rawTerm)
+      const m = backgrounds[background].termRe.exec(rawTerm)
       const term = (m && m.groups && 'term' in m.groups && m.groups.term && m.groups.term) || rawTerm
       return { key: rawTerm, value: { description: term, set: Object.keys(gmt[term]) } }
     })
@@ -425,7 +425,7 @@ export const EnrichrTermTSearch = [
   MetaNode.createProcess(`EnrichrTermSearch[${T.name}]`)
   .meta({
     label: `Enrichr ${T.label} Term Search`,
-    icon: [...T.icon, enrichr_icon],
+    icon: [...(T.icon || []), enrichr_icon],
     description: `Find ${T.label} terms in Enrichr Libraries`,
   })
   .inputs({ term: TermT })
@@ -442,6 +442,7 @@ const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   const terms = results.terms[bg.name] || []
   return {
     background: bg.name,
+    terms,
     set: array.unique(terms.map((term: string) => {
       const m = bg.termRe.exec(term)
       if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term

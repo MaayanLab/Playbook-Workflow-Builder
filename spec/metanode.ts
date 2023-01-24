@@ -66,7 +66,7 @@ export class MetaNode<T = unknown> {
   /**
    * Begin creating a node
    */
-  static createData<S extends string>(spec: S) {
+  static createData(spec: string) {
     return new MetaNode({ spec, kind: 'data' as 'data' })
   }
   /**
@@ -96,7 +96,7 @@ export class MetaNode<T = unknown> {
   /**
    * Begin creating an process
    */
-  static createProcess<S extends string>(spec: S) {
+  static createProcess(spec: string) {
     return new MetaNode({ spec, kind: 'process' as 'process' })
   }
   /**

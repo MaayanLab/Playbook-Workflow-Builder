@@ -12,6 +12,8 @@ import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenoty
 import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
 import { Table2 as Table, Cell, Column } from '@blueprintjs/table'
 
+type ValuesOf<T> = T[keyof T]
+
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
 function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata }) {
@@ -19,7 +21,7 @@ function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata })
     .meta({
       label: `Enrichr ${SetT.meta.label}`,
       description: SetT.meta.description,
-      icon: [enrichr_icon, ...(SetT.meta.icon||[])],
+      icon: [enrichr_icon, ...array.ensureArray(SetT.meta.icon)],
       color: SetT.meta.color,
     })
     .codec(z.object({ background: z.string(), terms: z.array(z.string()), set: z.array(z.string()) }))
@@ -172,91 +174,28 @@ const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof background
 }
 
 export const EnrichrGenesetSearchT = [
-  ...Disease_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
-      .meta({
-        label: `Extract Significant ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract significant terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
-      .output(ScoredDiseases)
-      .resolve(async (props) => {
-        return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Drug_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
-      .meta({
-        label: `Extract Significant ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract significant terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
-      .output(ScoredDrugs)
-      .resolve(async (props) => {
-        return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Pathway_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
-      .meta({
-        label: `Extract Significant ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract significant terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
-      .output(ScoredPathways)
-      .resolve(async (props) => {
-        return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Phenotype_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
-      .meta({
-        label: `Extract Significant ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract significant terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
-      .output(ScoredPhenotypes)
-      .resolve(async (props) => {
-        return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Tissue_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
-      .meta({
-        label: `Extract Significant ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract significant terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
-      .output(ScoredTissues)
-      .resolve(async (props) => {
-        return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...TranscriptionFactor_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
-      .meta({
-        label: `Extract Significant ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract significant terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrEnrichmentAnalysis })
-      .output(ScoredGenes)
-      .resolve(async (props) => {
-        return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-]  
+  { backgrounds: Disease_backgrounds, output: ScoredDiseases },
+  { backgrounds: Drug_backgrounds, output: ScoredDrugs },
+  { backgrounds: Pathway_backgrounds, output: ScoredPathways },
+  { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes },
+  { backgrounds: Tissue_backgrounds, output: ScoredTissues },
+  { backgrounds: TranscriptionFactor_backgrounds, output: ScoredGenes },
+].flatMap(({ backgrounds, output }) =>
+backgrounds.map(bg => ({ bg, output }))
+).map(({ bg, output }) =>
+  MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
+    .meta({
+      label: `Extract Significant ${bg.label} Signatures`,
+      icon: [enrichr_icon],
+      description: `Extract significant terms from ${bg.label} libraries`,
+    })
+    .inputs({ searchResults: EnrichrEnrichmentAnalysis })
+    .output(output)
+    .resolve(async (props) => {
+      return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
+    })
+    .build()
+)
 
 export const EnrichrGeneSearchResults = MetaNode.createData(`EnrichrGeneSearchResults`)
   .meta({
@@ -288,8 +227,6 @@ export const EnrichrGeneSearch = MetaNode.createProcess(`EnrichrGeneSearch`)
   .resolve(async (props) => props.inputs.gene)
   .build()
 
-type ValuesOf<T> = T extends Record<infer K, infer V> ? V : never
-
 const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
   const response = await fetch(
     `${enrichr_url}/genemap?json=true&gene=${encodeURIComponent(searchResults)}`,
@@ -308,92 +245,28 @@ const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>,
 }
 
 export const EnrichrGeneSearchT = [
-  ...Disease_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(EnrichrDiseaseSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Drug_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(EnrichrDrugSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Pathway_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(EnrichrPathwaySet)
-      .resolve(async (props) => {
-        return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Phenotype_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(EnrichrPhenotypeSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Tissue_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(EnrichrTissueSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...TranscriptionFactor_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrGeneSearchResults })
-      .output(EnrichrGeneSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-]
-
+  { backgrounds: Disease_backgrounds, output: EnrichrDiseaseSet },
+  { backgrounds: Drug_backgrounds, output: EnrichrDrugSet },
+  { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
+  { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
+  { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
+  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+].flatMap(({ backgrounds, output }) =>
+backgrounds.map(bg => ({ bg, output }))
+).map(({ bg, output }) =>
+  MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
+    .meta({
+      label: `Extract ${bg.label} Signatures`,
+      icon: [enrichr_icon],
+      description: `Extract terms from ${bg.label} libraries`,
+    })
+    .inputs({ searchResults: EnrichrGeneSearchResults })
+    .output(output)
+    .resolve(async (props) => {
+      return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
+    })
+    .build()
+)
 
 export const EnrichrTermSearchResults = MetaNode.createData(`EnrichrTermSearchResults`)
   .meta({
@@ -425,15 +298,15 @@ export const EnrichrTermTSearch = [
   { T: Tissue, TermT: TissueTerm },
 ].map(({ T, TermT }) =>
   MetaNode.createProcess(`EnrichrTermSearch[${T.name}]`)
-  .meta({
-    label: `Enrichr ${T.label} Term Search`,
-    icon: [...(T.icon || []), enrichr_icon],
-    description: `Find ${T.label} terms in Enrichr Libraries`,
-  })
-  .inputs({ term: TermT })
-  .output(EnrichrTermSearchResults)
-  .resolve(async (props) => props.inputs.term)
-  .build()
+    .meta({
+      label: `Enrichr ${T.label} Term Search`,
+      icon: [...array.ensureArray(T.icon), enrichr_icon],
+      description: `Find ${T.label} terms in Enrichr Libraries`,
+    })
+    .inputs({ term: TermT })
+    .output(EnrichrTermSearchResults)
+    .resolve(async (props) => props.inputs.term)
+    .build()
 )
 
 const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
@@ -454,88 +327,25 @@ const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>,
 }
 
 export const EnrichrTermSearchT = [
-  ...Disease_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(EnrichrDiseaseSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Drug_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(EnrichrDrugSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Pathway_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(EnrichrPathwaySet)
-      .resolve(async (props) => {
-        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Phenotype_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(EnrichrPhenotypeSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...Tissue_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(EnrichrTissueSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-  ...TranscriptionFactor_backgrounds.map(bg =>
-    MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
-      .meta({
-        label: `Extract ${bg.label} Signatures`,
-        icon: [enrichr_icon],
-        description: `Extract terms from ${bg.label} libraries`,
-      })
-      .inputs({ searchResults: EnrichrTermSearchResults })
-      .output(EnrichrGeneSet)
-      .resolve(async (props) => {
-        return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
-      })
-      .build()
-  ),
-]
+  { backgrounds: Disease_backgrounds, output: EnrichrDiseaseSet },
+  { backgrounds: Drug_backgrounds, output: EnrichrDrugSet },
+  { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
+  { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
+  { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
+  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+].flatMap(({ backgrounds, output }) =>
+  backgrounds.map(bg => ({ bg, output }))
+).map(({ bg, output }) =>
+  MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+    .meta({
+      label: `Extract ${bg.label} Signatures`,
+      icon: [enrichr_icon],
+      description: `Extract terms from ${bg.label} libraries`,
+    })
+    .inputs({ searchResults: EnrichrTermSearchResults })
+    .output(output)
+    .resolve(async (props) => {
+      return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
+    })
+    .build()
+)

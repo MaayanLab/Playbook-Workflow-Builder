@@ -3,12 +3,15 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
+import { weighted_icon } from '@/icons'
+import * as array from '@/utils/array'
 
 const Scored_T = (T: Primative) => MetaNode.createData(`Scored[${T.name}]`)
   .meta({
     label: `Scored ${T.label}s`,
     description: `ZScores of ${T.label}s`,
     color: T.color,
+    icon: [...array.ensureArray(T.icon), weighted_icon],
     tags: {
       Type: {
         [T.label]: 1,

@@ -12,7 +12,9 @@ export default function Breadcrumbs(
       label: string,
       color: string,
       parents?: string[],
-    } & ({ icon: IconT } | { content: string })>,
+      icon?: IconT,
+      content?: string
+    }>,
     onclick?: (evt: React.MouseEvent, node: string) => void
   }
 ) {

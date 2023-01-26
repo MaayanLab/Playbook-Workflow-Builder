@@ -17,11 +17,16 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   // The resolve function uses the inputs and returns output
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
+    var jsonArrayObject = []; // Added 2023/01/25
     const metName = props.inputs.metabolite
     const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
     const res = await req.json()
-    
-    return  res
+
+    //return  res ; // older
+
+    jsonArrayObject.push(res); // Added 2023/01/25
+
+    return jsonArrayObject; // Added 2023/01/25
     //return props.inputs.input
   })
   .story(props =>
@@ -53,7 +58,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
       jsonArrayObject.push(res)
     }
     
-    await console.log(jsonArrayObject)
+    //await console.log(jsonArrayObject)
     
     return jsonArrayObject
     //return props.inputs.input

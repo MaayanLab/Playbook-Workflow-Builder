@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { MetaboliteName } from '@/components/MW/metabolite'
+import { MetaboliteTerm } from '@/components/core/input/term'
 import { MetaboliteSummary } from '../metabolite_summary'
 // A unique name for your resolver is used here
 export const MetaboliteInfo = MetaNode.createProcess('MetaboliteInfo')
@@ -10,7 +10,7 @@ export const MetaboliteInfo = MetaNode.createProcess('MetaboliteInfo')
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
-  .inputs({ metabolite: MetaboliteName })
+  .inputs({ metabolite: MetaboliteTerm })
   // This should be a single Meta Node Data Type
   .output(MetaboliteSummary)
   // The resolve function uses the inputs and returns output

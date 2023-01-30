@@ -7,8 +7,8 @@ import { MetGeneStudyTable } from '../metgene_study_table'
 export const MetGeneStudies = MetaNode.createProcess('MetGeneStudies')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'MetGene Studies',
-    description: 'Compute the metgene studies function',
+    label: 'MetGENE Studies',
+    description: 'Compute the MetGENE studies function',
   })
 
 

@@ -29,6 +29,8 @@ export default function Matrix(props: MatrixProps) {
       numRows={props.values.length + (props.ellipses && props.ellipses[0] ? 1 : 0)}
       enableRowResizing
       enableColumnResizing
+      enableGhostCells
+      enableFocusedCell
       rowHeaderCellRenderer={(row) => {
         let row_ellipse = false
         if (props.ellipses && props.ellipses[0]) {

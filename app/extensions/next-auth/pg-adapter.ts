@@ -20,7 +20,7 @@ export default function PgAdapter(connectionString: string): Adapter {
     getUser: async (id) => {
       try {
         const results = await pool.query(
-          'select * from user where "id" = $1',
+          'select * from "user" where "id" = $1',
           [id])
         if (results.rowCount === 0) return null
         else {
@@ -34,7 +34,7 @@ export default function PgAdapter(connectionString: string): Adapter {
     getUserByEmail: async (email) => {
       try {
         const results = await pool.query(`
-          select * from user where "email" = $1;
+          select * from "user" where "email" = $1;
         `, [email])
         if (results.rowCount === 0) return null
         else {
@@ -47,10 +47,10 @@ export default function PgAdapter(connectionString: string): Adapter {
     },
     getUserByAccount: async (provider_providerAccountId) => {
       const results = await pool.query(`
-        select user.*
-        from account
-        inner join user on account.userId = user.id
-        where account.provider = $1 and account.providerAccountId = $2;
+        select "user".*
+        from "account"
+        inner join "user" on "account"."userId" = "user"."id"
+        where "account"."provider" = $1 and "account"."providerAccountId" = $2;
         `, [provider_providerAccountId.provider, provider_providerAccountId.providerAccountId])
       if (results.rowCount === 0) return null
       else {

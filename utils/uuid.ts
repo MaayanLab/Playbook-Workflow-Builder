@@ -1,11 +1,12 @@
 import crypto from 'crypto'
+import { canonicalize } from 'json-canonicalize'
 
 /**
  * Obtain a unique hash for a arbitrary data
  */
 export default function uuid5(data: any) {
   const h = crypto.createHash('sha1')
-  h.update(Buffer.from(JSON.stringify(data)))
+  h.update(Buffer.from(canonicalize(data)))
   const hex = h.digest('hex').substring(0, 32)
   return [
     hex.substring(0, 8),

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
 import type KRG from '@/core/KRG'
 
-export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
+export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
   const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
@@ -15,7 +15,7 @@ export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Me
   const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
   return (
     <div className="flex-grow flex flex-col">
-      <div className="flex-grow flex-shrink">
+      <div className="mb-4">
         <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
         {Prompt ? <Prompt
           inputs={inputs}
@@ -33,13 +33,13 @@ export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Me
               })
             })
             const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-            router.push(`/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}`, undefined, { shallow: true })
+            router.push(`/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
         : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>
         : null}
       </div>
-      <div className="flex-grow py-4">
+      <div className="flex-grow flex flex-col py-4">
         {outputNode ? (
           <>
             <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>

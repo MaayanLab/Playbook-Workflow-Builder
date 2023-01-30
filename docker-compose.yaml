@@ -11,7 +11,6 @@ services:
       replicas: 1
     environment:
     - PUBLIC_URL=${PUBLIC_URL}
-    - NEXTAUTH_URL=${NEXTAUTH_URL}
     - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
     - EMAIL_SERVER=${EMAIL_SERVER}
     - EMAIL_FROM=${EMAIL_FROM}

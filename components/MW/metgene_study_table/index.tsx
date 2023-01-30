@@ -22,7 +22,7 @@ export type MetGeneStudyObjArray = z.infer<typeof MetGeneStudyObjArrayC>
 export const MetGeneStudyTable = MetaNode.createData('MetGeneStudyTable')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'MetGene Studies Table',
+    label: 'MetGENE Studies Table',
     description: 'Studies table corresponding to gene',
   })
   // this should have a codec which can encode or decode the data type represented by this node

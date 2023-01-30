@@ -8,12 +8,31 @@ module.exports = {
     "./fragments/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    colors: {
-      ...colors,
-      primary: '#B3CFFF',
-      secondary: '#DDDDDD',
+    fontFamily: {
+      sans: ['Arial', 'sans-serif'],
     },
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/typography"),
+    require('daisyui'),
+  ],
+  daisyui: {
+    themes: [
+      {
+        playbook: {
+          ...require("daisyui/src/colors/themes")["[data-theme=corporate]"],
+          'primary': '#B3CFFF',
+          'primary-content': '#2B273A',
+          'secondary': '#DDDDDD',
+          'primary-content': '#2B273A',
+          '--border-btn': '0px',
+          '--btn-text-case': '',
+        },
+      },
+      'corporate',
+      'business'
+    ],
+    darkMode: 'business',
+  },
 }

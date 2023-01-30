@@ -37,8 +37,8 @@ export const GeneIDConv = MetaNode.createProcess('GeneIDConv')
 // Much of LINCS's APIs are centered around GeneInfo
 export const ConvertedGeneID2GeneInfo = MetaNode.createProcess('ConvertedGeneID2GeneInfo')
 .meta({
-  label: 'Convert from ConvertedGeneID to GeneInfo',
-  description: 'Given a ConvertedGeneID object, convert it to GeneInfo object.',
+  label: 'Extract Gene Term from ConvertedGeneID',
+  description: 'Given a ConvertedGeneID object, convert it to Gene Term object.',
 
 })
 .inputs({data: ConvertedGeneID})

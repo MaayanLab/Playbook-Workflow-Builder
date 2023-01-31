@@ -52,7 +52,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     const output = await fpprg.getResolved(result.process.id)
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
-  const suggestions = await db.suggestion.findMany()
+  const suggestions = await db.objects.suggestion.findMany()
   for (const key in suggestions) {
     const suggestion = suggestions[key]
     let OutputNode = krg.getDataNode(suggestion.output)

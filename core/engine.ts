@@ -1,10 +1,9 @@
-import { Data, Database, Process, Resolved, TimeoutError } from '@/core/FPPRG'
+import FPPRG, { Data, Process, Resolved, TimeoutError } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
-import { PgDatabase } from '@/core/FPPRG'
-import * as z from 'zod'
+import { z } from 'zod'
 
-const JobC = z.object({ id: z.string() })
+const JobC = z.object({ data: z.object({ id: z.string() }) })
 
 /**
  * This error occurs when the input node is not populated yet
@@ -55,46 +54,24 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
 }
 
 /**
- * This is a minimally viable scg engine -- given a database,
- *  we'll reconcile process outputs when they are created.
- */
-export function process_insertion_dispatch(krg: KRG, db: Database) {
-  return db.listen(async (table, record) => {
-    if (table === 'process') {
-      const instanceProcess = record as Process
-      const resolved = await resolve_process(krg, instanceProcess)
-      await db.upsertResolved(resolved)
-    }
-  })
-}
-
-/**
  * This worker receives jobs from the boss work-queue which ensures
  *  submitted jobs are given to one and only one worker. This should
  *  be run with several replicas in production.
  */
-export function start_workers(krg: KRG, db: PgDatabase, n_workers: number) {
-  db.boss.on('error', error => console.error(error))
-  ;(async () => {
-    console.log(`starting worker(s)..`)
-    await db.boss.start()
-    await db.boss.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
-      // the job.data should contain the process id
-      const { id: processId } = JobC.parse(job.data)
-      console.debug(`checking ${processId}..`)
-      // we fetch it from the db
-      const instanceProcess = await db.getProcess(processId, true)
-      if (!instanceProcess) throw new Error(`Process ${job.data} not found`)
-      if (instanceProcess.resolved === undefined) {
-        console.debug(`resolving ${processId}..`)
-        const resolved = await resolve_process(krg, instanceProcess)
-        // store the result in the db
-        await db.upsertResolved(resolved)
-        console.debug(`completed ${processId}`)
-      }
-    })
-  })().catch(error => console.error(error))
-  return () => {
-    db.boss.stop().catch(error => console.error(error))
-  }
+export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
+  return db.db.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
+    // the job.data should contain the process id
+    const { data: { id: processId } } = JobC.parse(job)
+    console.debug(`checking ${processId}..`)
+    // we fetch it from the db
+    const instanceProcess = await db.getProcess(processId, true)
+    if (!instanceProcess) throw new Error(`Process '${processId}' not found`)
+    if (instanceProcess.resolved === undefined) {
+      console.debug(`resolving ${processId}..`)
+      const resolved = await resolve_process(krg, instanceProcess)
+      // store the result in the db
+      await db.upsertResolved(resolved)
+      console.debug(`completed ${processId}`)
+    }
+  })
 }

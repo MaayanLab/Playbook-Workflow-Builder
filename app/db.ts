@@ -2,7 +2,7 @@ import create_database from "@/utils/orm"
 import * as schema from "@/db"
 import cache from '@/utils/global_cache'
 
-export default cache('db', create_database({
+export default cache('db', () => create_database({
   connectionString: process.env.DATABASE_URL,
   schema: {
     user: schema.user,
@@ -10,5 +10,11 @@ export default cache('db', create_database({
     session: schema.session,
     verification_token: schema.verification_token,
     suggestion: schema.suggestion,
+    data: schema.data,
+    process: schema.process,
+    process_input: schema.process_input,
+    resolved: schema.resolved,
+    process_complete: schema.process_complete,
+    fpl: schema.fpl,
   },
 }))

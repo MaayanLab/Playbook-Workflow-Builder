@@ -1,9 +1,9 @@
 import krg from '@/app/krg'
-import { PgDatabase, MemoryDatabase, Database } from '@/core/FPPRG'
-import { process_insertion_dispatch, start_workers } from '@/core/engine'
+import FPPRG from '@/core/FPPRG'
+import db from '@/app/db'
+import { start_workers } from '@/core/engine'
 declare global {
-  var fpprg: Database | undefined
-  var detach: (() => void) | undefined
+  var fpprg: FPPRG | undefined
 }
 
 /**
@@ -12,24 +12,12 @@ declare global {
  * If the global objects exist, we'll detach the old engine
  *  and attach the new one to the persistent fpprg
  */
-let fpprg: Database
-if (process.env.DATABASE_URL) {
-  if (!global.fpprg) {
-    global.fpprg = fpprg = new PgDatabase(process.env.DATABASE_URL)
-  } else {
-    fpprg = global.fpprg
-  }
-  if (process.env.N_WORKERS && (+process.env.N_WORKERS) > 0) {
-    global.detach = start_workers(krg, fpprg as PgDatabase, +process.env.N_WORKERS)
-  }
+let fpprg: FPPRG
+if (!global.fpprg) {
+  global.fpprg = fpprg = new FPPRG(db)
+  start_workers(krg, fpprg, +(process.env.N_WORKERS||'1'))
 } else {
-  if (!global.fpprg) {
-    global.fpprg = fpprg = new MemoryDatabase()
-  } else {
-    fpprg = global.fpprg
-  }
-  if (global.detach) global.detach()
-  global.detach = process_insertion_dispatch(krg, fpprg)
+  fpprg = global.fpprg
 }
 
 export default fpprg

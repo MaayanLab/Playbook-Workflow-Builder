@@ -19,6 +19,11 @@ export type Update<T> = {
   where: Where<T>
   data: PartialData<T>
 }
+export type Upsert<T> = {
+  where: Where<T>
+  update?: PartialData<T>
+  create: PartialData<T>
+}
 export type Delete<T> = {
   where: Where<T>
 }
@@ -28,5 +33,21 @@ export interface DbTable<T extends { id: Codec<string, string> }> {
   findUnique: (find: Find<T>) => Promise<TypedSchemaRecord<TypedSchema<T>> | null>
   findMany: (find?: FindMany<T>) => Promise<Array<TypedSchemaRecord<TypedSchema<T>>>>
   update: (update: Update<T>) => Promise<TypedSchemaRecord<TypedSchema<T>> | null>
+  upsert: (upsert: Upsert<T>) => Promise<TypedSchemaRecord<TypedSchema<T>>>
   delete: (delete_: Delete<T>) => Promise<TypedSchemaRecord<TypedSchema<T>> | null>
+}
+
+export interface DbDatabase {
+  // subscriber
+  listen: (cb: (evt: string, data: unknown) => void) => () => void
+
+  // boss
+  send: (queue: string, work: unknown) => Promise<void>
+  work: (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => Promise<() => void>
+}
+
+export type DbTables<T> = {[K in keyof T]: DbTable<T[K] extends { id: Codec<string, string> } ? T[K] : never>}
+
+export type DbOptions<T extends {}> = {
+  schema: {[K in keyof T]: TypedSchema<T[K]>},
 }

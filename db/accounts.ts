@@ -1,5 +1,6 @@
 import { SQL, Table } from '@/spec/sql'
-import * as z from 'zod'
+import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
 
 const z_uuid = z.string
 const nullable_undefined_codec = <C>(type: z.ZodType<C>) => ({
@@ -8,7 +9,7 @@ const nullable_undefined_codec = <C>(type: z.ZodType<C>) => ({
 })
 
 export const user = Table.create('user')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('name', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('email', 'varchar', 'not null', z.string())
   .field('emailVerified', 'timestamp', '', z.date().nullable())
@@ -22,7 +23,7 @@ export const user_email_index = SQL.create()
   .build()
 
 export const account = Table.create('account')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('userId', 'uuid', 'not null references "user" ("id") on delete cascade', z_uuid())
   .field('type', 'varchar', 'not null', z.enum(["oauth", "email", "credentials"]))
   .field('provider', 'varchar', 'not null', z.string())
@@ -39,14 +40,14 @@ export const account = Table.create('account')
   .build()
 
 export const session = Table.create('session')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('expires', 'timestamp', '', z.date())
   .field('sessionToken', 'varchar', 'not null', z.string())
   .field('userId', 'uuid', 'not null references "user" ("id") on delete cascade', z_uuid())
   .build()
 
 export const verification_token = Table.create('verification_token')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('identifier', 'varchar', '', z.string())
   .field('token', 'varchar', '', z.string())
   .field('expires', 'timestamp', '', z.date())

@@ -1,5 +1,5 @@
 import { SQL, Table, View } from '@/spec/sql'
-import * as z from 'zod'
+import { z } from 'zod'
 
 const z_uuid = () => z.string()
 
@@ -57,10 +57,9 @@ export const notify_insertion_trigger_payload = {
 }
 
 export const data = Table.create('data')
-  .field('id', 'uuid', 'primary key', z_uuid())
+  .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())
   .field('value', 'varchar', 'not null', z.string())
-  .extra_insert('on conflict ("id") do nothing')
   .build()
 
 export const data_trigger = SQL.create()
@@ -74,10 +73,9 @@ export const data_trigger = SQL.create()
   .build()
 
 export const process = Table.create('process')
-  .field('id', 'uuid', 'primary key', z_uuid())
+  .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
-  .extra_insert('on conflict ("id") do nothing')
   .build()
 
 export const process_trigger = SQL.create()
@@ -91,17 +89,14 @@ export const process_trigger = SQL.create()
   .build()
 
 export const process_input = Table.create('process_input')
-  .field('id', 'uuid', 'references process ("id") on delete cascade', z_uuid())
-  .field('key', 'varchar', 'not null', z.string())
+  .field('id', 'uuid', 'references process ("id") on delete cascade', z_uuid(), { primaryKey: true })
+  .field('key', 'varchar', 'not null', z.string(), { primaryKey: true })
   .field('value', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
-  .extra('primary key ("id", "key")')
-  .extra_insert('on conflict ("id", "key") do nothing')
   .build()
 
 export const resolved = Table.create('resolved')
-  .field('id', 'uuid', 'primary key references process ("id") on delete cascade', z_uuid())
+  .field('id', 'uuid', 'references process ("id") on delete cascade', z_uuid(), { primaryKey: true })
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
-  .extra_insert('on conflict ("id") do nothing')
   .build()
 
 export const resolved_trigger = SQL.create()
@@ -137,13 +132,25 @@ export const process_complete = View.create('process_complete')
       from "process"
       left join "resolved" on "process"."id" = "resolved"."id";
     `)
+    // .js(function *(db) {
+    //   for (const id in db.process) {
+    //     const process = db.process[id]
+    //     yield {
+    //       id,
+    //       type: process.type,
+    //       data: process.data,
+    //       inputs: dict.init(db.selectWhere(process_input, { id })),
+    //       resolved: id in db.resolved,
+    //       output: (db.resolved[id]||{}).data
+    //     }
+    //   }
+    // })
     .build()
 
 export const fpl = Table.create('fpl')
-  .field('id', 'uuid', 'primary key', z_uuid())
+  .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('process', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
   .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().nullable())
-  .extra_insert('on conflict ("id") do nothing')
   .build()
 
 export const fpl_trigger = SQL.create()

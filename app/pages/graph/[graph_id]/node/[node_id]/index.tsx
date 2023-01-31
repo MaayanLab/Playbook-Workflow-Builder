@@ -8,7 +8,7 @@ import Head from 'next/head'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
 import krg from '@/app/krg'
-import suggestiondb from '@/app/suggestionsdb'
+import db from '@/app/db'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
@@ -52,7 +52,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     const output = await fpprg.getResolved(result.process.id)
     if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
   }
-  const suggestions = await suggestiondb.suggestions()
+  const suggestions = await db.suggestion.findMany()
   for (const key in suggestions) {
     const suggestion = suggestions[key]
     let OutputNode = krg.getDataNode(suggestion.output)

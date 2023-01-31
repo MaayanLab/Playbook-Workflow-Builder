@@ -24,6 +24,7 @@ export type TypedSchema<T = {}> = {
   schema_up: string
   schema_down: string
 }
+export type TypedSchemaRecord<Schema> = Schema extends TypedSchema<infer T> ? {[K in keyof T]: Decoded<T[K]>} : never
 
 export type TableSchema<T = {}> = {
   name: string

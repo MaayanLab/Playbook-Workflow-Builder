@@ -1,5 +1,5 @@
 import krg from '@/app/krg'
-import suggestionsdb from '@/app/suggestionsdb'
+import db from '@/app/db'
 import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
@@ -18,7 +18,7 @@ const BodyType = z.object({
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET')  {
-      res.status(200).json(await suggestionsdb.suggestions())
+      res.status(200).json(await db.suggestion.findMany())
     } else if (req.method === 'POST') {
       const suggestion = BodyType.parse(JSON.parse(req.body))
       // add the suggested KRG node(s)
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
         .build()
       krg.add(ProcessNode)
-      await suggestionsdb.suggest(suggestion)
+      await db.suggestion.create({ data: suggestion })
       res.status(200).end()
     } else {
       throw new Error('Unsupported method')

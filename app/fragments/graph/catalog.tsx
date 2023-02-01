@@ -2,13 +2,11 @@ import React from 'react'
 import Masonry from 'react-masonry-css'
 import tsvector from "@/utils/tsvector"
 import dynamic from "next/dynamic"
+import * as array from '@/utils/array'
 // import { useQsState } from "@/components/qsstate"
 
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
-
-const any = <T extends {}>(L: T[]) => L.some(el => !!el)
-const all = <T extends {}>(L: T[]) => !L.some(el => !el)
 
 type KVCounts = { [key: string]: { [val: string]: number } }
 
@@ -42,9 +40,9 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
     .filter((item) => {
       const item_meta = item.meta || {}
       const item_meta_tags = item_meta.tags || {}
-      return all(
+      return array.all(
         Object.keys(filters)
-          .map(group => any(
+          .map(group => array.any(
             Object.keys(item_meta_tags[group]||{})
               .map(value => (filters[group]||{})[value] === 1)
           ))

@@ -38,3 +38,11 @@ export function intersection<T>(As: T[], Bs: T[]) {
   Bs.forEach(b => B.add(b))
   return Array.from(A).filter(a => B.has(a))
 }
+
+export function any<T>(L: T[]) {
+  return L.some(el => !!el)
+}
+
+export function all<T>(L: T[]) {
+  return !L.some(el => !el)
+}

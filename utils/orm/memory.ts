@@ -2,9 +2,8 @@ import type { Codec } from '@/spec/codec'
 import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
 import { v4 as uuidv4 } from 'uuid'
 import * as dict from '@/utils/dict'
+import * as array from '@/utils/array'
 import { Find, Create, Delete, Update, DbTable, FindMany, Upsert, DbDatabase } from './common'
-
-const all = <T extends {}>(L: T[]) => !L.some(el => !el)
 
 export class MemoryDatabase implements DbDatabase {
   private listeners: Record<number, (evt: string, data: unknown) => void> = {}
@@ -51,7 +50,7 @@ export class MemoryTable<T extends { id: Codec<string, string> }> implements DbT
       return (this.db.data[this.table.name][find.where.id] || null) as TypedSchemaRecord<TypedSchema<T>> | null
     } else {
       const result = Object.values(this.db.data[this.table.name]).filter(record =>
-        all(dict.items(find.where).map(({ key, value }) => record[key] === value))
+        array.all(dict.items(find.where).map(({ key, value }) => record[key] === value))
       )
       if (result.length === 0) return null
       else if (result.length !== 1) throw new Error('Not unique')
@@ -60,7 +59,7 @@ export class MemoryTable<T extends { id: Codec<string, string> }> implements DbT
   }
   findMany = async (find: FindMany<T> = {}) => {
     return Object.values(this.db.data[this.table.name]).filter(record =>
-      find.where ? all(dict.items(find.where).map(({ key, value }) => record[key] === value)) : true
+      find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key] === value)) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
   }
   update = async (update: Update<T>) => {

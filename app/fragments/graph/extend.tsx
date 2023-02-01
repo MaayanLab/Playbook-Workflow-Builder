@@ -62,9 +62,11 @@ export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: 
         <div className="flex flex-row">
           {Object.keys(item.inputs).length === 0 ? <Icon icon={start_icon} /> : null}
           {dict.items(item.inputs).map(({ key, value }, i) => (
-            <span key={key.toString()}>
+            <span key={key.toString()} className="flex flex-row items-center">
               {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
-              <Icon icon={value.meta.icon || variable_icon} />
+              {Array.isArray(value) ? '[' : null}
+              <Icon icon={array.ensureOne(value).meta.icon || variable_icon} />
+              {Array.isArray(value) ? ']' : null}
             </span>
           ))}
           <Icon icon={rightarrow_icon} />

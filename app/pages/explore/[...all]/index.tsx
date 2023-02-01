@@ -167,7 +167,7 @@ export default function Explore() {
         ...Object.values(edge.inputs).length === 0 ?
           [{ source: 'Start', target: edge.spec }]
         : Object.values(edge.inputs).map(input => 
-            ({ source: input.spec, target: edge.spec })
+            ({ source: array.ensureOne(input).spec, target: edge.spec })
           ),
         { source: edge.spec, target: edge.output.spec },
       ])

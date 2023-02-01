@@ -2,6 +2,7 @@ import FPPRG, { Data, Process, Resolved, TimeoutError } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
+import * as array from '@/utils/array'
 
 const JobC = z.object({ data: z.object({ id: z.string() }) })
 
@@ -22,14 +23,15 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
       data: instanceProcess.data,
       inputs: dict.init(
         dict.items(await instanceProcess.inputs__outputs()).map(({ key, value }) => {
+          const metaProcessInput = array.ensureOne(metaProcess.inputs[key as string])
           if (value === undefined) {
             // handle nodes
             throw new UnboundError()
           } else if (value.type === 'Error') {
             // propagate errors
-            throw new Error(`${instanceProcess.type} can't run because of error in ${metaProcess.inputs[key as string].spec}`)
+            throw new Error(`${instanceProcess.type} can't run because of error in ${metaProcessInput.spec}`)
           }
-          return { key, value: value ? metaProcess.inputs[key as string].codec.decode(value.value) : undefined }
+          return { key, value: value ? metaProcessInput.codec.decode(value.value) : undefined }
       })),
     }
     if ('prompt' in metaProcess) {

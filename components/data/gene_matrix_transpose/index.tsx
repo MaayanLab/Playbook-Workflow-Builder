@@ -83,3 +83,27 @@ export const GMTConsensus = MetaNode.createProcess('GMTConsensus')
       .map(({ key }) => key as string)
   })
   .build()
+
+export const GenesetsToGMT = MetaNode.createProcess('GenesetsToGMT')
+  .meta({
+    label: `Assemble GMT from Genesets`,
+    description: 'Group multiple independently generated genesets as a single GMT'
+  })
+  .inputs({ genesets: [GeneSet] })
+  .output(GMT)
+  .resolve(async (props) => {
+    return dict.init(props.inputs.genesets.map((set, i) => ({ key: i+'', value: { set } })))
+  })
+  .build()
+
+export const GMTConcatenate = MetaNode.createProcess('GMTConcatenate')
+  .meta({
+    label: `Concatenate GMTs`,
+    description: 'Join several GMTs into one'
+  })
+  .inputs({ gmts: [GMT] })
+  .output(GMT)
+  .resolve(async (props) => {
+    return dict.init(props.inputs.gmts.flatMap(dict.items))
+  })
+  .build()

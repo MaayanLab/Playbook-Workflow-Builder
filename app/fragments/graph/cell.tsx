@@ -8,7 +8,7 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
   const router = useRouter()
   const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
-  const inputs: any = head.process.inputs
+  const inputs = head.process.inputs
   const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
   const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
   const View = outputNode ? outputNode.view : undefined

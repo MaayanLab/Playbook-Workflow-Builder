@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { MetaNodeDataType } from '@/spec/metanode'
 import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
+import * as array from '@/utils/array'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
@@ -28,7 +29,7 @@ export default function App() {
     const inputs: Record<string, unknown> = {}
     if (Object.keys(promptNode.inputs).length > 0) {
       const input0 = Object.keys(promptNode.inputs)[0]
-      inputs[input0] = promptNode.inputs[input0].codec.decode(current.data)
+      inputs[input0] = array.ensureOne(promptNode.inputs[input0]).codec.decode(current.data)
     }
     const Prompt = promptNode.prompt
     dataNodeView = <Prompt
@@ -60,14 +61,14 @@ export default function App() {
             <div key={proc.spec} className="whitespace-nowrap">
               {Object.keys(proc.inputs).length > 0 ? (
                 <>
-                  <span className="btn btn-sm btn-secondary rounded-full">{dict.values(proc.inputs).map((i) => i.meta.label).join(', ')}</span>
+                  <span className="btn btn-sm btn-secondary rounded-full">{dict.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
                   <span> =&gt; </span>
                 </>
               ) : null}
               <button
                 className={[
                   Object.values(proc.inputs)
-                    .some((i) => i.spec === current.type) ? 'font-bold' : '',
+                    .some((i) => array.ensureOne(i).spec === current.type) ? 'font-bold' : '',
                   'btn btn-sm btn-secondary rounded-sm',
                 ].join(' ')}
                 onClick={async () => {

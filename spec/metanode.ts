@@ -7,6 +7,7 @@ import React from 'react'
 import { z } from 'zod'
 import type { Icon } from '@/icons'
 import codecFrom from '@/utils/zod-codec'
+import type { MaybeArray, ValuesOfMaybeArray } from '@/utils/types'
 
 /**
  * These type helpers beak up the meta node definitions in such a way that they can be
@@ -23,12 +24,14 @@ export type MetaNodeMetadata<T = unknown> = {
   pagerank?: number
   tags?: Record<string, Record<string, number>>,
 }
-
 export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata<T>, codec: Codec<T> }
-export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends { kind: infer Kind } ? Kind : never
-export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends { spec: infer Spec } ? Spec : never
-export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends { meta: infer Meta } ? Meta : never
-export type MetaNodeExtractData<T = MetaNodeGeneric> = T extends { codec: Codec<infer Data> } ? Data : never
+export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends MaybeArray<{ kind: infer Kind }> ? Kind : never
+export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends MaybeArray<{ spec: infer Spec }> ? Spec : never
+export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends MaybeArray<{ meta: infer Meta }> ? Meta : never
+export type MetaNodeExtractData<T = MetaNodeGeneric> =
+  T extends Array<{ codec: Codec<infer Data> }> ? Data[]
+  : T extends { codec: Codec<infer Data> } ? Data
+  : never
 export type MetaNodeView<T = MetaNodeGenericData> = (props: MetaNodeExtractData<T>) => React.ReactElement
 export type MetaNodeWithKind<T = MetaNodeGenericData> = { kind: MetaNodeExtractKind<T> }
 export type MetaNodeWithSpec<T = MetaNodeGenericData> = { spec: MetaNodeExtractSpec<T> }
@@ -37,8 +40,8 @@ export type MetaNodeWithCodec<T = MetaNodeGenericData> = { codec: Codec<MetaNode
 export type MetaNodeWithView<T = MetaNodeGenericData> = T extends { view: MetaNodeView<T> } ? T : never
 export type MetaNodeGenericData = MetaNodeGeneric & { view: MetaNodeView<MetaNodeGeneric> }
 export type MetaNodeDataType<T = MetaNodeGenericData> = MetaNodeWithKind<T> & MetaNodeWithSpec<T> & MetaNodeWithMeta<T> & MetaNodeWithCodec<T> & MetaNodeWithView<T>
-export type MetaNodeGenericProcess = { kind: 'process', spec: string, meta: MetaNodeMetadata, inputs: Record<string, MetaNodeGenericData>, output: MetaNodeGenericData }
-export type MetaNodeInputs<T = Record<string, MetaNodeGenericData>> = T extends { [K in keyof T]: MetaNodeDataType<T[K]> } ? T : never
+export type MetaNodeGenericProcess = { kind: 'process', spec: string, meta: MetaNodeMetadata, inputs: Record<string, MaybeArray<MetaNodeGenericData>>, output: MetaNodeGenericData }
+export type MetaNodeInputs<T = Record<string, MaybeArray<MetaNodeGenericData>>> = T extends { [K in keyof T]: MaybeArray<MetaNodeDataType<ValuesOfMaybeArray<T[K]>>> } ? T : never
 export type MetaNodeExtractInputs<T = MetaNodeGenericProcess> = T extends { inputs: MetaNodeInputs<infer Inputs> } ? Inputs : never
 export type MetaNodeOutput<T = MetaNodeGenericData> = T extends MetaNodeDataType<T> ? T : never
 export type MetaNodeExtractOutput<T = MetaNodeGenericProcess> = T extends { output: MetaNodeOutput<infer Output> } ? Output : never

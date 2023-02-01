@@ -1,4 +1,4 @@
-import type { Codec, Encoded } from '@/spec/codec'
+import type { Encoded } from '@/spec/codec'
 import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
 
 export type Data<T> = {[K in keyof T]: Encoded<T[K]>}
@@ -28,7 +28,7 @@ export type Delete<T> = {
   where: Where<T>
 }
 
-export interface DbTable<T extends { id: Codec<string, string> }> {
+export interface DbTable<T extends {}> {
   create: (create: Create<T>) => Promise<TypedSchemaRecord<TypedSchema<T>>>
   findUnique: (find: Find<T>) => Promise<TypedSchemaRecord<TypedSchema<T>> | null>
   findMany: (find?: FindMany<T>) => Promise<Array<TypedSchemaRecord<TypedSchema<T>>>>
@@ -46,7 +46,7 @@ export interface DbDatabase {
   work: (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => Promise<() => void>
 }
 
-export type DbTables<T> = {[K in keyof T]: DbTable<T[K] extends { id: Codec<string, string> } ? T[K] : never>}
+export type DbTables<T> = {[K in keyof T]: DbTable<T[K] extends {} ? T[K] : never>}
 
 export type DbOptions<T extends {}> = {
   schema: {[K in keyof T]: TypedSchema<T[K]>},

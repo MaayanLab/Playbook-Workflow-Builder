@@ -18,8 +18,8 @@ const ObjectCodec = <T>(field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Enco
 export type TypedSchema<T = {}> = {
   name: string
   codec: Codec<{[K in keyof T]: Decoded<T[K]>}, {[K in keyof T]: Encoded<T[K]>}>
-  field_pk: {[K in keyof T]: boolean}
-  field_default: {[K in keyof T]: Decoded<T[K]>}
+  field_pk: Array<keyof T>
+  field_default: Partial<{[K in keyof T]: Decoded<T[K]>}>
   field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}
   field_sql: {[K in keyof T]: string}
   schema_up: string
@@ -77,7 +77,10 @@ export class Table<T = {}> {
     })
   }
   build() {
-    const { name, field_codecs, field_pk, field_sql, field_extra_sql } = this.t
+    const { name, field_codecs, field_sql, field_extra_sql } = this.t
+    const field_pk = dict.items(this.t.field_pk).filter(({ value }) => !!value).map(({ key }) => key)
+    if (field_pk.length <= 0) throw new Error(`Missing primary key on ${name}`)
+    const field_default = dict.init(dict.items(this.t.field_default).filter(({ value }) => !!value))
     const codec = ObjectCodec(field_codecs)
     const schema_up = [
       `create table ${JSON.stringify(this.t.name)} (`,
@@ -85,14 +88,14 @@ export class Table<T = {}> {
         ...dict.keys(field_sql).map(field =>
           `  ${JSON.stringify(field)} ${field_sql[field]} ${field_extra_sql[field]}`
         ),
-        `primary key (${dict.items(field_pk).filter(({ value }) => value).map(({ key }) => JSON.stringify(key)).join(', ')})`,
+        `primary key (${field_pk.map((key) => JSON.stringify(key)).join(', ')})`,
         ...this.t.extra_sql.map(sql => `  ${sql}`),
       ].join(',\n'),
       `);`,
     ].join('\n')
     
     const schema_down = `drop table ${JSON.stringify(this.t.name)};`
-    return { codec, name, field_sql, field_pk, field_codecs, schema_up, schema_down } as TypedSchema<T>
+    return { codec, name, field_sql, field_pk, field_default, field_codecs, schema_up, schema_down } as TypedSchema<T>
   }
 }
 

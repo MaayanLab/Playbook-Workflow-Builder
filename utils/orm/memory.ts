@@ -1,6 +1,4 @@
-import type { Codec } from '@/spec/codec'
 import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
-import { v4 as uuidv4 } from 'uuid'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { Find, Create, Delete, Update, DbTable, FindMany, Upsert, DbDatabase } from './common'
@@ -9,7 +7,7 @@ export class MemoryDatabase implements DbDatabase {
   private listeners: Record<number, (evt: string, data: unknown) => void> = {}
   private id = 0
 
-  constructor(public data: Record<string, Record<string | number | symbol, Record<string | number | symbol, unknown > & { id: string }>> = {}) {}
+  constructor(public data: Record<string, Record<string, Record<string, unknown>>> = {}) {}
 
   listen = (cb: (evt: string, data: unknown) => void) => {
     const id = this.id++
@@ -34,23 +32,31 @@ export class MemoryDatabase implements DbDatabase {
   }
 }
 
-export class MemoryTable<T extends { id: Codec<string, string> }> implements DbTable<T> {
+export class MemoryTable<T extends {}> implements DbTable<T> {
   constructor(public table: TypedSchema<T>, private db: MemoryDatabase) {
     if (!(this.table.name in this.db.data)) this.db.data[this.table.name] = {}
   }
 
   create = async (create: Create<T>)=> {
-    const id = create.data.id || uuidv4()
-    this.db.data[this.table.name][id] = { ...create.data, id }
-    await this.db.notify(`insert:${this.table.name}`, { id })
-    return this.db.data[this.table.name][id] as TypedSchemaRecord<TypedSchema<T>>
+    const data = {...create.data}
+    dict.items(this.table.field_default)
+      .forEach(({ key, value: field_default }) => {
+        if (typeof field_default === 'function' && (!(key in data) || data[key] === undefined || data[key] === null)) {
+          data[key] = field_default()
+        }
+      })
+    const pk = this.table.field_pk.map((key) => `${data[key]}`).join('-')
+    this.db.data[this.table.name][pk] = data
+    await this.db.notify(`insert:${this.table.name}`, { id: pk })
+    return this.db.data[this.table.name][pk] as TypedSchemaRecord<TypedSchema<T>>
   }
   findUnique = async (find: Find<T>) => {
-    if (Object.keys(find.where).length === 1 && find.where.id) {
-      return (this.db.data[this.table.name][find.where.id] || null) as TypedSchemaRecord<TypedSchema<T>> | null
+    if (array.all(this.table.field_pk.map(key => key in find.where && find.where[key]))) {
+      const pk = this.table.field_pk.map(key => `${find.where[key]}`).join('-')
+      return (this.db.data[this.table.name][pk] || null) as TypedSchemaRecord<TypedSchema<T>> | null
     } else {
       const result = Object.values(this.db.data[this.table.name]).filter(record =>
-        array.all(dict.items(find.where).map(({ key, value }) => record[key] === value))
+        array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value))
       )
       if (result.length === 0) return null
       else if (result.length !== 1) throw new Error('Not unique')
@@ -59,7 +65,7 @@ export class MemoryTable<T extends { id: Codec<string, string> }> implements DbT
   }
   findMany = async (find: FindMany<T> = {}) => {
     return Object.values(this.db.data[this.table.name]).filter(record =>
-      find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key] === value)) : true
+      find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value)) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
   }
   update = async (update: Update<T>) => {
@@ -79,7 +85,8 @@ export class MemoryTable<T extends { id: Codec<string, string> }> implements DbT
   delete = async (delete_: Delete<T>) => {
     const record = await this.findUnique({ where: delete_.where })
     if (record === null) return null
-    delete this.db.data[this.table.name][record.id as string]
+    const pk = this.table.field_pk.map(key => `${record[key]}`).join('-')
+    delete this.db.data[this.table.name][pk]
     return record as TypedSchemaRecord<TypedSchema<T>>
   }
 }

@@ -1,4 +1,4 @@
-import { Codec, Decoded } from '@/spec/codec'
+import { Decoded } from '@/spec/codec'
 import { TypedSchema } from '@/spec/sql'
 import * as pg from 'pg'
 import * as dict from '@/utils/dict'
@@ -95,7 +95,7 @@ export class PgDatabase implements DbDatabase {
   }
 }
 
-export class PgTable<T extends { id: Codec<string, string> }> implements DbTable<T> {
+export class PgTable<T extends {}> implements DbTable<T> {
   constructor(public table: TypedSchema<T>, private db: PgDatabase) {}
 
   create = async (create: Create<T>)=> {
@@ -173,11 +173,9 @@ export class PgTable<T extends { id: Codec<string, string> }> implements DbTable
     const insert_columns = Object.keys(this.table.field_codecs).filter(col => col in upsert.create) as Array<keyof T>
     if (insert_columns.length <= 0) throw new Error('Missing values')
     const update_columns = (upsert.update ? Object.keys(this.table.field_codecs).filter(col => upsert.update && col in upsert.update) : []) as Array<keyof T>
-    dict.items(this.table.field_pk)
-      .filter(({ value }) => value)
-      .forEach(({ key }) => {
-        if (!update_columns.includes(key as keyof T)) update_columns.push(key as keyof T)
-      })
+    this.table.field_pk.forEach((key) => {
+      if (!update_columns.includes(key as keyof T)) update_columns.push(key as keyof T)
+    })
     const results = await this.db.raw(subst => `
       insert into ${JSON.stringify(this.table.name)} (${insert_columns.map(col => JSON.stringify(col)).join(", ")})
       select * from
@@ -186,7 +184,7 @@ export class PgTable<T extends { id: Codec<string, string> }> implements DbTable
       ]))}::jsonb) as t(
         ${insert_columns.map(col => `${JSON.stringify(col)} ${this.table.field_sql[col]}`).join(',')}
       )
-      on conflict (${dict.items(this.table.field_pk).filter(({ value }) => value).map(({ key }) => JSON.stringify(key)).join(',')})
+      on conflict (${this.table.field_pk.map((key) => JSON.stringify(key)).join(',')})
       do update set ${update_columns.map(col => `${JSON.stringify(col)} = EXCLUDED.${JSON.stringify(col)}`).join(',')}
       returning *;
     `)

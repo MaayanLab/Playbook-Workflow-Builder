@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneInfo } from '@/components/service/mygeneinfo'
-import { SignificantTissues } from '@/components/core/significant_tissues'
+import { ScoredTissues } from '@/components/core/input/scored'
 import { gtex_icon } from '@/icons'
 import python from '@/utils/python'
 
@@ -11,7 +11,7 @@ export const GTExTissueExpression = MetaNode.createProcess('GTExTissueExpression
     icon: [gtex_icon],
   })
   .inputs({ gene_info: GeneInfo })
-  .output(SignificantTissues)
+  .output(ScoredTissues)
   .resolve(async (props) => {
     return await python(
       'components.service.gtex.gtex_gene_expression',

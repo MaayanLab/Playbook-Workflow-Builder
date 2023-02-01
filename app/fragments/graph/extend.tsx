@@ -7,6 +7,7 @@ import { MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
 import type { Metapath } from '@/app/fragments/graph/types'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
+import * as array from '@/utils/array'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
 const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof CatalogType
@@ -22,9 +23,13 @@ export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: 
         ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
         ...SuggestionEdges(processNode ? processNode.output : undefined),
       ]}
-      // items={Object.values(metagraph.getNeighbors({ graph: ctx.graph, node: ctx.node })) as SCG.MetaEdge[]}
-      serialize={item => item.spec}
-      // serialize={(item: SCG.MetaEdge) => `${ensureCallable((item.meta || {}).name)(ctx)} ${ensureCallable((item.meta || {}).desc)(ctx)} ${ensureCallable(metagraph.nodes[item.input.spec].meta.name)(ctx)} ${ensureCallable(metagraph.nodes[item.output.spec].meta.name)(ctx)}`}
+      serialize={item => [
+        item.spec,
+        item.meta.label,
+        item.meta.description,
+        dict.values(item.meta.tags || {})
+          .flatMap(tagGroup => dict.items(tagGroup).filter(({ value }) => value).map(({ key }) => key)),
+      ].join(' ')}
     >{item =>
       <Card
         key={item.spec}
@@ -56,16 +61,16 @@ export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: 
       >
         <div className="flex flex-row">
           {Object.keys(item.inputs).length === 0 ? <Icon icon={start_icon} /> : null}
-          {dict.keys(item.inputs).map((arg, i) => (
-            <span key={arg}>
+          {dict.items(item.inputs).map(({ key, value }, i) => (
+            <span key={key.toString()}>
               {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
-              <Icon icon={'icon' in item.inputs[arg].meta ? item.inputs[arg].meta.icon : variable_icon} />
+              <Icon icon={value.meta.icon || variable_icon} />
             </span>
           ))}
           <Icon icon={rightarrow_icon} />
-          <Icon icon={'icon' in item.meta ? item.meta.icon : func_icon} />
+          <Icon icon={item.meta.icon || func_icon} />
           <Icon icon={rightarrow_icon} />
-          <Icon icon={'icon' in item.output.meta ? item.output.meta.icon : variable_icon} />
+          <Icon icon={item.output.meta.icon || variable_icon} />
         </div>
         <h5 className="bp4-heading">{item.meta.label || ''}</h5>
         <p className="bp4-text-small">{item.meta.description || ''}</p>

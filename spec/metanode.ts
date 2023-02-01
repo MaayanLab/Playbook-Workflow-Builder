@@ -5,6 +5,7 @@
 import { Codec } from '@/spec/codec'
 import React from 'react'
 import { z } from 'zod'
+import type { Icon } from '@/icons'
 import codecFrom from '@/utils/zod-codec'
 
 /**
@@ -12,19 +13,18 @@ import codecFrom from '@/utils/zod-codec'
  *  built up in a type safe fashion.
  */
 
-type Icon = Array<{ path: string, title: string }>
-export type MetaNodeMetadata = {
+export type MetaNodeMetadata<T = unknown> = {
   label: string,
   description: string,
   icon?: Icon,
   color?: string,
-  default?: string,
-  example?: unknown,
+  default?: T,
+  example?: T,
   pagerank?: number
   tags?: Record<string, Record<string, number>>,
 }
 
-export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata, codec: Codec<T> }
+export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata<T>, codec: Codec<T> }
 export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends { kind: infer Kind } ? Kind : never
 export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends { spec: infer Spec } ? Spec : never
 export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends { meta: infer Meta } ? Meta : never
@@ -66,7 +66,7 @@ export class MetaNode<T = unknown> {
   /**
    * Begin creating a node
    */
-  static createData<S extends string>(spec: S) {
+  static createData(spec: string) {
     return new MetaNode({ spec, kind: 'data' as 'data' })
   }
   /**
@@ -96,7 +96,7 @@ export class MetaNode<T = unknown> {
   /**
    * Begin creating an process
    */
-  static createProcess<S extends string>(spec: S) {
+  static createProcess(spec: string) {
     return new MetaNode({ spec, kind: 'process' as 'process' })
   }
   /**

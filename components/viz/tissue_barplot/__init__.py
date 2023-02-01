@@ -7,7 +7,7 @@ def tissue_barplot(x):
   fig = px.bar(
     x,
     y='zscore',
-    x='tissue',
+    x='term',
     orientation='v',
     title=f"Tissues with significant expression",
     height=1000,

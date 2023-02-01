@@ -23,14 +23,16 @@ export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
 components.push("core/file")
+export * from "./core/input/scored"
+components.push("core/input/scored")
 export * from "./core/input/set"
 components.push("core/input/set")
 export * from "./core/input/term"
 components.push("core/input/term")
-export * from "./core/significant_tissues"
-components.push("core/significant_tissues")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
+export * from "./data/gene_matrix_transpose"
+components.push("data/gene_matrix_transpose")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
 export * from "./data/pca_transformation"
@@ -45,6 +47,8 @@ export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
 export * from "./gly_gen"
 components.push("gly_gen")
+export * from "./service/enrichr"
+components.push("service/enrichr")
 export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/mygeneinfo"

@@ -13,7 +13,7 @@ export default function SiteMap() {
       <Head>
         <title>Playbook</title>
       </Head>
-      <Header homepage="/" />
+      <Header />
       <main className="flex-grow container mx-auto py-4 flex flex-col">
         <div className="hero">
           <div className="hero-content prose">
@@ -42,6 +42,14 @@ export default function SiteMap() {
                     <div className="card-body prose">
                       <h4 className="card-title">Prototyping Interface</h4>
                       <p>A simple interface for developing new components & inspecting internals.</p>
+                    </div>
+                  </div>
+                </Link>
+                <Link href="/explore">
+                  <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
+                    <div className="card-body prose">
+                      <h4 className="card-title">Exploration Visualization</h4>
+                      <p>An interactive d3 playground for exploring the metagraph.</p>
                     </div>
                   </div>
                 </Link>

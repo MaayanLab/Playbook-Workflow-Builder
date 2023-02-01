@@ -143,7 +143,7 @@ export default function App() {
               })
             }}>Reset</button>
           {krg.getDataNodes()
-            .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta)
+            .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta && node.meta.example !== undefined)
             .map(node => (
               <button
                 key={node.spec}

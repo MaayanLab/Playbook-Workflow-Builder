@@ -1,16 +1,27 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative } from '@/components/core/input/primitives'
+import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
 import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
+import { input_icon, set_icon } from '@/icons'
+import * as array from '@/utils/array'
 
 const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,
+    icon: [...array.ensureArray(T.icon), set_icon],
     color: T.color,
-    example: T.examples.set,
+    tags: {
+      Type: {
+        [T.label]: 1,
+      },
+      Cardinality: {
+        Set: 1,
+      },
+    },
+    ...(T.extra?.set?.meta || {}),
   })
   .codec(z.array(z.string()))
   .view(set => {
@@ -23,7 +34,7 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
           enableFocusedCell
         >
           <Column
-            name="Terms"
+            name={T.label}
             cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
           />
         </Table>
@@ -32,16 +43,30 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   })
   .build()
 
-export const GeneSet = Set_T(Gene)
+export const DiseaseSet = Set_T(Disease)
 export const DrugSet = Set_T(Drug)
+export const GeneSet = Set_T(Gene)
+export const PathwaySet = Set_T(Pathway)
+export const PhenotypeSet = Set_T(Phenotype)
+export const TissueSet = Set_T(Tissue)
 
-const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spec}]`)
+const Input_Set_T = (T: Primative, SetT: typeof GeneSet) => MetaNode.createProcess(`Input[${SetT.spec}]`)
   .meta({
-    label: `${T.meta.label} Input`,
-    description: `Start with a set of ${T.meta.label}`,
+    label: `${T.label} Set Input`,
+    description: `Start with a set of ${T.label}s`,
+    icon: [input_icon],
+    tags: {
+      Type: {
+        [T.label]: 1,
+      },
+      Cardinality: {
+        Set: 1,
+      },
+    },
+    ...(T.extra?.set?.meta || {}),
   })
   .inputs()
-  .output(T)
+  .output(SetT)
   .prompt(props => {
     const [set, setSet] = React.useState('')
     React.useEffect(() => { setSet((props.output||[]).join('\n')) }, [props.output])
@@ -56,11 +81,20 @@ const Input_Set_T = (T: typeof GeneSet) => MetaNode.createProcess(`Input[${T.spe
           value={set}
         />
         <Button large rightIcon="bring-data" onClick={evt => props.submit(set.split(/\r?\n/g))}>Submit</Button>
-        <Button large rightIcon="send-to-graph" onClick={evt => props.submit(T.meta.example)}>Example</Button>
+        {T.extra?.set?.meta?.example !== undefined ?
+          <Button
+            large
+            rightIcon="send-to-graph"
+            onClick={evt => {
+              if (T.extra?.set?.meta?.example !== undefined) {
+                props.submit(T.extra.set.meta.example)
+              }
+            }}>Example</Button>
+          : null}
       </div>
     )
   })
   .build()
 
-export const InputGeneSet = Input_Set_T(GeneSet)
-export const InputDrugSet = Input_Set_T(DrugSet)
+export const InputGeneSet = Input_Set_T(Gene, GeneSet)
+export const InputDrugSet = Input_Set_T(Drug, DrugSet)

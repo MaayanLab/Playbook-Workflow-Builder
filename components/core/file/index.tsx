@@ -26,7 +26,7 @@ export const FileInput = MetaNode.createProcess('FileInput')
     label: 'Input a File',
     description: 'A file upload',
     default: '',
-    icon: [input_icon, file_icon],
+    icon: [input_icon],
   })
   .inputs()
   .output(FileURL)

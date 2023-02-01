@@ -7,8 +7,8 @@ import dynamic from "next/dynamic"
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 
-const any = <T extends {}>(L: T[]) => L.some(el => el)
-const all = <T extends {}>(L: T[]) => !any(L)
+const any = <T extends {}>(L: T[]) => L.some(el => !!el)
+const all = <T extends {}>(L: T[]) => !L.some(el => !el)
 
 type KVCounts = { [key: string]: { [val: string]: number } }
 
@@ -94,12 +94,12 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
           {Object.keys(_group_values)
             .filter(group => Object.keys(_group_values[group]).length > 1)
             .map(group => (
-              <fieldset key={group}>
+              <fieldset key={group} className="pr-2">
                 <legend>{group}</legend>
                 <div className="ml-2 mb-4">
                   {Object.keys(_group_values[group])
                     .map(value => (
-                      <label key={value} className="bp3-control bp3-switch">
+                      <label key={value} className="bp4-control bp4-switch">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -124,13 +124,13 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
                             setFilters(_filters)
                           }}
                         />
-                        <span className="bp3-control-indicator"></span>
-                        {value} [{
+                        <span className="bp4-control-indicator"></span>
+                        {value} <span className="whitespace-nowrap">[{
                         (_group_values_filtered[group]||{})[value] === _group_values[group][value] ? (
                           _group_values[group][value]
                         ) : (
                           `${(_group_values_filtered[group]||{})[value]||0} / ${_group_values[group][value]}`
-                        )} card{_group_values[group][value] > 1 ? 's' : ''}]
+                        )} card{_group_values[group][value] > 1 ? 's' : ''}]</span>
                       </label>
                   ))}
                 </div>

@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
-import { ensureArray, MaybeArray } from '@/utils/array'
+import { ensureArray } from '@/utils/array'
+import type { Icon } from '@/icons'
 
-export default function Icon({ icon, color: color_, size: size_, title, without_svg }: { icon?: MaybeArray<{ path: string, transform?: string, title?: string }>, color?: string, size?: number, title?: string, without_svg?: boolean }) {
+export default function Icon({ icon, color: color_, size: size_, title, without_svg }: { icon?: Icon, color?: string, size?: number, title?: string, without_svg?: boolean }) {
   const color = color_ !== undefined ? color_ : 'auto'
   const size = size_ !== undefined ? size_ : 1
   const icons = ensureArray(icon)

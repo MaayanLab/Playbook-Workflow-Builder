@@ -4,12 +4,9 @@ import { ensureArray } from '@/utils/array'
 import { MetaNodeType } from '@/spec/metanode'
 import cache from '@/utils/global_cache'
 
-type ValuesOf<T> = T[keyof T]
-
 const krg = cache('krg', () => new KRG())
-
-Object.values(components)
-  .flatMap(component => ensureArray<ValuesOf<typeof components>>(component))
+// @ts-ignore
+Object.values(components).flatMap(component => ensureArray(component))
   .filter((component): component is MetaNodeType<unknown> => typeof component === 'object' && 'spec' in component)
   .forEach(metanode => krg.add(metanode))
 

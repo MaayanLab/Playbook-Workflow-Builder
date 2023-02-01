@@ -23,7 +23,7 @@ export default function Account() {
         <title>Playbook: Account</title>
       </Head>
 
-      <Header homepage="/account" />
+      <Header />
       
       <main className="flex-grow container mx-auto py-4 flex flex-row">
         {(session && session.user) ?

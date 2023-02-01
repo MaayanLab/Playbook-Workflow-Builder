@@ -2,22 +2,20 @@
  * Helpers to operate objects like lists (as can be done with python dicts)
  * We use {key, value} "Item" objects instead of tuples for improved compatibility with typescript.
  */
-type Item<T = unknown> = { key: string|number|symbol, value: T }
 
 /**
  * Python style object => list of tuples
  */
-export function items<T>(dict: Record<string|number|symbol, T>) {
-  const K = Object.keys(dict)
-  K.sort() // for stability
-  return K.map((key) => ({ key, value: dict[key] } as Item<T>))
+export function items<T extends {}>(dict: T) {
+  const K = keys(dict)
+  return K.map((key) => ({ key, value: dict[key] }))
 }
 
 /**
  * Python style list of tuples => object
  */
-export function init<T>(items: Item<T>[]) {
-  const output: Record<string|number|symbol, T> = {}
+export function init<K extends string | number | symbol, V>(items: { key: K, value: V}[]) {
+  const output = {} as Record<K, V>
   for (const { key, value } of items) {
     output[key] = value
   }
@@ -27,10 +25,10 @@ export function init<T>(items: Item<T>[]) {
 /**
  * "Stable" keys
  */
-export function keys<T>(dict: {[K in keyof T]: unknown}): Array<keyof T> {
-  const keys = Object.keys(dict)
+export function keys<T extends {}>(dict: T): Array<keyof T> {
+  const keys = Object.keys(dict) as Array<keyof T>
   keys.sort()
-  return keys as Array<keyof T>
+  return keys
 }
 
 /**

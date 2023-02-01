@@ -81,7 +81,7 @@ export class Process {
    * The outputs of all input processes
    */
   inputs__outputs = async (): Promise<Record<string | number | symbol, Data | undefined>> => {
-    return dict.init<Data | undefined>(
+    return dict.init(
       await Promise.all(
         dict.items(this.inputs).map(async ({ key, value }) =>
           ({ key, value: await value.output() })

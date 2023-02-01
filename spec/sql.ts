@@ -10,9 +10,9 @@ const identityZodCodec = <T>(z: z.ZodType<T>): Codec<T, T> => ({ encode: z.parse
 
 const ObjectCodec = <T>(field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}) => ({
   encode: (data: { [K in keyof T]: Decoded<T[K]> }) =>
-    dict.init(dict.items(data).map(({ key, value }) => ({ key, value: field_codecs[key as keyof T].encode(value as any) }))) as { [K in keyof T]: Encoded<T[K]> },
+    dict.init(dict.items(data).map(({ key, value }) => ({ key, value: field_codecs[key].encode(value) }))),
   decode: (data: { [K in keyof T]: Encoded<T[K]> }) =>
-    dict.init(dict.items(data).map(({ key, value }) => ({ key, value: field_codecs[key as keyof T].decode(value as any) }))) as { [K in keyof T]: Decoded<T[K]> },
+    dict.init(dict.items(data).map(({ key, value }) => ({ key, value: field_codecs[key].decode(value) }))),
 })
 
 export type TypedSchema<T = {}> = {

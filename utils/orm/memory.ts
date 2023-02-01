@@ -4,6 +4,7 @@ import * as array from '@/utils/array'
 import { Find, Create, Delete, Update, DbTable, FindMany, Upsert, DbDatabase } from './common'
 
 export class MemoryDatabase implements DbDatabase {
+  public objects: any
   private listeners: Record<number, (evt: string, data: unknown) => void> = {}
   private id = 0
 
@@ -37,7 +38,23 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     if (!(this.table.name in this.db.data)) this.db.data[this.table.name] = {}
   }
 
+  private ensureCreate = async () => {
+    if (this.table.js !== undefined) throw new Error('Cannot create on view')
+  }
+  private ensureFind = async () => {
+    if (this.table.js !== undefined) {
+      for (const data of (await this.table.js(this.db))) {
+        const pk = this.table.field_pk.map((key) => `${data[key]}`).join('-')
+        this.db.data[this.table.name][pk] = data
+      }
+    }
+  }
+  private ensureMutate = async () => {
+    if (this.table.js !== undefined) throw new Error('Cannot modify view')
+  }
+
   create = async (create: Create<T>)=> {
+    await this.ensureCreate()
     const data = {...create.data}
     dict.items(this.table.field_default)
       .forEach(({ key, value: field_default }) => {
@@ -51,6 +68,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     return this.db.data[this.table.name][pk] as TypedSchemaRecord<TypedSchema<T>>
   }
   findUnique = async (find: Find<T>) => {
+    await this.ensureFind()
     if (array.all(this.table.field_pk.map(key => key in find.where && find.where[key]))) {
       const pk = this.table.field_pk.map(key => `${find.where[key]}`).join('-')
       return (this.db.data[this.table.name][pk] || null) as TypedSchemaRecord<TypedSchema<T>> | null
@@ -64,17 +82,20 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     }
   }
   findMany = async (find: FindMany<T> = {}) => {
+    await this.ensureFind()
     return Object.values(this.db.data[this.table.name]).filter(record =>
       find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value)) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
   }
   update = async (update: Update<T>) => {
+    await this.ensureMutate()
     const record = await this.findUnique({ where: update.where })
     if (record === null) return null
     Object.assign(record, update.data)
     return record as TypedSchemaRecord<TypedSchema<T>>
   }
   upsert = async (upsert: Upsert<T>) => {
+    await this.ensureMutate()
     const record = upsert.update ? await this.update({ where: upsert.where, data: upsert.update }) : null
     if (record === null) {
       return await this.create({ data: upsert.create })
@@ -83,6 +104,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     }
   }
   delete = async (delete_: Delete<T>) => {
+    await this.ensureMutate()
     const record = await this.findUnique({ where: delete_.where })
     if (record === null) return null
     const pk = this.table.field_pk.map(key => `${record[key]}`).join('-')

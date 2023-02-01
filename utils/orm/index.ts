@@ -15,11 +15,11 @@ export default function create_database<T extends {[K in keyof T]: T[K]}>(option
   console.log('creating db...')
   if (options.connectionString) {
     const db = new PgDatabase(options.connectionString)
-    const objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new PgTable(value as any, db) }))) as DbTables<T>
+    const objects = db.objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new PgTable(value as any, db) }))) as DbTables<T>
     return { ...db, objects }
   } else {
     const db = new MemoryDatabase()
-    const objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new MemoryTable(value as any, db) }))) as DbTables<T>
+    const objects = db.objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new MemoryTable(value as any, db) }))) as DbTables<T>
     return { ...db, objects }
   }
 }

@@ -24,6 +24,7 @@ export type TypedSchema<T = {}> = {
   field_sql: {[K in keyof T]: string}
   schema_up: string
   schema_down: string
+  js?: (db: any) => Promise<Array<{[K in keyof T]: Decoded<T[K]>}>>
 }
 export type TypedSchemaRecord<Schema> = Schema extends TypedSchema<infer T> ? {[K in keyof T]: Decoded<T[K]>} : never
 
@@ -101,30 +102,44 @@ export class Table<T = {}> {
 
 export type ViewSchema<T = {}> = {
   name: string
+  field_pk: {[K in keyof T]: boolean}
   field_codecs: {[K in keyof T]: Codec<Decoded<T[K]>, Encoded<T[K]>>}
   sql: string
+  js: (db: any) => any
 }
 
 export class View<T extends {} = {}> {
   constructor(public t: ViewSchema<T>) {}
   static create(name: string) {
-    return new View({ name, field_codecs: {}, sql: '' })
+    return new View({ name, field_codecs: {}, field_pk: {}, sql: '', js: () => [] })
   }
-  field<S extends string, D, E = D>(name: S, type: z.ZodType<D> | Codec<D, E>) {
+  field<S extends string, D, E = D>(name: S, type: z.ZodType<D> | Codec<D, E>, opts?: { primaryKey?: boolean, default?: () => D }) {
     return new View({
       ...this.t,
+      field_pk: {...this.t.field_pk, [name]: !!(opts||{}).primaryKey },
       field_codecs: { ...this.t.field_codecs, [name]: 'parse' in type ? identityZodCodec(type): type },
     } as ViewSchema<T & { [K in S]: Codec<D, E> }>)
   }
+  /**
+   * SQL Version of the view
+   */
   sql(...sql: string[]) {
     return new View({ ...this.t, sql: sql.join('\n'), })
   }
+  /**
+   * Construct the view in-memory with JS (not particularly efficient but it's not going to be used in prod)
+   */
+  js(js: (db: any) => Promise<any>) {
+    return new View({ ...this.t, js, })
+  }
   build() {
-    const { name, field_codecs } = this.t
+    const { name, field_codecs, js } = this.t
+    const field_pk = dict.items(this.t.field_pk).filter(({ value }) => !!value).map(({ key }) => key)
+    if (field_pk.length <= 0) throw new Error(`Missing primary key on ${name}`)
     const codec = ObjectCodec(field_codecs)
     const schema_up = `create view ${JSON.stringify(this.t.name)} as ${this.t.sql}`
     const schema_down = `drop view ${JSON.stringify(this.t.name)};`
-    return { codec, name, field_codecs, schema_up, schema_down } as TypedSchema<T>
+    return { codec, name, js, field_pk, field_codecs, schema_up, schema_down } as TypedSchema<T>
   }
 }
 

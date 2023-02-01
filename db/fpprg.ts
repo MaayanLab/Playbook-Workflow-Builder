@@ -1,5 +1,6 @@
 import { SQL, Table, View } from '@/spec/sql'
 import { z } from 'zod'
+import * as dict from '@/utils/dict'
 
 const z_uuid = () => z.string()
 
@@ -110,7 +111,7 @@ export const resolved_trigger = SQL.create()
   .build()
 
 export const process_complete = View.create('process_complete')
-    .field('id', z_uuid())
+    .field('id', z_uuid(), { primaryKey: true })
     .field('type', z.string())
     .field('data', z.string().nullable())
     .field('inputs', z.record(z.string(), z_uuid()))
@@ -132,19 +133,18 @@ export const process_complete = View.create('process_complete')
       from "process"
       left join "resolved" on "process"."id" = "resolved"."id";
     `)
-    // .js(function *(db) {
-    //   for (const id in db.process) {
-    //     const process = db.process[id]
-    //     yield {
-    //       id,
-    //       type: process.type,
-    //       data: process.data,
-    //       inputs: dict.init(db.selectWhere(process_input, { id })),
-    //       resolved: id in db.resolved,
-    //       output: (db.resolved[id]||{}).data
-    //     }
-    //   }
-    // })
+    .js(async (db: any) => await Promise.all((await db.objects.process.findMany()).map(async ({ id, type, data }: any) => {
+      const resolved = await db.objects.resolved.findUnique({ where: { id } })
+      const inputs = dict.init(await db.objects.process_input.findMany({ where: { id } }))
+      return {
+        id,
+        type,
+        data,
+        inputs,
+        resolved: resolved !== null,
+        output: resolved !== null ? resolved.data : null,
+      }
+    })))
     .build()
 
 export const fpl = Table.create('fpl')

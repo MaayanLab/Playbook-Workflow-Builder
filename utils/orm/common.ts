@@ -38,6 +38,8 @@ export interface DbTable<T extends {}> {
 }
 
 export interface DbDatabase {
+  objects: any
+
   // subscriber
   listen: (cb: (evt: string, data: unknown) => void) => () => void
 

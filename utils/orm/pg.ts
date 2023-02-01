@@ -27,6 +27,7 @@ function prepare(statement_builder: (subst: (value: any) => string) => string) {
 }
 
 export class PgDatabase implements DbDatabase {
+  public objects: any
   private listeners: Record<number, (evt: string, data: unknown) => void> = {}
   private id = 0
   private subscriber: Subscriber

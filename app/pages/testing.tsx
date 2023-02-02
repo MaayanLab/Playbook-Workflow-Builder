@@ -10,10 +10,14 @@ const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: f
 
 export default function App() {
   const [data, setData] = React.useState<{
+    // the latest id to be assigned so we can add new ones to the end, always equal to highest node id
     latest: number,
+    // the current node in the current data section
     current: number,
+    // the nodes we've selected in the apply process section
     selected: Record<number, boolean>,
-    nodes: Record<number, { id: number, type: string, data: string, prompt?: string }>,
+    // all the nodes, their types, and data
+    nodes: Record<number, { id: number, type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown> } }>,
   }>({
     latest: 0,
     current: 0,
@@ -21,8 +25,12 @@ export default function App() {
     nodes: { [0]: { id: 0, type: '', data: '' } }
   })
   const [loading, setLoading] = React.useState<boolean>(false)
-  const appendData = React.useCallback((add: { type: string, data: string, prompt?: string }) => {
-    setData(data => data.nodes[data.current].data ? ({
+  /**
+   * This is a helper for adding a new node, if the current node doesn't have a type (empty)
+   *  we'll just replace that one, otherwise we create a new node, add it, select it, and make it current.
+   */
+  const appendData = React.useCallback((add: { type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown> } }) => {
+    setData(data => data.nodes[data.current].type ? ({ // our current node has data, add a new one
       ...data,
       latest: data.latest+1,
       current: data.latest+1,
@@ -34,7 +42,7 @@ export default function App() {
           ...add,
         },
       }
-     }) : ({
+     }) : ({ // our current node has no data, replace it
       ...data,
       selected: { [data.current]: true },
       nodes: {
@@ -48,17 +56,14 @@ export default function App() {
   }, [setData])
   const currentNode = data.nodes[data.current]
   const dataNode = krg.getDataNode(currentNode.type)
+  let promptNodeView
   let dataNodeView
   if (currentNode.prompt) {
-    const promptNode = krg.getPromptNode(currentNode.prompt)
-    const inputs: Record<string, unknown> = {}
-    if (Object.keys(promptNode.inputs).length > 0) {
-      const input0 = Object.keys(promptNode.inputs)[0]
-      inputs[input0] = array.ensureOne(promptNode.inputs[input0]).codec.decode(currentNode.data)
-    }
+    // if our current node has a prompt, show it
+    const promptNode = krg.getPromptNode(currentNode.prompt.type)
     const Prompt = promptNode.prompt
-    dataNodeView = <Prompt
-      inputs={inputs}
+    promptNodeView = <Prompt
+      inputs={currentNode.prompt.inputs}
       submit={(output) => {
         setData((data) => ({
           ...data,
@@ -74,7 +79,8 @@ export default function App() {
         }))
       }}
     />
-  } else if (dataNode) {
+  }
+  if (currentNode.data && dataNode) {
     try {
       dataNodeView = dataNode.view(dataNode.codec.decode(currentNode.data))
     } catch (e) {
@@ -129,10 +135,26 @@ export default function App() {
                   )}
                   onClick={async () => {
                     if ('prompt' in proc) {
+                      const inputs: Record<string, string | string[]> = {}
+                      dict.items(proc.inputs).forEach(({ key, value }) => {
+                        if (Array.isArray(value)) {
+                          inputs[key] = []
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
+                            (inputs[key] as string[]).push(data.nodes[id].data)
+                          })
+                        } else {
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
+                            inputs[key] = data.nodes[id].data
+                          })
+                        }
+                      })
                       appendData({
                         type: proc.output.spec,
                         data: '',
-                        prompt: proc.spec,
+                        prompt: {
+                          type: proc.spec,
+                          inputs,
+                        },
                       })
                     } else {
                       setLoading(() => true)
@@ -254,7 +276,8 @@ export default function App() {
             )}
           </select>
         </div>
-        <div className="m-2 flex-grow flex flex-col">
+        <div className="m-2 flex-grow flex flex-col gap-2">
+          {promptNodeView ? promptNodeView : null}
           {dataNodeView ? dataNodeView : null}
         </div>
       </div>

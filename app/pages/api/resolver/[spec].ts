@@ -62,6 +62,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(processNode.output.codec.encode(ouput))
   } catch (e) {
     console.error(e)
-    res.status(500).end((e as Error).toString())
+    res.status(500).json(JSON.stringify((e as Error).toString()))
   }
 }

@@ -14,9 +14,10 @@ const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
-export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
+export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
+  const selections = dict.init(metapath.map(item => ({ key: item.id, value: { instance: item, process: krg.getProcessNode(item.process.type) } })))
   return (
     <Catalog<MetaNodePromptType | MetaNodeResolveType & ({} | { onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
       items={[
@@ -30,53 +31,77 @@ export default function Extend({ krg, id, head }: { krg: KRG, id: string, head: 
         dict.values(item.meta.tags || {})
           .flatMap(tagGroup => dict.items(tagGroup).filter(({ value }) => value).map(({ key }) => key)),
       ].join(' ')}
-    >{item =>
-      <Card
-        key={item.spec}
-        interactive={true}
-        style={{
-          backgroundColor: item.output.meta.color || 'lightgrey',
-        }}
-        onClick={async () => {
-          if ('onClick' in item) {
-            item.onClick({ router, id, head })
+    >{item => {
+      // determine if multi-inputs are satisfiable
+      const disabled = !array.all(
+        dict.values(item.inputs).map((value) => {
+          if (Array.isArray(value)) {
+            return dict.values(selections).filter(selection => selection.process.output.spec === value[0].spec).length > 1
           } else {
-            const inputs: Record<string, { id: string }> = {}
-            if (head) {
-              for (const arg in item.inputs) {
-                inputs[arg] = { id: head.process.id }
-              }
-            }
-            const req = await fetch(`/api/db/fpl/${id}/extend`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: item.spec,
-                inputs,
-              })
-            })
-            const res = z.string().parse(await req.json())
-            router.push(`/graph/${res}`)
+            return dict.values(selections).filter(selection => selection.process.output.spec === value.spec).length >= 1
           }
-        }}
-      >
-        <div className="flex flex-row">
-          {Object.keys(item.inputs).length === 0 ? <Icon icon={start_icon} /> : null}
-          {dict.items(item.inputs).map(({ key, value }, i) => (
-            <span key={key.toString()} className="flex flex-row items-center">
-              {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
-              {Array.isArray(value) ? '[' : null}
-              <Icon icon={array.ensureOne(value).meta.icon || variable_icon} />
-              {Array.isArray(value) ? ']' : null}
-            </span>
-          ))}
-          <Icon icon={rightarrow_icon} />
-          <Icon icon={item.meta.icon || func_icon} />
-          <Icon icon={rightarrow_icon} />
-          <Icon icon={item.output.meta.icon || variable_icon} />
-        </div>
-        <h5 className="bp4-heading">{item.meta.label || ''}</h5>
-        <p className="bp4-text-small">{item.meta.description || ''}</p>
-      </Card>
-    }</Catalog>
+        })
+      )
+      return (
+        <Card
+          key={item.spec}
+          interactive={!disabled}
+          style={{
+            backgroundColor: item.output.meta.color || 'lightgrey',
+            opacity: disabled ? 0.75 : 1,
+          }}
+          onClick={async () => {
+            if (disabled) return
+            if ('onClick' in item) {
+              item.onClick({ router, id, head })
+            } else {
+              const inputs: Record<string, { id: string }> = {}
+              dict.items(item.inputs).forEach(({ key: arg, value: input }) => {
+                if (Array.isArray(input)) {
+                  dict.values(selections)
+                    .filter(selection => selection.process.output.spec === input[0].spec)
+                    .forEach((selection, i) => {
+                      inputs[`${arg}:${i}`] = { id: selection.instance.process.id }
+                    })
+                } else {
+                  dict.values(selections).forEach(selection => {
+                    if (selection.process.output.spec === input.spec) {
+                      inputs[arg] = { id: selection.instance.process.id }
+                    }
+                  })
+                }
+              })
+              const req = await fetch(`/api/db/fpl/${id}/extend`, {
+                method: 'POST',
+                body: JSON.stringify({
+                  type: item.spec,
+                  inputs,
+                })
+              })
+              const res = z.string().parse(await req.json())
+              router.push(`/graph/${res}`)
+            }
+          }}
+        >
+          <div className="flex flex-row">
+            {Object.keys(item.inputs).length === 0 ? <Icon icon={start_icon} /> : null}
+            {dict.items(item.inputs).map(({ key, value }, i) => (
+              <span key={key.toString()} className="flex flex-row items-center">
+                {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
+                {Array.isArray(value) ? '[' : null}
+                <Icon icon={array.ensureOne(value).meta.icon || variable_icon} />
+                {Array.isArray(value) ? ']' : null}
+              </span>
+            ))}
+            <Icon icon={rightarrow_icon} />
+            <Icon icon={item.meta.icon || func_icon} />
+            <Icon icon={rightarrow_icon} />
+            <Icon icon={item.output.meta.icon || variable_icon} />
+          </div>
+          <h5 className="bp4-heading">{item.meta.label || ''}</h5>
+          <p className="bp4-text-small">{item.meta.description || ''}</p>
+        </Card>
+      )
+    }}</Catalog>
   )
 }

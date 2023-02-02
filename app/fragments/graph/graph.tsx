@@ -119,7 +119,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
         {suggest ?
           <Suggest krg={krg} id={graph_id} head={head} />
           : extend ?
-            <Extend krg={krg} id={graph_id} head={head} />
+            <Extend krg={krg} id={graph_id} head={head} metapath={metapath} />
             : node_id === 'start' ?
               <Home />
               : head ?

@@ -230,20 +230,11 @@ export default function App() {
                 nodes: { [0]: { id: 0, type: '', data: '' } }
               }))
             }}>Reset</button>
-          {krg.getDataNodes()
-            .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta && node.meta.example !== undefined)
-            .map(node => (
-              <button
-                key={node.spec}
-                className="btn btn-sm btn-secondary rounded-md p-2"
-                onClick={() => {
-                  appendData({
-                    type: node.spec,
-                    data: node.codec.encode(node.meta.example),
-                  })
-                }}
-              >{node.meta.label}</button>
-            ))}
+          <button
+            className="btn btn-sm btn-secondary rounded-md p-2"
+            onClick={() => {
+              appendData({ type: '', data: '' })
+            }}>Start</button>
         </div>
       </div>
       <div className={styles.View}>

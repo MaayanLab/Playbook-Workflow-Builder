@@ -14,6 +14,7 @@ import Link from 'next/link'
 import Icon from '@/app/components/icon'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon } from '@/icons'
 import * as array from '@/utils/array'
+import * as dict from '@/utils/dict'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -119,6 +120,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
   const router = useRouter()
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
   const head = metapath ? metapath[metapath.length - 1] : undefined
+  const selections = metapath ? dict.init(metapath.map(item => ({ key: item.id, value: { instance: item, process: krg.getProcessNode(item.process.type) } }))) : {}
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const actions = processNode ? krg.getNextProcess(processNode.output.spec) : krg.getNextProcess('')
   return (
@@ -149,38 +151,61 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
         <div className="flex-grow flex-shrink bp4-card p-0">
           <div className="p-4">
             <h2 className="bp4-heading">Actions</h2>
-            {actions.map(proc =>
-              <div key={proc.spec}>
-                {Object.keys(proc.inputs).length > 0 ? (
-                  <>
-                    <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
-                    <span> =&gt; </span>
-                  </>
-                ) : null}
-                <Button
-                  large
-                  onClick={async () => {
-                    const inputs: Record<string, { id: string }> = {}
-                    if (head) {
-                      for (const i in proc.inputs) {
-                        inputs[i] = { id: head.process.id }
-                      }
-                    }
-                    const req = await fetch(`/api/db/fpl/${id || 'start'}/extend`, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        type: proc.spec,
-                        inputs,
+            {actions.map(proc => {
+              // determine if multi-inputs are satisfiable
+              const disabled = !array.all(
+                dict.values(proc.inputs).map((value) => {
+                  if (Array.isArray(value)) {
+                    return dict.values(selections).filter(selection => selection.process.output.spec === value[0].spec).length > 1
+                  } else {
+                    return dict.values(selections).filter(selection => selection.process.output.spec === value.spec).length >= 1
+                  }
+                })
+              )
+              if (disabled) return null
+              return (
+                <div key={proc.spec}>
+                  {Object.keys(proc.inputs).length > 0 ? (
+                    <>
+                      <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
+                      <span> =&gt; </span>
+                    </>
+                  ) : null}
+                  <Button
+                    large
+                    onClick={async () => {
+                      const inputs: Record<string, { id: string }> = {}
+                      dict.items(proc.inputs).forEach(({ key: arg, value: input }) => {
+                        if (Array.isArray(input)) {
+                          dict.values(selections)
+                            .filter(selection => selection.process.output.spec === input[0].spec)
+                            .forEach((selection, i) => {
+                              inputs[`${arg as string}:${i}`] = { id: selection.instance.process.id }
+                            })
+                        } else {
+                          dict.values(selections).forEach(selection => {
+                            if (selection.process.output.spec === input.spec) {
+                              inputs[arg as string] = { id: selection.instance.process.id }
+                            }
+                          })
+                        }
                       })
-                    })
-                    const res = z.string().parse(await req.json())
-                    router.push(`/report/${res}`, undefined, { shallow: true, scroll: false })
-                  }}
-                >{proc.meta.label}</Button>
-                <span> =&gt; </span>
-                <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
-              </div>
-            )}
+                      const req = await fetch(`/api/db/fpl/${id || 'start'}/extend`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          type: proc.spec,
+                          inputs,
+                        })
+                      })
+                      const res = z.string().parse(await req.json())
+                      router.push(`/report/${res}`, undefined, { shallow: true, scroll: false })
+                    }}
+                  >{proc.meta.label}</Button>
+                  <span> =&gt; </span>
+                  <span className="bg-secondary rounded-full p-3">{proc.output.meta.label}</span>
+                </div>
+              )
+            })}
           </div>
           <div className="border-t-secondary border-t-2 mt-2">
             <Link href={`/graph${id ? `/${id}/node/${id}/extend` : `/start/extend`}`}>

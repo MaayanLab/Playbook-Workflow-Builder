@@ -9,42 +9,74 @@ import * as array from '@/utils/array'
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
-  const [prev, setPrev] = React.useState<{ type: string, data: string }[]>([])
+  const [data, setData] = React.useState<{
+    latest: number,
+    current: number,
+    selected: Record<number, boolean>,
+    nodes: Record<number, { id: number, type: string, data: string, prompt?: string }>,
+  }>({
+    latest: 0,
+    current: 0,
+    selected: { [0]: true },
+    nodes: { [0]: { id: 0, type: '', data: '' } }
+  })
   const [loading, setLoading] = React.useState<boolean>(false)
-  const [current, setCurrent_] = React.useState({ type: '', data: '' })
-  const setCurrent = React.useCallback((current: { type?: string, data?: string }) => {
-    setCurrent_(current_ => {
-      setPrev(prev => [...prev, current_])
-      return {
-        type: current.type === undefined ? current_.type : current.type,
-        data: current.data === undefined? current_.data : current.data,
+  const appendData = React.useCallback((add: { type: string, data: string, prompt?: string }) => {
+    setData(data => data.nodes[data.current].data ? ({
+      ...data,
+      latest: data.latest+1,
+      current: data.latest+1,
+      selected: { [data.latest+1]: true },
+      nodes: {
+        ...data.nodes,
+        [data.latest+1]: {
+          id: data.latest+1,
+          ...add,
+        },
       }
-    })
-  }, [setPrev, setCurrent_])
-  const [prompt, setPrompt] = React.useState<string|undefined>(undefined)
-  const dataNode = krg.getDataNode(current.type)
+     }) : ({
+      ...data,
+      selected: { [data.current]: true },
+      nodes: {
+        ...data.nodes,
+        [data.current]: {
+          ...data.nodes[data.current],
+          ...add,
+        },
+      },
+    }))
+  }, [setData])
+  const currentNode = data.nodes[data.current]
+  const dataNode = krg.getDataNode(currentNode.type)
   let dataNodeView
-  if (prompt) {
-    const promptNode = krg.getPromptNode(prompt)
+  if (currentNode.prompt) {
+    const promptNode = krg.getPromptNode(currentNode.prompt)
     const inputs: Record<string, unknown> = {}
     if (Object.keys(promptNode.inputs).length > 0) {
       const input0 = Object.keys(promptNode.inputs)[0]
-      inputs[input0] = array.ensureOne(promptNode.inputs[input0]).codec.decode(current.data)
+      inputs[input0] = array.ensureOne(promptNode.inputs[input0]).codec.decode(currentNode.data)
     }
     const Prompt = promptNode.prompt
     dataNodeView = <Prompt
       inputs={inputs}
       submit={(output) => {
-        setCurrent({
-          type: promptNode.output.spec,
-          data: promptNode.output.codec.encode(output)
-        })
-        setPrompt(undefined)
+        setData((data) => ({
+          ...data,
+          nodes: {
+            ...data.nodes,
+            [data.current]: {
+              ...data.nodes[data.current],
+              id: data.current,
+              type: promptNode.output.spec,
+              data: promptNode.output.codec.encode(output)
+            },
+          },
+        }))
       }}
     />
   } else if (dataNode) {
     try {
-      dataNodeView = dataNode.view(dataNode.codec.decode(current.data))
+      dataNodeView = dataNode.view(dataNode.codec.decode(currentNode.data))
     } catch (e) {
       dataNodeView = <div>Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
     }
@@ -56,49 +88,84 @@ export default function App() {
         <div className="prose mb-2">
           <h2>Apply Process</h2>
         </div>
-        <div className="flex flex-col gap-1">
-          {krg.getNextProcess(current.type).map(proc =>
-            <div key={proc.spec} className="whitespace-nowrap">
-              {Object.keys(proc.inputs).length > 0 ? (
-                <>
-                  <span className="btn btn-sm btn-secondary rounded-full">{dict.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
-                  <span> =&gt; </span>
-                </>
-              ) : null}
+        <div className="flex flex-row mt-2 gap-1">
+          <div className="flex flex-col-reverse justify-end gap-1">
+            {dict.values(data.nodes).filter(item => item.type).map((item) => (
               <button
-                className={[
-                  Object.values(proc.inputs)
-                    .some((i) => array.ensureOne(i).spec === current.type) ? 'font-bold' : '',
-                  'btn btn-sm btn-secondary rounded-sm',
-                ].join(' ')}
-                onClick={async () => {
-                  if ('prompt' in proc) {
-                    setPrompt(proc.spec)
-                  } else {
-                    setLoading(() => true)
-                    const formData = new FormData()
-                    for (const i in proc.inputs) {
-                      formData.append(i, current.data)
-                      // formData[i] = proc.inputs[i].codec.encode(data)
-                    }
-                    const req = await fetch(`/api/resolver/${proc.spec}`, {
-                      method: 'POST',
-                      body: formData,
-                    })
-                    const res = await req.json()
-                    setPrompt(undefined)
-                    setCurrent({
-                      type: proc.output.spec,
-                      data: res
-                    })
-                    setLoading(() => false)
-                  }
+                key={item.id}
+                className={`btn btn-sm ${data.selected[item.id] ? 'btn-primary' : 'btn-secondary'} rounded-md px-2 whitespace-nowrap`}
+                onClick={evt => {
+                  setData(({ selected: { [item.id]: currentlySelected, ...selected }, ...data }) => ({
+                    ...data,
+                    current: item.id,
+                    selected: {
+                      ...(evt.shiftKey ? selected : {}),
+                      ...(evt.shiftKey && currentlySelected ? {} : { [item.id]: true }),
+                    },
+                  }))
                 }}
-              >{proc.meta.label}</button>
-              <span> =&gt; </span>
-              <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
-            </div>
-          )}
+              >{item.type}[{item.id}]</button>
+            ))}
+          </div>
+          <div className="flex flex-col gap-1">
+            {krg.getNextProcess(currentNode.type).map(proc =>
+              <div key={proc.spec} className="whitespace-nowrap">
+                {Object.keys(proc.inputs).length > 0 ? <span> =&gt; </span> : null}
+                <button
+                  className={[
+                    Object.values(proc.inputs)
+                      .some((i) => array.ensureOne(i).spec === currentNode.type) ? 'font-bold' : '',
+                    'btn btn-sm btn-secondary rounded-sm',
+                  ].join(' ')}
+                  disabled={!array.all(
+                    // all inputs should be satisfiable
+                    dict.values(proc.inputs).map((value) => {
+                      if (Array.isArray(value)) {
+                        return dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).length > 1
+                      } else {
+                        return dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).length == 1
+                      }
+                    })
+                  )}
+                  onClick={async () => {
+                    if ('prompt' in proc) {
+                      appendData({
+                        type: proc.output.spec,
+                        data: '',
+                        prompt: proc.spec,
+                      })
+                    } else {
+                      setLoading(() => true)
+                      const formData = new FormData()
+                      dict.items(proc.inputs).forEach(({ key, value }) => {
+                        if (Array.isArray(value)) {
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
+                            formData.append(key, data.nodes[id].data)
+                          })
+                        } else {
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
+                            formData.append(key, data.nodes[id].data)
+                          })
+                        }
+                      })
+                      const req = await fetch(`/api/resolver/${proc.spec}`, {
+                        method: 'POST',
+                        body: formData,
+                      })
+                      const res = await req.json()
+                      appendData({
+                        type: proc.output.spec,
+                        data: res,
+                      })
+                      setLoading(() => false)
+                    }
+                  }}
+                >{proc.meta.label}</button>
+                <span> =&gt; </span>
+                <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className={styles.Data}>
@@ -111,8 +178,18 @@ export default function App() {
           overflow: 'auto',
         }}>
           <JsonEditor
-            value={current.data}
-            onValueChange={value => setCurrent({ data: value })}
+            value={currentNode.data}
+            onValueChange={value => {
+              setData(data => ({ ...data,
+                nodes: {
+                  ...data.nodes,
+                  [data.current]: {
+                    ...data.nodes[data.current],
+                    data: value,
+                  },
+                },
+              }))
+            }}
             style={{
               fontFamily: 'monospace',
               fontSize: 12,
@@ -124,24 +201,12 @@ export default function App() {
           <button
             className="btn btn-sm btn-secondary rounded-md p-2"
             onClick={() => {
-              setPrompt(undefined)
-              setPrev(prev => {
-                const _prev = [...prev]
-                setCurrent_(_prev.pop() || {
-                  type: '',
-                  data: ''
-                })
-                return _prev
-            })
-            }}>Previous</button>
-          <button
-            className="btn btn-sm btn-secondary rounded-md p-2"
-            onClick={() => {
-              setPrompt(undefined)
-              setCurrent({
-                type: '',
-                data: ''
-              })
+              setData(_ => ({
+                latest: 0,
+                current: 0,
+                selected: { [0]: true },
+                nodes: { [0]: { id: 0, type: '', data: '' } }
+              }))
             }}>Reset</button>
           {krg.getDataNodes()
             .filter((node): node is MetaNodeDataType & { meta: { example: unknown } } => 'example' in node.meta && node.meta.example !== undefined)
@@ -150,8 +215,7 @@ export default function App() {
                 key={node.spec}
                 className="btn btn-sm btn-secondary rounded-md p-2"
                 onClick={() => {
-                  setPrompt(undefined)
-                  setCurrent({
+                  appendData({
                     type: node.spec,
                     data: node.codec.encode(node.meta.example),
                   })
@@ -170,10 +234,18 @@ export default function App() {
           </label>
           <select
             className="select select-bordered"
-            value={current.type}
+            value={currentNode.type}
             onChange={evt => {
-              setPrompt(undefined)
-              setCurrent(({ type: evt.target.value }))
+              setData(data => ({ ...data,
+                nodes: {
+                  ...data.nodes,
+                  [data.current]: {
+                    ...data.nodes[data.current],
+                    type: evt.target.value,
+                    prompt: undefined,
+                  },
+                },
+              }))
             }}
           >
             <option disabled selected></option>

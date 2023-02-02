@@ -120,7 +120,7 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
   const router = useRouter()
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
   const head = metapath ? metapath[metapath.length - 1] : undefined
-  const selections = metapath ? dict.init(metapath.map(item => ({ key: item.id, value: { instance: item, process: krg.getProcessNode(item.process.type) } }))) : {}
+  const selections = metapath ? dict.init(metapath.map(item => ({ key: item.process.id, value: { process: item.process, processNode: krg.getProcessNode(item.process.type) } }))) : {}
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const actions = processNode ? krg.getNextProcess(processNode.output.spec) : krg.getNextProcess('')
   return (
@@ -156,9 +156,9 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
               const disabled = !array.all(
                 dict.values(proc.inputs).map((value) => {
                   if (Array.isArray(value)) {
-                    return dict.values(selections).filter(selection => selection.process.output.spec === value[0].spec).length > 1
+                    return dict.values(selections).filter(selection => selection.processNode.output.spec === value[0].spec).length > 1
                   } else {
-                    return dict.values(selections).filter(selection => selection.process.output.spec === value.spec).length >= 1
+                    return dict.values(selections).filter(selection => selection.processNode.output.spec === value.spec).length >= 1
                   }
                 })
               )
@@ -178,14 +178,14 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
                       dict.items(proc.inputs).forEach(({ key: arg, value: input }) => {
                         if (Array.isArray(input)) {
                           dict.values(selections)
-                            .filter(selection => selection.process.output.spec === input[0].spec)
+                            .filter(selection => selection.processNode.output.spec === input[0].spec)
                             .forEach((selection, i) => {
-                              inputs[`${arg as string}:${i}`] = { id: selection.instance.process.id }
+                              inputs[`${arg as string}:${i}`] = { id: selection.process.id }
                             })
                         } else {
                           dict.values(selections).forEach(selection => {
-                            if (selection.process.output.spec === input.spec) {
-                              inputs[arg as string] = { id: selection.instance.process.id }
+                            if (selection.processNode.output.spec === input.spec) {
+                              inputs[arg as string] = { id: selection.process.id }
                             }
                           })
                         }

@@ -17,7 +17,7 @@ const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  const selections = dict.init(metapath.map(item => ({ key: item.id, value: { instance: item, process: krg.getProcessNode(item.process.type) } })))
+  const selections = dict.init(metapath.map(item => ({ key: item.process.id, value: { process: item.process, processNode: krg.getProcessNode(item.process.type) } })))
   return (
     <Catalog<MetaNodePromptType | MetaNodeResolveType & ({} | { onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
       items={[
@@ -36,9 +36,9 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
       const disabled = !array.all(
         dict.values(item.inputs).map((value) => {
           if (Array.isArray(value)) {
-            return dict.values(selections).filter(selection => selection.process.output.spec === value[0].spec).length > 1
+            return dict.values(selections).filter(selection => selection.processNode.output.spec === value[0].spec).length > 1
           } else {
-            return dict.values(selections).filter(selection => selection.process.output.spec === value.spec).length >= 1
+            return dict.values(selections).filter(selection => selection.processNode.output.spec === value.spec).length >= 1
           }
         })
       )
@@ -59,16 +59,16 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
               dict.items(item.inputs).forEach(({ key: arg, value: input }) => {
                 if (Array.isArray(input)) {
                   dict.values(selections)
-                    .filter(selection => selection.process.output.spec === input[0].spec)
+                    .filter(selection => selection.processNode.output.spec === input[0].spec)
                     .forEach((selection, i) => {
-                      inputs[`${arg}:${i}`] = { id: selection.instance.process.id }
+                      inputs[`${arg}:${i}`] = { id: selection.process.id }
                     })
                 } else {
-                  dict.values(selections).forEach(selection => {
-                    if (selection.process.output.spec === input.spec) {
-                      inputs[arg] = { id: selection.instance.process.id }
-                    }
-                  })
+                  dict.values(selections)
+                    .filter(selection => selection.processNode.output.spec === input.spec)
+                    .forEach(selection => {
+                      inputs[arg] = { id: selection.process.id }
+                    })
                 }
               })
               const req = await fetch(`/api/db/fpl/${id}/extend`, {

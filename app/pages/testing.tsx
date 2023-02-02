@@ -163,7 +163,7 @@ export default function App() {
                     } catch (e) {
                       appendData({
                         type: 'Error',
-                        data: (e as Error).toString(),
+                        data: JSON.stringify((e as Error).toString()),
                       })
                     } finally {
                       setLoading(() => false)

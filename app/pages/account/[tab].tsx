@@ -17,7 +17,7 @@ const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 const fetcher = (endpoint: string) => fetch(endpoint).then(res => res.json())
-const updateUserProfile = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
+const poster = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
 
 export default function Account() {
   const { data: session } = useSessionWithId({ required: true })
@@ -77,7 +77,7 @@ function AccountUI({ session }: { session: SessionWithId }) {
 
 function AccountUIProfile({ session }: { session: SessionWithId }) {
   const { data: userProfile, isLoading } = useSWR<{ name: string, affiliation: string }>(`/api/db/user/profile`, fetcher)
-  const { trigger: setUserProfile, isMutating } = useSWRMutation('/api/db/user/profile', updateUserProfile)
+  const { trigger: setUserProfile, isMutating } = useSWRMutation('/api/db/user/profile', poster)
   const [userProfileDraft, setUserProfileDraft] = React.useState({
     name: '',
     affiliation: '',
@@ -148,9 +148,11 @@ function AccountUISettings({ session }: { session: SessionWithId }) {
 
 function AccountUISettingsDeleteAccount({ session }: { session: SessionWithId }) {
   const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
+  const { trigger: deleteUser, isMutating } = useSWRMutation('/api/db/user/delete', poster)
   return (
     <>
       <h3 className="bp4-heading text-red-600">Delete Account</h3>
+      <progress className={`progress w-full ${isMutating ? '' : 'hidden'}`}></progress>
       <Button
         intent="danger"
         onClick={() => setDeletionConfirmation(true)}
@@ -165,7 +167,8 @@ function AccountUISettingsDeleteAccount({ session }: { session: SessionWithId })
         canOutsideClickCancel
         onCancel={() => {setDeletionConfirmation(false)}}
         onConfirm={() => {
-          // TODO: actually delete account
+          deleteUser(undefined, { revalidate: false })
+            .then(() => Auth.signOut({ callbackUrl: '/' }))
         }}
       >
         Are you sure you want to delete your account?

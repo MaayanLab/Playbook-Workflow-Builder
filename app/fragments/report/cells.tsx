@@ -9,10 +9,14 @@ import { Metapath } from './metapath'
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Story = dynamic(() => import('@/app/fragments/report/story'))
+const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const [metadata, setMetadata] = React.useState({ title: '', description: '', public: false })
+  const head = metapath ? metapath[metapath.length - 1] : undefined
+  const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
@@ -20,12 +24,44 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} />
             <h2 className="bp4-heading">
-              Playbook
+              <EditableText
+                placeholder="Playbook title"
+                value={metadata.title}
+                onChange={value => {setMetadata(metadata => ({ ...metadata, title: value }))}}
+              />
             </h2>
           </div>
-          <div className="prose">
+          <p className="prose w-full">
             {(metapath||[]).map(head => <Story key={head.id} krg={krg} head={head} />)}
-          </div>
+            <EditableText
+              multiline
+              minLines={2}
+              maxLines={5}
+              placeholder={
+                processNode ?
+                  metapath ?
+                    metapath.length > 1 ?
+                      `A playbook which produces ${processNode.output.meta.label} given a ${krg.getProcessNode(metapath[0].process.type).output.meta.label}.`
+                      : `A playbook which takes a ${krg.getProcessNode(metapath[0].process.type).output.meta.label}.`
+                    : `A playbook`
+                  : `A playbook`
+              }
+              value={metadata.description}
+              onChange={value => {setMetadata(metadata => ({ ...metadata, description: value }))}}
+            />
+          </p>
+          {metadata.title || metadata.description ? (
+            <div className="flex flex-row gap-2 items-center">
+              <button className="bp4-button bp4-intent-success">Save</button>
+              <label className="bp4-control bp4-switch mb-0">
+                <input
+                  type="checkbox"
+                />
+                <span className="bp4-control-indicator"></span>
+                Make workflow public
+              </label>
+            </div>
+          ) : null}
         </div>
         {error ? <div className="alert alert-error">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">

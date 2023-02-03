@@ -12,7 +12,7 @@ import type KRG from '@/core/KRG'
 import Head from 'next/head'
 import Link from 'next/link'
 import Icon from '@/app/components/icon'
-import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon } from '@/icons'
+import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon, start_icon, func_icon, variable_icon } from '@/icons'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 
@@ -126,10 +126,15 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
-        <div className="p-4">
-          <h2 className="bp4-heading">Playbook</h2>
-          {error ? <div className="alert alert-error">{error}</div> : null}
+        <div className="p-3">
+          <div className="flex flex-row gap-2">
+            <Icon icon={start_icon} />
+            <h2 className="bp4-heading">
+              Playbook
+            </h2>
+          </div>
         </div>
+        {error ? <div className="alert alert-error">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
           <Link href={`/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp4-button bp4-minimal">
@@ -232,8 +237,11 @@ function Cell({ krg, index, id, head }: { krg: KRG, index: number, id?: string, 
   return (
     <>
       <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
-        <div className="p-4">
-          <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
+        <div className="p-3">
+          <div className="flex flex-row gap-2">
+            <Icon icon={processNode.meta.icon || func_icon} />
+            <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
+          </div>
           {Prompt ? <Prompt
             inputs={inputs}
             output={output}
@@ -265,8 +273,11 @@ function Cell({ krg, index, id, head }: { krg: KRG, index: number, id?: string, 
         </div>
       </div>
       <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
-        <div className="p-4">
-          {outputNode ? <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2> : <div>Loading...</div>}
+        <div className="p-3">
+          <div className="flex flex-row gap-2">
+            <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} />
+            <h2 className="bp4-heading">{(outputNode && (outputNode.meta.label || processNode.spec)) || "Loading"}</h2>
+          </div>
           {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
         </div>
         <div className="border-t-secondary border-t-2 mt-2">

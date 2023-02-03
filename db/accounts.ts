@@ -11,6 +11,7 @@ export const user = Table.create('user')
   .field('emailVerified', 'timestamp', '', z.date().nullable())
   .field('image', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('affiliation', 'varchar', '', nullable_undefined_codec(z.string()))
+  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 
 export const user_email_index = SQL.create()

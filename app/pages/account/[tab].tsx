@@ -1,22 +1,26 @@
-import React from 'react'
-import Head from 'next/head'
-import * as Auth from 'next-auth/react'
-import * as db from '@/db/accounts'
-import { Decoded } from '@/spec/codec'
-import dynamic from 'next/dynamic'
-import { Session } from 'next-auth'
+import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import CAVATICAAPIKeyGuide from '@/app/public/CAVATICA-guide-apikey.png'
+import CAVATICAProjectGuide from '@/app/public/CAVATICA-guide-project.png'
 import { Alert, ControlGroup, FormGroup, Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
-import { useRouter } from 'next/router'
+import * as Auth from 'next-auth/react'
+import dynamic from 'next/dynamic'
+import Head from 'next/head'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
+import React from 'react'
+import useSWR from 'swr'
+import useSWRMutation from 'swr/mutation'
+import { SessionWithId } from '../api/auth/[...nextauth]'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
-type SessionWithUser = Session & { user: NonNullable<Decoded<typeof db.user['codec']>> }
+const fetcher = (endpoint: string) => fetch(endpoint).then(res => res.json())
+const updateUserProfile = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
 
 export default function Account() {
-  const { data: session } = Auth.useSession()
+  const { data: session } = useSessionWithId({ required: true })
   return (
     <div className="flex flex-col min-w-screen min-h-screen">
       <Head>
@@ -27,8 +31,8 @@ export default function Account() {
       
       <main className="flex-grow container mx-auto py-4 flex flex-row">
         {(session && session.user) ?
-          <AccountUI session={session as SessionWithUser} />
-          : <AccountSignIn />}
+          <AccountUI session={session} />
+          : null}
       </main>
 
       <Footer />
@@ -36,18 +40,7 @@ export default function Account() {
   )
 }
 
-function AccountSignIn() {
-  return (
-    <div className="flex-grow flex items-center justify-center">
-      <div className="text-center">
-        <p className="mb-2">You must sign in to view this page.</p>
-        <Button onClick={() => Auth.signIn()}>Sign in</Button>
-      </div>
-    </div>
-  )
-}
-
-function AccountUI({ session }: { session: SessionWithUser }) {
+function AccountUI({ session }: { session: SessionWithId }) {
   const router = useRouter()
   const tab = (router.query.tab as string) || 'profile'
   return (
@@ -82,12 +75,25 @@ function AccountUI({ session }: { session: SessionWithUser }) {
   )
 }
 
-function AccountUIProfile({ session }: { session: SessionWithUser }) {
-  const [userDraft, setUserDraft] = React.useState(session.user)
+function AccountUIProfile({ session }: { session: SessionWithId }) {
+  const { data: userProfile, isLoading } = useSWR<{ name: string, affiliation: string }>(`/api/db/user/profile`, fetcher)
+  const { trigger: setUserProfile, isMutating } = useSWRMutation('/api/db/user/profile', updateUserProfile)
+  const [userProfileDraft, setUserProfileDraft] = React.useState({
+    name: '',
+    affiliation: '',
+  })
+  React.useEffect(() => {
+    if (userProfile) {
+      setUserProfileDraft({ name: userProfile.name || '', affiliation: userProfile.affiliation || '' })
+    }
+  }, [userProfile])
   return (
     <>
       <h3 className="bp4-heading">Profile Settings</h3>
-      <div>
+      <form onSubmit={async (evt) => {
+        evt.preventDefault()
+        setUserProfile(userProfileDraft, { revalidate: false })
+      }} method="POST">
         <FormGroup
           label="Authorship Information"
           helperText="Let us know who you are and how to contact you"
@@ -97,9 +103,9 @@ function AccountUIProfile({ session }: { session: SessionWithUser }) {
               <InputGroup
                 type="text"
                 placeholder="Name"
-                value={userDraft.name || ''}
+                value={userProfileDraft.name || ''}
                 onChange={evt => {
-                  setUserDraft(({ ...user }) => ({ ...user, name: evt.target.value }))
+                  setUserProfileDraft(({ ...user }) => ({ ...user, name: evt.target.value }))
                 }}
                 leftIcon="person"
               />
@@ -107,36 +113,32 @@ function AccountUIProfile({ session }: { session: SessionWithUser }) {
                 type="email"
                 placeholder="Email"
                 readOnly
-                value={userDraft.email || ''}
-                onChange={evt => {
-                  setUserDraft(({ ...user }) => ({ ...user, email: evt.target.value }))
-                }}
+                value={session.user.email || ''}
                 leftIcon="envelope"
               />
             </ControlGroup>
             <InputGroup
               type="text"
               placeholder="Affiliation"
-              value={userDraft.affiliation || ''}
+              value={userProfileDraft.affiliation || ''}
               onChange={evt => {
-                setUserDraft(({ ...user }) => ({ ...user, org: evt.target.value }))
+                setUserProfileDraft(({ ...user }) => ({ ...user, affiliation: evt.target.value }))
               }}
               leftIcon="office"
             />
           </ControlGroup>
         </FormGroup>
         <Button
+          type="submit"
           intent="success"
-          onClick={() => {
-            // TODO: Update profile
-          }}
         >Update Profile</Button>
-      </div>
+        <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
+      </form>
     </>
   )
 }
 
-function AccountUISettings({ session }: { session: SessionWithUser }) {
+function AccountUISettings({ session }: { session: SessionWithId }) {
   return (
     <>
       <div className="mb-2"><AccountUISettingsDeleteAccount session={session} /></div>
@@ -144,7 +146,7 @@ function AccountUISettings({ session }: { session: SessionWithUser }) {
   )
 }
 
-function AccountUISettingsDeleteAccount({ session }: { session: SessionWithUser }) {
+function AccountUISettingsDeleteAccount({ session }: { session: SessionWithId }) {
   const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
   return (
     <>
@@ -200,9 +202,6 @@ function AccountUIBioCompute() {
     </>
   )
 }
-
-import CAVATICAProjectGuide from '@/app/public/CAVATICA-guide-project.png'
-import CAVATICAAPIKeyGuide from '@/app/public/CAVATICA-guide-apikey.png'
 
 function AccountUICAVATICA() {
   return (

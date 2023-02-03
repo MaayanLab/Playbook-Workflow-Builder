@@ -15,6 +15,7 @@ import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import type { Metapath } from '@/app/fragments/graph/types'
 import { MetaNode } from '@/spec/metanode'
+import { UserIdentity } from '@/app/fragments/graph/useridentity'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -82,7 +83,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {
-          return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+          return <div>This was suggested by <UserIdentity user={suggestion.user} />.</div>
         })
         .build()
       krg.add(ProcessNode)

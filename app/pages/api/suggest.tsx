@@ -4,14 +4,13 @@ import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
+import { UserIdentity } from '@/app/fragments/graph/useridentity'
 
 const BodyType = z.object({
   name: z.string(),
   inputs: z.string(),
   output: z.string(),
-  author_name: z.string(),
-  author_email: z.string(),
-  author_org: z.string(),
+  user: z.string(),
   description: z.string(),
 })
 
@@ -47,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {
-          return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+          return <div>This was suggested by <UserIdentity user={suggestion.user} />.</div>
         })
         .build()
       krg.add(ProcessNode)

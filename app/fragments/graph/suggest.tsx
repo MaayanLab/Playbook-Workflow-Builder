@@ -7,6 +7,9 @@ import { Intent } from '@blueprintjs/core'
 import dynamic from 'next/dynamic'
 import * as dict from '@/utils/dict'
 import type KRG from '@/core/KRG'
+import { z_uuid } from '@/utils/zod'
+import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { UserIdentity } from '@/app/fragments/graph/useridentity'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -25,9 +28,7 @@ const Suggestion = MetaNode.createData('Suggestion')
     name: z.string(),
     inputs: z.string(),
     output: z.string(),
-    author_name: z.string(),
-    author_email: z.string(),
-    author_org: z.string(),
+    user: z_uuid(),
     description: z.string()
   }))
   .view(suggestion => (
@@ -37,14 +38,14 @@ const Suggestion = MetaNode.createData('Suggestion')
         <p className="bp4-text-large">{suggestion.description}</p>
         <div className="bp4-callout">
           <h5 className="bp4-heading">Author</h5>
-          {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})
+          <UserIdentity user={suggestion.user} />
         </div>
         {/* <br />
         <h5 className="bp4-heading"><i>Comments</i></h5>
         <div className="bp4-callout">
           <p className="bp4-text-large">My comment is important</p>
           <h5 className="bp4-heading">Author</h5>
-          {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})
+          <UserIdentity user={suggestion.user} />
         </div> */}
       </div>
     </div>
@@ -100,15 +101,14 @@ export function SuggestionEdges(input?: MetaNodeDataType) {
 
 export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
+  const { data: session } = useSessionWithId({ required: true })
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined
   const [suggestion, setSuggestion] = React.useState({
     name: '',
     inputs: input ? input.spec as string : '',
     output: '',
-    author_name: '',
-    author_email: '',
-    author_org: '',
+    user: session?.user?.id,
     description: '',
   })
   return (
@@ -185,43 +185,6 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
         : null}
       </ControlGroup>
       <FormGroup
-        label="Authorship Information"
-        labelInfo="(required)"
-        helperText="Let us know who you are and how to contact you"
-      >
-        <ControlGroup fill vertical>
-          <ControlGroup fill>
-            <InputGroup
-              type="text"
-              placeholder="Name"
-              value={suggestion.author_name}
-              onChange={evt => {
-                setSuggestion(({ ...suggestion }) => ({ ...suggestion, author_name: evt.target.value }))
-              }}
-              leftIcon="person"
-            />
-            <InputGroup
-              type="email"
-              placeholder="Email"
-              value={suggestion.author_email}
-              onChange={evt => {
-                setSuggestion(({ ...suggestion }) => ({ ...suggestion, author_email: evt.target.value }))
-              }}
-              leftIcon="envelope"
-            />
-          </ControlGroup>
-          <InputGroup
-            type="text"
-            placeholder="Affiliation"
-            value={suggestion.author_org}
-            onChange={evt => {
-              setSuggestion(({ ...suggestion }) => ({ ...suggestion, author_org: evt.target.value }))
-            }}
-            leftIcon="office"
-          />
-        </ControlGroup>
-      </FormGroup>
-      <FormGroup
         label="Description"
         labelInfo="(required)"
         helperText={input ? `A description about what this algorithm or data transformation does with the ${input.meta.label || input.spec} with relevant links` : `A description of the core data type`}
@@ -242,9 +205,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
         text="Submit"
         disabled={
           !suggestion.name
-          || !suggestion.author_name
-          || !suggestion.author_email
-          || !suggestion.author_org
+          || !suggestion.user
           || !suggestion.description
           || (!!suggestion.inputs && !suggestion.output)
         }
@@ -283,7 +244,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
             ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
             .output(OutputNode)
             .prompt((props) => {
-              return <div>This was suggested by {suggestion_final.author_name} &lt;{suggestion_final.author_email}&gt; ({suggestion_final.author_org})</div>
+              return <div>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</div>
             })
             .build()
           krg.add(ProcessNode)

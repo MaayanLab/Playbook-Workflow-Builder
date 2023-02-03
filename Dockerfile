@@ -24,6 +24,7 @@ FROM node:latest as prepare_build
 WORKDIR /app
 COPY --from=prepare_npm_i /app /app
 COPY . /app
+ENV LANDING_PAGE=/graph/extend
 RUN npm run build
 
 FROM node:latest as app

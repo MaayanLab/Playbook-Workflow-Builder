@@ -5,7 +5,7 @@ import * as dict from '@/utils/dict'
 import { Create, DbDatabase, DbTable, Delete, Find, FindMany, Update, Upsert, Where } from './common'
 import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
-import * as db from '@/db/fpprg'
+import * as db from '@/db/orm'
 
 /**
  * Easy prepared statement building.
@@ -149,7 +149,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
         set ${set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`).join(', ')}
         where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning tbl.*
-      ) select one_and_only(*) from rows;
+      ), assertion as (
+        select assert_is_one(count(*))
+        from rows
+      ) select * from rows;
     `)
     if (results.rowCount === 0) return null
     else if (results.rowCount > 1) throw new Error('Unexpected output')
@@ -200,7 +203,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
         delete from ${JSON.stringify(this.table.name)}
         where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(delete_.where[key] as Decoded<T[keyof T]>))}`).join(' and ')};
         returning *
-      ) select one_and_only(*) from rows;
+      ), assertion as (
+        select assert_is_one(count(*))
+        from rows
+      ) select * from rows;
     `)
     if (results.rowCount === 0) return null
     else if (results.rowCount > 1) throw new Error('Unexpected output')

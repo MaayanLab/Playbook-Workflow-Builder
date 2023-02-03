@@ -3,59 +3,6 @@ import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { z_uuid } from '@/utils/zod'
 
-export const pg_uuids = SQL.create()
-  .up(`create extension if not exists "uuid-ossp";`)
-  .down(`drop extension "uuid-ossp";`)
-  .build()
-
-export const notify_insertion_trigger = SQL.create()
-  .up(`
-    create or replace function notify_trigger() returns trigger as $$
-    declare
-      rec record;
-    begin
-      case TG_OP
-        when 'INSERT', 'UPDATE' then rec := NEW;
-        when 'DELETE' then rec := OLD;
-        else raise exception 'Unhandled TG_OP: "%"', TG_OP;
-      end case;
-
-      perform pg_notify(
-        'on_insert',
-        json_build_object(
-          'timestamp', CURRENT_TIMESTAMP,
-          'operation', TG_OP,
-          'schema', TG_TABLE_SCHEMA,
-          'table', TG_TABLE_NAME,
-          'label', array_to_json(TG_ARGV),
-          'id', rec.id
-        )::text
-      );
-
-      return rec;
-    end; $$ language plpgsql;
-  `)
-  .down(`
-    drop function notify_trigger() cascade;
-  `)
-  .build()
-
-const z_notify_insertion_trigger_payload = z.object({
-  'timestamp': z.string(),
-  'operation': z.string(),
-  'schema': z.string(),
-  'table': z.string(),
-  'label': z.array(z.string()),
-  'id': z.string(),
-})
-
-export const notify_insertion_trigger_payload = {
-  codec: {
-    encode: z_notify_insertion_trigger_payload.parse,
-    decode: z_notify_insertion_trigger_payload.parse,
-  }
-}
-
 export const data = Table.create('data')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())

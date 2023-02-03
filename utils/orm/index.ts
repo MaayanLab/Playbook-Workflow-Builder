@@ -9,17 +9,19 @@ export type DbOptions<T extends {}> = {
   schema: {[K in keyof T]: TypedSchema<T[K]>},
 }
 
-export type Db<T extends {}> = DbDatabase & { objects: DbTables<T> }
+export type Db<T extends {}> = Omit<DbDatabase, 'objects'> & { objects: DbTables<T> }
 
 export default function create_database<T extends {[K in keyof T]: T[K]}>(options: DbOptions<T>): Db<T> {
   console.log('creating db...')
   if (options.connectionString) {
     const db = new PgDatabase(options.connectionString)
-    const objects = db.objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new PgTable(value as any, db) }))) as DbTables<T>
+    const objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new PgTable(value, db) })))
+    db.objects = objects
     return { ...db, objects }
   } else {
     const db = new MemoryDatabase()
-    const objects = db.objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new MemoryTable(value as any, db) }))) as DbTables<T>
+    const objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new MemoryTable(value, db) })))
+    db.objects = objects
     return { ...db, objects }
   }
 }

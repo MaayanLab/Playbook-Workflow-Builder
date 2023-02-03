@@ -167,7 +167,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
       with rows as (
         update ${JSON.stringify(this.table.name)}
         set ${set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`).join(', ')}
-        where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')};
+        where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning 1
       ) select count(*) as count from rows;
     `)
@@ -201,7 +201,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       with rows as (
         delete from ${JSON.stringify(this.table.name)}
-        where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(delete_.where[key] as Decoded<T[keyof T]>))}`).join(' and ')};
+        where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(delete_.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning *
       ), assertion as (
         select assert_is_one(count(*))
@@ -218,7 +218,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       with rows as (
         delete from ${JSON.stringify(this.table.name)}
-        where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(delete_.where[key] as Decoded<T[keyof T]>))}`).join(' and ')};
+        where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(delete_.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning 1
       ) select count(*) as count from rows;
     `)

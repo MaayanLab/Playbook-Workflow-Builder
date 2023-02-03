@@ -1,8 +1,7 @@
 import { SQL, Table, View } from '@/spec/sql'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
-
-const z_uuid = () => z.string()
+import { z_uuid } from '@/utils/zod'
 
 export const pg_uuids = SQL.create()
   .up(`create extension if not exists "uuid-ossp";`)

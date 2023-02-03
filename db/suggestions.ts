@@ -1,8 +1,7 @@
 import { Table } from '@/spec/sql'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
-
-const z_uuid = z.string
+import { z_uuid } from '@/utils/zod'
 
 export const suggestion = Table.create('suggestion')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })

@@ -1,12 +1,8 @@
 import { SQL, Table } from '@/spec/sql'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
+import { z_uuid, nullable_undefined_codec } from '@/utils/zod'
 
-const z_uuid = z.string
-const nullable_undefined_codec = <C>(type: z.ZodType<C>) => ({
-  decode: type.nullable().transform(v => v !== null ? v : undefined).parse,
-  encode: type.optional().transform(v => v !== undefined ? v : null).parse,
-})
 
 export const user = Table.create('user')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })

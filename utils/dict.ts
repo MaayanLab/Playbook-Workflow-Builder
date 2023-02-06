@@ -37,3 +37,10 @@ export function keys<T extends {}>(dict: T): Array<keyof T> {
 export function values<T extends {}>(dict: T): Array<T[keyof T]> {
   return keys(dict).map(key => dict[key])
 }
+
+/**
+ * Reduce dictionary by some filter, defaulting to ensuring the value evaluates to true
+ */
+export function filter<T extends {}, P extends (item: { key: keyof T, value: T[keyof T] }) => boolean>(dict: T, pred: P = (({ value }) => !!value) as P) {
+  return init(items(dict).filter(pred))
+}

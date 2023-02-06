@@ -17,13 +17,13 @@ export const authOptions: NextAuthOptions = {
     }) : undefined,
   ] as Array<Provider | undefined>).filter((v): v is Provider => v !== undefined),
   callbacks: {
-    session: async ({ session, token }) => {
-      if (session?.user) Object.assign(session.user, { id: token.sub })
+    session: async ({ session, user }) => {
+      if (session?.user && user) Object.assign(session.user, { id: user.id })
       return session as SessionWithId
     }
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'database',
   },
 }
 

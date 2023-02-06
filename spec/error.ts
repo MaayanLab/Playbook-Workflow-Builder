@@ -11,6 +11,7 @@ export class ResponseCodedError extends Error {
 export class UnsupportedMethodError extends ResponseCodedError {
   constructor() {
     super(405, 'Unsupported method')
+    Object.setPrototypeOf(this, UnsupportedMethodError.prototype)
   }
 }
 
@@ -20,6 +21,7 @@ export class UnsupportedMethodError extends ResponseCodedError {
 export class NotFoundError extends ResponseCodedError {
   constructor() {
     super(404, 'Not Found')
+    Object.setPrototypeOf(this, NotFoundError.prototype)
   }
 }
 
@@ -29,6 +31,7 @@ export class NotFoundError extends ResponseCodedError {
 export class UnauthorizedError extends ResponseCodedError {
   constructor() {
     super(401, 'Unauthorized')
+    Object.setPrototypeOf(this, UnauthorizedError.prototype)
   }
 }
 
@@ -39,6 +42,7 @@ export class UnauthorizedError extends ResponseCodedError {
 export class TimeoutError extends ResponseCodedError {
   constructor() {
     super(504, 'Timeout reached')
+    Object.setPrototypeOf(this, TimeoutError.prototype)
   }
 }
 
@@ -48,5 +52,6 @@ export class TimeoutError extends ResponseCodedError {
 export class UnboundError extends ResponseCodedError {
   constructor() {
     super(422, 'Refusing to submit unbound variable')
+    Object.setPrototypeOf(this, UnboundError.prototype)
   }
 }

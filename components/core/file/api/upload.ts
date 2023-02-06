@@ -1,7 +1,7 @@
 import multiparty from "multiparty"
-import type { NextApiRequest, NextApiResponse } from 'next'
+import handler from '@/utils/next-rest'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default handler(async (req, res) => {
   const form = new multiparty.Form({ autoFiles: true })
   const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {
     form.parse(req, function (err, fields, files) {
@@ -16,4 +16,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       {} as Record<string, string[]>
     )
   res.status(200).json(paths)
-}
+})

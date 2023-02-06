@@ -16,12 +16,7 @@ import { z } from 'zod'
 import { Db } from '@/utils/orm'
 import * as fpprgSchema from '@/db/fpprg'
 import { TypedSchema } from '@/spec/sql'
-
-/**
- * This timeout error is used to ensure we don't wait too long for dependencies
- *  fortunately, even if it occurs the job will requeue still making progress.
- */
-export class TimeoutError extends Error {}
+import { TimeoutError } from '@/spec/error'
 
 /**
  * A process is unique by its own data (configuration) and process outputs

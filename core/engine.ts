@@ -1,15 +1,11 @@
-import FPPRG, { Data, Process, Resolved, TimeoutError } from '@/core/FPPRG'
+import FPPRG, { Data, Process, Resolved } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
 import * as array from '@/utils/array'
+import { UnboundError, TimeoutError } from '@/spec/error'
 
 const JobC = z.object({ data: z.object({ id: z.string() }) })
-
-/**
- * This error occurs when the input node is not populated yet
- */
-class UnboundError extends Error {}
 
 /**
  * Given an instanceProcess, "resolve" its output, this is typically done

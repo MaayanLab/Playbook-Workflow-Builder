@@ -6,6 +6,9 @@ import cache from '@/utils/global_cache'
 
 export default cache('fpprg', () => {
   const fpprg = new FPPRG(db)
-  start_workers(krg, fpprg, +(process.env.N_WORKERS||'1'))
+  const n_workers = +(process.env.N_WORKERS||'1')
+  if (n_workers > 0) {
+    start_workers(krg, fpprg, n_workers)
+  }
   return fpprg
 })

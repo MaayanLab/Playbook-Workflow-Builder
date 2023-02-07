@@ -27,3 +27,22 @@ MetaNode.createProcess()
     })
   })
 ```
+
+## How can I add new icons to include in my components?
+
+Icons are exported from the `icons/index.tsx`, two main types of icons are currently in use:
+- icons from [Material Design Icons](https://materialdesignicons.com/), or from [BlueprintJS Icons](https://blueprintjs.com/docs/#icons). these are imported from their respective libraries and exported from `icons/mdi/index.ts` with a `path` (the svg path in the icon) and `title` a human readable label for that icon. By convention, they should end with `_icon`.
+  ```ts
+  // example material design icon for "gene"
+  import { mdiDna } from '@mdi/js'; export const gene_icon = { path: mdiDna, title: 'Gene' }
+  // example blueprintjs icon for "fork"
+  export const fork_icon = { path: IconSvgPaths20.Fork.join(' '), title: 'Expand From this Step' }
+  ```
+- icons from some raster like a favicon. These icons can be added to `icons/services/src/*.png` and `npm run codegen:icons` can be used to trace those pngs into an svg path which gets inlined into `icons/services/index.ts`
+
+Once registered, icons can be imported in your component like
+```ts
+import { some_icon } from '@/icons'
+```
+
+Note that the `Icon` type can be a list, the `<Icon>` react component in `app/components/icon.tsx` will display up to 4 different icons as one.

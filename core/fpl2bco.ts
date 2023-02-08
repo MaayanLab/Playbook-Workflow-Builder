@@ -50,25 +50,25 @@ export default function FPL2BCO(props: { krg: KRG, fpl: FullFPL, author?: Author
     },
     description_domain: {
       keywords: array.unique(
-        Object.values(processLookup)
+        dict.values(processLookup)
           .flatMap(({ metanode }) =>
-            metanode.meta.tags ? Object.keys(metanode.meta.tags) : []
+            metanode.meta.tags ? dict.keys(metanode.meta.tags) : []
           )
       ),
       platform: ['Debian GNU/Linux 11'],
-      pipeline_steps: Object.values(processLookup).map(({ index, node, metanode }) => ({
+      pipeline_steps: dict.values(processLookup).map(({ index, node, metanode }) => ({
         name: metanode.meta.label,
         description: metanode.meta.description,
         // version: metanode.meta.version,
         step_number: index + 1,
-        prerequisite: Object.values(node.inputs).map(input => processLookup[input.id]).map(inputProcess => ({
+        prerequisite: dict.values(node.inputs).map(input => processLookup[input.id]).map(inputProcess => ({
           name: `Output of step ${inputProcess.index+1}`,
           uri: {
             uri: `#/${inputProcess.index}/process/output`,
             access_time: toBCOTimeString(),
           },
         })),
-        input_list: Object.values(node.inputs).map(input => processLookup[input.id]).map(inputProcess => ({
+        input_list: dict.values(node.inputs).map(input => processLookup[input.id]).map(inputProcess => ({
           uri: `#/${inputProcess.index}/process/output`,
           access_time: toBCOTimeString(),
         })),
@@ -80,7 +80,7 @@ export default function FPL2BCO(props: { krg: KRG, fpl: FullFPL, author?: Author
         ],
       })),
     },
-    parametric_domain: Object.values(processLookup).filter(({ node }) => node.data !== null).map(({ index, node, metanode }) => ({
+    parametric_domain: dict.values(processLookup).filter(({ node }) => node.data !== null).map(({ index, node, metanode }) => ({
       step: `${index+1}`,
       param: 'stdin',
       value: node.data ? node.data.value : '',

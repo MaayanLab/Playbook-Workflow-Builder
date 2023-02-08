@@ -86,7 +86,7 @@ export default function Breadcrumbs(
           />
         )
       })}
-      {Object.values(g).map((d) => {
+      {dict.values(g).map((d) => {
         const { id, label, x, color, kind } = d
         const title = label || ensureArray('icon' in d ? d.icon : []).map(({ title }) => title).join(': ') || id
         return (

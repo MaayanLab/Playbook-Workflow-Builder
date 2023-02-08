@@ -3,6 +3,7 @@ import Masonry from 'react-masonry-css'
 import tsvector from "@/utils/tsvector"
 import dynamic from "next/dynamic"
 import * as array from '@/utils/array'
+import * as dict from '@/utils/dict'
 // import { useQsState } from "@/components/qsstate"
 
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -36,14 +37,14 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
     }
   }
   // filtered
-  const _items_filtered = Object.values(items)
+  const _items_filtered = items
     .filter((item) => {
       const item_meta = item.meta || {}
       const item_meta_tags = item_meta.tags || {}
       return array.all(
-        Object.keys(filters)
+        dict.keys(filters)
           .map(group => array.any(
-            Object.keys(item_meta_tags[group]||{})
+            dict.keys(item_meta_tags[group]||{})
               .map(value => (filters[group]||{})[value] === 1)
           ))
       )
@@ -89,13 +90,13 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
       </FormGroup>
       <div className="flex-grow flex flex-row">
         <div className="sm:col-span-12 md:col-span-4 lg:col-span-3">
-          {Object.keys(_group_values)
-            .filter(group => Object.keys(_group_values[group]).length > 1)
+          {dict.keys(_group_values)
+            .filter(group => dict.keys(_group_values[group]).length > 1)
             .map(group => (
               <fieldset key={group} className="pr-2">
                 <legend>{group}</legend>
                 <div className="ml-2 mb-4">
-                  {Object.keys(_group_values[group])
+                  {dict.keys(_group_values[group])
                     .map(value => (
                       <label key={value} className="bp4-control bp4-switch">
                         <input
@@ -109,7 +110,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
                               if (value in _filters[group]) {
                                 delete _filters[group][value]
                               }
-                              if (Object.keys(_filters[group]).length === 0) {
+                              if (dict.isEmpty(_filters[group])) {
                                 delete _filters[group]
                               }
                             } else {

@@ -4,14 +4,6 @@
  */
 
 /**
- * Python style object => list of tuples
- */
-export function items<T extends {}>(dict: T) {
-  const K = keys(dict)
-  return K.map((key) => ({ key, value: dict[key] }))
-}
-
-/**
  * Python style list of tuples => object
  */
 export function init<K extends string | number | symbol, V>(items: { key: K, value: V}[]) {
@@ -23,19 +15,24 @@ export function init<K extends string | number | symbol, V>(items: { key: K, val
 }
 
 /**
- * "Stable" keys
+ * "Ordered" values
  */
 export function keys<T extends {}>(dict: T): Array<keyof T> {
-  const keys = Object.keys(dict) as Array<keyof T>
-  keys.sort()
-  return keys
+  return [...Object.keys(dict)] as Array<keyof T>
 }
 
 /**
- * "Stable" values
+ * "Ordered" values
  */
 export function values<T extends {}>(dict: T): Array<T[keyof T]> {
   return keys(dict).map(key => dict[key])
+}
+
+/**
+ * Python style object => list of tuples
+ */
+export function items<T extends {}>(dict: T) {
+  return keys(dict).map((key) => ({ key, value: dict[key] }))
 }
 
 /**
@@ -43,4 +40,44 @@ export function values<T extends {}>(dict: T): Array<T[keyof T]> {
  */
 export function filter<T extends {}, P extends (item: { key: keyof T, value: T[keyof T] }) => boolean>(dict: T, pred: P = (({ value }) => !!value) as P) {
   return init(items(dict).filter(pred))
+}
+
+/**
+ * Check if a dictionary is empty
+ */
+export function isEmpty<T extends {}>(dict: T): boolean {
+  return Object.keys(dict).length === 0
+}
+
+/**
+ * "Sorted" keys
+ */
+export function sortedKeys<T extends {}>(dict: T): Array<keyof T> {
+  const K = keys(dict)
+  K.sort((a, b) => {
+    const aStr = a.toString()
+    const bStr = b.toString()
+    if(aStr === bStr) {
+      return 0
+    } else if (aStr > bStr) {
+      return 1
+    } else {
+      return -1
+    }
+  })
+  return K
+}
+
+/**
+ * "Sorted" values
+ */
+export function sortedValues<T extends {}>(dict: T): Array<T[keyof T]> {
+  return sortedKeys(dict).map(key => dict[key])
+}
+
+/**
+ * Python style object => list of tuples
+ */
+export function sortedItems<T extends {}>(dict: T) {
+  return sortedKeys(dict).map((key) => ({ key, value: dict[key] }))
 }

@@ -8,6 +8,7 @@ import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
 import Icon from '@/app/components/icon'
 import Link from 'next/link'
+import * as dict from '@/utils/dict'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
 const Home = dynamic(() => import('@/app/fragments/playbook/home'))
@@ -61,7 +62,7 @@ function buildBreadcrumbGraph({
           label: process.meta.label,
           color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
           icon: process.meta.icon || [func_icon],
-          parents: Object.keys(head.process.inputs).length === 0 ? ['start'] : Object.values(head.process.inputs).map(({ id }) => g[id]),
+          parents: dict.isEmpty(head.process.inputs) ? ['start'] : dict.values(head.process.inputs).map(({ id }) => g[id]),
         },
         {
           id: `${head.id}:${head.process.id}`,

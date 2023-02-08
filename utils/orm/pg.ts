@@ -79,7 +79,7 @@ export class PgDatabase implements DbDatabase {
     return () => {delete this.listeners[id]}
   }
   protected notify = async (evt: string, data: unknown) => {
-    for (const listener of Object.values(this.listeners)) {
+    for (const listener of dict.values(this.listeners)) {
       listener(evt, data)
     }
   }
@@ -100,7 +100,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
   constructor(public table: TypedSchema<T>, private db: PgDatabase) {}
 
   create = async (create: Create<T>)=> {
-    const columns = Object.keys(this.table.field_codecs).filter(col => col in create.data) as Array<keyof T>
+    const columns = dict.keys(this.table.field_codecs).filter(col => col in create.data) as Array<keyof T>
     if (columns.length <= 0) throw new Error('Missing values')
     const results = await this.db.raw(subst => `
       insert into ${JSON.stringify(this.table.name)} (${columns.map(col => JSON.stringify(col)).join(", ")})
@@ -117,7 +117,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
   }
 
   findUnique = async (find: Find<T>) => {
-    const columns = Object.keys(this.table.field_codecs).filter(col => col in find.where) as Array<keyof T>
+    const columns = dict.keys(this.table.field_codecs).filter(col => col in find.where) as Array<keyof T>
     if (columns.length <= 0) throw new Error('Missing where')
     const results = await this.db.raw(subst => `
       select *
@@ -130,7 +130,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
   }
   findMany = async (find: FindMany<T> = {}) => {
     const where: Where<T> = (find.where !== undefined) ? find.where : {}
-    const columns = Object.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
+    const columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
     const results = await this.db.raw(subst => `
       select *
       from ${JSON.stringify(this.table.name)}
@@ -139,9 +139,9 @@ export class PgTable<T extends {}> implements DbTable<T> {
     return results.rows.map(row => this.table.codec.decode(row))
   }
   update = async (update: Update<T>) => {
-    const set_columns = Object.keys(this.table.field_codecs).filter(col => col in update.data) as Array<keyof T>
+    const set_columns = dict.keys(this.table.field_codecs).filter(col => col in update.data) as Array<keyof T>
     if (set_columns.length <= 0) throw new Error('Missing data values')
-    const where_columns = Object.keys(this.table.field_codecs).filter(col => col in update.where) as Array<keyof T>
+    const where_columns = dict.keys(this.table.field_codecs).filter(col => col in update.where) as Array<keyof T>
     if (where_columns.length <= 0) throw new Error('Missing where values')
     const results = await this.db.raw(subst => `
       with rows as (
@@ -159,9 +159,9 @@ export class PgTable<T extends {}> implements DbTable<T> {
     else return this.table.codec.decode(results.rows[0])
   }
   updateMany = async (update: Update<T>) => {
-    const set_columns = Object.keys(this.table.field_codecs).filter(col => col in update.data) as Array<keyof T>
+    const set_columns = dict.keys(this.table.field_codecs).filter(col => col in update.data) as Array<keyof T>
     if (set_columns.length <= 0) throw new Error('Missing data values')
-    const where_columns = Object.keys(this.table.field_codecs).filter(col => col in update.where) as Array<keyof T>
+    const where_columns = dict.keys(this.table.field_codecs).filter(col => col in update.where) as Array<keyof T>
     if (where_columns.length <= 0) throw new Error('Missing where values')
     const results = await this.db.raw(subst => `
       with rows as (
@@ -174,9 +174,9 @@ export class PgTable<T extends {}> implements DbTable<T> {
     return results.rows[0] as { count: number }
   }
   upsert = async (upsert: Upsert<T>) => {
-    const insert_columns = Object.keys(this.table.field_codecs).filter(col => col in upsert.create) as Array<keyof T>
+    const insert_columns = dict.keys(this.table.field_codecs).filter(col => col in upsert.create) as Array<keyof T>
     if (insert_columns.length <= 0) throw new Error('Missing values')
-    const update_columns = (upsert.update ? Object.keys(this.table.field_codecs).filter(col => upsert.update && col in upsert.update) : []) as Array<keyof T>
+    const update_columns = (upsert.update ? dict.keys(this.table.field_codecs).filter(col => upsert.update && col in upsert.update) : []) as Array<keyof T>
     this.table.field_pk.forEach((key) => {
       if (!update_columns.includes(key as keyof T)) update_columns.push(key as keyof T)
     })
@@ -196,7 +196,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
     return this.table.codec.decode(results.rows[0])
   }
   delete = async (delete_: Delete<T>) => {
-    const where_columns = Object.keys(this.table.field_codecs).filter(col => col in delete_.where) as Array<keyof T>
+    const where_columns = dict.keys(this.table.field_codecs).filter(col => col in delete_.where) as Array<keyof T>
     if (where_columns.length <= 0) throw new Error('Missing values')
     const results = await this.db.raw(subst => `
       with rows as (
@@ -213,7 +213,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
     else return this.table.codec.decode(results.rows[0])
   }
   deleteMany = async (delete_: Delete<T>) => {
-    const where_columns = Object.keys(this.table.field_codecs).filter(col => col in delete_.where) as Array<keyof T>
+    const where_columns = dict.keys(this.table.field_codecs).filter(col => col in delete_.where) as Array<keyof T>
     if (where_columns.length <= 0) throw new Error('Missing values')
     const results = await this.db.raw(subst => `
       with rows as (

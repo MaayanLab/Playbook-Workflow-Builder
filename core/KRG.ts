@@ -23,28 +23,28 @@ export default class KRG {
     return this.dataNodes[spec]
   }
   getDataNodes = () => {
-    return dict.values(this.dataNodes)
+    return dict.sortedValues(this.dataNodes)
   }
   getProcessNode = (spec: string) => {
     return this.processNodes[spec]
   }
   getProcessNodes = () => {
-    return dict.values(this.processNodes)
+    return dict.sortedValues(this.processNodes)
   }
   getResolveNode = (spec: string) => {
     return this.resolveNodes[spec]
   }
   getResolveNodes = () => {
-    return dict.values(this.resolveNodes)
+    return dict.sortedValues(this.resolveNodes)
   }
   getPromptNode = (spec: string) => {
     return this.promptNodes[spec]
   }
   getPromptNodes = () => {
-    return dict.values(this.promptNodes)
+    return dict.sortedValues(this.promptNodes)
   }
   getNextProcess = (spec: string = '') => {
-    return dict.values(this.processForInput[spec] || {})
+    return dict.sortedValues(this.processForInput[spec] || {})
   }
 
   add = <T extends MetaNodeDataType | MetaNodePromptType | MetaNodeResolveType = MetaNodeGenericType>(node: T) => {
@@ -78,7 +78,7 @@ export default class KRG {
         }
         this.processForInput[input.spec][node.spec] = node
       }
-      if (Object.keys(node.inputs).length === 0) {
+      if (dict.isEmpty(node.inputs)) {
         if (!('' in this.processForInput)) {
           this.processForInput[''] = {}
         }
@@ -123,7 +123,7 @@ export default class KRG {
           if (processNodeInput.spec in this.processForInput) {
             if (spec in this.processForInput[processNodeInput.spec]) {
               delete this.processForInput[processNodeInput.spec][spec]
-              if (Object.keys(this.processForInput[processNodeInput.spec]).length === 0) {
+              if (dict.isEmpty(this.processForInput[processNodeInput.spec])) {
                 delete this.processForInput[processNodeInput.spec]
               }
             }
@@ -133,7 +133,7 @@ export default class KRG {
         if (processNodeOutput.spec in this.processForOutput) {
           if (spec in this.processForOutput[processNodeOutput.spec]) {
             delete this.processForOutput[processNodeOutput.spec][spec]
-            if (Object.keys(this.processForOutput[processNodeOutput.spec]).length === 0) {
+            if (dict.isEmpty(this.processForOutput[processNodeOutput.spec])) {
               delete this.processForOutput[processNodeOutput.spec]
             }
           }

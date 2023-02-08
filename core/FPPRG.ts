@@ -49,7 +49,7 @@ export class Process {
      */
     public persisted = false,
   ) {
-    this.id = uuid([type, data, dict.items(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = uuid([type, data, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
 
   toJSONWithOutput = async () => {
@@ -66,7 +66,7 @@ export class Process {
       'type': this.type,
       'data': this.data !== undefined ? this.data.toJSON() : null,
       'inputs': dict.init(
-        dict.items(this.inputs)
+        dict.sortedItems(this.inputs)
           .map(({ key, value }) => ({ key, value: { id: value.id } }))
       ),
     }
@@ -78,7 +78,7 @@ export class Process {
   inputs__outputs = async (): Promise<Record<string | number | symbol, Data | undefined>> => {
     return dict.init(
       await Promise.all(
-        dict.items(this.inputs).map(async ({ key, value }) =>
+        dict.sortedItems(this.inputs).map(async ({ key, value }) =>
           ({ key, value: await value.output() })
         )
       )
@@ -198,7 +198,7 @@ export class FPL {
         (update[el.process.id] || el.process).type,
         (update[el.process.id] || el.process).data,
         dict.init(
-          dict.items(el.process.inputs).map(({ key, value }) =>
+          dict.sortedItems(el.process.inputs).map(({ key, value }) =>
             ({ key, value: update[value.id] || value })
           )
         ),
@@ -281,7 +281,7 @@ export default class FPPRG {
       return await this.upsertProcess(new Process(
         process.type,
         'data' in process ? process.data !== undefined ? await this.resolveData(process.data) : undefined : undefined,
-        dict.init(await Promise.all(dict.items(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) }))))
+        dict.init(await Promise.all(dict.sortedItems(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) }))))
       ))
     }
   }
@@ -292,7 +292,7 @@ export default class FPPRG {
         const process = new Process(
           result.type,
           result.data !== null ? await this.getData(result.data) : undefined,
-          dict.init(await Promise.all(dict.items(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
+          dict.init(await Promise.all(dict.sortedItems(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
           this,
           true,
         )
@@ -341,7 +341,7 @@ export default class FPPRG {
         //     id: process.id,
         //     type: process.type,
         //     data: process.data !== undefined ? process.data.id : null,
-        //     inputs: dict.items(process.inputs).map(({ key, value }) => ({
+        //     inputs: dict.sortedItems(process.inputs).map(({ key, value }) => ({
         //       id: process.id,
         //       key,
         //       value: value.id,

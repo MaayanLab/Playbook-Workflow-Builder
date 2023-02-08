@@ -86,7 +86,7 @@ export class Table<T = {}> {
     const schema_up = [
       `create table ${JSON.stringify(this.t.name)} (`,
       [
-        ...dict.keys(field_sql).map(field =>
+        ...dict.sortedKeys(field_sql).map(field =>
           `  ${JSON.stringify(field)} ${field_sql[field]} ${field_extra_sql[field]}`
         ),
         `primary key (${field_pk.map((key) => JSON.stringify(key)).join(', ')})`,

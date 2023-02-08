@@ -99,7 +99,7 @@ export default function App() {
             <div key={proc.spec} className="whitespace-nowrap">
               <button
                 className={[
-                  Object.values(proc.inputs)
+                  dict.values(proc.inputs)
                     .some((i) => array.ensureOne(i).spec === currentNode.type) ? 'font-bold' : '',
                   'btn btn-sm btn-secondary rounded-sm',
                 ].join(' ')}

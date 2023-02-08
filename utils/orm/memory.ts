@@ -17,7 +17,7 @@ export class MemoryDatabase implements DbDatabase {
   }
 
   notify = async (evt: string, data: unknown) => {
-    for (const listener of Object.values(this.listeners)) {
+    for (const listener of dict.values(this.listeners)) {
       listener(evt, data)
     }
   }
@@ -73,7 +73,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
       const pk = this.table.field_pk.map(key => `${find.where[key]}`).join('-')
       return (this.db.data[this.table.name][pk] || null) as TypedSchemaRecord<TypedSchema<T>> | null
     } else {
-      const result = Object.values(this.db.data[this.table.name]).filter(record =>
+      const result = dict.values(this.db.data[this.table.name]).filter(record =>
         array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value))
       )
       if (result.length === 0) return null
@@ -83,7 +83,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
   }
   findMany = async (find: FindMany<T> = {}) => {
     await this.ensureFind()
-    return Object.values(this.db.data[this.table.name]).filter(record =>
+    return dict.values(this.db.data[this.table.name]).filter(record =>
       find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value)) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
   }

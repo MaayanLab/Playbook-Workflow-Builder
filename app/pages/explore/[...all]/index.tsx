@@ -4,6 +4,7 @@ import React from 'react'
 import Icon from '@/app/components/icon'
 import * as d3 from 'd3'
 import * as array from '@/utils/array'
+import * as dict from '@/utils/dict'
 import { func_icon, start_icon, variable_icon } from '@/icons'
 
 function Graph<
@@ -164,15 +165,15 @@ export default function Explore() {
     ...path
       .flatMap(node => krg.getNextProcess(node === 'Start' ? '' : node))
       .flatMap(edge => [
-        ...Object.values(edge.inputs).length === 0 ?
+        ...dict.isEmpty(edge.inputs) ?
           [{ source: 'Start', target: edge.spec }]
-        : Object.values(edge.inputs).map(input => 
+        : dict.values(edge.inputs).map(input => 
             ({ source: array.ensureOne(input).spec, target: edge.spec })
           ),
         { source: edge.spec, target: edge.output.spec },
       ])
   ].reduce((agg, link) => ({ ...agg, [`${link.source}__${link.target}`]: link }), {} as Record<string, { source: string, target: string }>)
-  const nodes_ = Object.values(links_).reduce(
+  const nodes_ = dict.values(links_).reduce(
     (agg, { source, target }) => ({
       ...agg,
       [source]: { ...(agg[source] || {}), id: source },
@@ -180,8 +181,8 @@ export default function Explore() {
     }),
     {} as Record<string, { id: string }>
   )
-  const nodes = Object.values(nodes_)
-  const links = Object.keys(links_).map((id) => ({ ...links_[id], id, source: nodes_[links_[id].source], target: nodes_[links_[id].target] }))
+  const nodes = dict.values(nodes_)
+  const links = dict.keys(links_).map((id) => ({ ...links_[id], id, source: nodes_[links_[id].source], target: nodes_[links_[id].target] }))
   return (
     <div className="col">
       <Graph

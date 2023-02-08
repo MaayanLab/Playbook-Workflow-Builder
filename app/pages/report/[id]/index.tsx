@@ -172,9 +172,9 @@ function Cells({ krg, id }: { krg: KRG, id?: string }) {
               if (disabled) return null
               return (
                 <div key={proc.spec}>
-                  {Object.keys(proc.inputs).length > 0 ? (
+                  {!dict.isEmpty(proc.inputs) ? (
                     <>
-                      <span className="bg-secondary rounded-full p-3">{Object.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
+                      <span className="bg-secondary rounded-full p-3">{dict.values(proc.inputs).map((i) => Array.isArray(i) ? `[${array.ensureOne(i).meta.label}]` : i.meta.label).join(', ')}</span>
                       <span> =&gt; </span>
                     </>
                   ) : null}

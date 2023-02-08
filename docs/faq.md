@@ -46,3 +46,7 @@ import { some_icon } from '@/icons'
 ```
 
 Note that the `Icon` type can be a list, the `<Icon>` react component in `app/components/icon.tsx` will display up to 4 different icons as one.
+
+## Something in my development environment isn't working
+
+We've Dockerized our dev environment, so if all else fails you should be able to use that given that you have `Docker` and `docker-compose` installed. It can be used with `docker-compose run dev`, in that shell you can execute any commands that weren't working.

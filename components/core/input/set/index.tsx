@@ -80,17 +80,23 @@ const Input_Set_T = (T: Primative, SetT: typeof GeneSet) => MetaNode.createProce
           onChange={evt => setSet(evt.target.value)}
           value={set}
         />
-        <Button large rightIcon="bring-data" onClick={evt => props.submit(set.split(/\r?\n/g))}>Submit</Button>
         {T.extra?.set?.meta?.example !== undefined ?
           <Button
             large
             rightIcon="send-to-graph"
             onClick={evt => {
               if (T.extra?.set?.meta?.example !== undefined) {
-                props.submit(T.extra.set.meta.example)
+                setSet(T.extra.set.meta.example.join('\n'))
               }
             }}>Example</Button>
           : null}
+        <Button
+          large
+          type="submit"
+          text="Submit"
+          rightIcon="bring-data"
+          onClick={evt => props.submit(set.split(/\r?\n/g))}
+        />
       </div>
     )
   })

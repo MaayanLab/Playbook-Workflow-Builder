@@ -50,14 +50,14 @@ export const EnrichrTissueSet = EnrichrSet_T(TissueSet)
 export const EnrichrGeneSet = EnrichrSet_T(GeneSet)
 
 async function resolveGenesetLibrary({ terms, background }: { background: string, terms: string[] }) {
-  const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${background}`)
-  const res = z.object({ [background]: z.object({ terms: z.record(z.string(), z.record(z.string(), z.number())) }) }).parse(await req.json())
-  const gmt = res[background].terms
+  const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(terms.join(';'))}`)
+  const res = await req.json()
+  const gmt = z.record(z.string(), z.array(z.string())).parse(res)
   return dict.init(
     terms.map(rawTerm => {
       const m = backgrounds[background].termRe.exec(rawTerm)
       const term = (m && m.groups && 'term' in m.groups && m.groups.term && m.groups.term) || rawTerm
-      return { key: rawTerm, value: { description: term, set: Object.keys(gmt[term]) } }
+      return { key: rawTerm, value: { description: term, set: gmt[rawTerm] } }
     })
   )
 }

@@ -12,8 +12,7 @@ export default function Breadcrumbs(
       label: string,
       color: string,
       parents?: string[],
-      icon?: IconT,
-      content?: string
+      icon: IconT,
     }>,
     onclick?: (evt: React.MouseEvent, node: string) => void
   }
@@ -114,20 +113,9 @@ export default function Breadcrumbs(
                 height={1}
               />
             )}
-            {'icon' in d ? (
-              <g transform={`scale(0.035 0.035) translate(-12 -12)`}>
-                <Icon icon={d.icon} without_svg />
-              </g>
-            ) : (
-              <text
-                x={0}
-                y={0}
-                fontSize="0.5px"
-                dominantBaseline="middle"
-                textAnchor="middle"
-              >{d.content}</text>
-            )}
-            <title>{title}</title>
+            <g transform={`scale(0.035 0.035) translate(-12 -12)`}>
+              <Icon icon={d.icon} title={title} without_svg />
+            </g>
           </g>
         )
       })}

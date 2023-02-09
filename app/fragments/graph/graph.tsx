@@ -1,6 +1,6 @@
 import React from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT } from '@/icons'
+import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
@@ -36,9 +36,8 @@ function buildBreadcrumbGraph({
     kind: 'data' | 'process',
     label: string,
     color: string,
-    icon?: IconT,
+    icon: IconT,
     parents: string[],
-    content?: string,
   }[] = []
   graph.push({
     id: 'start',
@@ -81,7 +80,7 @@ function buildBreadcrumbGraph({
     kind: 'process' as 'process',
     label: 'Extend',
     color: extend || suggest ? '#B3CFFF' : 'lightgrey',
-    content: '+',
+    icon: extend_icon,
     parents: [head ? `${head.id}:${head.process.id}` : 'start'],
   })
   return graph

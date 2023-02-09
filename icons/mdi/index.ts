@@ -18,6 +18,7 @@ import { mdiHome } from '@mdi/js'; export const start_icon = { path: mdiHome, ti
 import { mdiHuman } from '@mdi/js'; export const phenotype_icon = { path: mdiHuman, title: 'Phenotype' }
 import { mdiImport } from '@mdi/js'; export const input_icon = { path: mdiImport, title: 'Input' }
 import { mdiLink } from '@mdi/js'; export const share_icon = { path: mdiLink, title: 'Share' }
+import { mdiPlusBoxOutline } from '@mdi/js'; export const extend_icon = { path: mdiPlusBoxOutline, title: 'Extend' }
 import { mdiProgressAlert } from '@mdi/js'; export const status_alert_icon = { path: mdiProgressAlert, title: 'Error occurred' }
 import { mdiProgressCheck } from '@mdi/js'; export const status_complete_icon = { path: mdiProgressCheck, title: 'Completed' }
 import { mdiProgressClock } from '@mdi/js'; export const status_waiting_icon = { path: mdiProgressClock, title: 'Waiting for output...' }

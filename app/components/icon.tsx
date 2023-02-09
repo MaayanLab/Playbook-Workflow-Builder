@@ -62,6 +62,11 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
       Object.assign(tooltipRef, { current: null })
     }
   }, [tooltipContainerRef, title])
+  React.useEffect(() => () => {
+    if (tooltipRef.current !== null) {
+      document.body.removeChild(tooltipRef.current)
+    }
+    }, [])
   const Svg = without_svg ? (
     ({ children }: { children: ReactNode }) =>
       <g>{children}</g>

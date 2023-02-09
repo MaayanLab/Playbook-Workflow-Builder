@@ -1,13 +1,13 @@
 import { Table, View } from '@/spec/sql'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
-import { z_uuid } from '@/utils/zod'
+import { z_uuid, z_bigint_codec } from '@/utils/zod'
 
 export const upload = Table.create('upload')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('url', 'varchar', 'not null', z.string())
   .field('sha256', 'varchar', 'not null', z.string())
-  .field('size', 'number', 'not null', z.number())
+  .field('size', 'bigint', 'not null', z_bigint_codec())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 
@@ -24,9 +24,9 @@ export const user_upload_complete = View.create('user_upload_complete')
   .field('user', z_uuid())
   .field('url', z.string())
   .field('sha256', z.string())
-  .field('size', z.number())
+  .field('size', z_bigint_codec())
   .field('filename', z.string())
-  .field('created', z.string())
+  .field('created', z.date())
   .sql(`
     select
       "user_upload"."id",
@@ -37,7 +37,7 @@ export const user_upload_complete = View.create('user_upload_complete')
       "user_upload"."filename",
       "user_upload"."created"
     from "user_upload"
-    left join "upload" on "user_upload"."upload" = "upload"."id"
+    left join "upload" on "user_upload"."upload" = "upload"."id";
   `)
   .js(async (db: any) => await Promise.all((await db.objects.user_upload.findMany()).map(async (user_upload: any) => {
     const upload = await db.objects.upload.findUnique({ where: { id: user_upload.upload } })

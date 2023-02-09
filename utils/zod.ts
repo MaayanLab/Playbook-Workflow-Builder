@@ -9,3 +9,7 @@ export const json_safe_timestamp_codec = () => ({
   decode: z.date().transform((v) => v.toISOString()).parse,
   encode: z.string().transform((v) => new Date(v)).parse,
 })
+export const z_bigint_codec = () => ({
+  decode: (db: unknown) => z.string().transform(v => +v).parse(db),
+  encode: (v: number) => v.toString(),
+})

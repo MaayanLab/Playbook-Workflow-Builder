@@ -43,6 +43,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
   }
   private ensureFind = async () => {
     if (this.table.js !== undefined) {
+      this.db.data[this.table.name] = {}
       for (const data of (await this.table.js(this.db))) {
         const pk = this.table.field_pk.map((key) => `${data[key]}`).join('-')
         this.db.data[this.table.name][pk] = data

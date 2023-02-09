@@ -228,7 +228,7 @@ function AccountUIUploads() {
                   <td>{upload.url}</td>
                   <td>{upload.sha256.slice(0, 5)}...{upload.sha256.slice(-5)}</td>
                   <td>{humanSize(upload.size)}</td>
-                  <td>{upload.created}</td>
+                  <td>{upload.created.toString()}</td>
                   <td className="flex flex-row">
                     <button onClick={async () => {
                       const req = await fetch(`/api/db/fpl/start/extend`, {

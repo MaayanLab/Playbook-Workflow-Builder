@@ -87,15 +87,15 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
             {dict.isEmpty(item.inputs) ? <Icon icon={start_icon} /> : null}
             {dict.items(item.inputs).map(({ key, value }, i) => (
               <span key={key.toString()} className="flex flex-row items-center">
-                {i > 0 ? <Icon icon={rightarrow_icon} /> : null}
+                {i > 0 ? <Icon title={null} icon={rightarrow_icon} /> : null}
                 {Array.isArray(value) ? '[' : null}
                 <Icon icon={array.ensureOne(value).meta.icon || variable_icon} />
                 {Array.isArray(value) ? ']' : null}
               </span>
             ))}
-            <Icon icon={rightarrow_icon} />
+            <Icon title={null} icon={rightarrow_icon} />
             <Icon icon={item.meta.icon || func_icon} />
-            <Icon icon={rightarrow_icon} />
+            <Icon title={null} icon={rightarrow_icon} />
             <Icon icon={item.output.meta.icon || variable_icon} />
           </div>
           <h5 className="bp4-heading">{item.meta.label || ''}</h5>

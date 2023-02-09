@@ -161,7 +161,6 @@ export default function Explore() {
   const path = [...array.ensureArray(router.query.all)]
   if (path.length === 0) path.push('Start')
   const links_ = [
-    ...path.slice(1).map((p, ind) => ({ source: path[ind], target: p })),
     ...path
       .flatMap(node => krg.getNextProcess(node === 'Start' ? '' : node))
       .flatMap(edge => [

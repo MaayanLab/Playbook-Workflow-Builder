@@ -134,7 +134,12 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       select *
       from ${JSON.stringify(this.table.name)}
-      ${columns.length > 0 ? columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(where[key] as Decoded<T[keyof T]>))}`).join(' and ') : ''};
+      ${columns.length > 0 ?
+        `where ${columns
+          .map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(where[key] as Decoded<T[keyof T]>))}`)
+          .join(' and ')
+        }`
+        : ''};
     `)
     return results.rows.map(row => this.table.codec.decode(row))
   }

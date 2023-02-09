@@ -1,8 +1,10 @@
+import React from 'react'
 import styles from './breadcrumbs.module.css'
 import type { Icon as IconT } from '@/icons'
 import Icon from '@/app/components/icon'
 import * as dict from '@/utils/dict'
 import { ensureArray } from '@/utils/array'
+import * as d3 from 'd3'
 
 export default function Breadcrumbs(
   { graph, onclick: _onclick }: {
@@ -18,6 +20,17 @@ export default function Breadcrumbs(
   }
 ) {
   const onclick = _onclick === undefined ? () => {} : _onclick
+  const svgRef = React.useRef<SVGSVGElement>(null)
+  React.useEffect(() => {
+    if (!svgRef.current) return
+    const d3SvgRef = d3.select(svgRef.current as Element)
+    d3SvgRef
+      .call(d3.zoom().on('zoom', (e) => {
+        d3SvgRef
+          .selectChild('g')
+          .attr('transform', e.transform)
+      }))
+  }, [svgRef.current])
   const g = dict.init(
     graph.map((value, index) => ({
       key: value.id,
@@ -57,68 +70,71 @@ export default function Breadcrumbs(
   let h = 0.6 * Math.max(6, graph.length)
   return (
     <svg
+      ref={svgRef}
       className="flex-grow"
       viewBox={`0 ${-h/2} ${w} ${h}`}
       preserveAspectRatio="xMinYMid meet"
     >
-      {e.map((d) => {
-        const { src, dst, side, dist } = d
-        let path
-        if (dist === 0) { // self
-          // self loop
-          throw new Error('NotImplemented')
-        } else if (dist === 1) { // direct neighbors
-          // draw line
-          path = `M${g[src].x},0 L${g[dst].x},0`
-        } else {
-          // draw bezier curve
-          path = `M${g[src].x},0 C${g[src].x},${0.4*side*dist} ${g[dst].x},${0.4*side*dist} ${g[dst].x},0`
-        }
-        return (
-          <path
-            key={`${src}__${dst}:${side}`}
-            className={styles.edges}
-            stroke="black"
-            strokeWidth={0.05}
-            fill="none"
-            d={path}
-          />
-        )
-      })}
-      {dict.values(g).map((d) => {
-        const { id, label, x, color, kind } = d
-        const title = label || ensureArray('icon' in d ? d.icon : []).map(({ title }) => title).join(': ') || id
-        return (
-          <g
-            key={`${id}`}
-            className={`${styles.nodes} ${styles.data}`}
-            transform={`translate(${x} 0)`}
-            onClick={(evt) => onclick(evt, d.id)}
-          >
-            {kind === 'data' ? (
-              <circle
-                fill={color}
-                stroke="black"
-                strokeWidth={0.001}
-                r={0.5}
-                cx={0}
-                cy={0}
-              />
-            ) : (
-              <rect
-                fill={color}
-                x={-0.5}
-                y={-0.5}
-                width={1}
-                height={1}
-              />
-            )}
-            <g transform={`scale(0.035 0.035) translate(-12 -12)`}>
-              <Icon icon={d.icon} title={title} without_svg />
+      <g>
+        {e.map((d) => {
+          const { src, dst, side, dist } = d
+          let path
+          if (dist === 0) { // self
+            // self loop
+            throw new Error('NotImplemented')
+          } else if (dist === 1) { // direct neighbors
+            // draw line
+            path = `M${g[src].x},0 L${g[dst].x},0`
+          } else {
+            // draw bezier curve
+            path = `M${g[src].x},0 C${g[src].x},${0.4*side*dist} ${g[dst].x},${0.4*side*dist} ${g[dst].x},0`
+          }
+          return (
+            <path
+              key={`${src}__${dst}:${side}`}
+              className={styles.edges}
+              stroke="black"
+              strokeWidth={0.05}
+              fill="none"
+              d={path}
+            />
+          )
+        })}
+        {dict.values(g).map((d) => {
+          const { id, label, x, color, kind } = d
+          const title = label || ensureArray('icon' in d ? d.icon : []).map(({ title }) => title).join(': ') || id
+          return (
+            <g
+              key={`${id}`}
+              className={`${styles.nodes} ${styles.data}`}
+              transform={`translate(${x} 0)`}
+              onClick={(evt) => onclick(evt, d.id)}
+            >
+              {kind === 'data' ? (
+                <circle
+                  fill={color}
+                  stroke="black"
+                  strokeWidth={0.001}
+                  r={0.5}
+                  cx={0}
+                  cy={0}
+                />
+              ) : (
+                <rect
+                  fill={color}
+                  x={-0.5}
+                  y={-0.5}
+                  width={1}
+                  height={1}
+                />
+              )}
+              <g transform={`scale(0.035 0.035) translate(-12 -12)`}>
+                <Icon icon={d.icon} title={title} without_svg />
+              </g>
             </g>
-          </g>
-        )
-      })}
+          )
+        })}
+      </g>
     </svg>
   )
 }

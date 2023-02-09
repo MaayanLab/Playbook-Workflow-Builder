@@ -38,12 +38,12 @@ export default handler(async (req, res) => {
   const { _path } = QueryType.parse(req.query)
   const { prefix: component, path } = search_prefix_tree(component_tree, _path.map(sanitize).join('/'))
   if (component === undefined || path === undefined) throw new NotFoundError()
-  let handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
+  let component_handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
   try {
-    handler = require(`@/components/${component}/api/${path}`).default
+    component_handler = (await require(`@/components/${component}/api/${path}`)).default
   } catch (e) {
     console.error(e)
     throw new NotFoundError()
   }
-  await handler(req, res)
+  await component_handler(req, res)
 })

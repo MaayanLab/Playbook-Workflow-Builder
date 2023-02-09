@@ -1,8 +1,10 @@
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import CAVATICAAPIKeyGuide from '@/app/public/CAVATICA-guide-apikey.png'
 import CAVATICAProjectGuide from '@/app/public/CAVATICA-guide-project.png'
-import { Alert, ControlGroup, FormGroup, Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
+import { Alert, ControlGroup, FormGroup, Icon as Bp4Icon, InputGroup, Tab, Tabs } from '@blueprintjs/core'
 import * as Auth from 'next-auth/react'
+import * as schema from '@/db'
+import type { TypedSchemaRecord } from '@/spec/sql'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -11,6 +13,10 @@ import React from 'react'
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { SessionWithId } from '../api/auth/[...nextauth]'
+import Icon from '@/app/components/icon'
+import { delete_icon, fork_icon } from '@/icons'
+import { z } from 'zod'
+import { FileInput, FileURL } from '@/components/core/file'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -18,6 +24,7 @@ const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Bu
 
 const fetcher = (endpoint: string) => fetch(endpoint).then(res => res.json())
 const poster = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
+const deleter = (endpoint: string, { arg }: { arg: any }) => fetch(`${endpoint}/${arg}/delete`, { method: 'POST' }).then(res => res.json())
 
 export default function Account() {
   const { data: session } = useSessionWithId({ required: true })
@@ -58,19 +65,19 @@ function AccountUI({ session }: { session: SessionWithId }) {
       vertical
     >
       <span className='font-bold'>{session.user.email}</span>
-      <Tab id="profile" title={<><Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIProfile session={session}  />} />
-      <Tab id="settings" title={<><Icon icon="cog" /> Settings</>} panelClassName="flex-grow flex flex-col" panel={<AccountUISettings session={session}  />} />
+      <Tab id="profile" title={<><Bp4Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIProfile session={session}  />} />
+      <Tab id="settings" title={<><Bp4Icon icon="cog" /> Settings</>} panelClassName="flex-grow flex flex-col" panel={<AccountUISettings session={session}  />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Data</span>
-      <Tab id="uploads" title={<><Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIUploads />} />
-      <Tab id="playbooks" title={<><Icon icon="control" /> Playbooks</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIPlaybooks />} />
+      <Tab id="uploads" title={<><Bp4Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIUploads />} />
+      <Tab id="playbooks" title={<><Bp4Icon icon="control" /> Playbooks</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIPlaybooks />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Integrations</span>
-      <Tab id="biocompute" title={<><Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIBioCompute />} />
-      <Tab id="cavatica" title={<><Icon icon="application" /> CAVATICA</>} panelClassName="flex-grow flex flex-col" panel={<AccountUICAVATICA />} />
+      <Tab id="biocompute" title={<><Bp4Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIBioCompute />} />
+      <Tab id="cavatica" title={<><Bp4Icon icon="application" /> CAVATICA</>} panelClassName="flex-grow flex flex-col" panel={<AccountUICAVATICA />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Session</span>
-      <Tab id="signout" title={<><Icon icon="log-out" /> Sign Out</>} />
+      <Tab id="signout" title={<><Bp4Icon icon="log-out" /> Sign Out</>} />
     </Tabs>
   )
 }
@@ -90,6 +97,7 @@ function AccountUIProfile({ session }: { session: SessionWithId }) {
   return (
     <>
       <h3 className="bp4-heading">Profile Settings</h3>
+      <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
       <form onSubmit={async (evt) => {
         evt.preventDefault()
         setUserProfile(userProfileDraft, { revalidate: false })
@@ -132,7 +140,6 @@ function AccountUIProfile({ session }: { session: SessionWithId }) {
           type="submit"
           intent="success"
         >Update Profile</Button>
-        <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
       </form>
     </>
   )
@@ -178,11 +185,98 @@ function AccountUISettingsDeleteAccount({ session }: { session: SessionWithId })
   )
 }
 
+function humanSize(size: number) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let unit
+  for (let i = 0; i < units.length-1; i++) {
+    unit = units[i]
+    if (size < 1000) {
+      break
+    } else {
+      size /= 1000
+    }
+  }
+  return `${size.toFixed(2)} ${unit}`
+}
+
 function AccountUIUploads() {
+  const router = useRouter()
+  const { data: uploads, isLoading } = useSWR<Array<TypedSchemaRecord<typeof schema.user_upload_complete>>>('/api/db/user/uploads', fetcher)
+  const [uploadToDelete, setUploadToDelete] = React.useState<TypedSchemaRecord<typeof schema.user_upload_complete> | undefined>(undefined)
+  const { trigger: deleteUpload, isMutating } = useSWRMutation('/api/db/user/uploads', deleter)
   return (
     <>
       <h3 className="bp4-heading">Uploads</h3>
-      TODO
+      <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
+      {uploads ? (
+        <div className="overflow-x-auto">
+          <table className="table table-compact w-full">
+            <thead>
+              <tr>
+                <th>Filename</th>
+                <th>URL</th> 
+                <th>sha256</th>
+                <th>Size</th>
+                <th>Timestamp</th>
+                <th>Actions</th>
+              </tr>
+            </thead> 
+            <tbody>
+              {uploads.map(upload => (
+                <tr key={upload.id}>
+                  <td>{upload.filename}</td>
+                  <td>{upload.url}</td>
+                  <td>{upload.sha256.slice(0, 5)}...{upload.sha256.slice(-5)}</td>
+                  <td>{humanSize(upload.size)}</td>
+                  <td>{upload.created}</td>
+                  <td className="flex flex-row">
+                    <button onClick={async () => {
+                      const req = await fetch(`/api/db/fpl/start/extend`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          type: FileInput.spec,
+                          inputs: {},
+                          data: {
+                            type: FileURL.spec,
+                            value: FileURL.codec.encode(upload.url),
+                          },
+                        })
+                      })
+                      const res = z.string().parse(await req.json())
+                      router.push(`/graph/${res}/extend`)
+                    }}>
+                      <Icon icon={fork_icon} color="black" />
+                    </button>
+                    <button onClick={() => {
+                      setUploadToDelete(upload)
+                    }}>
+                      <Icon icon={delete_icon} color="black" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete Upload"
+        icon="delete"
+        intent="danger"
+        isOpen={uploadToDelete !== undefined}
+        canEscapeKeyCancel
+        canOutsideClickCancel
+        onCancel={() => {setUploadToDelete(undefined)}}
+        onConfirm={() => {
+          if (!uploadToDelete) return
+          deleteUpload(uploadToDelete.id, { revalidate: true })
+            .then(() => setUploadToDelete(undefined))
+        }}
+      >
+        Are you sure you want to delete {uploadToDelete?.filename} uploaded at {uploadToDelete?.created.toString()}?
+        After clicking Delete Upload, your upload will be subject to deletion and <b>cannot be restored</b>.<br />
+      </Alert>
     </>
   )
 }

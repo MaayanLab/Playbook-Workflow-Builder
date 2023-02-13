@@ -6,7 +6,15 @@ import '@/app/styles/styles.css'
 import type { AppProps } from 'next/app'
 import { HotkeysProvider } from '@blueprintjs/core'
 import { SessionProvider } from 'next-auth/react'
+import dynamic from 'next/dynamic'
+
+const Analytics = dynamic(() => import('@/app/fragments/analytics'), { ssr: false })
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps & { pageProps: { session: any } }) {
-  return <SessionProvider session={session}><HotkeysProvider><Component {...pageProps} /></HotkeysProvider></SessionProvider>
+  return (
+    <>
+      <SessionProvider session={session}><HotkeysProvider><Component {...pageProps} /></HotkeysProvider></SessionProvider>
+      <Analytics />
+    </>
+  )
 }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useRouter } from "next/router";
 import Script from "next/script"
+import { useRuntimeConfig } from '@/app/fragments/config';
 
 function GA({ id }) {
   React.useEffect(() => {
@@ -45,13 +46,14 @@ function Matomo({ url, siteId }) {
 }
 
 export default function Analytics() {
+  const runtimeConfig = useRuntimeConfig()
   return (
     <>
-      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?
-        <GA id={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      {runtimeConfig.NEXT_PUBLIC_GA_MEASUREMENT_ID ?
+        <GA id={runtimeConfig.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
         : null}
-      {process.env.NEXT_PUBLIC_MATOMO_URL && process.env.NEXT_PUBLIC_MATOMO_SITE_ID ?
-        <Matomo url={process.env.NEXT_PUBLIC_MATOMO_URL} siteId={process.env.NEXT_PUBLIC_MATOMO_SITE_ID} />
+      {runtimeConfig.NEXT_PUBLIC_MATOMO_URL && runtimeConfig.NEXT_PUBLIC_MATOMO_SITE_ID ?
+        <Matomo url={runtimeConfig.NEXT_PUBLIC_MATOMO_URL} siteId={runtimeConfig.NEXT_PUBLIC_MATOMO_SITE_ID} />
         : null}
     </>
   )

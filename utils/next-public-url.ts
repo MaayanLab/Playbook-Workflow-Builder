@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useRouter } from "next/router"
+import { useRuntimeConfig } from '@/app/fragments/config'
 
 /**
  * Figure out the public url
@@ -8,13 +9,14 @@ import { useRouter } from "next/router"
  */
 export default function usePublicUrl({ absolute }: { absolute?: boolean } = {}) {
   const router = useRouter()
+  const runtimeConfig = useRuntimeConfig()
   const { asPath: serverLocation, isReady } = router
   const publicUrl = React.useMemo(() => {
     if (absolute) {
       if (typeof window === 'undefined') {
-        return process.env.NEXT_PUBLIC_URL
+        return runtimeConfig.NEXT_PUBLIC_URL
       } else {
-        const clientLocation = isReady ? window.location.toString() : process.env.NEXT_PUBLIC_URL || ''
+        const clientLocation = isReady ? window.location.toString() : runtimeConfig.NEXT_PUBLIC_URL
         // scheme://origin/basePath[/app/path]?whatever=true => scheme://origin/basePath
         const [clientBasePath, ..._] = clientLocation.split(serverLocation)
         return clientBasePath

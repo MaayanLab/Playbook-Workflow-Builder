@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import * as Auth from 'next-auth/react'
 import type { Session } from 'next-auth'
+import { useRuntimeConfig } from '@/app/fragments/config'
 
 function UserAvatar({ session }: { session: Session | null }) {
   if (typeof session?.user?.image === 'string') {
@@ -19,9 +20,10 @@ function UserAvatar({ session }: { session: Session | null }) {
 
 export default function Header() {
   const { data: session } = Auth.useSession()
+  const runtimeConfig = useRuntimeConfig()
   return (
     <div className="bg-primary flex flex-row justify-between place-items-center px-2">
-      <Link href={process.env.NEXT_PUBLIC_LANDING_PAGE || '/'}>
+      <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE}>
         <h1 className="text-4xl font-bold p-2 cursor-pointer">Playbook Partnership Interactive Workflow Builder</h1>
       </Link>
       {session && session.user ?

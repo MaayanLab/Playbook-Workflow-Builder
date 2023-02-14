@@ -27,5 +27,5 @@ def gtex_gene_expression(geneSymbol: str, datasetId: str='gtex_v8'):
   if len(res) == 0: raise Exception(f"No information for gene with identifier {geneSymbol} found in GTEx")
   res = pd.DataFrame(res)
   res['zscore'] = (res['median'] - res['median'].mean()) / res['median'].std()
-  res.rename({ 'tissueSiteDetailId': 'tissue' }, axis=1, inplace=True)
-  return res[['tissue', 'zscore']].sort_values('zscore', ascending=False).to_dict(orient='records')
+  res.rename({ 'tissueSiteDetailId': 'term' }, axis=1, inplace=True)
+  return res[['term', 'zscore']].sort_values('zscore', ascending=False).to_dict(orient='records')

@@ -1,6 +1,8 @@
 import { IconSvgPaths20 } from '@blueprintjs/icons'
 export const delete_icon = { path: IconSvgPaths20.Delete.join(' '), title: 'Delete' }
+export const edit_icon = { path: IconSvgPaths20.Edit.join(' '), title: 'Edit' }
 export const fork_icon = { path: IconSvgPaths20.Fork.join(' '), title: 'Expand From this Step' }
+export const save_icon = { path: IconSvgPaths20.FloppyDisk.join(' '), title: 'Save' }
 export const view_in_graph_icon = { path: IconSvgPaths20.SendToGraph.join(' '), title: 'View in Graph' }
 export const view_report_icon = { path: IconSvgPaths20.SendToMap.join(' '), title: 'View Report' }
 import { mdiArrowRight } from '@mdi/js'; export const rightarrow_icon = { path: mdiArrowRight }

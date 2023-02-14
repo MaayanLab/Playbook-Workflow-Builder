@@ -14,7 +14,7 @@ import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { SessionWithId } from '../api/auth/[...nextauth]'
 import Icon from '@/app/components/icon'
-import { delete_icon, fork_icon } from '@/icons'
+import { delete_icon, edit_icon, fork_icon, save_icon, share_icon, view_report_icon } from '@/icons'
 import { z } from 'zod'
 import { FileInput, FileURL } from '@/components/core/file'
 
@@ -285,7 +285,122 @@ function AccountUIPlaybooks() {
   return (
     <>
       <h3 className="bp4-heading">Playbooks</h3>
-      TODO
+      <div className="hero">
+        <div className="hero-content text-center">
+          <div className="max-w-md">
+            <h1 className="text-5xl font-bold">Coming Soon</h1>
+            <p className="py-6 prose">This feature is currently in development. This is currently a non-functioning mockup.</p>
+          </div>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="table table-compact w-full">
+          <thead>
+            <tr>
+              <th>Playbook</th>
+              <th>Title</th>
+              <th>Inputs</th>
+              <th>Output</th>
+              <th>Timestamp</th>
+              <th>Actions</th>
+            </tr>
+          </thead> 
+          <tbody>
+            {[
+              { id: 'cb557965...', title: 'Use Case 4 Playbook', inputs: 'Gene', output: 'Ranked Tissues', created: '2023-02-12', }, 
+              { id: 'b6ed5f65...', title: 'Untitled Playbook', inputs: 'Drug', output: 'Ranked Gene', created: '2023-02-13', }, 
+              { id: 'b29c75ec...', title: 'Drugs targeting disease signatures', inputs: 'Disease', output: 'Ranked Drugs', created: '2023-02-14', },
+            ].map(playbook => (
+              <tr key={playbook.id}>
+                <td>{playbook.id}</td>
+                <td>{playbook.title}</td>
+                <td>{playbook.inputs}</td>
+                <td>{playbook.output}</td>
+                <td>{playbook.created.toString()}</td>
+                <td className="flex flex-row">
+                  <button>
+                    <Icon icon={share_icon} color="black" />
+                  </button>
+                  <button>
+                    <Icon icon={edit_icon} color="black" />
+                  </button>
+                  <button>
+                    <Icon icon={view_report_icon} color="black" />
+                  </button>
+                  <button>
+                    <Icon icon={fork_icon} color="black" />
+                  </button>
+                  <button>
+                    <Icon icon={delete_icon} color="black" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            <tr><td colSpan={6}>&nbsp;</td></tr>
+            <tr>
+              <td>&nbsp;</td>
+              <td>
+                <FormGroup
+                  label="Playbook Title"
+                  labelInfo="(required)"
+                  helperText="A succict title for this playbook"
+                >
+                  <InputGroup
+                    placeholder="My playbook"
+                    leftIcon="label"
+                  />
+                </FormGroup>
+              </td>
+              <td>
+                <FormGroup
+                  label="Component Inputs"
+                  labelInfo="(required)"
+                  helperText="A the inputs to this component"
+                >
+                  <InputGroup
+                    placeholder="Some component"
+                    leftIcon="many-to-one"
+                  />
+                </FormGroup>
+              </td>
+              <td>
+                <FormGroup
+                    label="Component Output"
+                    labelInfo="(required)"
+                    helperText="A the output to this component"
+                  >
+                    <InputGroup
+                      placeholder="Some component"
+                      leftIcon="many-to-one"
+                    />
+                </FormGroup>
+              </td>
+              <td>
+                <FormGroup
+                    label="Component Output"
+                    labelInfo="(required)"
+                    helperText="A the output to this component"
+                  >
+                    <InputGroup
+                      placeholder="Some component"
+                      value={(new Date()).toString()}
+                      readOnly
+                      leftIcon="many-to-one"
+                    />
+                </FormGroup>
+              </td>
+              <td className="flex flex-row">
+                <button>
+                  <Icon icon={save_icon} color="black" />
+                </button>
+                <button>
+                  <Icon icon={delete_icon} color="black" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }

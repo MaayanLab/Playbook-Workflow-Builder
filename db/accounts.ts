@@ -1,7 +1,7 @@
 import { SQL, Table } from '@/spec/sql'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
-import { z_uuid, nullable_undefined_codec } from '@/utils/zod'
+import { z_uuid, nullable_undefined_codec, z_bigint_codec } from '@/utils/zod'
 
 
 export const user = Table.create('user')
@@ -27,7 +27,7 @@ export const account = Table.create('account')
   .field('providerAccountId', 'varchar', 'not null', z.string())
   .field('refresh_token', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('access_token', 'varchar', '', nullable_undefined_codec(z.string()))
-  .field('expires_at', 'int', '', z.number())
+  .field('expires_at', 'bigint', '', z_bigint_codec())
   .field('token_type', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('scope', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('id_token', 'varchar', '', nullable_undefined_codec(z.string()))

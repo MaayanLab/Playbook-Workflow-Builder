@@ -6,7 +6,7 @@ export default function ORCIDProvider<P extends { sub:string, name: string, emai
     name: 'ORCID',
     type: 'oauth',
     wellKnown: "https://orcid.org/.well-known/openid-configuration",
-    authorization: { params: { scope: "openid" } },
+    authorization: { params: { scope: "openid email" } },
     idToken: true,
     checks: ["pkce", "state"],
     profile(profile) {

@@ -43,3 +43,17 @@ services:
     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
     - 5432:5432
+  # a playbook-partnership development environment
+  #  doesn't run in production, just for convenience
+  dev:
+    image: maayanlab/playbook-partnership-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+    - 3000:3000
+    deploy:
+      replicas: 0
+    user: "${DOCKER_USER}"
+    volumes:
+    - ./:/app

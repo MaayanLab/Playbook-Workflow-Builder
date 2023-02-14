@@ -6,14 +6,13 @@ RUN find /app -type f -a \! \( -name "package.json" -o -name "package-lock.json"
 FROM node:latest as prepare_npm_i
 WORKDIR /app
 COPY --from=prepare_package_json /app /app
-RUN npm i
+RUN echo "Installing NodeJS dependencies..." && npm i
 
 FROM node:latest as prepare_build
 WORKDIR /app
 COPY --from=prepare_npm_i /app /app
 COPY . /app
-ENV LANDING_PAGE=/graph/extend
-RUN npm run build
+RUN echo "Building app..." && LANDING_PAGE=/graph/extend npm run build
 
 FROM node:latest
 WORKDIR /app

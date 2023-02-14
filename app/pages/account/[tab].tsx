@@ -207,6 +207,14 @@ function AccountUIUploads() {
   return (
     <>
       <h3 className="bp4-heading">Uploads</h3>
+      <div className="hero">
+        <div className="hero-content text-center">
+          <div className="max-w-md">
+            <h1 className="text-5xl font-bold">Work In Progress</h1>
+            <p className="py-6 prose">This feature is still in development. Uploads may not be persistent.</p>
+          </div>
+        </div>
+      </div>
       <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
       {uploads ? (
         <div className="overflow-x-auto">
@@ -410,7 +418,14 @@ function AccountUIBioCompute() {
   return (
     <>
       <h3 className="bp4-heading">BioCompute Integration</h3>
-      TODO
+      <div className="hero">
+        <div className="hero-content text-center">
+          <div className="max-w-md">
+            <h1 className="text-5xl font-bold">Coming Soon</h1>
+            <p className="py-6 prose">This feature is currently in development. This is currently a non-functioning mockup.</p>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
@@ -419,6 +434,14 @@ function AccountUICAVATICA() {
   return (
     <>
       <h3 className="bp4-heading">CAVATICA Integration</h3>
+      <div className="hero">
+        <div className="hero-content text-center">
+          <div className="max-w-md">
+            <h1 className="text-5xl font-bold">Coming Soon</h1>
+            <p className="py-6 prose">This feature is currently in development. This is currently a non-functioning mockup.</p>
+          </div>
+        </div>
+      </div>
       <p className="bp4-running-text">
         <a href="https://www.cavatica.org/">CAVATICA</a> is a data analysis and sharing platform designed to accelerate discovery in a scalable, cloud-based compute environment where data, results, and workflows are shared among the world's research community. Developed by Seven Bridges and funded in-part by a grant from the National Institutes of Health (NIH) Common Fund, CAVATICA is continuously updated with new tools and datasets.</p>
         <p className="my-2">CAVATICA offers secure storage and compute in a cloud environment. Appyter integration with CAVATICA enables you to execute Appyters against data in a CAVATICA project and use CAVATICA-managed computational resources.</p>

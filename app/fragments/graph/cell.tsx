@@ -1,3 +1,4 @@
+import React from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { z } from 'zod'
 import { useRouter } from 'next/router'
@@ -7,11 +8,24 @@ import type KRG from '@/core/KRG'
 export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
   const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
-  const processNode = krg.getProcessNode(head.process.type)
+  const processNode = React.useMemo(() => krg.getProcessNode(head.process.type), [head])
+  const outputNode = React.useMemo(() => {
+    if (!processNode) return
+    if (!rawOutput || outputError) return processNode.output
+    return krg.getDataNode(rawOutput.type)
+  }, [processNode, rawOutput, outputError])
   const inputs = head.process.inputs
-  const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
-  const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
-  const View = outputNode ? outputNode.view : undefined
+  const { output, decodeError } = React.useMemo(() => {
+    if (outputError || !outputNode) return {}
+    if (!rawOutput) return { output: rawOutput }
+    try {
+      return { output: outputNode.codec.decode(rawOutput.value) }
+    } catch (e: any) {
+      console.error(e)
+      return { decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
+    }
+  }, [rawOutput, outputError, outputNode])
+  const View = outputNode?.view
   const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
   return (
     <div className="flex-grow flex flex-col">
@@ -40,14 +54,15 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
         : null}
       </div>
       <div className="flex-grow flex flex-col py-4">
-        {outputNode ? (
-          <>
+        {outputError ? <div className="alert alert-error">{outputError.toString()}</div>
+        : !outputNode ? <div>Loading...</div>
+        : <>
             <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
-            {View && output ? View(output) : 'Waiting for input'}
-          </>
-        ) : (
-          <div>Loading...</div>
-        )}
+            {decodeError ? <div className="alert alert-error">{decodeError.toString()}</div>
+            : !View || output === undefined ? <div>Loading...</div>
+            : output === null ? <div>Waiting for input</div>
+            : View(output)}
+          </>}
       </div>
     </div>
   )

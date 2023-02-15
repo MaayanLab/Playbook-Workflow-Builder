@@ -35,16 +35,17 @@ export default handler(async (req, res) => {
         return {
           key,
           value: await Promise.all(files.map(async (file) => {
+            const url = `file://${file.path}`
             const sha256 = await sha256FromFile(file.path)
             const upload = await db.objects.upload.upsert({
               where: {
-                url: `file://${file.path}`,
+                url,
                 sha256,
               },
               create: {
-                url: `file://${file.path}`,
+                url,
                 sha256,
-                size: file.size,
+                size: file.size.toString(),
               },
             })
             await db.objects.user_upload.upsert({
@@ -58,7 +59,7 @@ export default handler(async (req, res) => {
                 filename: file.originalFilename,
               },
             })
-            return file.path
+            return url
           })),
         }
       })

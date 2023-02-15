@@ -1,14 +1,16 @@
+import fsspec
 import numpy as np
 import anndata as ad
 
 def anndata_from_gctx(path):
   import h5py
-  f = h5py.File(path, 'r')
-  return ad.AnnData(
-    X=f['0']['DATA']['0']['MATRIX'],
-    obs=f['0']['META']['0']['ROW'],
-    var=f['0']['META']['0']['COL'],
-  )
+  with fsspec.open(path) as fr:
+    f = h5py.File(fr, 'r')
+    return ad.AnnData(
+      X=f['0']['DATA']['0']['MATRIX'],
+      obs=f['0']['META']['0']['ROW'],
+      var=f['0']['META']['0']['COL'],
+    )
 
 def anndata_from_gct(path):
   import fsspec
@@ -27,21 +29,27 @@ def anndata_from_path(path):
   ''' Read from a bunch of different formats, get an anndata file
   '''
   if path.endswith('.h5ad'):
-    return ad.read_h5ad(path)
+    with fsspec.open(path, 'r') as fr:
+      return ad.read_h5ad(fr)
   elif path.endswith('.csv'):
-    return ad.read_text(path, delimiter=',')
+    with fsspec.open(path, 'r') as fr:
+      return ad.read_text(fr, delimiter=',')
   elif path.endswith('.tsv'):
-    return ad.read_text(path, delimiter='\t')
+    with fsspec.open(path, 'r') as fr:
+      return ad.read_text(fr, delimiter='\t')
   elif path.endswith('.txt') or path.endswith('.tab') or path.endswith('.data'):
-    return ad.read_text(path, delimiter=None)
+    with fsspec.open(path, 'r') as fr:
+      return ad.read_text(fr, delimiter=None)
   elif path.endswith('.xlsx'):
-    return ad.read_excel(path)
+    with fsspec.open(path, 'r') as fr:
+      return ad.read_excel(fr)
   elif path.endswith('.gctx'):
     return anndata_from_gctx(path)
   elif path.endswith('.gct'):
     return anndata_from_gct(path)
   elif path.endswith('.h5'):
-    return ad.read_hdf(path)
+    with fsspec.open(path, 'r') as fr:
+      return ad.read_hdf(fr)
   else:
     raise NotImplementedError
 

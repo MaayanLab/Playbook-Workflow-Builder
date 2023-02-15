@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
 import type KRG from '@/core/KRG'
+import { TimeoutError } from '@/spec/error'
 
 export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
@@ -54,8 +55,8 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
         : null}
       </div>
       <div className="flex-grow flex flex-col py-4">
-        {outputError ? <div className="alert alert-error">{outputError.toString()}</div>
-        : !outputNode ? <div>Loading...</div>
+        {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error">{outputError.toString()}</div> : null}
+        {!outputNode ? <div>Loading...</div>
         : <>
             <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
             {decodeError ? <div className="alert alert-error">{decodeError.toString()}</div>

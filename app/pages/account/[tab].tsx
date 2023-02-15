@@ -12,12 +12,13 @@ import { useRouter } from 'next/router'
 import React from 'react'
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
-import { SessionWithId } from '../api/auth/[...nextauth]'
+import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 import Icon from '@/app/components/icon'
 import { delete_icon, edit_icon, fork_icon, save_icon, share_icon, view_report_icon } from '@/icons'
 import { z } from 'zod'
 import { FileInput, FileURL } from '@/components/core/file'
 import fetcher from '@/utils/next-rest-fetcher'
+import Link from 'next/link'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -71,6 +72,7 @@ function AccountUI({ session }: { session: SessionWithId }) {
       <span className='font-bold'>Data</span>
       <Tab id="uploads" title={<><Bp4Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIUploads />} />
       <Tab id="playbooks" title={<><Bp4Icon icon="control" /> Playbooks</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIPlaybooks />} />
+      <Tab id="suggestions" title={<><Bp4Icon icon="lightbulb" /> Suggestions</>} panelClassName="flex-grow flex flex-col" panel={<AccountUISuggestions />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Integrations</span>
       <Tab id="biocompute" title={<><Bp4Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col" panel={<AccountUIBioCompute />} />
@@ -413,6 +415,85 @@ function AccountUIPlaybooks() {
   )
 }
 
+function AccountUISuggestions() {
+  const router = useRouter()
+  const { data: suggestions, isLoading } = useSWR<Array<TypedSchemaRecord<typeof schema.suggestion>>>('/api/db/user/suggestions', fetcher)
+  const [suggestionToDelete, setSuggestionToDelete] = React.useState<TypedSchemaRecord<typeof schema.suggestion> | undefined>(undefined)
+  const { trigger: deleteSuggestion, isMutating } = useSWRMutation('/api/db/user/suggestions', deleter)
+  return (
+    <>
+      <h3 className="bp4-heading">Suggestions</h3>
+      <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
+      {suggestions ? (
+        <div className="overflow-x-auto">
+          <table className="table table-compact w-full">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Inputs</th> 
+                <th>Output</th>
+                <th>Timestamp</th>
+                <th>Actions</th>
+              </tr>
+            </thead> 
+            <tbody>
+              {suggestions.length === 0 ? <tr><td colSpan={5} align="center">No suggestions registered</td></tr> : null}
+              {suggestions.map(suggest => (
+                <tr key={suggest.id}>
+                  <td>{suggest.name}</td>
+                  <td>{suggest.inputs}</td>
+                  <td>{suggest.output}</td>
+                  <td>{suggest.created.toString()}</td>
+                  <td className="flex flex-row">
+                    <button onClick={async () => {
+                      const req = await fetch(`/api/db/fpl/start/extend`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          type: suggest.name,
+                          inputs: {},
+                        })
+                      })
+                      const res = z.string().parse(await req.json())
+                      router.push(`/graph/${res}/extend`)
+                    }}>
+                      <Icon icon={fork_icon} color="black" />
+                    </button>
+                    <button onClick={() => {
+                      setSuggestionToDelete(suggest)
+                    }}>
+                      <Icon icon={delete_icon} color="black" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              <tr><td colSpan={5} align="center">
+                <Link href="/graph/start/node/start/suggest"><button className="btn btn-primary btn-sm">Suggest a core data type</button></Link>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete suggestion"
+        icon="delete"
+        intent="danger"
+        isOpen={suggestionToDelete !== undefined}
+        canEscapeKeyCancel
+        canOutsideClickCancel
+        onCancel={() => {setSuggestionToDelete(undefined)}}
+        onConfirm={() => {
+          if (!suggestionToDelete) return
+          deleteSuggestion(suggestionToDelete.id, { revalidate: true })
+            .then(() => setSuggestionToDelete(undefined))
+        }}
+      >
+        Are you sure you want to delete {suggestionToDelete?.name} suggestioned at {suggestionToDelete?.created.toString()}?
+        After clicking Delete Suggestion, your suggestion will be subject to deletion and <b>cannot be restored</b>.<br />
+      </Alert>
+    </>
+  )
+}
 
 function AccountUIBioCompute() {
   return (

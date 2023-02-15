@@ -2,6 +2,7 @@ import useSWRImmutable from 'swr/immutable'
 import levenSort from '@/utils/leven-sort'
 import { Icon, gene_icon, drug_icon, tissue_icon, pathway_icon, phenotype_icon, disease_icon } from '@/icons'
 import { MetaNodeMetadata } from '@/spec/metanode'
+import fetcher from '@/utils/next-rest-fetcher'
 
 export type Primative = {
   name: string,
@@ -19,8 +20,6 @@ export type Primative = {
   }
 }
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
-
 export const Disease = {
   name: 'Disease',
   label: 'Disease',
@@ -35,7 +34,7 @@ export const Disease = {
   },
 } as Primative
 
-const pubchemFetcher = (url: string) => fetcher(url).then(({ dictionary_terms: { compound } }) => compound)
+const pubchemFetcher = (url: string) => fetcher<any>(url).then(({ dictionary_terms: { compound } }) => compound)
 
 function usePubchemDrugSuggestions(search: string) {
   const { data, error } = useSWRImmutable<string[]>(() => search.length >= 3 ? `https://pubchem.ncbi.nlm.nih.gov/rest/autocomplete/compound/${encodeURIComponent(search)}` : null, pubchemFetcher)

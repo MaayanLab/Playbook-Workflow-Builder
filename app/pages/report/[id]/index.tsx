@@ -15,6 +15,7 @@ import Icon from '@/app/components/icon'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon, start_icon, func_icon, variable_icon } from '@/icons'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
+import fetcher from '@/utils/next-rest-fetcher'
 import usePublicUrl from '@/utils/next-public-url'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
@@ -53,11 +54,6 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       fallback,
     }
   }
-}
-
-async function fetcher(path: string): Promise<Array<Metapath>> {
-  const req = await fetch(path)
-  return await req.json()
 }
 
 function useSticky(value: any) {

@@ -17,12 +17,12 @@ import Icon from '@/app/components/icon'
 import { delete_icon, edit_icon, fork_icon, save_icon, share_icon, view_report_icon } from '@/icons'
 import { z } from 'zod'
 import { FileInput, FileURL } from '@/components/core/file'
+import fetcher from '@/utils/next-rest-fetcher'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
-const fetcher = (endpoint: string) => fetch(endpoint).then(res => res.json())
 const poster = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
 const deleter = (endpoint: string, { arg }: { arg: any }) => fetch(`${endpoint}/${arg}/delete`, { method: 'POST' }).then(res => res.json())
 

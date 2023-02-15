@@ -16,6 +16,7 @@ import { SWRConfig } from 'swr'
 import type { Metapath } from '@/app/fragments/graph/types'
 import { MetaNode } from '@/spec/metanode'
 import { UserIdentity } from '@/app/fragments/graph/useridentity'
+import fetcher from '@/utils/next-rest-fetcher'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -97,11 +98,6 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       suggest,
     }
   }
-}
-
-async function fetcher(path: string): Promise<Array<Metapath>> {
-  const req = await fetch(path)
-  return await req.json()
 }
 
 export default function App({ fallback, extend, suggest }: { fallback: any, extend: boolean, suggest: boolean }) {

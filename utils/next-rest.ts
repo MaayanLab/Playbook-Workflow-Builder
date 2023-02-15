@@ -7,7 +7,7 @@ const handler = (handler_: (req: NextApiRequest, res: NextApiResponse) => Promis
   } catch (e) {
     res
       .status(('error_code' in (e as ResponseCodedError)) ? (e as ResponseCodedError).error_code : 500)
-      .end((e as Error).toString())
+      .json((e as Error).toString())
   }
 }
 export default handler

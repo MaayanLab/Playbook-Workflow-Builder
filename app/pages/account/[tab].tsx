@@ -232,6 +232,7 @@ function AccountUIUploads() {
               </tr>
             </thead> 
             <tbody>
+              {uploads.length === 0 ? <tr><td colSpan={6} align="center">No uploads</td></tr> : null}
               {uploads.map(upload => (
                 <tr key={upload.id}>
                   <td>{upload.filename}</td>
@@ -265,6 +266,20 @@ function AccountUIUploads() {
                   </td>
                 </tr>
               ))}
+              <tr><td colSpan={6} align="center">
+                <button className="btn btn-primary btn-sm" onClick={async () => {
+                  const req = await fetch(`/api/db/fpl/start/extend`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      type: FileInput.spec,
+                      inputs: {},
+                      data: { type: FileURL.spec, },
+                    })
+                  })
+                  const res = z.string().parse(await req.json())
+                  router.push(`/graph/${res}`)
+                }}>Upload a new file</button>
+              </td></tr>
             </tbody>
           </table>
         </div>

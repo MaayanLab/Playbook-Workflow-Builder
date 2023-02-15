@@ -16,7 +16,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     <>
       <RuntimeConfig>
         <SessionProvider session={session}>
-          <HotkeysProvider><Component {...pageProps} /></HotkeysProvider>
+          <HotkeysProvider>
+            <Component {...pageProps} />
+          </HotkeysProvider>
         </SessionProvider>
         <Analytics />
       </RuntimeConfig>

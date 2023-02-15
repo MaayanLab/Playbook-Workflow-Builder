@@ -13,14 +13,12 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Icon from '@/app/components/icon'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon, start_icon, func_icon, variable_icon } from '@/icons'
-import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 import fetcher from '@/utils/next-rest-fetcher'
 import usePublicUrl from '@/utils/next-public-url'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
-const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 type Metapath = ReturnType<FPL['toJSON']>
 

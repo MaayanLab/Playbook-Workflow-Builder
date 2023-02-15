@@ -11,7 +11,7 @@ const RuntimeConfigContext = React.createContext(fallbackRuntimeConfig)
 
 export function RuntimeConfig({ children }: React.PropsWithChildren<{}>) {
   const router = useRouter()
-  const { data: runtimeConfig } = useSWR(() => router.isReady ? `${router.basePath}/api/config` : undefined, fetcher)
+  const { data: runtimeConfig } = useSWR<typeof fallbackRuntimeConfig>(() => router.isReady ? `${router.basePath}/api/config` : undefined, fetcher)
   return (
     <RuntimeConfigContext.Provider value={runtimeConfig ? runtimeConfig : fallbackRuntimeConfig}>
       {children}

@@ -1,5 +1,4 @@
 import React from 'react'
-import styles from './breadcrumbs.module.css'
 import type { Icon as IconT } from '@/icons'
 import Icon from '@/app/components/icon'
 import * as dict from '@/utils/dict'
@@ -92,7 +91,6 @@ export default function Breadcrumbs(
           return (
             <path
               key={`${src}__${dst}:${side}`}
-              className={styles.edges}
               stroke="black"
               strokeWidth={0.05}
               fill="none"
@@ -106,7 +104,7 @@ export default function Breadcrumbs(
           return (
             <g
               key={`${id}`}
-              className={`${styles.nodes} ${styles.data}`}
+              className="cursor-pointer"
               transform={`translate(${x} 0)`}
               onClick={(evt) => onclick(evt, d.id)}
             >

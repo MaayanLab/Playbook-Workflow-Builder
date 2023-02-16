@@ -4,7 +4,7 @@ import python from '@/utils/python'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 
 
-export const ZScoreNormalizeGeneCountMatrix = MetaNode.createProcess('ZScoreNormalizeGeneCountMatrix')
+export const ZScoreNormalizeGeneCountMatrix = MetaNode('ZScoreNormalizeGeneCountMatrix')
   .meta({
     label: 'Z Score Normalize A Gene Count Matrix',
     description: 'Z-score normalize a gene count matrix, return a gene count matrix',

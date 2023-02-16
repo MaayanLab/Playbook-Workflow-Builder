@@ -17,7 +17,7 @@ import { downloadBlob } from '@/utils/download'
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
 function EnrichrSet_T<T = InternalDataMetaNode>(SetT: DataMetaNode<T>) {
-  return MetaNode.createData(`Enrichr[${SetT.spec}]`)
+  return MetaNode(`Enrichr[${SetT.spec}]`)
     .meta({
       label: `Enrichr ${SetT.meta.label}`,
       description: SetT.meta.description,
@@ -72,7 +72,7 @@ export const EnrichrSetTToSetT = [
   { T: Tissue, EnrichrSetT: EnrichrTissueSet, SetT: TissueSet },
   { T: Gene, EnrichrSetT: EnrichrGeneSet, SetT: GeneSet },
 ].flatMap(({ T, EnrichrSetT, SetT }) => [
-    MetaNode.createProcess(`EnrichrSetTToSetT[${T.name}]`)
+    MetaNode(`EnrichrSetTToSetT[${T.name}]`)
       .meta({
         label: `Enrichr Set of ${T.label} as Set`,
         icon: [enrichr_icon],
@@ -82,7 +82,7 @@ export const EnrichrSetTToSetT = [
       .output(SetT)
       .resolve(async (props) => props.inputs.enrichrset.set)
       .build(),
-    MetaNode.createProcess(`EnrichrSetTToGMT[${T.name}]`)
+    MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
         label: `Enrichr Set of ${T.label} as GMT`,
         icon: [enrichr_icon],
@@ -96,7 +96,7 @@ export const EnrichrSetTToSetT = [
   ]
 )
 
-export const EnrichrEnrichmentAnalysis = MetaNode.createData('EnrichrEnrichmentAnalysis')
+export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .meta({
     label: 'Enrichr Enrichment Analysis',
     description: 'A gene set submitted to Enrichr',
@@ -116,7 +116,7 @@ export const EnrichrEnrichmentAnalysis = MetaNode.createData('EnrichrEnrichmentA
   ))
   .build()
 
-export const EnrichrGenesetSearch = MetaNode.createProcess('EnrichrGenesetSearch')
+export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .meta({
     label: `Enrichr Enrichment Analysis`,
     tags: {
@@ -185,7 +185,7 @@ export const EnrichrGenesetSearchT = [
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
-  MetaNode.createProcess(`ExtractEnrichrGenesetSearch[${bg.name}]`)
+  MetaNode(`ExtractEnrichrGenesetSearch[${bg.name}]`)
     .meta({
       label: `Extract Significant ${bg.label} Signatures`,
       icon: [enrichr_icon],
@@ -199,7 +199,7 @@ backgrounds.map(bg => ({ bg, output }))
     .build()
 )
 
-export const EnrichrGeneSearchResults = MetaNode.createData(`EnrichrGeneSearchResults`)
+export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
   .meta({
     label: `Enrichr Gene Search Results`,
     icon: [enrichr_icon, search_icon, gene_icon],
@@ -218,7 +218,7 @@ export const EnrichrGeneSearchResults = MetaNode.createData(`EnrichrGeneSearchRe
   })
   .build()
 
-export const EnrichrGeneSearch = MetaNode.createProcess(`EnrichrGeneSearch`)
+export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .meta({
     label: `Enrichr Gene Search`,
     icon: [enrichr_icon, search_icon, gene_icon],
@@ -256,7 +256,7 @@ export const EnrichrGeneSearchT = [
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
-  MetaNode.createProcess(`ExtractEnrichrGeneSearch[${bg.name}]`)
+  MetaNode(`ExtractEnrichrGeneSearch[${bg.name}]`)
     .meta({
       label: `Extract ${bg.label} Signatures`,
       icon: [enrichr_icon],
@@ -270,7 +270,7 @@ backgrounds.map(bg => ({ bg, output }))
     .build()
 )
 
-export const EnrichrTermSearchResults = MetaNode.createData(`EnrichrTermSearchResults`)
+export const EnrichrTermSearchResults = MetaNode(`EnrichrTermSearchResults`)
   .meta({
     label: `Enrichr Term Search Results`,
     icon: [enrichr_icon, search_icon],
@@ -299,7 +299,7 @@ export const EnrichrTermTSearch = [
   { T: Phenotype, TermT: PhenotypeTerm },
   { T: Tissue, TermT: TissueTerm },
 ].map(({ T, TermT }) =>
-  MetaNode.createProcess(`EnrichrTermSearch[${T.name}]`)
+  MetaNode(`EnrichrTermSearch[${T.name}]`)
     .meta({
       label: `Enrichr ${T.label} Term Search`,
       icon: [...array.ensureArray(T.icon), enrichr_icon],
@@ -338,7 +338,7 @@ export const EnrichrTermSearchT = [
 ].flatMap(({ backgrounds, output }) =>
   backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
-  MetaNode.createProcess(`ExtractEnrichrTermSearch[${bg.name}]`)
+  MetaNode(`ExtractEnrichrTermSearch[${bg.name}]`)
     .meta({
       label: `Extract ${bg.label} Signatures`,
       icon: [enrichr_icon],

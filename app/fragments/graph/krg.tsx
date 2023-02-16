@@ -13,7 +13,7 @@ export default function useKRG() {
     for (const suggestion of dict.values(suggestions)) {
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {
-        OutputNode = MetaNode.createData(suggestion.output)
+        OutputNode = MetaNode(suggestion.output)
           .meta({
             label: suggestion.output,
             description: `A data type, suggested as part of ${suggestion.name}`,
@@ -28,7 +28,7 @@ export default function useKRG() {
       }
       let ProcessNode = krg.getProcessNode(suggestion.name)
       if (ProcessNode === undefined) {
-        const ProcessNode = MetaNode.createProcess(suggestion.name)
+        const ProcessNode = MetaNode(suggestion.name)
           .meta({
             label: suggestion.name,
             description: suggestion.description,

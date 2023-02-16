@@ -6,7 +6,7 @@ import { Table, Cell, Column } from '@/app/components/Table'
 import { GeneSet } from '@/components/core/input/set'
 import { downloadBlob } from '@/utils/download'
 
-export const GMT = MetaNode.createData(`GMT`)
+export const GMT = MetaNode(`GMT`)
   .meta({
     label: `Gene Matrix Transpose`,
     description: 'Terms mapped to genes',
@@ -43,7 +43,7 @@ export const GMT = MetaNode.createData(`GMT`)
   })
   .build()
 
-export const GMTUnion = MetaNode.createProcess('GMTUnion')
+export const GMTUnion = MetaNode('GMTUnion')
   .meta({
     label: `Compute Union Geneset`,
     description: 'Find the union set of all genes in the GMT'
@@ -55,7 +55,7 @@ export const GMTUnion = MetaNode.createProcess('GMTUnion')
   })
   .build()
 
-export const GMTIntersection = MetaNode.createProcess('GMTIntersection')
+export const GMTIntersection = MetaNode('GMTIntersection')
   .meta({
     label: `Compute Intersection Geneset`,
     description: 'Find the intersecting set of all genes in the GMT'
@@ -67,7 +67,7 @@ export const GMTIntersection = MetaNode.createProcess('GMTIntersection')
   })
   .build()
 
-export const GMTConsensus = MetaNode.createProcess('GMTConsensus')
+export const GMTConsensus = MetaNode('GMTConsensus')
   .meta({
     label: `Compute Consensus Geneset`,
     description: 'Find genes which appear in more than one set'
@@ -88,7 +88,7 @@ export const GMTConsensus = MetaNode.createProcess('GMTConsensus')
   })
   .build()
 
-export const GenesetsToGMT = MetaNode.createProcess('GenesetsToGMT')
+export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .meta({
     label: `Assemble GMT from Genesets`,
     description: 'Group multiple independently generated genesets as a single GMT'
@@ -100,7 +100,7 @@ export const GenesetsToGMT = MetaNode.createProcess('GenesetsToGMT')
   })
   .build()
 
-export const GMTConcatenate = MetaNode.createProcess('GMTConcatenate')
+export const GMTConcatenate = MetaNode('GMTConcatenate')
   .meta({
     label: `Concatenate GMTs`,
     description: 'Join several GMTs into one'

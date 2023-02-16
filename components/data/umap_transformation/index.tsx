@@ -3,7 +3,7 @@ import { BokehPlot } from '@/components/viz/bokeh'
 import { MetaNode } from '@/spec/metanode'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 
-export const UMAPBokehPlotFromGeneCountMatrix = MetaNode.createProcess('UMAPBokehPlotFromGeneCountMatrix')
+export const UMAPBokehPlotFromGeneCountMatrix = MetaNode('UMAPBokehPlotFromGeneCountMatrix')
   .meta({
     label: 'UMAP Bokeh Plot From Gene Count Matrix',
     description: 'Construct UMAP bokeh plot From gene count matrix',

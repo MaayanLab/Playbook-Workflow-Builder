@@ -48,7 +48,7 @@ export function uniqJsonSubset(data:MyGeneIDOutputArray) {
 }
 
 // A unique name for your data type is used here
-export const ConvertedGeneID = MetaNode.createData('ConvertedGeneID')
+export const ConvertedGeneID = MetaNode('ConvertedGeneID')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'JSON for converted gene IDs table',

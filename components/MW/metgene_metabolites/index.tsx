@@ -4,7 +4,7 @@ import { MetgeneMetaboliteTable } from '../metgene_metabolite_table'
 
 
 // A unique name for your resolver is used here
-export const MetgeneMetabolites = MetaNode.createProcess('MetgeneMetabolites')
+export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Metabolites',

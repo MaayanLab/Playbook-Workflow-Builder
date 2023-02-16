@@ -30,7 +30,7 @@ export type MetGeneMetObjArray2 = z.infer<typeof MetGeneMetObjArray2C>
 
 
 // A unique name for your data type is used here
-export const MetgeneMetaboliteTable = MetaNode.createData('MetgeneMetaboliteTable')
+export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE metabolite table',

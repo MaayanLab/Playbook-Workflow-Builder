@@ -6,7 +6,7 @@ const Plot = dynamic(() => import('./bokeh'), { ssr: false })
 
 export type BokehJson = any
 
-export const BokehPlot = MetaNode.createData('BokehPlot')
+export const BokehPlot = MetaNode('BokehPlot')
   .meta({
     label: 'Bokeh Plot',
     description: 'A plot rendered using the bokeh library',

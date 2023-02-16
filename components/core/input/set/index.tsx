@@ -8,7 +8,7 @@ import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { downloadBlob } from '@/utils/download'
 
-const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
+const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
     description: `Set of ${T.label}s`,
@@ -54,7 +54,7 @@ export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
 export const TissueSet = Set_T(Tissue)
 
-const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: string[] }>) => MetaNode.createProcess(`Input[${SetT.spec}]`)
+const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: string[] }>) => MetaNode(`Input[${SetT.spec}]`)
   .meta({
     label: `${T.label} Set Input`,
     description: `Start with a set of ${T.label}s`,

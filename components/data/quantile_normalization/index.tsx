@@ -4,7 +4,7 @@ import python from '@/utils/python'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 
 
-export const QuantileNormalizeGeneCountMatrix = MetaNode.createProcess('QuantileNormalizeGeneCountMatrix')
+export const QuantileNormalizeGeneCountMatrix = MetaNode('QuantileNormalizeGeneCountMatrix')
   .meta({
     label: 'Quantile Normalize A Gene Count Matrix',
     description: 'Quantile normalize a gene count matrix, return a gene count matrix',

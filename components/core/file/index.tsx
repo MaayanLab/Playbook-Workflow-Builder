@@ -8,7 +8,7 @@ import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
-export const FileURL = MetaNode.createData('FileURL')
+export const FileURL = MetaNode('FileURL')
   .meta({
     label: 'File URL',
     description: 'An arbitrary file url',
@@ -22,7 +22,7 @@ export const FileURL = MetaNode.createData('FileURL')
   ))
   .build()
 
-export const FileInput = MetaNode.createProcess('FileInput')
+export const FileInput = MetaNode('FileInput')
   .meta({
     label: 'Input a File',
     description: 'A file upload',

@@ -4,7 +4,7 @@ import { MetaNode } from '@/spec/metanode'
 import { ScoredTissues } from '@/components/core/input/scored'
 import { barchart_icon } from '@/icons'
 
-export const TissueBarplotFromSignificantTissue = MetaNode.createProcess('TissueBarplotFromSignificantTissue')
+export const TissueBarplotFromSignificantTissue = MetaNode('TissueBarplotFromSignificantTissue')
   .meta({
     label: 'Tissue Barplot from Significant Tissues',
     description: 'Construct Tissue Barplot with Significant Tissues',

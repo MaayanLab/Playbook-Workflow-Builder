@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 
-export const Error = MetaNode.createData('Error')
+export const Error = MetaNode('Error')
   .meta({
     label: 'Error',
     description: 'An error has occurred',

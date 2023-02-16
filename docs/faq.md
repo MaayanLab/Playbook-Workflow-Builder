@@ -16,7 +16,7 @@ MY_SECRET_TOKEN=supersecrettoken
 
 `components/[component]/index.ts`
 ```ts
-MetaNode.createProcess()
+MetaNode('MyProcess')
   //...
   .resolve(async (props) => {
     const req = await fetch(`mypublic.api/route`, {

@@ -9,7 +9,7 @@ import { downloadUrl } from '@/utils/download'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
-export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
+export const GeneCountMatrix = MetaNode('GeneCountMatrix')
   .meta({
     label: 'Gene Count Matrix',
     description: 'A gene count matrix file',
@@ -41,7 +41,7 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
   })
   .build()
 
-export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFromFile')
+export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   .meta({
     label: 'Resolve A Gene Count Matrix from a File',
     description: 'Ensure a file contains a gene count matrix, load it into a standard format',
@@ -55,7 +55,7 @@ export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFr
   ))
   .build()
 
-  export const Transpose = MetaNode.createProcess('Transpose')
+  export const Transpose = MetaNode('Transpose')
   .meta({
     label: 'Transpose',
     description: 'A demonstrative transpose operation',

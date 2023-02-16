@@ -4,7 +4,7 @@ import { ConvertedGeneID } from '../ConvertedGeneID'
 import { uniqJsonSubset } from '../ConvertedGeneID'
 
 // A unique name for your resolver is used here
-export const GeneIDConv = MetaNode.createProcess('GeneIDConv')
+export const GeneIDConv = MetaNode('GeneIDConv')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Gene ID Conversion',
@@ -35,7 +35,7 @@ export const GeneIDConv = MetaNode.createProcess('GeneIDConv')
 
 // Process to convert ConvertedGeneID to GeneInfo
 // Much of LINCS's APIs are centered around GeneInfo
-export const ConvertedGeneID2GeneInfo = MetaNode.createProcess('ConvertedGeneID2GeneInfo')
+export const ConvertedGeneID2GeneInfo = MetaNode('ConvertedGeneID2GeneInfo')
 .meta({
   label: 'Extract Gene Term from ConvertedGeneID',
   description: 'Given a ConvertedGeneID object, convert it to Gene Term object.',

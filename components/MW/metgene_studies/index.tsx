@@ -4,7 +4,7 @@ import { GeneTerm } from '@/components/core/input/term'
 import { MetGeneStudyTable } from '../metgene_study_table'
 
 // A unique name for your resolver is used here
-export const MetGeneStudies = MetaNode.createProcess('MetGeneStudies')
+export const MetGeneStudies = MetaNode('MetGeneStudies')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Studies',

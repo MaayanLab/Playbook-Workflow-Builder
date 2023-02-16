@@ -70,7 +70,7 @@ export const DataType = z.object({
   mydatatype: z.array(z.string())
 })
 
-export const Data = MetaNode.createData('Data')
+export const Data = MetaNode('Data')
   // This extra metadata will be used by the ultimate website, types should not have spaces or special symbols
   //  but labels can contain whatever. We may have additional attributes here in the future including
   //  icons, version, authorship information and more.
@@ -103,7 +103,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 
-export const PromptName = MetaNode.createProcess('PromptName')
+export const PromptName = MetaNode('PromptName')
   // As with data types, we have metadata for the process
   .meta({
     label: 'Do something',
@@ -140,7 +140,7 @@ A resolver is a data augmentation step which does not require direct user input.
 import { MetaNode } from '@/spec/metanode'
 import { Gene } from '@/components/Gene'
 
-export const ResolverName = MetaNode.createProcess('ResolverName')
+export const ResolverName = MetaNode('ResolverName')
   .meta({
     label: 'ResolverName',
     description: 'My resolver description',
@@ -169,7 +169,7 @@ import { MetaNode } from '@/spec/metanode'
 import { Gene } from '@/components/Gene'
 import python from '@/utils/python'
 
-export const ResolverName = MetaNode.createProcess('ResolverName')
+export const ResolverName = MetaNode('ResolverName')
   .meta({
     label: 'ResolverName',
     description: 'A useful description',

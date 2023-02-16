@@ -3,7 +3,7 @@ import { GeneTerm } from '@/components/core/input/term'
 import { MetGeneRxnTable } from '../metgene_rxn_table'
 
 // A unique name for your resolver is used here
-export const MetGeneRxns = MetaNode.createProcess('MetGeneRxns')
+export const MetGeneRxns = MetaNode('MetGeneRxns')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Reactions',

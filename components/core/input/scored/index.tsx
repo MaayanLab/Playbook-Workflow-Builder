@@ -7,7 +7,7 @@ import { weighted_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { downloadBlob } from '@/utils/download'
 
-const Scored_T = (T: Primative) => MetaNode.createData(`Scored[${T.name}]`)
+const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
   .meta({
     label: `Scored ${T.label}s`,
     description: `ZScores of ${T.label}s`,

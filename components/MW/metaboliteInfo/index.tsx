@@ -2,7 +2,7 @@ import { MetaNode } from '@/spec/metanode'
 import { MetaboliteTerm } from '@/components/core/input/term'
 import { MetaboliteSummary } from '../metabolite_summary'
 // A unique name for your resolver is used here
-export const MetaboliteInfo = MetaNode.createProcess('MetaboliteInfo')
+export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'My Metabolite Info Function',

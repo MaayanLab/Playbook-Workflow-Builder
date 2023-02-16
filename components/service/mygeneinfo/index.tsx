@@ -41,7 +41,7 @@ async function mygeneinfo(geneId: string): Promise<MyGeneInfo> {
   return await res.json()
 }
 
-export const GeneInfo = MetaNode.createData('GeneInfo')
+export const GeneInfo = MetaNode('GeneInfo')
   .meta({
     label: 'Gene Information',
     description: 'A Gene resolved with MyGeneInfo',
@@ -55,7 +55,7 @@ export const GeneInfo = MetaNode.createData('GeneInfo')
   ))
   .build()
 
-export const GeneInfoFromGeneTerm = MetaNode.createProcess('GeneInfoFromGeneTerm')
+export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   .meta({
     label: 'Resolve Gene Info from Term',
     description: 'Resolve gene info from gene term with MyGeneInfo',

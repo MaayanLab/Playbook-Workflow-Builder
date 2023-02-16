@@ -19,7 +19,7 @@ const TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) =
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
 
-const Suggestion = MetaNode.createData('Suggestion')
+const Suggestion = MetaNode('Suggestion')
   .meta({
     label: 'Suggestion',
     description: 'An actual suggestion',
@@ -56,7 +56,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
   const suggestion_edges: Array<ProcessMetaNode> = []
   if (input === undefined) {
     suggestion_edges.push(
-      MetaNode.createProcess(`SuggestDataType`)
+      MetaNode(`SuggestDataType`)
         .meta({
           label: 'Suggest a core data type',
           description: `This would be usable as an initial or intermediary data`,
@@ -69,7 +69,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
   }
   if (input !== undefined) {
     suggestion_edges.push(
-      MetaNode.createProcess(`SuggestInteractiveEdge[${input.spec}]`)
+      MetaNode(`SuggestInteractiveEdge[${input.spec}]`)
         .meta({
           label: 'Suggest a visualization method',
           description: `This would visualize the ${input.meta.label || input.spec}. Provide a description about what should be here.`,
@@ -80,7 +80,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .build() as ProcessMetaNode
     )
     suggestion_edges.push(
-      MetaNode.createProcess(`SuggestResolveEdge[${input.spec}]`)
+      MetaNode(`SuggestResolveEdge[${input.spec}]`)
         .meta({
           label: 'Suggest an algorithm or data transformation method',
           description: `This would transform the ${input.meta.label || input.spec}. Provide a description about what should be here.`,
@@ -223,7 +223,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
           // construct the KRG node locally
           let OutputNode = krg.getDataNode(suggestion_final.output)
           if (OutputNode === undefined) {
-            OutputNode = MetaNode.createData(suggestion_final.output)
+            OutputNode = MetaNode(suggestion_final.output)
               .meta({
                 label: suggestion_final.output,
                 description: `A data type, suggested as part of ${suggestion_final.name}`,
@@ -235,7 +235,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
               .build()
             krg.add(OutputNode)
           }
-          const ProcessNode = MetaNode.createProcess(suggestion_final.name)
+          const ProcessNode = MetaNode(suggestion_final.name)
             .meta({
               label: suggestion_final.name,
               description: suggestion_final.description,

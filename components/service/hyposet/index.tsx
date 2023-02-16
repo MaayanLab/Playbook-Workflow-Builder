@@ -10,7 +10,7 @@ const ReactSupervenn = dynamic(() => import('@/app/components/supervenn'), { ssr
 
 const hyposet_url = 'https://hyposet.maayanlab.cloud'
 
-export const Supervenn = MetaNode.createData('Supervenn')
+export const Supervenn = MetaNode('Supervenn')
   .meta({
     label: 'Supervenn Visualization',
     description: 'A visualization for comparing sets',
@@ -24,7 +24,7 @@ export const Supervenn = MetaNode.createData('Supervenn')
   ))
   .build()
 
-export const SuperVennFromGMT = MetaNode.createProcess('SuperVennFromGMT')
+export const SuperVennFromGMT = MetaNode('SuperVennFromGMT')
   .meta({
     label: 'Compare sets with Supervenn',
     description: 'Interactively analyse overlap between sets',

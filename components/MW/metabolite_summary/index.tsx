@@ -16,7 +16,7 @@ const MetSummaryObjC = z.object({
 export type  MetSummaryObj = z.infer<typeof  MetSummaryObjC>
 
 // A unique name for your data type is used here
-export const MetaboliteSummary = MetaNode.createData('MetaboliteSummary')
+export const MetaboliteSummary = MetaNode('MetaboliteSummary')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metabolite Summary',

@@ -3,7 +3,7 @@ import { BokehPlot } from '@/components/viz/bokeh'
 import { MetaNode } from '@/spec/metanode'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 
-export const TSNEBokehPlotFromGeneCountMatrix = MetaNode.createProcess('TSNEBokehPlotFromGeneCountMatrix')
+export const TSNEBokehPlotFromGeneCountMatrix = MetaNode('TSNEBokehPlotFromGeneCountMatrix')
   .meta({
     label: 'TSNE Bokeh Plot From Gene Count Matrix',
     description: 'Construct t-SNE bokeh plot From gene count matrix',

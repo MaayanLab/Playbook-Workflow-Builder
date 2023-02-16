@@ -16,7 +16,7 @@ export const GlyGenResponse = z.object({
 
 export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
 
-export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
+export const GlyGenResponseNode = MetaNode('GlyGenResponse')
   .meta({
     label: 'GlyGen Response',
     description: 'GlyGen response object',
@@ -38,7 +38,7 @@ export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
   ))
   .build()
 
-export const ProteinProductInformation = MetaNode.createProcess('ProteinProductInformation')
+export const ProteinProductInformation = MetaNode('ProteinProductInformation')
   .meta({
     label: 'Protein Product Information',
     description: 'Search for protein records in GlyGen',

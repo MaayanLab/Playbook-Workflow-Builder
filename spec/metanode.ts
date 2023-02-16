@@ -1,136 +1,212 @@
 /**
- * Typescript specification for metagraph definitions.
+ * The metanode specification is essentially a higher order typescript where semantic types are tied to:
+ *  - codecs (for encoding & decoding the concrete data to/from strings)
+ *  - views (for constructing a human-interactive rendering for inspecting the type)
+ * Additionally, semantic functions can be defined parameterized by those same semantic types, tied to:
+ *  - inputs (the semantically typed arguments)
+ *  - output (the semantically typed return value)
+ *  - resolve or prompt (given instances of properly typed arguments, produce an instance of the properly typed return value)
+ *    - resolve can be performed without user interaction and is just a function
+ *    - prompt is a rendered element responsible for translating human-interaction into the output
  */
 
-import { Codec } from '@/spec/codec'
 import React from 'react'
 import { z } from 'zod'
-import type { Icon } from '@/icons'
 import codecFrom from '@/utils/zod-codec'
-import type { MaybeArray, ValuesOfMaybeArray } from '@/utils/types'
+import type { Codec } from '@/spec/codec'
+import type { MaybeArray, ExtractKey, Ensure } from '@/utils/types'
+import type { Icon } from '@/icons'
 
 /**
- * These type helpers beak up the meta node definitions in such a way that they can be
- *  built up in a type safe fashion.
+ * The broadest type parameter for an IdentifiableMetaNode
  */
-
-export type MetaNodeMetadata<T = unknown> = {
-  label: string,
-  description: string,
-  icon?: Icon,
-  color?: string,
-  default?: T,
-  example?: T,
-  pagerank?: number
-  tags?: Record<string, Record<string, number>>,
+export type InternalIdentifiableMetaNode = {
+  spec: string
+  meta: {
+    label: string,
+    description: string,
+    icon?: Icon,
+    color?: string,
+    default?: any,
+    example?: any,
+    pagerank?: number
+    tags?: Record<string, Record<string, number>>,
+  }
 }
-export type MetaNodeGeneric<T = unknown> = { kind: 'data', spec: string, meta: MetaNodeMetadata<T>, codec: Codec<T> }
-export type MetaNodeExtractKind<T = MetaNodeGeneric> = T extends MaybeArray<{ kind: infer Kind }> ? Kind : never
-export type MetaNodeExtractSpec<T = MetaNodeGeneric> = T extends MaybeArray<{ spec: infer Spec }> ? Spec : never
-export type MetaNodeExtractMeta<T = MetaNodeGeneric> = T extends MaybeArray<{ meta: infer Meta }> ? Meta : never
-export type MetaNodeExtractData<T = MetaNodeGeneric> =
-  T extends Array<{ codec: Codec<infer Data> }> ? Data[]
-  : T extends { codec: Codec<infer Data> } ? Data
-  : never
-export type MetaNodeView<T = MetaNodeGenericData> = (props: MetaNodeExtractData<T>) => React.ReactElement
-export type MetaNodeWithKind<T = MetaNodeGenericData> = { kind: MetaNodeExtractKind<T> }
-export type MetaNodeWithSpec<T = MetaNodeGenericData> = { spec: MetaNodeExtractSpec<T> }
-export type MetaNodeWithMeta<T = MetaNodeGenericData> = { meta: MetaNodeExtractMeta<T> }
-export type MetaNodeWithCodec<T = MetaNodeGenericData> = { codec: Codec<MetaNodeExtractData<T>> }
-export type MetaNodeWithView<T = MetaNodeGenericData> = T extends { view: MetaNodeView<T> } ? T : never
-export type MetaNodeGenericData = MetaNodeGeneric & { view: MetaNodeView<MetaNodeGeneric> }
-export type MetaNodeDataType<T = MetaNodeGenericData> = MetaNodeWithKind<T> & MetaNodeWithSpec<T> & MetaNodeWithMeta<T> & MetaNodeWithCodec<T> & MetaNodeWithView<T>
-export type MetaNodeGenericProcess = { kind: 'process', spec: string, meta: MetaNodeMetadata, inputs: Record<string, MaybeArray<MetaNodeGenericData>>, output: MetaNodeGenericData }
-export type MetaNodeInputs<T = Record<string, MaybeArray<MetaNodeGenericData>>> = T extends { [K in keyof T]: MaybeArray<MetaNodeDataType<ValuesOfMaybeArray<T[K]>>> } ? T : never
-export type MetaNodeExtractInputs<T = MetaNodeGenericProcess> = T extends { inputs: MetaNodeInputs<infer Inputs> } ? Inputs : never
-export type MetaNodeOutput<T = MetaNodeGenericData> = T extends MetaNodeDataType<T> ? T : never
-export type MetaNodeExtractOutput<T = MetaNodeGenericProcess> = T extends { output: MetaNodeOutput<infer Output> } ? Output : never
-export type MetaNodeWithInputs<T = MetaNodeGenericProcess> = T extends { inputs: MetaNodeExtractInputs<T> } ? T : never
-export type MetaNodeWithOutput<T = MetaNodeGenericProcess> = T extends { output: MetaNodeExtractOutput<T> } ? T : never
-export type MetaNodeExtractInputsData<T = MetaNodeGenericProcess> = { [K in keyof MetaNodeExtractInputs<T>]: MetaNodeExtractData<MetaNodeExtractInputs<T>[K]> }
-export type MetaNodeExtractOutputData<T = MetaNodeGenericProcess> = MetaNodeExtractData<MetaNodeExtractOutput<T>>
-export type MetaNodePrompt<T = MetaNodeGenericProcess> = (props: { inputs: MetaNodeExtractInputsData<T>, output?: MetaNodeExtractOutputData<T>, submit: (output: MetaNodeExtractOutputData<T>) => void }) => React.ReactElement
-export type MetaNodeResolve<T = MetaNodeGenericProcess> = (props: { inputs: MetaNodeExtractInputsData<T> }) => Promise<MetaNodeExtractOutputData<T>>
-export type MetaNodeWithPrompt<T = MetaNodeGenericProcess> = T extends { prompt: MetaNodePrompt<T> } ? T : never
-export type MetaNodeWithResolve<T = MetaNodeGenericProcess> = T extends { resolve: MetaNodeResolve<T> } ? T : never
-export type MetaNodeGenericPrompt = MetaNodeGenericProcess & { prompt: MetaNodePrompt<MetaNodeGenericProcess> }
-export type MetaNodePromptType<T = MetaNodeGenericPrompt> = MetaNodeWithKind<T> & MetaNodeWithSpec<T> & MetaNodeWithMeta<T> & MetaNodeWithInputs<T> & MetaNodeWithOutput<T> & MetaNodeWithPrompt<T>
-export type MetaNodeGenericResolve = MetaNodeGenericProcess & { resolve: MetaNodeResolve<MetaNodeGenericProcess> }
-export type MetaNodeResolveType<T = MetaNodeGenericResolve> = MetaNodeWithKind<T> & MetaNodeWithSpec<T> & MetaNodeWithMeta<T> & MetaNodeWithInputs<T> & MetaNodeWithOutput<T> & MetaNodeWithResolve<T>
-export type MetaNodeGenericType = MetaNodeDataType | MetaNodePromptType | MetaNodeResolveType
-export type MetaNodeType<T> = MetaNodeDataType<T> | MetaNodePromptType<T> | MetaNodeResolveType<T>
 
 /**
- * This class is used to help build all the attributes of the MetaNodes in a
- *  type-safe manner
+ * The broadest type parameter for a DataMetaNode
  */
-export class MetaNode<T = unknown> {
-  constructor(public t: T) { }
-  /**
-   * Begin creating a node
-   */
-  static createData(spec: string) {
-    return new MetaNode({ spec, kind: 'data' as 'data' })
-  }
-  /**
-   * Meta descriptors associated with this node
-   */
-  meta<M extends MetaNodeMetadata>(meta: M & MetaNodeMetadata) {
-    return new MetaNode({ ...this.t, meta })
-  }
-  /**
-   * A codec for the node's underlying data
-   */
-  codec<C = undefined>(codec: z.ZodType<C> | Codec<C> = { encode: JSON.stringify, decode: JSON.parse }) {
-    const codec_: Codec<C> = ('parse' in codec) ? codecFrom(codec) : codec
-    return new MetaNode({ ...this.t, codec: codec_ })
-  }
+export type InternalDataMetaNode = InternalIdentifiableMetaNode & {
+  data: unknown,
+}
 
-  /* Data */
-  /**
-   * `codec` must be defined before view is definable
-   */
-  view(view: MetaNodeView<T>) {
-    return new MetaNode({ ...this.t, view })
-  }
+/**
+ * The broadest type parameter for a ProcessMetaNode
+ */
+export type InternalProcessMetaNode = InternalIdentifiableMetaNode & {
+  inputs: Record<string, DataMetaNode<InternalDataMetaNode>>,
+  output: DataMetaNode<InternalDataMetaNode>,
+}
 
-  /* Process */
+/**
+ * All metanodes should have a unique id and some metadata about it.
+ * 
+ * Parameters:
+ *  spec: A unique string for this type
+ *  meta: key-value metadata to elaborate on the datatype including human readable label & description
+ */
+export type IdentifiableMetaNode<T = InternalIdentifiableMetaNode> = {
+  kind: 'data' | 'process'
+  spec: Ensure<ExtractKey<T, 'spec'>, InternalIdentifiableMetaNode['spec']>
+  meta: Ensure<ExtractKey<T, 'meta'>, InternalIdentifiableMetaNode['meta']>
+}
 
-  /**
-   * Begin creating an process
-   */
-  static createProcess(spec: string) {
-    return new MetaNode({ spec, kind: 'process' as 'process' })
-  }
-  /**
-   * The input types of this action, keys mapped to values
-   */
-  inputs<IN = {}>(inputs: MetaNodeInputs<IN> = {} as MetaNodeInputs<IN>) {
-    return new MetaNode({ ...this.t, inputs: inputs })
-  }
-  /**
-   * The output type of this action
-   */
-  output<OUT>(output: MetaNodeOutput<OUT>) {
-    return new MetaNode({ ...this.t, output })
-  }
-  /**
-   * `input`/`output` must be defined before prompt is definable
-   */
-  prompt(prompt: MetaNodePrompt<T>) {
-    return new MetaNode({ ...this.t, prompt })
-  }
-  /**
-   * `input`/`output` must be defined before resolve is definable
-   */
-  resolve(resolve: MetaNodeResolve<T>) {
-    return new MetaNode({ ...this.t, resolve })
-  }
+/**
+ * A DataMetaNode represents a semantically annotated datatype.
+ *  Though a "First Name" and "Last Name" are both strings, they are different things. In the same way
+ *   a DataMetaNode represents something like a First Name, providing programatic *and* semantic typing guarantees.
+ * 
+ * Parameters:
+ *  spec: A unique string for this type
+ *  meta: key-value metadata to elaborate on the datatype including human readable label & description
+ *  codec: A Codec for encoding/decoding the programatic data type to/from a string
+ *  view: A JSX rendering of the data type
+ */
+export type DataMetaNode<T = InternalDataMetaNode> = IdentifiableMetaNode<T> & {
+  kind: 'data'
+  codec: Codec<ExtractKey<T, 'data'>>
+  view(value: ExtractKey<T, 'data'>): React.ReactElement
+}
 
-  /**
-   * Finalize the metanode spec
-   */
-  build(this: { t: MetaNodeType<T> }) {
-    return this.t
-  }
+/**
+ * Extract the typescript datatype from a DataMetaNode object
+ */
+export type DataMetaNodeData<T> =
+  T extends Array<DataMetaNode<infer I>>
+  ? Array<ExtractKey<I, 'data'>>
+  : T extends DataMetaNode<infer I>
+  ? ExtractKey<I, 'data'>
+  : never
+
+/**
+ * A BaseProcessMetaNode represents a semantically annotated function. That takes some arguments
+ *  which are semantically typed instances of a DataMetaNode and produces a single semantically typed instance of a DataMetaNode.
+ */
+export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaNode<T> & {
+  kind: 'process'
+  inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
+  output: ExtractKey<T, 'output'>
+}
+
+/**
+ * A ResolveMetaNode is a ProcessMetaNode that operates without user input, a "pure" function.
+ */
+export type ResolveMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T> & {
+  resolve(props: {
+    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+  }): Promise<DataMetaNodeData<ExtractKey<T, 'output'>>>
+}
+
+/**
+ * A PromptMetaNode is a ProcessMetaNode that operates with user feedback, allowing users to
+ *  inject information/decisions into the workflow.
+ */
+export type PromptMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T> & {
+  prompt(props: {
+    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+    submit: (output: DataMetaNodeData<ExtractKey<T, 'output'>>) => void
+  }): React.ReactElement
+}
+
+/**
+ * A ProcessMetaNode represents a semantically annotated function. That takes some arguments
+ *  which are semantically typed instances of a DataMetaNode and produces a single semantically typed instance of a DataMetaNode.
+ */
+export type ProcessMetaNode = PromptMetaNode | ResolveMetaNode
+
+/**
+ * A MetaNode represents a semantically annotated type, whether it be Data or a Process
+ */
+export type MetaNode = DataMetaNode | ProcessMetaNode
+
+/**
+ * An incremental builder which constructs the various metanode types preserving type safety
+ */
+export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: ID) {
+  return ({
+    /**
+     * Describe the metanode with human readable labels, descriptions, icons, etc..
+     */
+    meta: <META extends InternalIdentifiableMetaNode['meta']>(meta: META) =>
+    ({
+      /**
+       * A codec or zod specification for validating the data type for a DataMetaNode
+       */
+      codec: <DATA extends InternalDataMetaNode['data']>(codec: DataMetaNode<{ data: DATA }>['codec'] | z.ZodType<DATA> = { encode: JSON.stringify, decode: JSON.parse } as DataMetaNode<{ data: DATA }>['codec']) =>
+      ({
+        /**
+         * A view function for rendering the DataMetaNode using React
+         */
+        view: (view: DataMetaNode<{ data: DATA }>['view']) =>
+        ({
+          /**
+           * Build a DataMetaNode
+           */
+          build: () => ({ spec, meta, kind: 'data', codec: 'parse' in codec ? codecFrom(codec) : codec, view }) as DataMetaNode<{ spec: ID, meta: META, data: DATA }>,
+        })
+      }),
+      /**
+       * The input(s) to this ProcessMetaNode, of the form
+       *  { argumentName: SomeAlreadyDefinedDataMetaNode, ... }
+       */
+      inputs: <INPUTS>(inputs: {[K in keyof INPUTS]: INPUTS[K] extends MaybeArray<DataMetaNode<infer _>> ? INPUTS[K] : never} = {} as {[K in keyof INPUTS]: INPUTS[K] extends MaybeArray<DataMetaNode<infer _>> ? INPUTS[K] : never}) =>
+      ({
+        /**
+         * The output of this ProcessMetaNode, an already defined DataMetaNode
+         */
+        output: <OUTPUT>(output: OUTPUT extends DataMetaNode<infer _> ? OUTPUT : never) =>
+        ({
+          /**
+           * Define the resolve function for building a ResolveMetaNode -- this function uses the input arguments
+           *  to resolve output matching the output DataMetaNode.
+           */
+          resolve: (resolve: ResolveMetaNode<{ inputs: INPUTS, output: OUTPUT }>['resolve']) =>
+          ({
+            /**
+             * Build a ResolveMetaNode
+             */
+            build: () => ({ spec, meta, kind: 'process', inputs, output, resolve }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>
+          }),
+          /**
+           * Define the prompt function for building a PromptMetaNode -- this function uses the input arguments
+           *  to build a UI for prompting the user for information to create the output DataMetaNode.
+           */
+          prompt: (prompt: PromptMetaNode<{ inputs: INPUTS, output: OUTPUT }>['prompt']) =>
+          ({
+            /**
+             * Build a ProcessMetaNode
+             */
+            build: () => ({ spec, meta, kind: 'process', inputs, output, prompt }) as PromptMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>
+          })
+        })
+      })
+    })
+  })
+}
+
+/**
+ * @deprecated just call MetaNode('yourname')
+ */
+MetaNode.createData = (spec: string) => {
+  console.warn('Using Legacy MetaNode.createData(), please use MetaNode() instead')
+  return MetaNode(spec)
+}
+/**
+ * @deprecated just call MetaNode('yourname')
+ */
+MetaNode.createProcess = (spec: string) => {
+  console.warn('Using Legacy MetaNode.createProcess(), please use MetaNode() instead')
+  return MetaNode(spec)
 }

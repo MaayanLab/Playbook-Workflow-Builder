@@ -10,7 +10,6 @@ export const TissueBarplotFromSignificantTissue = MetaNode.createProcess('Tissue
     description: 'Construct Tissue Barplot with Significant Tissues',
     icon: [barchart_icon],
   })
-  .codec()
   .inputs({ tissues: ScoredTissues })
   .output(PlotlyPlot)
   .resolve(async (props) => await python(

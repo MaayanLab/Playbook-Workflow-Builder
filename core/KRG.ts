@@ -5,17 +5,17 @@
  *  the UI
  */
 
-import { MetaNodeDataType, MetaNodeGenericData, MetaNodeGenericType, MetaNodePromptType, MetaNodeResolveType } from "@/spec/metanode"
+import { DataMetaNode, MetaNode, ProcessMetaNode, PromptMetaNode, ResolveMetaNode } from "@/spec/metanode"
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 
 export default class KRG {
-  private dataNodes: Record<string, MetaNodeDataType> = {}
-  private resolveNodes: Record<string, MetaNodeResolveType> = {}
-  private promptNodes: Record<string, MetaNodePromptType> = {}
-  private processNodes: Record<string, MetaNodePromptType | MetaNodeResolveType> = {}
-  private processForInput: Record<string, Record<string, MetaNodePromptType | MetaNodeResolveType>> = {}
-  private processForOutput: Record<string, Record<string, MetaNodePromptType | MetaNodeResolveType>> = {}
+  private dataNodes: Record<string, DataMetaNode> = {}
+  private resolveNodes: Record<string, ResolveMetaNode> = {}
+  private promptNodes: Record<string, PromptMetaNode> = {}
+  private processNodes: Record<string, ProcessMetaNode> = {}
+  private processForInput: Record<string, Record<string, ProcessMetaNode>> = {}
+  private processForOutput: Record<string, Record<string, ProcessMetaNode>> = {}
 
   constructor() {}
 
@@ -47,7 +47,7 @@ export default class KRG {
     return dict.sortedValues(this.processForInput[spec] || {})
   }
 
-  add = <T extends MetaNodeDataType | MetaNodePromptType | MetaNodeResolveType = MetaNodeGenericType>(node: T) => {
+  add = (node: MetaNode) => {
     if (node.kind === 'data') {
       if (node.spec in this.dataNodes) {
         if (this.dataNodes[node.spec] === node) {
@@ -72,7 +72,7 @@ export default class KRG {
       }
       this.processNodes[node.spec] = node
       for (const arg in node.inputs) {
-        const input = array.ensureOne(node.inputs[arg]) as MetaNodeGenericData
+        const input = array.ensureOne(node.inputs[arg]) as DataMetaNode
         if (!(input.spec in this.processForInput)) {
           this.processForInput[input.spec] = {}
         }

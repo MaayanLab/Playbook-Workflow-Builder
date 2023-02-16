@@ -1,7 +1,7 @@
 import useSWRImmutable from 'swr/immutable'
 import levenSort from '@/utils/leven-sort'
 import { Icon, gene_icon, drug_icon, tissue_icon, pathway_icon, phenotype_icon, disease_icon } from '@/icons'
-import { MetaNodeMetadata } from '@/spec/metanode'
+import { InternalIdentifiableMetaNode } from '@/spec/metanode'
 import fetcher from '@/utils/next-rest-fetcher'
 
 export type Primative = {
@@ -11,11 +11,11 @@ export type Primative = {
   color?: string,
   extra?: {
     term?: {
-      meta?: Partial<MetaNodeMetadata<string>>,
+      meta?: Partial<InternalIdentifiableMetaNode['meta']>,
       autocomplete?: (search: string) => { items: string[], error?: string }
     },
     set?: {
-      meta?: Partial<MetaNodeMetadata<string[]>>,
+      meta?: Partial<InternalIdentifiableMetaNode['meta']>,
     },
   }
 }

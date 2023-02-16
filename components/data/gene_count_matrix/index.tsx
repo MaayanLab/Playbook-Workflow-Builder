@@ -47,7 +47,6 @@ export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFr
     description: 'Ensure a file contains a gene count matrix, load it into a standard format',
     icon: [file_transfer_icon],
   })
-  .codec()
   .inputs({ file: FileURL })
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(
@@ -61,7 +60,6 @@ export const GeneCountMatrixFromFile = MetaNode.createProcess('GeneCountMatrixFr
     label: 'Transpose',
     description: 'A demonstrative transpose operation',
   })
-  .codec()
   .inputs({ file: GeneCountMatrix })
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(

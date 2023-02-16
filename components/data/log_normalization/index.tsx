@@ -9,7 +9,6 @@ export const LogNormalizeGeneCountMatrix = MetaNode.createProcess('LogNormalizeG
     label: 'Log Normalize A Gene Count Matrix',
     description: 'Log_2 normalize a gene count matrix, return a gene count matrix',
   })
-  .codec()
   .inputs({ matrix: GeneCountMatrix })
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(

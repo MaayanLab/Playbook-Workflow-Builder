@@ -61,7 +61,6 @@ export const GeneInfoFromGeneTerm = MetaNode.createProcess('GeneInfoFromGeneTerm
     description: 'Resolve gene info from gene term with MyGeneInfo',
     icon: [mygeneinfo_icon],
   })
-  .codec()
   .inputs({ gene: GeneTerm })
   .output(GeneInfo)
   .resolve(async (props) => {

@@ -8,7 +8,6 @@ export const PCABokehPlotFromGeneCountMatrix = MetaNode.createProcess('PCABokehP
     label: 'PCA Bokeh Plot From Gene Count Matrix',
     description: 'Construct PCA Bokeh Plot From Gene Count Matrix',
   })
-  .codec()
   .inputs({ matrix: GeneCountMatrix })
   .output(BokehPlot)
   .resolve(async (props) => await python(

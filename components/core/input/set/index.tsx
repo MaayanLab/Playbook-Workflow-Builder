@@ -1,5 +1,5 @@
 import React from 'react'
-import { MetaNode } from '@/spec/metanode'
+import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
@@ -54,7 +54,7 @@ export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
 export const TissueSet = Set_T(Tissue)
 
-const Input_Set_T = (T: Primative, SetT: typeof GeneSet) => MetaNode.createProcess(`Input[${SetT.spec}]`)
+const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: string[] }>) => MetaNode.createProcess(`Input[${SetT.spec}]`)
   .meta({
     label: `${T.label} Set Input`,
     description: `Start with a set of ${T.label}s`,

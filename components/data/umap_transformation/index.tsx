@@ -8,7 +8,6 @@ export const UMAPBokehPlotFromGeneCountMatrix = MetaNode.createProcess('UMAPBoke
     label: 'UMAP Bokeh Plot From Gene Count Matrix',
     description: 'Construct UMAP bokeh plot From gene count matrix',
   })
-  .codec()
   .inputs({ matrix: GeneCountMatrix })
   .output(BokehPlot)
   .resolve(async (props) => await python(

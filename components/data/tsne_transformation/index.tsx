@@ -8,7 +8,6 @@ export const TSNEBokehPlotFromGeneCountMatrix = MetaNode.createProcess('TSNEBoke
     label: 'TSNE Bokeh Plot From Gene Count Matrix',
     description: 'Construct t-SNE bokeh plot From gene count matrix',
   })
-  .codec()
   .inputs({ matrix: GeneCountMatrix })
   .output(BokehPlot)
   .resolve(async (props) => await python(

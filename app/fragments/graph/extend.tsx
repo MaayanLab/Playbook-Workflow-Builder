@@ -3,7 +3,7 @@ import { NextRouter, useRouter } from 'next/router'
 import type KRG from '@/core/KRG'
 import { z } from 'zod'
 import { start_icon, rightarrow_icon, func_icon, variable_icon } from '@/icons'
-import { MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
+import { ProcessMetaNode } from '@/spec/metanode'
 import type { Metapath } from '@/app/fragments/graph/types'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
@@ -19,7 +19,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const selections = dict.init(metapath.map(item => ({ key: item.process.id, value: { process: item.process, processNode: krg.getProcessNode(item.process.type) } })))
   return (
-    <Catalog<MetaNodePromptType | MetaNodeResolveType & ({} | { onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
+    <Catalog<ProcessMetaNode & ({}|{ onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
       items={[
         ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
         ...SuggestionEdges(processNode ? processNode.output : undefined),

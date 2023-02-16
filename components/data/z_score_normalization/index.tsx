@@ -9,7 +9,6 @@ export const ZScoreNormalizeGeneCountMatrix = MetaNode.createProcess('ZScoreNorm
     label: 'Z Score Normalize A Gene Count Matrix',
     description: 'Z-score normalize a gene count matrix, return a gene count matrix',
   })
-  .codec()
   .inputs({ matrix: GeneCountMatrix })
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(

@@ -1,7 +1,7 @@
 import { NextRouter, useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
 import React from 'react'
-import { MetaNode, MetaNodeDataType, MetaNodePromptType, MetaNodeResolveType } from '@/spec/metanode'
+import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Intent } from '@blueprintjs/core'
 import dynamic from 'next/dynamic'
@@ -52,8 +52,8 @@ const Suggestion = MetaNode.createData('Suggestion')
   ))
   .build()
 
-export function SuggestionEdges(input?: MetaNodeDataType) {
-  const suggestion_edges: Array<MetaNodePromptType<any> | MetaNodeResolveType<any>> = []
+export function SuggestionEdges(input?: DataMetaNode) {
+  const suggestion_edges: Array<ProcessMetaNode> = []
   if (input === undefined) {
     suggestion_edges.push(
       MetaNode.createProcess(`SuggestDataType`)
@@ -61,10 +61,10 @@ export function SuggestionEdges(input?: MetaNodeDataType) {
           label: 'Suggest a core data type',
           description: `This would be usable as an initial or intermediary data`,
         })
-        .inputs({})
+        .inputs()
         .output(Suggestion)
         .prompt((props) => <></>)
-        .build()
+        .build() as ProcessMetaNode
     )
   }
   if (input !== undefined) {
@@ -77,7 +77,7 @@ export function SuggestionEdges(input?: MetaNodeDataType) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
-        .build()
+        .build() as ProcessMetaNode
     )
     suggestion_edges.push(
       MetaNode.createProcess(`SuggestResolveEdge[${input.spec}]`)
@@ -88,7 +88,7 @@ export function SuggestionEdges(input?: MetaNodeDataType) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
-        .build()
+        .build() as ProcessMetaNode
     )
   }
   return suggestion_edges.map(element => ({

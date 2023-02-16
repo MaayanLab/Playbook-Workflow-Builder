@@ -9,7 +9,6 @@ export const QuantileNormalizeGeneCountMatrix = MetaNode.createProcess('Quantile
     label: 'Quantile Normalize A Gene Count Matrix',
     description: 'Quantile normalize a gene count matrix, return a gene count matrix',
   })
-  .codec()
   .inputs({ matrix: GeneCountMatrix })
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(

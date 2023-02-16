@@ -1,5 +1,5 @@
 import React from 'react'
-import { MetaNode } from '@/spec/metanode'
+import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import dynamic from 'next/dynamic'
@@ -51,7 +51,7 @@ const createNewItemRenderer = (item: string, active: boolean, handleClick: React
 const createNewItemFromQuery = (item: unknown) => item+''
 const inputValueRenderer = (item: unknown) => item+''
 
-const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createProcess(`Input[${T.name}]`)
+const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & { data: string }>) => MetaNode.createProcess(`Input[${T.name}]`)
   .meta({
     label: `${T.label} Input`,
     description: `Start with a ${T.label} term`,

@@ -1,5 +1,5 @@
 import React from 'react'
-import { MetaNode, MetaNodeDataType, MetaNodeMetadata } from '@/spec/metanode'
+import { MetaNode, DataMetaNode, InternalDataMetaNode } from '@/spec/metanode'
 import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon, search_icon } from '@/icons'
@@ -16,7 +16,7 @@ import { downloadBlob } from '@/utils/download'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
-function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata }) {
+function EnrichrSet_T<T = InternalDataMetaNode>(SetT: DataMetaNode<T>) {
   return MetaNode.createData(`Enrichr[${SetT.spec}]`)
     .meta({
       label: `Enrichr ${SetT.meta.label}`,

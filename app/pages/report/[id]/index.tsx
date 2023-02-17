@@ -2,25 +2,16 @@ import React from 'react'
 import type { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router'
 import fpprg from '@/app/fpprg'
-import { FPL } from '@/core/FPPRG'
 import krg from '@/app/krg'
 import { z } from 'zod'
-import useSWRImmutable from 'swr/immutable'
 import { SWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
-import type KRG from '@/core/KRG'
 import Head from 'next/head'
-import Link from 'next/link'
-import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon, start_icon, func_icon, variable_icon } from '@/icons'
-import * as dict from '@/utils/dict'
 import fetcher from '@/utils/next-rest-fetcher'
-import usePublicUrl from '@/utils/next-public-url'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
-const Icon = dynamic(() => import('@/app/components/icon'))
-
-type Metapath = ReturnType<FPL['toJSON']>
+const Cells = dynamic(() => import('@/app/fragments/report/cells'))
 
 const QueryType = z.object({
   id: z.string().optional(),
@@ -54,18 +45,6 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   }
 }
 
-function useSticky(value: any) {
-  const ref = React.useRef()
-  if (ref !== undefined && value !== undefined) ref.current = value
-  return ref.current
-}
-
-function useSWRImmutableSticky<T = any>(key?: string) {
-  const swr = useSWRImmutable<T>(key)
-  const stickyData = useSticky(swr.data)
-  return { ...swr, data: swr.data === undefined ? stickyData : swr.data, isLoading: swr.data === undefined }
-}
-
 export default function App({ fallback }: { fallback: any }) {
   const router = useRouter()
   const params = QueryType.parse(router.query)
@@ -79,161 +58,11 @@ export default function App({ fallback }: { fallback: any }) {
 
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
-          <Cells krg={krg} id={params.id} />
+          <Cells krg={krg} id={params.id || ''} />
         </main>
       </SWRConfig>
 
       <Footer />
     </div>
-  )
-}
-
-function ShareButton({ id }: { id: string | undefined }) {
-  const publicUrl = usePublicUrl({ absolute: true })
-  const [share, setShare] = React.useState(false)
-  const onClick = React.useCallback(() => {
-    const graphUrl = document.getElementById('graph-url') as HTMLInputElement
-    graphUrl.select()
-    graphUrl.setSelectionRange(0, 99999)
-    navigator.clipboard.writeText(graphUrl.value)
-  }, [id])
-  React.useEffect(() => { if (share) { onClick() } }, [share])
-  if (!share) {
-    return (
-      <button className={`bp4-button bp4-minimal`} onClick={() => {setShare(true)}}>
-        <Icon icon={share_icon} color="black" />
-      </button>
-    )
-  } else {
-    return (
-      <div className={`bp4-control-group inline-block${share ? '': ' hidden'}`}>
-        <input id="graph-url" type="text" className="bp4-input" value={`${publicUrl}/report${id ? `/${id}` : ''}`} readOnly />
-        <button className="bp4-button bp4-icon-link" onClick={onClick} />
-        <button className="bp4-button bp4-icon-cross" onClick={() => {setShare(false)}} />
-      </div>
-    )
-  }
-}
-
-function Cells({ krg, id }: { krg: KRG, id?: string }) {
-  const router = useRouter()
-  const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
-  const head = metapath ? metapath[metapath.length - 1] : undefined
-  const selections = metapath ? dict.init(metapath.map(item => ({ key: item.process.id, value: { process: item.process, processNode: krg.getProcessNode(item.process.type) } }))) : {}
-  const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  const actions = processNode ? krg.getNextProcess(processNode.output.spec) : krg.getNextProcess('')
-  return (
-    <div className="flex flex-col py-4 gap-2">
-      <div className="flex-grow flex-shrink bp4-card p-0">
-        <div className="p-3">
-          <div className="flex flex-row gap-2">
-            <Icon icon={start_icon} />
-            <h2 className="bp4-heading">
-              Playbook
-            </h2>
-          </div>
-        </div>
-        {error ? <div className="alert alert-error">{error}</div> : null}
-        <div className="border-t-secondary border-t-2 mt-2">
-          <Link href={`/graph${id ? `/${id}/node/start` : ``}`}>
-            <button className="bp4-button bp4-minimal">
-              <Icon icon={view_in_graph_icon} />
-            </button>
-          </Link>
-          <Link href={`/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
-            <button className="bp4-button bp4-minimal">
-              <Icon icon={fork_icon} color="black" />
-            </button>
-          </Link>
-          <ShareButton id={id} />
-        </div>
-      </div>
-      {(metapath||[]).map((head, index) =>
-        <Cell key={index} krg={krg} index={index} id={id} head={head} />
-      )}
-    </div>
-  )
-}
-
-function Cell({ krg, index, id, head }: { krg: KRG, index: number, id?: string, head: Metapath }) {
-  const router = useRouter()
-  const { data: rawOutput, error: outputError, isLoading } = useSWRImmutableSticky<any>(`/api/db/process/${head.process.id}/output`)
-  const processNode = krg.getProcessNode(head.process.type)
-  const inputs: any = head.process.inputs
-  const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
-  const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
-  const View = outputNode ? outputNode.view : undefined
-  const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
-  return (
-    <>
-      <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
-        <div className="p-3">
-          <div className="flex flex-row gap-2">
-            <Icon icon={processNode.meta.icon || func_icon} />
-            <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
-          </div>
-          {Prompt ? <Prompt
-            inputs={inputs}
-            output={output}
-            submit={async (output) => {
-              const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
-                method: 'POST',
-                body: JSON.stringify({
-                  type: head.process.type,
-                  data: {
-                    type: processNode.output.spec,
-                    value: processNode.output.codec.encode(output),
-                  },
-                  inputs,
-                })
-              })
-              const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-              router.push(`/report/${res.head}`, undefined, { shallow: true, scroll: false })
-            }}
-          />
-          : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>
-          : null}
-        </div>
-        <div className="border-t-secondary border-t-2 mt-2">
-          <Link href={`/graph/${id}/node/${head.id}`}>
-            <button className="bp4-button bp4-minimal">
-              <Icon icon={view_in_graph_icon} />
-            </button>
-          </Link>
-        </div>
-      </div>
-      <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
-        <div className="p-3">
-          <div className="flex flex-row gap-2">
-            <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} />
-            <h2 className="bp4-heading">{(outputNode && (outputNode.meta.label || processNode.spec)) || "Loading"}</h2>
-          </div>
-          {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
-        </div>
-        <div className="border-t-secondary border-t-2 mt-2">
-          <Link href={`/graph/${id}/node/${head.id}`}>
-            <button className="bp4-button bp4-minimal">
-              <Icon icon={view_in_graph_icon} />
-            </button>
-          </Link>
-          <Link href={`/graph/${id}/node/${head.id}/extend`}>
-            <button className="bp4-button bp4-minimal">
-              <Icon icon={fork_icon} color="black" />
-            </button>
-          </Link>
-          <button className="bp4-button bp4-minimal" disabled>
-            {isLoading ?
-              <Icon icon={status_waiting_icon} color="#DAA520" />
-              : (outputNode ?
-                  (output ?
-                    (outputNode.spec === 'Error' ?
-                      <Icon icon={status_alert_icon} color="#DC143C" />
-                      : <Icon icon={status_complete_icon} color="#008000" />)
-                    : <Icon icon={status_awaiting_input_icon} color="#B8860B" />)
-                  : <Icon icon={status_waiting_icon} color="#DAA520" />)}
-          </button>
-        </div>
-      </div>
-    </>
   )
 }

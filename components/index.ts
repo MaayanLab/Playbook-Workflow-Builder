@@ -51,6 +51,8 @@ export * from "./service/enrichr"
 components.push("service/enrichr")
 export * from "./service/gtex"
 components.push("service/gtex")
+export * from "./service/hyposet"
+components.push("service/hyposet")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./viz/bokeh"

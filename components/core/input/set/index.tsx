@@ -3,9 +3,10 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Button, TextArea } from '@blueprintjs/core'
-import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
+import { Table, Cell, Column } from '@/app/components/Table'
 import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'
+import { downloadBlob } from '@/utils/download'
 
 const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .meta({
@@ -32,6 +33,10 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
           numRows={set.length}
           enableGhostCells
           enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(set)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+            GMT: () => downloadBlob(new Blob([[`${T.label} Set`, '', ...set].join('\t')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
+          }}
         >
           <Column
             name={T.label}

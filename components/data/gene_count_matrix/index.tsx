@@ -5,6 +5,7 @@ import python from '@/utils/python'
 import { z } from 'zod'
 import { datafile_icon, file_transfer_icon } from '@/icons'
 import dynamic from 'next/dynamic'
+import { downloadUrl } from '@/utils/download'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -30,9 +31,11 @@ export const GeneCountMatrix = MetaNode.createData('GeneCountMatrix')
           columns={props.columns}
           values={props.values}
           ellipses={props.ellipses}
+          shape={props.shape}
+          downloads={{
+            'URL': () => downloadUrl(props.url)
+          }}
         />
-        <p>Shape: ({props.shape[0]}, {props.shape[1]})</p>
-        <a style={{ display: 'none' }} href={props.url}>{props.url}</a>
       </div>
     )
   })

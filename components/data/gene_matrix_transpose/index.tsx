@@ -15,31 +15,30 @@ export const GMT = MetaNode.createData(`GMT`)
   .view(gmt => {
     const gmt_items = dict.items(gmt)
     return (
-      <div style={{ height: 500 }}>
-        <Table
-          cellRendererDependencies={[gmt_items]}
-          numRows={gmt_items.length}
-          enableGhostCells
-          enableFocusedCell
-          downloads={{
-            JSON: () => downloadBlob(new Blob([JSON.stringify(gmt)], { type: 'application/json;charset=utf-8' }), 'data.json'),
-            GMT: () => downloadBlob(new Blob([gmt_items.map(({ key: term, value: { description, set } }) => [term, description||'', ...set].join('\t')).join('\n')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
-          }}
-        >
-          <Column
-            name="Term"
-            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key.toString()}</Cell>}
-          />
-          <Column
-            name="Descrition"
-            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.description||''}</Cell>}
-          />
-          <Column
-            name="Geneset"
-            cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.set.join('\t')}</Cell>}
-          />
-        </Table>
-      </div>
+      <Table
+        height={500}
+        cellRendererDependencies={[gmt_items]}
+        numRows={gmt_items.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(gmt)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          GMT: () => downloadBlob(new Blob([gmt_items.map(({ key: term, value: { description, set } }) => [term, description||'', ...set].join('\t')).join('\n')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
+        }}
+      >
+        <Column
+          name="Term"
+          cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key.toString()}</Cell>}
+        />
+        <Column
+          name="Descrition"
+          cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.description||''}</Cell>}
+        />
+        <Column
+          name="Geneset"
+          cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.set.join('\t')}</Cell>}
+        />
+      </Table>
     )
   })
   .build()

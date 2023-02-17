@@ -25,32 +25,31 @@ const Scored_T = (T: Primative) => MetaNode.createData(`Scored[${T.name}]`)
   .codec(z.array(z.object({ term: z.string(), zscore: z.number() })))
   .view(scored => {
     return (
-      <div style={{ height: 500 }}>
-        <Table
-          cellRendererDependencies={[scored]}
-          numRows={scored.length}
-          enableGhostCells
-          enableFocusedCell
-          downloads={{
-            JSON: () => downloadBlob(new Blob([JSON.stringify(scored)], { type: 'application/json;charset=utf-8' }), 'data.json'),
-            CSV: () => downloadBlob(new Blob([
-              [
-                `${T.label},ZScore`,
-                ...(scored.map(({ term, zscore }) => [term, zscore].join(',')))
-              ].join('\n')
-            ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
-          }}
-        >
-          <Column
-            name={T.label}
-            cellRenderer={row => <Cell key={row+''}>{scored[row].term}</Cell>}
-          />
-          <Column
-            name="ZScore"
-            cellRenderer={row => <Cell key={row+''}>{scored[row].zscore.toPrecision(3)}</Cell>}
-          />
-        </Table>
-      </div>
+      <Table
+        height={500}
+        cellRendererDependencies={[scored]}
+        numRows={scored.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(scored)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          CSV: () => downloadBlob(new Blob([
+            [
+              `${T.label},ZScore`,
+              ...(scored.map(({ term, zscore }) => [term, zscore].join(',')))
+            ].join('\n')
+          ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
+        }}
+      >
+        <Column
+          name={T.label}
+          cellRenderer={row => <Cell key={row+''}>{scored[row].term}</Cell>}
+        />
+        <Column
+          name="ZScore"
+          cellRenderer={row => <Cell key={row+''}>{scored[row].zscore.toPrecision(3)}</Cell>}
+        />
+      </Table>
     )
   })
   .build()

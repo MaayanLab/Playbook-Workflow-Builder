@@ -27,23 +27,22 @@ const Set_T = (T: Primative) => MetaNode.createData(`Set[${T.name}]`)
   .codec(z.array(z.string()))
   .view(set => {
     return (
-      <div style={{ height: 500 }}>
-        <Table
-          cellRendererDependencies={[set]}
-          numRows={set.length}
-          enableGhostCells
-          enableFocusedCell
-          downloads={{
-            JSON: () => downloadBlob(new Blob([JSON.stringify(set)], { type: 'application/json;charset=utf-8' }), 'data.json'),
-            GMT: () => downloadBlob(new Blob([[`${T.label} Set`, '', ...set].join('\t')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
-          }}
-        >
-          <Column
-            name={T.label}
-            cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
-          />
-        </Table>
-      </div>
+      <Table
+        height={500}
+        cellRendererDependencies={[set]}
+        numRows={set.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(set)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          GMT: () => downloadBlob(new Blob([[`${T.label} Set`, '', ...set].join('\t')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
+        }}
+      >
+        <Column
+          name={T.label}
+          cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
+        />
+      </Table>
     )
   })
   .build()

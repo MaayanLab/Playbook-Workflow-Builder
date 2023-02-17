@@ -7,29 +7,32 @@ export const Cell = Bp4Cell
 export const Column = Bp4Column
 export const RowHeaderCell = Bp4RowHeaderCell
 export type Table2Props = Bp4Table2Props & {
+  height?: number
   downloads?: Record<string, () => void>,
   shape?: Array<number>
 }
 
-export function Table({ children, ...props }: Table2Props) {
-  const shape = props.shape ? props.shape : Array.isArray(children) ? [props.numRows, children.length] : [props.numRows]
+export function Table({ children, height, shape: shape_, downloads, ...props }: Table2Props) {
+  const shape = shape_ ? shape_ : Array.isArray(children) ? [props.numRows, children.length] : [props.numRows]
   return (
     <>
-      <Bp4Table {...props}>{children}</Bp4Table>
+      <div style={{ height }}>
+        <Bp4Table {...props}>{children}</Bp4Table>
+      </div>
       <div className="bp4-navbar-group">
         <span>Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
         <Bp4MenuDivider />
-        {props.downloads ?
-          dict.keys(props.downloads).length === 1 ?
+        {downloads ?
+          dict.keys(downloads).length === 1 ?
             <Bp4Button text="Download" icon="download" minimal onClick={() => {
-              if (!props.downloads) return
-              const [download] = dict.values(props.downloads)
+              if (!downloads) return
+              const [download] = dict.values(downloads)
               download()
             }} />
           : <Bp4Popover
               content={
                 <Bp4Menu>
-                  {dict.items(props.downloads).map(({ key, value }) =>
+                  {dict.items(downloads).map(({ key, value }) =>
                     <Bp4MenuItem key={key} icon="document" text={key} onClick={() => {value()}} />
                   )}
                 </Bp4Menu>

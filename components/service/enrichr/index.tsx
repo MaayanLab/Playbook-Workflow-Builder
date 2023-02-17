@@ -26,22 +26,21 @@ function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata })
     })
     .codec(z.object({ background: z.string(), terms: z.array(z.string()), set: z.array(z.string()) }))
     .view(enrichrset => (
-      <div style={{ height: 500 }}>
-        <Table
-          cellRendererDependencies={[enrichrset.set]}
-          numRows={enrichrset.set.length}
-          enableGhostCells
-          enableFocusedCell
-          downloads={{
-            JSON: () => downloadBlob(new Blob([JSON.stringify(enrichrset)], { type: 'application/json;charset=utf-8' }), 'data.json'),
-          }}
-        >
-          <Column
-            name={enrichrset.background}
-            cellRenderer={row => <Cell key={row+''}>{enrichrset.set[row]}</Cell>}
-          />
-        </Table>
-      </div>
+      <Table
+        height={500}
+        cellRendererDependencies={[enrichrset.set]}
+        numRows={enrichrset.set.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(enrichrset)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+        }}
+      >
+        <Column
+          name={enrichrset.background}
+          cellRenderer={row => <Cell key={row+''}>{enrichrset.set[row]}</Cell>}
+        />
+      </Table>
     ))
     .build()
 }

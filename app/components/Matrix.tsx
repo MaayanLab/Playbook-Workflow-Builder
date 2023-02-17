@@ -1,6 +1,6 @@
 import React from 'react'
 import * as array from '@/utils/array'
-import { Table2 as Table, Column, RowHeaderCell2, Cell } from '@blueprintjs/table'
+import { Table, Cell, Column, RowHeaderCell } from '@/app/components/Table'
 
 interface MatrixProps {
   /**
@@ -20,9 +20,18 @@ interface MatrixProps {
    * of the form: [row-elipse-index | null, column-elipse-index | null]
    */
   ellipses?: [number | null, number | null]
+  /**
+   * [optional]: Override the shape
+   */
+  shape?: Array<number>
+  /**
+   * [optional]: Downloads to passthrough to Table
+   */
+  downloads?: Record<string, () => void>
 }
 
 export default function Matrix(props: MatrixProps) {
+  const shape = props.shape ? props.shape : [props.index.length, props.columns.length]
   return (
     <Table
       cellRendererDependencies={[props]}
@@ -38,12 +47,14 @@ export default function Matrix(props: MatrixProps) {
           else if (row > props.ellipses[0]) row = row - 1
         }
         return (
-          <RowHeaderCell2
+          <RowHeaderCell
             key={row_ellipse ? '-ellipse' : (row+'')}
             name={row_ellipse ? '...' : (props.index[row]+'')}
           />
         )
       }}
+      shape={shape}
+      downloads={props.downloads}
     >
       {array.arange(props.columns.length + (props.ellipses && props.ellipses[1] ? 1 : 0)).map((column) => {
         let column_ellipse = false

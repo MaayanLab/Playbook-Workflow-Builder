@@ -2,8 +2,9 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
-import { Table2 as Table, Cell, Column } from '@blueprintjs/table'
+import { Table, Cell, Column } from '@/app/components/Table'
 import { GeneSet } from '@/components/core/input/set'
+import { downloadBlob } from '@/utils/download'
 
 export const GMT = MetaNode.createData(`GMT`)
   .meta({
@@ -20,6 +21,10 @@ export const GMT = MetaNode.createData(`GMT`)
           numRows={gmt_items.length}
           enableGhostCells
           enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(gmt)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+            GMT: () => downloadBlob(new Blob([gmt_items.map(({ key: term, value: { description, set } }) => [term, description||'', ...set].join('\t')).join('\n')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
+          }}
         >
           <Column
             name="Term"

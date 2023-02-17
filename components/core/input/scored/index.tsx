@@ -2,9 +2,10 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
-import { Table2 as Table, Column, Cell } from '@blueprintjs/table'
+import { Table, Cell, Column } from '@/app/components/Table'
 import { weighted_icon } from '@/icons'
 import * as array from '@/utils/array'
+import { downloadBlob } from '@/utils/download'
 
 const Scored_T = (T: Primative) => MetaNode.createData(`Scored[${T.name}]`)
   .meta({
@@ -30,6 +31,15 @@ const Scored_T = (T: Primative) => MetaNode.createData(`Scored[${T.name}]`)
           numRows={scored.length}
           enableGhostCells
           enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(scored)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+            CSV: () => downloadBlob(new Blob([
+              [
+                `${T.label},ZScore`,
+                ...(scored.map(({ term, zscore }) => [term, zscore].join(',')))
+              ].join('\n')
+            ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
+          }}
         >
           <Column
             name={T.label}

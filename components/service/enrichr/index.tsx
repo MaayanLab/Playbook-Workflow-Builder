@@ -10,8 +10,9 @@ import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
 import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
-import { Table2 as Table, Cell, Column } from '@blueprintjs/table'
+import { Table, Cell, Column } from '@/app/components/Table'
 import type { ValuesOf } from '@/utils/types'
+import { downloadBlob } from '@/utils/download'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
@@ -31,6 +32,9 @@ function EnrichrSet_T<T>(SetT: MetaNodeDataType<T> & { meta: MetaNodeMetadata })
           numRows={enrichrset.set.length}
           enableGhostCells
           enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(enrichrset)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          }}
         >
           <Column
             name={enrichrset.background}

@@ -1,11 +1,12 @@
 import { Button as Bp4Button, Menu as Bp4Menu, MenuDivider as Bp4MenuDivider, MenuItem as Bp4MenuItem } from '@blueprintjs/core'
-import { Table2 as Bp4Table, Column as Bp4Column, Cell as Bp4Cell, Table2Props as Bp4Table2Props, RowHeaderCell2 as Bp4RowHeaderCell } from '@blueprintjs/table'
+import { Table2 as Bp4Table, Column as Bp4Column, Cell as Bp4Cell, Table2Props as Bp4Table2Props, RowHeaderCell2 as Bp4RowHeaderCell, EditableCell2 as Bp4EditableCell } from '@blueprintjs/table'
 import { Popover2 as Bp4Popover } from '@blueprintjs/popover2'
 import * as dict from '@/utils/dict'
 
 export const Cell = Bp4Cell
 export const Column = Bp4Column
 export const RowHeaderCell = Bp4RowHeaderCell
+export const EditableCell = Bp4EditableCell
 export type Table2Props = Bp4Table2Props & {
   height?: number
   downloads?: Record<string, () => void>,

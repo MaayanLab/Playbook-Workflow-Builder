@@ -6,7 +6,7 @@ import { file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 
-const BpButton = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const FileURL = MetaNode.createData('FileURL')
   .meta({
@@ -32,6 +32,8 @@ export const FileInput = MetaNode.createProcess('FileInput')
   .inputs()
   .output(FileURL)
   .prompt(props => {
+    const [currentFile, setCurrentFile] = React.useState<boolean>(false)
+    const fileInputRef = React.useRef<HTMLInputElement>(null)
     const { data: session } = useSessionWithId()
     return (
       <div>
@@ -41,7 +43,7 @@ export const FileInput = MetaNode.createProcess('FileInput')
           </div>
         ) : (
           <form
-            className="my-2"
+            className="my-2 inline-flex flex-col"
             onSubmit={async (evt) => {
               evt.preventDefault()
               const formData = new FormData(evt.currentTarget)
@@ -50,9 +52,45 @@ export const FileInput = MetaNode.createProcess('FileInput')
               props.submit(records.file[0])
             }}
           >
-            <div className="form-control flex-row items-center border-solid border-black">
-              <input type="file" name="file" className="file-input file-input-lg" />
-              <div><BpButton type="submit" large>Submit</BpButton></div>
+            <input
+              ref={fileInputRef}
+              name="file"
+              className={`file-input file-input-lg ${props.output && !currentFile ? 'hidden' : ''}`}
+              onChange={evt => {
+                setCurrentFile(!!(evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0]))
+              }}
+              type="file"
+            />
+            <div
+              className={`inline-flex flex-row items-center gap-4 ${!props.output || currentFile ? 'hidden' : ''}`}
+              onClick={evt => {
+                evt.preventDefault()
+                if (fileInputRef.current) {
+                  fileInputRef.current.click()
+                }
+              }}
+            >
+              <button className="btn btn-lg">Choose File</button>
+              <span className="text-lg">{props.output||'No file chosen'}</span>
+            </div>
+            <div className="inline-flex flex-row">
+              <a
+                href="/api/components/core/file/example_matrix.tsv"
+                download="example_matrix.tsv"
+              >
+                <Bp4Button
+                  large
+                  text="Example"
+                  rightIcon="bring-data"
+                />
+              </a>
+              <Bp4Button
+                large
+                disabled={!currentFile}
+                type="submit"
+                text="Submit"
+                rightIcon="send-to-graph"
+              />
             </div>
           </form>
         )}

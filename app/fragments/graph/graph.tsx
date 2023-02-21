@@ -6,7 +6,6 @@ import { useRouter } from 'next/router'
 import type { Metapath } from '@/app/fragments/graph/types'
 import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
-import Icon from '@/app/components/icon'
 import Link from 'next/link'
 import * as dict from '@/utils/dict'
 
@@ -15,6 +14,7 @@ const Home = dynamic(() => import('@/app/fragments/playbook/home'))
 const Extend = dynamic(() => import('@/app/fragments/graph/extend'))
 const Suggest = dynamic(() => import('@/app/fragments/graph/suggest'))
 const Cell = dynamic(() => import('@/app/fragments/graph/cell'))
+const Icon = dynamic(() => import('@/app/components/icon'))
 
 function buildBreadcrumbGraph({
   node_id,

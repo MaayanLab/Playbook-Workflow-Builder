@@ -58,13 +58,13 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
   }, [tooltipContainerRef, title])
   const onMouseOut = React.useCallback<React.MouseEventHandler<SVGGElement>>((evt) => {
     if (tooltipRef.current !== null) {
-      document.body.removeChild(tooltipRef.current)
+      try {document.body.removeChild(tooltipRef.current)} catch (e) { console.warn(e) }
       Object.assign(tooltipRef, { current: null })
     }
   }, [tooltipContainerRef, title])
   React.useEffect(() => () => {
     if (tooltipRef.current !== null) {
-      document.body.removeChild(tooltipRef.current)
+      try {document.body.removeChild(tooltipRef.current)} catch (e) { console.warn(e) }
     }
     }, [])
   const Svg = without_svg ? (
@@ -74,7 +74,7 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
     ({ children }: { children: ReactNode }) =>
     <svg
       viewBox="0 0 24 24"
-      style={{ width: `${size*2}rem`, height: `${size*2}rem` }}
+      style={{ width: `${size*2}rem`, height: `${size*2}rem`, display: 'inline-block' }}
     >{children}</svg>
   )
   return (

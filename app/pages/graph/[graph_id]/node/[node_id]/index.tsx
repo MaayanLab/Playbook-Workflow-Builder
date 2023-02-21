@@ -19,7 +19,7 @@ import fetcher from '@/utils/next-rest-fetcher'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
-const Graph = dynamic(() => import('@/app/fragments/graph/graph'), { ssr: false })
+const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
 
 const ParamType = z.union([
   z.object({ graph_id: z.string(), node_id: z.string() }),

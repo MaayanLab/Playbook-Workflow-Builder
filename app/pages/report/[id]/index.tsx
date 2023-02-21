@@ -11,7 +11,6 @@ import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
 import Head from 'next/head'
 import Link from 'next/link'
-import Icon from '@/app/components/icon'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon, start_icon, func_icon, variable_icon } from '@/icons'
 import * as dict from '@/utils/dict'
 import fetcher from '@/utils/next-rest-fetcher'
@@ -19,6 +18,7 @@ import usePublicUrl from '@/utils/next-public-url'
 
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
+const Icon = dynamic(() => import('@/app/components/icon'))
 
 type Metapath = ReturnType<FPL['toJSON']>
 

@@ -20,7 +20,11 @@ export const config = {
  * Ensure we don't end up with weird strings
  */
 function sanitize(component: string): string {
-  return component.replace(/[^A-Za-z0-9_-]/g, '')
+  const component_sanitized = component.replace(/[^A-Za-z0-9\._-]/g, '')
+  if (/^\.*$/.exec(component_sanitized) !== null) {
+    throw new Error('Invalid path component')
+  }
+  return component_sanitized
 }
 
 /**

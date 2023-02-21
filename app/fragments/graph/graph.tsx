@@ -14,6 +14,7 @@ const Home = dynamic(() => import('@/app/fragments/playbook/home'))
 const Extend = dynamic(() => import('@/app/fragments/graph/extend'))
 const Suggest = dynamic(() => import('@/app/fragments/graph/suggest'))
 const Cell = dynamic(() => import('@/app/fragments/graph/cell'))
+const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 function buildBreadcrumbGraph({
@@ -107,6 +108,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
           }}
         />
         <div className="flex items-center">
+          <RestartButton />
           <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
             <button className='bp4-button bp4-minimal'>
               <Icon icon={view_report_icon} />

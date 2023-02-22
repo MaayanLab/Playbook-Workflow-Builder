@@ -172,3 +172,17 @@ export const Tissue = {
     },
   },
 } as Primative
+
+export const Tumor = {
+  name: 'Tumor',
+  label: 'Tumor',
+  icon: [tissue_icon],
+  color: '#98D7C2',
+  extra: {
+    term: {
+      meta: {
+        example: 'Brain',
+      },
+    },
+  },
+} as Primative

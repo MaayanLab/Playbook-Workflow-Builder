@@ -90,7 +90,7 @@ function Graph<
   return (
     <svg
       ref={svgRef}
-      className="w-full"
+      className="w-screen h-screen"
       viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="xMidYMid"
     >
@@ -116,7 +116,7 @@ function Graph<
           >
             {node.id === 'Start' ? (
               <>
-                <circle r="14" fill="#ddd" />
+                <circle r="16" fill="#ddd" />
                 <g transform='translate(-12, -12)'>
                   <Icon
                     icon={start_icon}
@@ -127,7 +127,7 @@ function Graph<
             ) : null}
             {krg.getDataNode(node.id) !== undefined ? (
               <>
-                <circle r="14" fill={krg.getDataNode(node.id).meta.color || '#ddd'} />
+                <circle r="16" fill={krg.getDataNode(node.id).meta.color || '#ddd'} />
                 <g transform='translate(-12, -12)'>
                   <Icon
                     icon={krg.getDataNode(node.id).meta.icon || variable_icon}
@@ -139,7 +139,7 @@ function Graph<
             ) : null}
             {krg.getProcessNode(node.id) !== undefined ? (
               <g transform='scale(0.5, 0.5)'>
-                <rect transform='translate(-15, -15)' width="30" height="30" fill={krg.getProcessNode(node.id).meta.color || '#ddd'} />
+                <rect transform='translate(-16, -16)' width="32" height="32" fill={krg.getProcessNode(node.id).meta.color || '#ddd'} />
                 <g transform='translate(-12, -12)'>
                   <Icon
                     icon={krg.getProcessNode(node.id).meta.icon || func_icon}

@@ -8,7 +8,7 @@ const tooltip_offset_top = 5
 
 export default function Icon({ icon, color: color_, size: size_, title, without_svg }: { icon?: Icon, color?: string, size?: number, title?: string | null, without_svg?: boolean }) {
   const tooltipContainerRef = React.useRef<SVGRectElement>(null)
-  const tooltipRef = React.useRef<HTMLDivElement>(null)
+  const tooltipRef = React.useRef<{ tooltip: HTMLDivElement, listener: (evt: MouseEvent) => void }>(null)
   const color = color_ !== undefined ? color_ : 'auto'
   const size = size_ !== undefined ? size_ : 1
   const icons = ensureArray(icon)
@@ -39,37 +39,43 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
     }
   }, [icon])
   const onMouseOver = React.useCallback<React.MouseEventHandler<SVGGElement>>((evt) => {
-    if (tooltipContainerRef.current === null) return
-    let current: HTMLDivElement
-    if (tooltipRef.current === null) {
-      current = document.createElement('div')
-      Object.assign(tooltipRef, { current })
-      document.body.append(current)
-    } else {
-      current = tooltipRef.current
-    }
+    if (tooltipContainerRef.current === null || !title || tooltipRef.current !== null) return
     const svgRect = tooltipContainerRef.current.getBoundingClientRect()
-    current.setAttribute('data-tip', title as string)
-    current.className = 'tooltip tooltip-open'
-    current.style.pointerEvents = 'none'
-    current.style.position = 'absolute'
-    current.style.left = `${svgRect.left + window.scrollX}px`
-    current.style.top = `${svgRect.top + window.scrollY}px`
-    current.style.width = `${svgRect.width}px`
-    current.style.height = `${svgRect.height}px`
-    current.style.zIndex = '1'
-  }, [tooltipContainerRef, title])
-  const onMouseOut = React.useCallback<React.MouseEventHandler<SVGGElement>>((evt) => {
-    if (tooltipRef.current !== null) {
-      try {document.body.removeChild(tooltipRef.current)} catch (e) { console.warn(e) }
-      Object.assign(tooltipRef, { current: null })
+    const left = svgRect.left + window.scrollX
+    const right = left + svgRect.width
+    const top = svgRect.top + window.scrollY
+    const bottom = top + svgRect.height
+    const tooltip = document.createElement('div')
+    tooltip.setAttribute('data-tip', title as string)
+    tooltip.className = 'tooltip tooltip-open'
+    tooltip.style.pointerEvents = 'none'
+    tooltip.style.position = 'absolute'
+    tooltip.style.left = `${left}px`
+    tooltip.style.top = `${top - tooltip_offset_top}px`
+    tooltip.style.width = `${svgRect.width}px`
+    tooltip.style.height = `${svgRect.height + tooltip_offset_top}px`
+    tooltip.style.zIndex = '1'
+    // since mouseleave/mouseout events are unreliable, we instead watch the mouse
+    //  position globally and remove it if it leaves the confines of the rectangle
+    // finally -- we write it to a ref so we can remove it if the component is unmounted
+    const listener = (evt: MouseEvent) => {
+      if ((evt.clientX+window.scrollX < left || evt.clientX+window.scrollX > right)
+          || (evt.clientY+window.scrollY < top || evt.clientY+window.scrollY > bottom)) {
+        document.removeEventListener('mousemove', listener)
+        document.body.removeChild(tooltip)
+        Object.assign(tooltipRef, { current: null })
+      }
     }
-  }, [tooltipContainerRef, title])
+    document.body.append(tooltip)
+    Object.assign(tooltipRef, { current: { tooltip, listener } })
+    document.addEventListener('mousemove', listener)
+  }, [tooltipContainerRef, tooltipRef, title])
   React.useEffect(() => () => {
     if (tooltipRef.current !== null) {
-      try {document.body.removeChild(tooltipRef.current)} catch (e) { console.warn(e) }
+      document.removeEventListener('mousemove', tooltipRef.current.listener)
+      document.body.removeChild(tooltipRef.current.tooltip)
     }
-    }, [])
+  }, [])
   const Svg = without_svg ? (
     ({ children }: { children: ReactNode }) =>
       <>{children}</>
@@ -97,8 +103,7 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
         <rect
           ref={tooltipContainerRef}
           fill="transparent"
-          onMouseOver={title !== null ? onMouseOver : undefined}
-          onMouseOut={title !== null ? onMouseOut : undefined}
+          onMouseOver={onMouseOver}
           x={0} width={base_size}
           y={0} height={base_size}
         ></rect>

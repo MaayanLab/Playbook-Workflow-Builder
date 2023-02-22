@@ -1,0 +1,10 @@
+{
+  "name": "kf",
+  "version": "1.0.0",
+  "license": "unk",
+  "author": "William Khan <khanwn@chop.edu>",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {},
+  "devDependencies": {}
+}

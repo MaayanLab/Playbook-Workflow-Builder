@@ -29,6 +29,8 @@ export * from "./core/input/set"
 components.push("core/input/set")
 export * from "./core/input/term"
 components.push("core/input/term")
+export * from "./core/input/tumor"
+components.push("core/input/tumor")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
 export * from "./data/gene_matrix_transpose"
@@ -53,6 +55,8 @@ export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/hyposet"
 components.push("service/hyposet")
+export * from "./service/kf"
+components.push("service/kf")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./viz/bokeh"

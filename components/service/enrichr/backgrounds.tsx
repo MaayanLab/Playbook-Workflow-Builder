@@ -219,11 +219,12 @@ export const TranscriptionFactor_backgrounds = [
     name: 'ARCHS4_TFs_Coexp',
     label: 'ARCHS4 TF Co-Expression',
     termType: 'TranscriptionFactor',
-    termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$$/,
+    termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$/,
   }
 ]
 
 export const backgrounds = dict.init([
+  ...Disease_backgrounds,
   ...Drug_backgrounds,
   ...Pathway_backgrounds,
   ...Phenotype_backgrounds,

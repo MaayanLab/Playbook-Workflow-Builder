@@ -19,6 +19,18 @@ export const Disease_backgrounds = [
     termType: 'Disease',
     termRe: /^GTEx (?<term>.+)$/,
   },
+  {
+    name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
+    label: 'Rare Diseases GeneRIF ARCHS4 Predictions',
+    termType: 'Disease',
+    termRe: /^(?<term>.+)$/,
+  },
+  {
+    name: 'Rare_Diseases_GeneRIF_Gene_Lists',
+    label: 'Rare Diseases GeneRIF Gene Lists',
+    termType: 'Disease',
+    termRe: /^(?<term>.+)$/,
+  },
 ]
 
 export const Drug_backgrounds = [

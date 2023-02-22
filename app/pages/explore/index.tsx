@@ -1,1 +1,1 @@
-export { default } from '@/app/pages/explore/[...all]'
+export { default } from '@/app/pages/explore/manual'

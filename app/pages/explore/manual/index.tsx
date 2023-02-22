@@ -1,0 +1,1 @@
+export { default } from '@/app/pages/explore/manual/[...all]'

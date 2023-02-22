@@ -190,11 +190,11 @@ export default function Explore() {
         links={links}
         onClick={(node, evt) => {
           router.push({
-            pathname: '/explore/[...all]',
+            pathname: '/explore/manual/[...all]',
             query: {
               all: [...path, node.id]
             },
-          }, `/explore/${[...path, node.id].join('/')}`, { shallow: true })
+          }, `/explore/manual/${array.unique([...path, node.id]).join('/')}`, { shallow: true })
         }}
       />
     </div>

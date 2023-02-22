@@ -18,7 +18,7 @@ export const Supervenn = MetaNode('Supervenn')
   })
   .codec(z.any())
   .view(props => (
-    <div className="flex" style={{ height: 500 }}>
+    <div className="flex" style={{ minHeight: 500 }}>
       <ReactSupervenn {...props} />
     </div>
   ))

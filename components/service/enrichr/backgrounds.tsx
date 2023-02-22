@@ -220,7 +220,13 @@ export const TranscriptionFactor_backgrounds = [
     label: 'ARCHS4 TF Co-Expression',
     termType: 'TranscriptionFactor',
     termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$/,
-  }
+  },
+  {
+    name: 'ENCODE_and_ChEA_Consensus_TFs_from_ChIP-X',
+    label: 'ENCODE and ChEA Consensus TFs from ChIP-X',
+    termType: 'TranscriptionFactor',
+    termRe: /^(?<term>.+) (?<origin>[^ ]+?)$/,
+  },
 ]
 
 export const backgrounds = dict.init([

@@ -35,6 +35,12 @@ export const Disease_backgrounds = [
 
 export const Drug_backgrounds = [
   {
+    name: 'LINCS_L1000_Chem_Pert_Consensus_Sigs',
+    label: 'LINCS L1000 Chem Pert Consensus Sigs',
+    termType: 'Drug',
+    termRe: /^(?<term>.+) (?<direction>Up|Down)$/,
+  },
+  {
     name: 'LINCS_L1000_Chem_Pert_up',
     label: 'LINCS L1000 Chem Pert Up',
     termType: 'Drug',

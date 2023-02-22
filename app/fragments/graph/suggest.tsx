@@ -3,7 +3,6 @@ import type { Metapath } from '@/app/fragments/graph/types'
 import React from 'react'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Intent } from '@blueprintjs/core'
 import dynamic from 'next/dynamic'
 import * as dict from '@/utils/dict'
 import type KRG from '@/core/KRG'
@@ -194,7 +193,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
           growVertically
           fill
           large
-          intent={Intent.PRIMARY}
+          intent="primary"
           onChange={evt => {
             setSuggestion(({ ...suggestion }) => ({ ...suggestion, description: evt.target.value }))
           }}

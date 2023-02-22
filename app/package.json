@@ -21,6 +21,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^13.1.6",
     "@types/d3": "^7.4.0",
     "@types/multiparty": "^0.0.33",
     "@types/uuid": "^9.0.0",

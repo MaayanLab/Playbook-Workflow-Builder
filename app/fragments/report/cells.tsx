@@ -1,14 +1,14 @@
 import React from 'react'
-import { FPL } from '@/core/FPPRG'
 import dynamic from 'next/dynamic'
+import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
-import Icon from '@/app/components/icon'
 import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
+const Icon = dynamic(() => import('@/app/components/icon'))
 
 type Metapath = ReturnType<FPL['toJSON']>
 

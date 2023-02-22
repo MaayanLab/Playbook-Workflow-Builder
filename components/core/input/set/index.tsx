@@ -2,11 +2,14 @@ import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
-import { Button, TextArea } from '@blueprintjs/core'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { downloadBlob } from '@/utils/download'
+import dynamic from 'next/dynamic'
+
+const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp4TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
 
 const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
   .meta({
@@ -76,7 +79,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
     React.useEffect(() => { setSet((props.output||[]).join('\n')) }, [props.output])
     return (
       <div>
-        <TextArea
+        <Bp4TextArea
           placeholder="Newline separated set of terms"
           rows={8}
           fill
@@ -85,16 +88,18 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           value={set}
         />
         {T.extra?.set?.meta?.example !== undefined ?
-          <Button
+          <Bp4Button
             large
             rightIcon="send-to-graph"
             onClick={evt => {
               if (T.extra?.set?.meta?.example !== undefined) {
                 setSet(T.extra.set.meta.example.join('\n'))
               }
-            }}>Example</Button>
+            }}
+            text="Example"
+          />
           : null}
-        <Button
+        <Bp4Button
           large
           type="submit"
           text="Submit"

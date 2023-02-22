@@ -1,7 +1,12 @@
-import { Button as Bp4Button, Menu as Bp4Menu, MenuDivider as Bp4MenuDivider, MenuItem as Bp4MenuItem } from '@blueprintjs/core'
-import { Table2 as Bp4Table, Column as Bp4Column, Cell as Bp4Cell, Table2Props as Bp4Table2Props, RowHeaderCell2 as Bp4RowHeaderCell, EditableCell2 as Bp4EditableCell } from '@blueprintjs/table'
-import { Popover2 as Bp4Popover } from '@blueprintjs/popover2'
+import { Table2 as Bp4Table, Column as Bp4Column, Cell as Bp4Cell, RowHeaderCell2 as Bp4RowHeaderCell, EditableCell2 as Bp4EditableCell, Table2Props as Bp4Table2Props } from '@blueprintjs/table'
 import * as dict from '@/utils/dict'
+import dynamic from 'next/dynamic'
+
+const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp4Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
+const Bp4MenuDivider = dynamic(() => import('@blueprintjs/core').then(({ MenuDivider }) => MenuDivider))
+const Bp4MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
+const Bp4Popover = dynamic(() => import('@blueprintjs/popover2').then(({ Popover2 }) => Popover2))
 
 export const Cell = Bp4Cell
 export const Column = Bp4Column

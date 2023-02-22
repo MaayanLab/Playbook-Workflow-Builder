@@ -6,7 +6,9 @@ import * as array from '@/utils/array'
 import { Table, Cell, Column, EditableCell } from '@/app/components/Table'
 import { GeneSet } from '@/components/core/input/set'
 import { downloadBlob } from '@/utils/download'
-import { Button } from '@blueprintjs/core'
+import dynamic from 'next/dynamic'
+
+const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const GMT = MetaNode(`GMT`)
   .meta({
@@ -138,7 +140,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].join('\t')}</Cell>}
           />
         </Table>
-        <Button
+        <Bp4Button
           large
           type="submit"
           text="Submit"

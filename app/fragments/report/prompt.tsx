@@ -5,9 +5,11 @@ import type { Metapath } from '@/app/fragments/graph/types'
 import { PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
-import Icon from '@/app/components/icon'
 import { func_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
+import dynamic from 'next/dynamic'
+
+const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Prompt({ processNode, output, id, head }: { processNode: PromptMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()

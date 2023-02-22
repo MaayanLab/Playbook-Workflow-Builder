@@ -2,9 +2,9 @@ import React from 'react'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import { start_icon, restart_icon } from '@/icons'
-import { Alert } from '@blueprintjs/core'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
+const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 export default function RestartButton() {
   const router = useRouter()
@@ -25,7 +25,7 @@ export default function RestartButton() {
       }}>
         <Icon icon={restart_icon} />
       </button>
-      <Alert
+      <Bp4Alert
         cancelButtonText="Cancel"
         confirmButtonText="Restart"
         icon="reset"
@@ -45,7 +45,7 @@ export default function RestartButton() {
         <p className="prose">
           <b>Tip:</b> Hold shift when clicking to skip this confirmation.
         </p>
-      </Alert>
+      </Bp4Alert>
     </>
   )
 }

@@ -1,7 +1,9 @@
 import React from 'react'
-import Icon from '@/app/components/icon'
 import { share_icon } from '@/icons'
 import usePublicUrl from '@/utils/next-public-url'
+import dynamic from 'next/dynamic'
+
+const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function ShareButton({ id }: { id: string | undefined }) {
   const publicUrl = usePublicUrl({ absolute: true })

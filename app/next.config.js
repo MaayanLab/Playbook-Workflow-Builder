@@ -1,3 +1,6 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.NEXT_ANALYZE === 'true',
+})
 const fs = require('fs')
 const dotenv = require('dotenv')
 
@@ -23,7 +26,7 @@ if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
 if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 
-module.exports = {
+module.exports = withBundleAnalyzer({
   experimental: {
     externalDir: true,
   },
@@ -39,4 +42,4 @@ module.exports = {
       },
     ]
   }
-}
+})

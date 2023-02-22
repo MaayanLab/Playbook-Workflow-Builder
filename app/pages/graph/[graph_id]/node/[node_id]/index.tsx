@@ -1,7 +1,3 @@
-import '@blueprintjs/icons/lib/css/blueprint-icons.css'
-import '@blueprintjs/select/lib/css/blueprint-select.css'
-import '@blueprintjs/core/lib/css/blueprint.css'
-
 import React from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'

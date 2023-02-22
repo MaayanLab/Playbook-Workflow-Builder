@@ -1,11 +1,3 @@
-import { IconSvgPaths20 } from '@blueprintjs/icons'
-export const delete_icon = { path: IconSvgPaths20.Delete.join(' '), title: 'Delete', size: 20 }
-export const edit_icon = { path: IconSvgPaths20.Edit.join(' '), title: 'Edit', size: 20 }
-export const fork_icon = { path: IconSvgPaths20.Fork.join(' '), title: 'Expand From this Step', size: 20 }
-export const restart_icon = { path: IconSvgPaths20.Reset.join(' '), title: 'Restart', size: 20 }
-export const save_icon = { path: IconSvgPaths20.FloppyDisk.join(' '), title: 'Save', size: 20 }
-export const view_in_graph_icon = { path: IconSvgPaths20.SendToGraph.join(' '), title: 'View in Graph', size: 20 }
-export const view_report_icon = { path: IconSvgPaths20.SendToMap.join(' '), title: 'View Report', size: 20 }
 import { mdiArrowRight } from '@mdi/js'; export const rightarrow_icon = { path: mdiArrowRight, size: 24 }
 import { mdiCameraMeteringMatrix } from '@mdi/js'; export const tissue_icon = { path: mdiCameraMeteringMatrix, title: 'Tissue', size: 24 }
 import { mdiChartBar } from '@mdi/js'; export const barchart_icon = { path: mdiChartBar, title: 'Bar Chart', size: 24 }
@@ -32,3 +24,10 @@ import { mdiSetNone } from '@mdi/js'; export const supervenn_icon = { path: mdiS
 import { mdiVariable } from '@mdi/js'; export const variable_icon = { path: mdiVariable, title: 'Variable', size: 24 }
 import { mdiViewList } from '@mdi/js'; export const weighted_icon = { path: mdiViewList, title: 'Weighted', size: 24 }
 import { mdiWebhook } from '@mdi/js'; export const pathway_icon = { path: mdiWebhook, title: 'Pathway', size: 24 }
+import bp4Delete from '@blueprintjs/icons/src/generated/20px/paths/delete'; export const delete_icon = { path: bp4Delete.join(' '), title: 'Delete', size: 20 }
+import bp4Edit from '@blueprintjs/icons/src/generated/20px/paths/edit'; export const edit_icon = { path: bp4Edit.join(' '), title: 'Edit', size: 20 }
+import bp4FloppyDisk from '@blueprintjs/icons/src/generated/20px/paths/floppy-disk'; export const save_icon = { path: bp4FloppyDisk.join(' '), title: 'Save', size: 20 }
+import bp4Fork from '@blueprintjs/icons/src/generated/20px/paths/fork'; export const fork_icon = { path: bp4Fork.join(' '), title: 'Expand From this Step', size: 20 }
+import bp4Reset from '@blueprintjs/icons/src/generated/20px/paths/reset'; export const restart_icon = { path: bp4Reset.join(' '), title: 'Restart', size: 20 }
+import bp4SendToGraph from '@blueprintjs/icons/src/generated/20px/paths/send-to-graph'; export const view_in_graph_icon = { path: bp4SendToGraph.join(' '), title: 'View in Graph', size: 20 }
+import bp4SendToMap from '@blueprintjs/icons/src/generated/20px/paths/send-to-map'; export const view_report_icon = { path: bp4SendToMap.join(' '), title: 'View Report', size: 20 }

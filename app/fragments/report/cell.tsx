@@ -1,13 +1,13 @@
 import React from 'react'
-import { FPL } from '@/core/FPPRG'
+import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
-import Icon from '@/app/components/icon'
-import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, share_icon, start_icon, func_icon, variable_icon } from '@/icons'
+import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, func_icon, variable_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
 import dynamic from 'next/dynamic'
 
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
+const Icon = dynamic(() => import('@/app/components/icon'))
 
 type Metapath = ReturnType<FPL['toJSON']>
 

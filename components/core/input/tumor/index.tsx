@@ -29,46 +29,46 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
                             startPosition: z.number(),
                             endPosition: z.number(),
                             cancerTypeId: z.string()})))
-  .view(scored => {
+  .view(expressionTable => {
     return (
       <Table
         height={500}
-        cellRendererDependencies={[scored]}
-        numRows={scored.length}
+        cellRendererDependencies={[expressionTable]}
+        numRows={expressionTable.length}
         enableGhostCells
         enableFocusedCell
       >
         <Column
           name={"GeneId"}
-          cellRenderer={row => <Cell key={row+''}>{scored[row].entrezGeneId}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].entrezGeneId}</Cell>}
         />
         <Column
           name="PatientId"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].patientId}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].patientId}</Cell>}
         />
         <Column
           name="SampleId"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].sampleId}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].sampleId}</Cell>}
         />
         <Column
           name={"MutationType"}
-          cellRenderer={row => <Cell key={row+''}>{scored[row].mutationType}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].mutationType}</Cell>}
         />
         <Column
           name="MutationStatus"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].mutationStatus}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].mutationStatus}</Cell>}
         />
         <Column
           name="StartPosition"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].startPosition}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].startPosition}</Cell>}
         />
         <Column
           name="EndPosition"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].endPosition}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].endPosition}</Cell>}
         />
         <Column
           name="CancerType"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].cancerTypeId}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].cancerTypeId}</Cell>}
         />
       </Table>
     )

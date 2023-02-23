@@ -1,15 +1,15 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { Primative, Tumor} from '@/components/core/input/primitives'
+import { Primative, TumorGeneExpression} from '@/components/core/input/primitives'
 import { z } from 'zod'
 import { Table, Cell, Column } from '@/app/components/Table'
 import * as array from '@/utils/array'
 
 
 
-const Tumor_T = (T: Primative) => MetaNode(`Tumor[${T.name}]`)
+const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
   .meta({
-    label: `${T.label}s`,
+    label: `${T.label}`,
     description: `Output of ${T.label}s`,
     color: T.color,
     tags: {
@@ -76,4 +76,4 @@ const Tumor_T = (T: Primative) => MetaNode(`Tumor[${T.name}]`)
   .build()
 
 
-export const ScoredTumors = Tumor_T(Tumor)
+export const GeneExpressionInTumor = GeneExpressionInTumor_T(TumorGeneExpression)

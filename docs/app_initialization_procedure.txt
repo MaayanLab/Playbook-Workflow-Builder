@@ -1,0 +1,6 @@
+In the main working folder of the local repo:
+1. Check that the NodJS and nom are isntalled.
+2. npm init (fill in the requried info)
+3. npm install
+4. npm i
+5. npom run dev (to start the app, host:port will be writhen in the prompt)

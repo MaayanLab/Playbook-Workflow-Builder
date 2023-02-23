@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneInfo } from '@/components/service/mygeneinfo'
-import { ScoredTumors } from '@/components/core/input/tumor'
+import { GeneExpressionInTumor } from '@/components/core/input/tumor'
 import python from '@/utils/python'
 
 export const KFTumorExpression = MetaNode('KFTumorExpression')
@@ -9,7 +9,7 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
     description: 'Use KF API to obtain tumors expressing the given gene'
   })
   .inputs({ gene_info: GeneInfo })
-  .output(ScoredTumors)
+  .output(GeneExpressionInTumor)
   .resolve(async (props) => {
     return await python(
       'components.service.kf.main',

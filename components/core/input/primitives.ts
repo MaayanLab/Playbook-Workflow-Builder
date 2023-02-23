@@ -133,9 +133,9 @@ export const Tissue = {
   },
 } as Primative
 
-export const Tumor = {
-  name: 'Tumor',
-  label: 'Tumor',
+export const TumorGeneExpression = {
+  name: 'TumorGeneExpression ',
+  label: 'TumorGeneExpression ',
   icon: [tissue_icon],
   color: '#98D7C2',
   extra: {

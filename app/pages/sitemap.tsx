@@ -37,6 +37,14 @@ export default function SiteMap() {
                     </div>
                   </div>
                 </Link>
+                <Link href="/playbooks">
+                  <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
+                    <div className="card-body prose">
+                      <h4 className="card-title">Playbook Catalog</h4>
+                      <p>An interface for searching for and launching published playbooks.</p>
+                    </div>
+                  </div>
+                </Link>
                 <Link href="/testing">
                   <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
                     <div className="card-body prose">

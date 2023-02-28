@@ -85,7 +85,7 @@ export default function Playbooks() {
         ...dict.keys(dataSourceFilters).map(filter => playbook.dataSources.filter(dataSource => dataSource === filter).length > 0),
       ])
     })
-  }, [playbooks, allInputs, allOutputs, allDataSources])
+  }, [playbooks, inputFilters, outputFilters, dataSourceFilters])
   const searchFilteredPlaybooks = React.useMemo(() => {
     if (!filteredPlaybooks) return
     if (!search) return filteredPlaybooks
@@ -95,7 +95,7 @@ export default function Playbooks() {
       search_scores[playbook.id] = playbook_tsvectors[playbook.id]?.intersect(search_tsvector).size
     })
     const searchFilteredPlaybooks = filteredPlaybooks.filter(playbook => search_scores[playbook.id] > 0)
-    searchFilteredPlaybooks.sort((a, b) => search_scores[a.id] - search_scores[b.id])
+    searchFilteredPlaybooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
     return searchFilteredPlaybooks
   }, [filteredPlaybooks, search])
   useAsyncEffect(async (isMounted) => {

@@ -216,8 +216,7 @@ export default function Playbooks() {
                 : null}
               {searchFilteredPlaybooks ?
                 searchFilteredPlaybooks.length > 0 ?
-                  searchFilteredPlaybooks.map(playbook => (
-                    <>
+                  searchFilteredPlaybooks.flatMap(playbook => [
                     <tr key={playbook.id}>
                       <td>
                         <div className="tooltip z-50" data-tip="Click to view details">
@@ -302,8 +301,8 @@ export default function Playbooks() {
                           </Link>
                         </div>
                       </td>
-                    </tr>
-                    <tr className={details[playbook.id] ? 'display' : 'hidden'}>
+                    </tr>,
+                    <tr key={`${playbook.id}-details`} className={details[playbook.id] ? 'display' : 'hidden'}>
                       <td colSpan={6}>
                         <div className="mx-auto prose whitespace-normal">
                           <div className="flex flex-row gap-2 flex-wrap">
@@ -317,8 +316,7 @@ export default function Playbooks() {
                         </div>
                       </td>
                     </tr>
-                    </>
-                  ))
+                  ])
                 : <tr>
                   <td colSpan={5}>
                     <div className="alert">No playbooks currently registered matching this criteria.</div>

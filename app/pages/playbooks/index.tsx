@@ -16,6 +16,11 @@ type Playbook = {
   id: string,
   label: string,
   description: string,
+  published: string,
+  version: string,
+  authors: string[],
+  licenseUrl: string,
+  license: string,
   url: string,
   dataSources: string[],
   inputs: Array<DataMetaNode>,
@@ -26,6 +31,7 @@ export default function Playbooks() {
   const [dataSourceFilters, setDataSourceFilters] = React.useState<Record<string, boolean>>({})
   const [inputFilters, setInputFilters] = React.useState<Record<string, boolean>>({})
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
+  const [details, setDetails] = React.useState<Record<string, boolean>>({})
   const [playbooks, setPlaybooks] = React.useState<Array<Playbook>>()
   const { allInputs, allOutputs, allDataSources, isLoading } = React.useMemo(() => {
     const allInputs: Record<string, DataMetaNode> = {}
@@ -48,6 +54,16 @@ export default function Playbooks() {
     }
     return { allInputs, allOutputs, allDataSources, isLoading }
   }, [playbooks])
+  const filteredPlaybooks = React.useMemo(() => {
+    if (!playbooks) return
+    return playbooks.filter(playbook => {
+      return array.all([
+        ...dict.keys(inputFilters).map(filter => playbook.inputs.filter(input => input.spec === filter).length > 0),
+        ...dict.keys(outputFilters).map(filter => playbook.outputs.filter(output => output.spec === filter).length > 0),
+        ...dict.keys(dataSourceFilters).map(filter => playbook.dataSources.filter(dataSource => dataSource === filter).length > 0),
+      ])
+    })
+  }, [playbooks, allInputs, allOutputs, allDataSources])
   useAsyncEffect(async (isMounted) => {
     const { default: demoPlaybooks } = await import('@/app/public/playbooksDemo')
     if (!isMounted()) return
@@ -136,7 +152,8 @@ export default function Playbooks() {
           <table className="table w-full">
             <thead>
               <tr>
-                <th>Playbook</th>
+                <th></th>
+                <th className="text-center">Playbook</th>
                 <th className="text-center">Inputs</th>
                 <th className="text-center">Outputs</th>
                 <th className="text-center">Sources</th>
@@ -151,17 +168,22 @@ export default function Playbooks() {
                   </td>
                 </tr>
                 : null}
-              {playbooks ?
-                playbooks.length > 0 ?
-                  playbooks.filter(playbook => {
-                    return array.all([
-                      ...dict.keys(inputFilters).map(filter => playbook.inputs.filter(input => input.spec === filter).length > 0),
-                      ...dict.keys(outputFilters).map(filter => playbook.outputs.filter(output => output.spec === filter).length > 0),
-                      ...dict.keys(dataSourceFilters).map(filter => playbook.dataSources.filter(dataSource => dataSource === filter).length > 0),
-                    ])
-                  }).map(playbook => (
+              {filteredPlaybooks ?
+                filteredPlaybooks.length > 0 ?
+                  filteredPlaybooks.map(playbook => (
+                    <>
                     <tr key={playbook.id}>
-                      <td><div className="tooltip whitespace-normal z-50" data-tip={playbook.description}>{playbook.label}</div></td>
+                      <td>
+                        <div className="tooltip z-50" data-tip="Click to view details">
+                          <button
+                            className="btn btn-ghost"
+                            onClick={evt => {
+                              setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
+                            }}
+                          >{details[playbook.id] ? '-' : '+'}</button>
+                        </div>
+                      </td>
+                      <td>{playbook.label}</td>
                       <td>
                         <div className="flex flex-row flex-wrap gap-2 justify-center">
                           {playbook.inputs.map(input => (
@@ -235,10 +257,25 @@ export default function Playbooks() {
                         </div>
                       </td>
                     </tr>
+                    <tr className={details[playbook.id] ? 'display' : 'hidden'}>
+                      <td colSpan={6}>
+                        <div className="mx-auto prose whitespace-normal">
+                          <div className="flex flex-row gap-2 flex-wrap">
+                            <div className="badge badge-primary">v{playbook.version}</div>
+                            <div className="badge bg-gray-300 border-none"><a className="no-underline text-blue-700" href={playbook.licenseUrl} target="blank">{playbook.license}</a></div>
+                          </div>
+                          <p><b>Published</b>: {playbook.published}</p>
+                          <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
+                          <p><b>Description</b>: {playbook.description}</p>
+                          <Link href={playbook.url}><button className="bp4-button bp4-large">Launch</button></Link>
+                        </div>
+                      </td>
+                    </tr>
+                    </>
                   ))
                 : <tr>
                   <td colSpan={5}>
-                    <div className="alert">No playbooks currently registered</div>
+                    <div className="alert">No playbooks currently registered matching this criteria.</div>
                   </td>
                 </tr>
                 : null}

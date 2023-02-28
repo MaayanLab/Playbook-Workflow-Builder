@@ -5,6 +5,7 @@ import { view_report_icon } from '@/icons'
 import Link from 'next/link'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import tsvector, { type TSVector } from "@/utils/tsvector"
 import { DataMetaNode } from '@/spec/metanode'
 import useAsyncEffect from 'use-async-effect'
 
@@ -33,6 +34,27 @@ export default function Playbooks() {
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
   const [details, setDetails] = React.useState<Record<string, boolean>>({})
   const [playbooks, setPlaybooks] = React.useState<Array<Playbook>>()
+  const [search, setSearch] = React.useState('')
+  const playbook_tsvectors = React.useMemo(() => {
+    const playbook_tsvectors: Record<string, TSVector> = {}
+    playbooks?.forEach(playbook => {
+      playbook_tsvectors[playbook.id] = tsvector([
+        playbook.label,
+        playbook.description,
+        playbook.published,
+        ...playbook.inputs.flatMap(input => [
+          input.meta.label,
+          input.meta.description,
+        ]),
+        ...playbook.outputs.flatMap(output => [
+          output.meta.label,
+          output.meta.description,
+        ]),
+        ...playbook.dataSources,
+      ].join(' '))
+    })
+    return playbook_tsvectors
+  }, [playbooks])
   const { allInputs, allOutputs, allDataSources, isLoading } = React.useMemo(() => {
     const allInputs: Record<string, DataMetaNode> = {}
     const allOutputs: Record<string, DataMetaNode> = {}
@@ -64,6 +86,18 @@ export default function Playbooks() {
       ])
     })
   }, [playbooks, allInputs, allOutputs, allDataSources])
+  const searchFilteredPlaybooks = React.useMemo(() => {
+    if (!filteredPlaybooks) return
+    if (!search) return filteredPlaybooks
+    const search_tsvector = tsvector(search)
+    const search_scores: Record<string, number> = {}
+    filteredPlaybooks.forEach(playbook => {
+      search_scores[playbook.id] = playbook_tsvectors[playbook.id]?.intersect(search_tsvector).size
+    })
+    const searchFilteredPlaybooks = filteredPlaybooks.filter(playbook => search_scores[playbook.id] > 0)
+    searchFilteredPlaybooks.sort((a, b) => search_scores[a.id] - search_scores[b.id])
+    return searchFilteredPlaybooks
+  }, [filteredPlaybooks, search])
   useAsyncEffect(async (isMounted) => {
     const { default: demoPlaybooks } = await import('@/app/public/playbooksDemo')
     if (!isMounted()) return
@@ -148,6 +182,18 @@ export default function Playbooks() {
             </div>
           </div>
         </div>
+        <div className="bp4-input-group">
+          <span className="bp4-icon bp4-icon-search" />
+          <input
+            type="search"
+            className="bp4-input"
+            placeholder="Search playbooks by title, description, and more"
+            value={search}
+            onChange={evt => {
+              setSearch(() => evt.target.value)
+            }}
+          />
+        </div>
         <div>
           <table className="table w-full">
             <thead>
@@ -168,9 +214,9 @@ export default function Playbooks() {
                   </td>
                 </tr>
                 : null}
-              {filteredPlaybooks ?
-                filteredPlaybooks.length > 0 ?
-                  filteredPlaybooks.map(playbook => (
+              {searchFilteredPlaybooks ?
+                searchFilteredPlaybooks.length > 0 ?
+                  searchFilteredPlaybooks.map(playbook => (
                     <>
                     <tr key={playbook.id}>
                       <td>

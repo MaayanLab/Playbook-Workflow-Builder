@@ -49,7 +49,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
       )
     })
     .filter((item) => {
-      if (_search.size === 0) return true
+      if (!search) return true
       const _fts = tsvector(serialize(item))
       return _fts.intersect(_search).size !== 0
     })

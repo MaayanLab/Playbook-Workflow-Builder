@@ -19,23 +19,6 @@ export default function Cell({ krg, index, id, head }: { krg: KRG, index: number
   const View = outputNode ? outputNode.view : undefined
   return (
     <>
-      {!('prompt' in processNode) ?
-        <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
-          <div className="p-3">
-            <div className="flex flex-row gap-2">
-              <Icon icon={processNode.meta.icon || func_icon} />
-              <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
-            </div>
-            {processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p> : null}
-          </div>
-          <div className="border-t-secondary border-t-2 mt-2">
-            <Link href={`/graph/${id}/node/${head.id}`}>
-              <button className="bp4-button bp4-minimal">
-                <Icon icon={view_in_graph_icon} />
-              </button>
-            </Link>
-          </div>
-        </div> : null}
       <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
         {'prompt' in processNode ?
           <Prompt

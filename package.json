@@ -13,6 +13,7 @@
     "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "codegen:sql": "mkdir -p db/migrations && ts-node -r tsconfig-paths/register cli/build-sql.ts > db/migrations/00_init.sql",
+    "codegen:table": "ts-node -r esm -r tsconfig-paths/register cli/build-table.ts > metanodes.tsv",
     "dev": "npx --workspace=app next dev",
     "start:worker": "ts-node -r tsconfig-paths/register cli/resolve-process-worker.ts",
     "start": "npx --workspace=app next start"

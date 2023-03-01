@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
+import FPL2Text from '@/core/fpl2text'
 import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
 
@@ -14,14 +15,15 @@ type Metapath = ReturnType<FPL['toJSON']>
 
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
   const { data: raw_metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const metapath = raw_metapath||[]
   const metapath_filtered = React.useMemo(() => {
-    const metapath = raw_metapath||[]
     return metapath
       .filter((head, index) =>
         'prompt' in krg.getProcessNode(head.process.type) // any prompt nodes
         || index === metapath.length-1 // last step
       )
-  }, [raw_metapath])
+  }, [metapath])
+  const description = React.useMemo(() => FPL2Text(krg, metapath), [krg, metapath])
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
@@ -32,6 +34,9 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
               Playbook
             </h2>
           </div>
+          <h2 className="prose whitespace-pre-line">
+            {description}
+          </h2>
         </div>
         {error ? <div className="alert alert-error">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">

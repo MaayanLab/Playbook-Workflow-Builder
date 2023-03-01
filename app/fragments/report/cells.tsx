@@ -13,7 +13,15 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 type Metapath = ReturnType<FPL['toJSON']>
 
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
-  const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const { data: raw_metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const metapath_filtered = React.useMemo(() => {
+    const metapath = raw_metapath||[]
+    return metapath
+      .filter((head, index) =>
+        'prompt' in krg.getProcessNode(head.process.type) // any prompt nodes
+        || index === metapath.length-1 // last step
+      )
+  }, [raw_metapath])
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
@@ -40,7 +48,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
           <ShareButton id={id} />
         </div>
       </div>
-      {(metapath||[]).map((head, index) =>
+      {metapath_filtered.map((head, index) =>
         <Cell key={index} krg={krg} index={index} id={id} head={head} />
       )}
     </div>

@@ -221,14 +221,14 @@ export default function Playbooks() {
                       <td>
                         <div className="tooltip z-50" data-tip="Click to view details">
                           <button
-                            className="btn btn-ghost"
+                            className="btn btn-ghost text-4xl"
                             onClick={evt => {
                               setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                             }}
                           >{details[playbook.id] ? '-' : '+'}</button>
                         </div>
                       </td>
-                      <td>{playbook.label}</td>
+                      <td className="prose">{playbook.label}</td>
                       <td>
                         <div className="flex flex-row flex-wrap gap-2 justify-center">
                           {playbook.inputs.map(input => (

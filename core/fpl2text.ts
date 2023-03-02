@@ -1,6 +1,7 @@
 import type KRG from '@/core/KRG'
 import type { FPL } from '@/core/FPPRG'
 import * as dict from '@/utils/dict'
+import pluralize from 'pluralize'
 
 type Metapath = ReturnType<FPL['toJSON']>
 
@@ -22,7 +23,15 @@ export default function FPL2Text(krg: KRG, metapath: Array<Metapath>) {
     if (dict.isEmpty(proc.inputs)) {
       return `${augment(proc.meta.description, true)}.`
     } else {
-      return `Using ${sentence_comma_separate(dict.values(proc.inputs).map(input => augment(input.meta.description)))}, ${augment(proc.meta.description)} to produce ${augment(proc.output.meta.description)}.`
+      return `Using ${sentence_comma_separate(
+        dict.values(proc.inputs).map(input => {
+          if (Array.isArray(input)) {
+            return `several ${pluralize(augment(input[0].meta.description))}`
+          } else {
+            return augment(input.meta.description)
+          }
+        })
+      )}, ${augment(proc.meta.description)} to produce ${augment(proc.output.meta.description)}.`
     }
   }).join(' ')
 }

@@ -23,6 +23,7 @@ const playbooks = [
     outputs: [
       ScoredTissues,
     ],
+    clicks: 2,
   },
   {
     id: 'd30f6646-f29b-4427-41bb-641be48805a4',
@@ -47,6 +48,7 @@ const playbooks = [
       GeneSet,
       Supervenn,
     ],
+    clicks: 1,
   },
 ]
 

@@ -8,6 +8,7 @@ import * as array from '@/utils/array'
 import tsvector, { type TSVector } from "@/utils/tsvector"
 import { DataMetaNode } from '@/spec/metanode'
 import useAsyncEffect from 'use-async-effect'
+import { useRouter } from 'next/router'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
@@ -26,9 +27,11 @@ type Playbook = {
   dataSources: string[],
   inputs: Array<DataMetaNode>,
   outputs: Array<DataMetaNode>,
+  clicks: number,
 }
 
 export default function Playbooks() {
+  const router = useRouter()
   const [dataSourceFilters, setDataSourceFilters] = React.useState<Record<string, boolean>>({})
   const [inputFilters, setInputFilters] = React.useState<Record<string, boolean>>({})
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
@@ -203,6 +206,7 @@ export default function Playbooks() {
                 <th className="text-center">Inputs</th>
                 <th className="text-center">Outputs</th>
                 <th className="text-center">Sources</th>
+                <th className="text-center">Clicks</th>
                 <th className="text-center">Actions</th>
               </tr>
             </thead>
@@ -292,13 +296,17 @@ export default function Playbooks() {
                           ))}
                         </div>
                       </td>
+                      <td className="prose text-center">
+                        {playbook.clicks}
+                      </td>
                       <td>
                         <div className="flex flex-row gap-2 justify-center">
-                          <Link href={playbook.url}>
-                            <button>
-                              <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
-                            </button>
-                          </Link>
+                          <button onClick={() => {
+                            // TODO: register click
+                            router.push(playbook.url)
+                          }}>
+                            <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
+                          </button>
                         </div>
                       </td>
                     </tr>,

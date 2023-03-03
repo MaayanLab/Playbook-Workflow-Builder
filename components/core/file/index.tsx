@@ -14,10 +14,10 @@ export const FileURL = MetaNode('FileURL')
     description: 'URL to a File',
     icon: [file_icon],
   })
-  .codec(z.string())
-  .view(file => (
+  .codec(z.object({ description: z.string().optional(), url: z.string() }))
+  .view(({ url }) => (
     <div>
-      <h2>File: {file}</h2>
+      <h2>File: {url}</h2>
     </div>
   ))
   .build()
@@ -49,7 +49,7 @@ export const FileInput = MetaNode('FileInput')
               const formData = new FormData(evt.currentTarget)
               const res = await fetch(`/api/components/core/file/upload`, { method: 'POST', body: formData })
               const records: { file: string[] } = await res.json()
-              props.submit(records.file[0])
+              props.submit({ url: records.file[0] })
             }}
           >
             <input
@@ -71,7 +71,7 @@ export const FileInput = MetaNode('FileInput')
               }}
             >
               <button className="btn btn-lg">Choose File</button>
-              <span className="text-lg">{props.output||'No file chosen'}</span>
+              <span className="text-lg">{props.output?.url||'No file chosen'}</span>
             </div>
             <div className="inline-flex flex-row">
               <a

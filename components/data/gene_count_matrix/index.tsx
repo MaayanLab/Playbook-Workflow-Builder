@@ -51,7 +51,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(
     'components.data.gene_count_matrix.gene_count_matrix',
-    { kargs: [props.inputs.file] },
+    { kargs: [props.inputs.file.url] },
   ))
   .build()
 

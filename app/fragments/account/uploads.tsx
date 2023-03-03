@@ -78,7 +78,7 @@ export default function Uploads() {
                           inputs: {},
                           data: {
                             type: FileURL.spec,
-                            value: FileURL.codec.encode(upload.url),
+                            value: FileURL.codec.encode({ url: upload.url }),
                           },
                         })
                       })

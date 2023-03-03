@@ -14,12 +14,6 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
   },
   {
-    name: 'GTEx_Aging_Signatures_2021',
-    label: 'GTEx Aging Signatures 2021',
-    termType: 'Disease',
-    termRe: /^GTEx (?<term>.+)$/,
-  },
-  {
     name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
     label: 'Rare Diseases GeneRIF ARCHS4 Predictions',
     termType: 'Disease',
@@ -220,12 +214,6 @@ export const TranscriptionFactor_backgrounds = [
     label: 'ARCHS4 TF Co-Expression',
     termType: 'TranscriptionFactor',
     termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$/,
-  },
-  {
-    name: 'ENCODE_and_ChEA_Consensus_TFs_from_ChIP-X',
-    label: 'ENCODE and ChEA Consensus TFs from ChIP-X',
-    termType: 'TranscriptionFactor',
-    termRe: /^(?<term>.+) (?<origin>[^ ]+?)$/,
   },
 ]
 

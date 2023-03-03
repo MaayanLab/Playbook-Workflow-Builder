@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import * as dict from '@/utils/dict'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 
-const ReactSupervenn = dynamic(() => import('@/app/components/supervenn'), { ssr: false })
+const ReactSupervenn = dynamic(() => import('react-supervenn'), { ssr: false })
 
 const hyposet_url = 'https://hyposet.maayanlab.cloud'
 

@@ -95,7 +95,7 @@ export const GMTConsensus = MetaNode('GMTConsensus')
 export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .meta({
     label: `Assemble GMT from Genesets`,
-    description: 'Group multiple independently generated genesets as a single GMT'
+    description: 'Group multiple independently generated gene sets into a single GMT'
   })
   .inputs({ genesets: [GeneSet] })
   .output(GMT)

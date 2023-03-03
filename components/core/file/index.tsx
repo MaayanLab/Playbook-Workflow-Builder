@@ -11,7 +11,7 @@ const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) =>
 export const FileURL = MetaNode('FileURL')
   .meta({
     label: 'File URL',
-    description: 'An arbitrary file url',
+    description: 'URL to a File',
     icon: [file_icon],
   })
   .codec(z.string())
@@ -24,8 +24,8 @@ export const FileURL = MetaNode('FileURL')
 
 export const FileInput = MetaNode('FileInput')
   .meta({
-    label: 'Input a File',
-    description: 'A file upload',
+    label: 'Input File',
+    description: 'Upload a Data File',
     default: '',
     icon: [input_icon],
   })

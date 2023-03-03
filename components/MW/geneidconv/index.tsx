@@ -8,7 +8,7 @@ export const GeneIDConv = MetaNode('GeneIDConv')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Gene ID Conversion',
-    description: 'Given one type of gene ID, generate other types of gene IDs.',
+    description: 'Given one type of gene ID, generate other types of gene IDs',
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
@@ -36,14 +36,13 @@ export const GeneIDConv = MetaNode('GeneIDConv')
 // Process to convert ConvertedGeneID to GeneInfo
 // Much of LINCS's APIs are centered around GeneInfo
 export const ConvertedGeneID2GeneInfo = MetaNode('ConvertedGeneID2GeneInfo')
-.meta({
-  label: 'Extract Gene Term from ConvertedGeneID',
-  description: 'Given a ConvertedGeneID object, convert it to Gene Term object.',
-
-})
-.inputs({data: ConvertedGeneID})
-.output(GeneTerm)
-.resolve(async (props) => {
-  return uniqJsonSubset(props.inputs.data)[0].SYMBOL;
-})
-.build()
+  .meta({
+    label: 'Extract Gene Term from ConvertedGeneID',
+    description: 'Given a ConvertedGeneID object, convert it to Gene Term object',
+  })
+  .inputs({data: ConvertedGeneID})
+  .output(GeneTerm)
+  .resolve(async (props) => {
+    return uniqJsonSubset(props.inputs.data)[0].SYMBOL;
+  })
+  .build()

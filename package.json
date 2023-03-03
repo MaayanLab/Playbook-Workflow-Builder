@@ -13,6 +13,7 @@
     "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "codegen:sql": "mkdir -p db/migrations && ts-node -r tsconfig-paths/register cli/build-sql.ts > db/migrations/00_init.sql",
+    "codegen:table": "ts-node -r esm -r tsconfig-paths/register cli/build-table.ts > metanodes.tsv",
     "dev": "npx --workspace=app next dev",
     "start:worker": "ts-node -r tsconfig-paths/register cli/resolve-process-worker.ts",
     "start": "npx --workspace=app next start"
@@ -23,6 +24,7 @@
     "@blueprintjs/select": "^4.8.12",
     "@blueprintjs/table": "^4.7.10",
     "@mdi/js": "^7.1.96",
+    "@types/pluralize": "^0.0.29",
     "fast-sha256": "^1.3.0",
     "glob": "^8.0.3",
     "json-canonicalize": "^1.0.4",
@@ -31,6 +33,7 @@
     "pg-boss": "^8.3.0",
     "pg-listen": "^1.7.0",
     "pg-query-stream": "^4.2.4",
+    "pluralize": "^8.0.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "swr": "^2.0.0",

@@ -54,7 +54,7 @@ const inputValueRenderer = (item: unknown) => item+''
 const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & { data: string }>) => MetaNode(`Input[${T.name}]`)
   .meta({
     label: `${T.label} Input`,
-    description: `Start with a ${T.label} term`,
+    description: `Start with a ${T.label}`,
     icon: [input_icon],
     tags: {
       Type: {

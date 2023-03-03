@@ -16,4 +16,7 @@ export const TissueBarplotFromSignificantTissue = MetaNode('TissueBarplotFromSig
     'components.viz.tissue_barplot.tissue_barplot',
     { kargs: [props.inputs.tissues] },
   ))
+  .story(props =>
+    `To visualize the level of expression across tissues, a bar plot was created [FIGURE].`
+  )
   .build()

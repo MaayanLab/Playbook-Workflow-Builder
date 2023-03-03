@@ -18,4 +18,7 @@ export const GTExTissueExpression = MetaNode('GTExTissueExpression')
       { kargs: [props.inputs.gene_info.ensembl?.gene || props.inputs.gene_info.symbol], kwargs: { datasetId: 'gtex_v8' } },
     )
   })
+  .story(props =>
+    `Median expression of ${props.inputs.gene_info.symbol} was obtained from the GTEx portal [REF] using the portal's API.`
+  )
   .build()

@@ -196,6 +196,9 @@ backgrounds.map(bg => ({ bg, output }))
     .resolve(async (props) => {
       return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Statistically significant enriched terms from the ${bg.label} [REF] library  were assembled into a collection of gene sets.`
+    )
     .build()
 )
 
@@ -267,6 +270,9 @@ backgrounds.map(bg => ({ bg, output }))
     .resolve(async (props) => {
       return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Identified matching terms from the ${bg.label} [REF] library were assembled into a collection of gene sets.`
+    )
     .build()
 )
 
@@ -349,5 +355,8 @@ export const EnrichrTermSearchT = [
     .resolve(async (props) => {
       return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Identified matching terms from the ${bg.label} [REF] library  were assembled into a collection of gene sets.`
+    )
     .build()
 )

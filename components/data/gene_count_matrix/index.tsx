@@ -53,6 +53,9 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
     'components.data.gene_count_matrix.gene_count_matrix',
     { kargs: [props.inputs.file.url] },
   ))
+  .story(props =>
+    `The input gene matrix count was converted into a standard format.`
+  )
   .build()
 
   export const Transpose = MetaNode('Transpose')
@@ -66,4 +69,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
     'components.data.gene_count_matrix.transpose',
     { kargs: [props.inputs.file] },
   ))
+  .story(props =>
+    `The gene count matrix was then transposed`
+  )
   .build()

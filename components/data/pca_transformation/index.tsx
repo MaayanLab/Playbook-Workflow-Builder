@@ -14,4 +14,7 @@ export const PCABokehPlotFromGeneCountMatrix = MetaNode('PCABokehPlotFromGeneCou
       'components.data.pca_transformation.pca_transformation',
     { kargs: [props.inputs.matrix]  },
   ))
+  .story(props =>
+    `The gene count matrix was then visualized as a PCA plot [FIGURE].`
+  )
   .build()

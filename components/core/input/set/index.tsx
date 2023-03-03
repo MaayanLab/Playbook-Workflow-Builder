@@ -110,6 +110,9 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
       </div>
     )
   })
+  .story(props =>
+    `The workflow starts with a drug set${props.output && props.output.description ? `created from ${props.output.description}` : ''}.`
+  )
   .build()
 
 export const InputGeneSet = Input_Set_T(Gene, GeneSet)

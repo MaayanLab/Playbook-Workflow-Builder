@@ -49,4 +49,7 @@ export const SuperVennFromGMT = MetaNode('SuperVennFromGMT')
     })
     return await res.json()
   })
+  .story(props =>
+    `The collections of gene sets was then visualized with a SuperVenn diagram [FIGURE].`
+  )
   .build()

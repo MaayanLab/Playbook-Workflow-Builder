@@ -97,4 +97,7 @@ export const FileInput = MetaNode('FileInput')
       </div>
     )
   })
+  .story(props =>
+    `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
+  )
   .build()

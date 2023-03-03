@@ -7,6 +7,7 @@ import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { downloadBlob } from '@/utils/download'
 import dynamic from 'next/dynamic'
+import pluralize from 'pluralize'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const Bp4TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
@@ -14,7 +15,7 @@ const Bp4TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }
 const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
   .meta({
     label: `${T.label} Set`,
-    description: `Set of ${T.label}s`,
+    description: `Set of ${pluralize(T.label)}`,
     icon: [...array.ensureArray(T.icon), set_icon],
     color: T.color,
     tags: {
@@ -60,7 +61,7 @@ export const TissueSet = Set_T(Tissue)
 const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: string[] }>) => MetaNode(`Input[${SetT.spec}]`)
   .meta({
     label: `${T.label} Set Input`,
-    description: `Start with a set of ${T.label}s`,
+    description: `Start with a set of ${pluralize(T.label)}`,
     icon: [input_icon],
     tags: {
       Type: {

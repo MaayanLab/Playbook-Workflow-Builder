@@ -6,11 +6,12 @@ import { Table, Cell, Column } from '@/app/components/Table'
 import { weighted_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { downloadBlob } from '@/utils/download'
+import pluralize from 'pluralize'
 
 const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
   .meta({
-    label: `Scored ${T.label}s`,
-    description: `ZScores of ${T.label}s`,
+    label: `Scored ${pluralize(T.label)}`,
+    description: `ZScores of ${pluralize(T.label)}`,
     color: T.color,
     icon: [...array.ensureArray(T.icon), weighted_icon],
     tags: {

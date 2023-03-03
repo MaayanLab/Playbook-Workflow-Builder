@@ -74,9 +74,9 @@ export const EnrichrSetTToSetT = [
 ].flatMap(({ T, EnrichrSetT, SetT }) => [
     MetaNode(`EnrichrSetTToSetT[${T.name}]`)
       .meta({
-        label: `Enrichr Set of ${T.label} as Set`,
+        label: `${EnrichrSetT.meta.label} as Set`,
         icon: [enrichr_icon],
-        description: `Treat enrichr set as standard set`,
+        description: `Treat Enrichr set as standard set`,
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
@@ -84,9 +84,9 @@ export const EnrichrSetTToSetT = [
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
-        label: `Enrichr Set of ${T.label} as GMT`,
+        label: `${EnrichrSetT.meta.label} as GMT`,
         icon: [enrichr_icon],
-        description: `Treat enrichr set as gmt`,
+        description: `Treat Enrichr set as GMT`,
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
@@ -138,7 +138,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
       },
     },
     icon: [enrichr_icon],
-    description: "Fisher's exact test, odd ratio, Jaccard index",
+    description: 'Perform Enrichment Analysis',
   })
   .inputs({ geneset: GeneSet })
   .output(EnrichrEnrichmentAnalysis)
@@ -187,9 +187,9 @@ backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
   MetaNode(`ExtractEnrichrGenesetSearch[${bg.name}]`)
     .meta({
-      label: `Extract Significant ${bg.label} Signatures`,
+      label: `Extract Enriched ${bg.termLabel}`,
       icon: [enrichr_icon],
-      description: `Extract significant terms from ${bg.label} libraries`,
+      description: `Extract Significant Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
@@ -203,7 +203,7 @@ export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
   .meta({
     label: `Enrichr Gene Search Results`,
     icon: [enrichr_icon, search_icon, gene_icon],
-    description: `Results of an Enrichr Gene Search`,
+    description: `Find terms in Enrichr Libraries containing the gene`,
   })
   .codec(z.string())
   .view(gene => {
@@ -258,9 +258,9 @@ backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
   MetaNode(`ExtractEnrichrGeneSearch[${bg.name}]`)
     .meta({
-      label: `Extract ${bg.label} Signatures`,
+      label: `Extract ${bg.termLabel} ${bg.termAssociation} the Gene`,
       icon: [enrichr_icon],
-      description: `Extract terms from ${bg.label} libraries`,
+      description: `Extract Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrGeneSearchResults })
     .output(output)
@@ -301,9 +301,9 @@ export const EnrichrTermTSearch = [
 ].map(({ T, TermT }) =>
   MetaNode(`EnrichrTermSearch[${T.name}]`)
     .meta({
-      label: `Enrichr ${T.label} Term Search`,
+      label: `Extract Gene Sets Containing the ${T.label} in the Set Label`,
       icon: [...array.ensureArray(T.icon), enrichr_icon],
-      description: `Find ${T.label} terms in Enrichr Libraries`,
+      description: `Find ${T.label} Terms in Enrichr Libraries`,
     })
     .inputs({ term: TermT })
     .output(EnrichrTermSearchResults)
@@ -340,9 +340,9 @@ export const EnrichrTermSearchT = [
 ).map(({ bg, output }) =>
   MetaNode(`ExtractEnrichrTermSearch[${bg.name}]`)
     .meta({
-      label: `Extract ${bg.label} Signatures`,
+      label: `Extract ${bg.termLabel} ${bg.termAssociation} the Term Search`,
       icon: [enrichr_icon],
-      description: `Extract terms from ${bg.label} libraries`,
+      description: `Extract Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrTermSearchResults })
     .output(output)

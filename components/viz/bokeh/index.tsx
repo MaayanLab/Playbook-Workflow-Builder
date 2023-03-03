@@ -9,7 +9,7 @@ export type BokehJson = any
 export const BokehPlot = MetaNode('BokehPlot')
   .meta({
     label: 'Bokeh Plot',
-    description: 'A plot rendered using the bokeh library',
+    description: 'A figure created with the Bokeh Library [REF]',
   })
   .codec<BokehJson>()
   .view(props => <Plot plot={props} />)

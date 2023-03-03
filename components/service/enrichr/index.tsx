@@ -80,7 +80,7 @@ export const EnrichrSetTToSetT = [
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
-      .resolve(async (props) => props.inputs.enrichrset.set)
+      .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
@@ -144,7 +144,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .output(EnrichrEnrichmentAnalysis)
   .resolve(async (props) => {
     const formData = new FormData()
-    formData.append('list', props.inputs.geneset.join('\n'))
+    formData.append('list', props.inputs.geneset.set.join('\n'))
     formData.append('description', `playbook-partnership`)
     const response = await fetch(`${enrichr_url}/addList`, {
       method: 'post',

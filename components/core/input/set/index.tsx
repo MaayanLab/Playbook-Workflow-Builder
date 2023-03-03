@@ -28,8 +28,8 @@ const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
     },
     ...(T.extra?.set?.meta || {}),
   })
-  .codec(z.array(z.string()))
-  .view(set => {
+  .codec(z.object({ description: z.string().optional(), set: z.array(z.string()) }))
+  .view(({ set }) => {
     return (
       <Table
         height={500}
@@ -58,7 +58,7 @@ export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
 export const TissueSet = Set_T(Tissue)
 
-const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: string[] }>) => MetaNode(`Input[${SetT.spec}]`)
+const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: { description?: string, set: string[] } }>) => MetaNode(`Input[${SetT.spec}]`)
   .meta({
     label: `${T.label} Set Input`,
     description: `Start with a set of ${pluralize(T.label)}`,
@@ -77,7 +77,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
   .output(SetT)
   .prompt(props => {
     const [set, setSet] = React.useState('')
-    React.useEffect(() => { setSet((props.output||[]).join('\n')) }, [props.output])
+    React.useEffect(() => { setSet(((props.output||{}).set||[]).join('\n')) }, [props.output])
     return (
       <div>
         <Bp4TextArea
@@ -105,7 +105,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={evt => props.submit(set.split(/\r?\n/g))}
+          onClick={evt => props.submit({ set: set.split(/\r?\n/g) })}
         />
       </div>
     )

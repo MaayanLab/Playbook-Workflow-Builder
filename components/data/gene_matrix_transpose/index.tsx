@@ -55,7 +55,7 @@ export const GMTUnion = MetaNode('GMTUnion')
   .inputs({ gmt: GMT })
   .output(GeneSet)
   .resolve(async (props) => {
-    return array.unique(dict.values(props.inputs.gmt).flatMap(({ set: geneset }) => geneset))
+    return { set: array.unique(dict.values(props.inputs.gmt).flatMap(({ set: geneset }) => geneset)) }
   })
   .build()
 
@@ -67,7 +67,7 @@ export const GMTIntersection = MetaNode('GMTIntersection')
   .inputs({ gmt: GMT })
   .output(GeneSet)
   .resolve(async (props) => {
-    return dict.values(props.inputs.gmt).reduce(({ set: A }, { set: B }) => ({ set: array.intersection(A, B) })).set
+    return dict.values(props.inputs.gmt).reduce(({ set: A }, { set: B }) => ({ set: array.intersection(A, B) }))
   })
   .build()
 
@@ -86,9 +86,11 @@ export const GMTConsensus = MetaNode('GMTConsensus')
           gene_counts[gene] = (gene_counts[gene]||0)+1
         )
       )
-    return dict.items(gene_counts)
-      .filter(({ value }) => value > 1)
-      .map(({ key }) => key as string)
+    return {
+      set: dict.items(gene_counts)
+        .filter(({ value }) => value > 1)
+        .map(({ key }) => key as string)
+    }
   })
   .build()
 
@@ -101,7 +103,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .output(GMT)
   .prompt(props => {
     const [terms, setTerms] = React.useState(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: '' }))))
-    const [descriptions, setDescriptions] = React.useState(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: '' }))))
+    const [descriptions, setDescriptions] = React.useState(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
     React.useEffect(() => {
       if (props.output) {
         setTerms(dict.init(dict.keys(props.output).map((key, i) => ({ key: i, value: key }))))
@@ -137,7 +139,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
           />
           <Column
             name="Geneset"
-            cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].join('\t')}</Cell>}
+            cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].set.join('\t')}</Cell>}
           />
         </Table>
         <Bp4Button
@@ -152,7 +154,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
                   key: terms[i],
                   value: {
                     description: descriptions[i],
-                    set: props.inputs.genesets[i],
+                    set: props.inputs.genesets[i].set,
                   }
                 }))
             ))}

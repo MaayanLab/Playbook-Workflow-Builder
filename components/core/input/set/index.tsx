@@ -94,7 +94,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
             rightIcon="send-to-graph"
             onClick={evt => {
               if (T.extra?.set?.meta?.example !== undefined) {
-                setSet(T.extra.set.meta.example.join('\n'))
+                setSet(T.extra.set.meta.example.set.join('\n'))
               }
             }}
             text="Example"

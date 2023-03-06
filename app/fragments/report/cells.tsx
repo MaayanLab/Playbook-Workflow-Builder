@@ -1,19 +1,18 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
 import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
+import { Metapath, useMetapathOutputs } from './metapath'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-type Metapath = ReturnType<FPL['toJSON']>
-
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
+  const metapathOutputs = useMetapathOutputs(krg, metapath)
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
@@ -40,9 +39,9 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
           <ShareButton id={id} />
         </div>
       </div>
-      {(metapath||[]).map((head, index) =>
-        <Cell key={index} krg={krg} index={index} id={id} head={head} />
-      )}
+      {(metapath||[]).map((head) => (
+        <Cell key={head.id} krg={krg} id={id} head={head} metapathOutputs={metapathOutputs} />
+      ))}
     </div>
   )
 }

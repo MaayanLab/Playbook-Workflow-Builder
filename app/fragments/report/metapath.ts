@@ -37,14 +37,16 @@ export function useMetapathOutputs(krg: KRG, metapath?: Array<Metapath>) {
     await Promise.all(
       dict.values(dict.init(metapath.map(head => ({ key: head.process.id, value: head.process })))).map(async (head) => {
         const key = `/api/db/process/${head.id}/output`
-        const cachedValue = cache.get(key)
-        if (cachedValue !== undefined) {
-          setOutputs(outputs => ({ ...outputs, [head.id]: { data: cachedValue as any } }))
-          return
+        let cachedValue = cache.get(key)
+        if (cachedValue === undefined || !cachedValue.data) {
+          setOutputs(outputs => ({ ...outputs, [head.id]: { isLoading: true } }))
+          cachedValue = await errorableFetch(key)
+          if (cachedValue.data) {
+            await mutate(key, cachedValue.data)
+            if (!isMounted()) return
+          }
         }
-        setOutputs(outputs => ({ ...outputs, [head.id]: { isLoading: true } }))
-        const { data: rawOutput, error: outputError } = await errorableFetch<any>(key)
-        if (!isMounted()) return
+        const { data: rawOutput, error: outputError } = cachedValue
         if (outputError) {
           setOutputs(outputs => ({ ...outputs, [head.id]: { error: outputError } }))
           return
@@ -52,11 +54,31 @@ export function useMetapathOutputs(krg: KRG, metapath?: Array<Metapath>) {
         const processNode = krg.getProcessNode(head.type)
         const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
         const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
-        await mutate(key, { outputNode, output })
-        if (!isMounted()) return
         setOutputs(outputs => ({ ...outputs, [head.id]: { data: { outputNode, output } } }))
       })
     )
   }, [krg, metapath])
   return outputs
+}
+
+export function useStory(krg: KRG, metapath?: Array<Metapath>, metapathOutputs: MetapathOutputs = {}) {
+  return React.useMemo(() => {
+    if (!metapath) return
+    return metapath
+      .map(head => {
+        const processNode = krg.getProcessNode(head.process.type)
+        if (!processNode.story) return
+        const { data: { outputNode = undefined, output = undefined } = {} } = metapathOutputs[head.process.id] || {}
+        try {
+          return processNode.story({
+            inputs: dict.items(head.process.inputs).map(({ key, value }) => ({
+              key, value: metapathOutputs[value.id]?.data?.output
+            })) as any,
+            output,
+          })
+        } catch (e) {}
+      })
+      .filter(output => output)
+      .join(' ')
+  }, [metapath, metapathOutputs])
 }

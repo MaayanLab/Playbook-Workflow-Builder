@@ -14,7 +14,7 @@ export default function Cell({ krg, id, head, metapathOutputs }: { krg: KRG, id:
   const View = outputNode ? outputNode.view : undefined
   return (
     <>
-      <div key={head.id} className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
+      <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={processNode.meta.icon || func_icon} />
@@ -30,7 +30,7 @@ export default function Cell({ krg, id, head, metapathOutputs }: { krg: KRG, id:
           </Link>
         </div>
       </div>
-      <div key={`${head.id}-output`} className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
+      <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
         {'prompt' in processNode ?
           <Prompt
             id={id}

@@ -4,7 +4,7 @@ import type KRG from '@/core/KRG'
 import Link from 'next/link'
 import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
-import { Metapath, useMetapathOutputs } from './metapath'
+import { Metapath, useMetapathOutputs, useStory } from './metapath'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -13,6 +13,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
   const metapathOutputs = useMetapathOutputs(krg, metapath)
+  const story = useStory(krg, metapath, metapathOutputs)
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
@@ -23,6 +24,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
               Playbook
             </h2>
           </div>
+          <div className="prose">{story}</div>
         </div>
         {error ? <div className="alert alert-error">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">

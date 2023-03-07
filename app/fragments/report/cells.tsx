@@ -42,8 +42,8 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
           <ShareButton id={id} />
         </div>
       </div>
-      {(metapath||[]).map((head) => (
-        <Cell key={head.id} krg={krg} id={id} head={head} />
+      {(metapath||[]).map((head, index) => (
+        <Cell key={head.id} krg={krg} id={id} head={head} defaultCollapse={index+1 !== metapath?.length} />
       ))}
     </div>
   )

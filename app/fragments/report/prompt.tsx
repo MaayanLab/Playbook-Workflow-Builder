@@ -17,33 +17,36 @@ export default function Prompt({ krg, processNode, output, id, head }: { krg: KR
   const { data: inputs, error } = useMetapathInputs(krg, head)
   const Component = processNode.prompt
   return (
-    <div className="p-3">
-      <div className="flex flex-row gap-2">
+    <div className="collapse collapse-arrow">
+      <input type="checkbox" defaultChecked={true} />
+      <div className="collapse-title flex flex-row gap-2">
         <Icon icon={processNode.meta.icon || func_icon} />
         <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
       </div>
       {error ? <div className="alert alert-error">{error.toString()}</div> : null}
-      {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
-        <Component
-          inputs={inputs}
-          output={output}
-          submit={async (output) => {
-            const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: head.process.type,
-                data: {
-                  type: processNode.output.spec,
-                  value: processNode.output.codec.encode(output),
-                },
-                inputs: head.process.inputs,
+      <div className="collapse-content">
+        {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
+          <Component
+            inputs={inputs}
+            output={output}
+            submit={async (output) => {
+              const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
+                method: 'POST',
+                body: JSON.stringify({
+                  type: head.process.type,
+                  data: {
+                    type: processNode.output.spec,
+                    value: processNode.output.codec.encode(output),
+                  },
+                  inputs: head.process.inputs,
+                })
               })
-            })
-            const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-            router.push(`/report/${res.head}`, undefined, { shallow: true, scroll: false })
-          }}
-        />
-        : <div>Waiting for input(s)</div>}
+              const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
+              router.push(`/report/${res.head}`, undefined, { shallow: true, scroll: false })
+            }}
+          />
+          : <div>Waiting for input(s)</div>}
+      </div>
     </div>
   )
 }

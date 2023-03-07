@@ -59,6 +59,6 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
     return response
   })
   .story(props =>
-    `The GlyGen database [REF] was searched to identified the relevant set of proteins.`
+    `The GlyGen database [REF] was searched to identify a relevant set of proteins.`
   )
   .build()

@@ -3,14 +3,14 @@ import type KRG from '@/core/KRG'
 import Link from 'next/link'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, func_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
-import { Metapath, MetapathOutputs } from './metapath'
+import { Metapath, useMetapathOutput } from './metapath'
 
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Cell({ krg, id, head, metapathOutputs }: { krg: KRG, id: string, head: Metapath, metapathOutputs: MetapathOutputs }) {
+export default function Cell({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
   const processNode = krg.getProcessNode(head.process.type)
-  const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = metapathOutputs[head.process.id] || {}
+  const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput(krg, head)
   const View = outputNode ? outputNode.view : undefined
   return (
     <>
@@ -34,6 +34,7 @@ export default function Cell({ krg, id, head, metapathOutputs }: { krg: KRG, id:
         {'prompt' in processNode ?
           <Prompt
             id={id}
+            krg={krg}
             head={head}
             processNode={processNode}
             output={output}

@@ -1,84 +1,67 @@
 import React from 'react'
 import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
-import type { DataMetaNode } from '@/spec/metanode'
-import { useSWRConfig } from 'swr'
+import { useSWRImmutableSticky } from '@/utils/use-sticky'
 import fetcher from '@/utils/next-rest-fetcher'
-import useAsyncEffect from 'use-async-effect'
+import useSWRMap from '@/utils/swr-map'
 import * as dict from '@/utils/dict'
 
 export type Metapath = ReturnType<FPL['toJSON']>
-export type MetapathOutput = {
-  outputNode: DataMetaNode,
-  output: any,
-}
 
-async function errorableFetch<T>(key: string) {
-  try {
-    return { data: await fetcher<T>(key), error: undefined }
-  } catch (e) {
-    return { data: undefined, error: e }
-  }
-}
-
-export type MetapathOutputs = ReturnType<typeof useMetapathOutputs>
-export function useMetapathOutputs(krg: KRG, metapath?: Array<Metapath>) {
-  const [outputs, setOutputs] = React.useState<Record<string, {
-    data?: MetapathOutput,
-    isLoading?: boolean,
-    error?: unknown
-  }>>({})
-  const {cache, mutate} = useSWRConfig()
-  useAsyncEffect(async (isMounted) => {
-    if (!metapath) {
-      setOutputs(() => ({}))
-      return
+/**
+ * Retreive output from the API, decode and return
+ */
+export function useMetapathOutput(krg: KRG, head: Metapath) {
+  const { data: rawOutput, isLoading, error } = useSWRImmutableSticky(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
+  const processNode = krg.getProcessNode(head.process.type)
+  const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
+  const { output, decodeError } = React.useMemo(() => {
+      try {
+      return { output: rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput }
+    } catch (e: any) {
+      console.error(e)
+      return { data: { output: undefined, outputNode }, decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
     }
-    await Promise.all(
-      dict.values(dict.init(metapath.map(head => ({ key: head.process.id, value: head.process })))).map(async (head) => {
-        const key = `/api/db/process/${head.id}/output`
-        let cachedValue = cache.get(key)
-        if (cachedValue === undefined || !cachedValue.data) {
-          setOutputs(outputs => ({ ...outputs, [head.id]: { isLoading: true } }))
-          cachedValue = await errorableFetch(key)
-          if (cachedValue.data) {
-            await mutate(key, cachedValue.data)
-            if (!isMounted()) return
-          }
-        }
-        const { data: rawOutput, error: outputError } = cachedValue
-        if (outputError) {
-          setOutputs(outputs => ({ ...outputs, [head.id]: { error: outputError } }))
-          return
-        }
-        const processNode = krg.getProcessNode(head.type)
-        const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
-        const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
-        setOutputs(outputs => ({ ...outputs, [head.id]: { data: { outputNode, output } } }))
-      })
-    )
-  }, [krg, metapath])
-  return outputs
+  }, [rawOutput, outputNode])
+    return { data: { output, outputNode }, error: error || decodeError, isLoading }
 }
 
-export function useStory(krg: KRG, metapath?: Array<Metapath>, metapathOutputs: MetapathOutputs = {}) {
-  return React.useMemo(() => {
-    if (!metapath) return
-    return metapath
-      .map(head => {
-        const processNode = krg.getProcessNode(head.process.type)
-        if (!processNode.story) return
-        const { data: { outputNode = undefined, output = undefined } = {} } = metapathOutputs[head.process.id] || {}
-        try {
-          return processNode.story({
-            inputs: dict.items(head.process.inputs).map(({ key, value }) => ({
-              key, value: metapathOutputs[value.id]?.data?.output
-            })) as any,
-            output,
+/**
+ * Retreive inputs to this process from outputs of its inputs
+ *  We rely on SWR to help us de-duplicate these requests
+ */
+export function useMetapathInputs(krg: KRG, head: Metapath) {
+  const { data: rawInputs, error, isLoading } = useSWRMap<{ type: string, value: any }>(
+    dict.values(head.process.inputs).map(({ id }) => `/api/db/process/${id}/output`),
+    fetcher
+  )
+  const processNode = krg.getProcessNode(head.process.type)
+  const { inputs, decodeError } = React.useMemo(() => {
+    if (!rawInputs) return { inputs: dict.isEmpty(processNode.inputs) ? {} as Record<string, unknown>: undefined }
+    try {
+      return {
+        inputs: dict.init(
+          dict.items(processNode.inputs).map(({ key, value }) => {
+            if (Array.isArray(value)) {
+              return {
+                key,
+                value: dict.items(head.process.inputs)
+                  .filter(({ key: k }) => k.toString().startsWith(`${key}:`))
+                  .map(({ value: { id } }) => value[0].codec.decode(rawInputs[`/api/db/process/${id}/output`].value))
+              }
+            } else {
+              return {
+                key,
+                value: value.codec.decode(rawInputs[`/api/db/process/${head.process.inputs[key].id}/output`].value)
+              }
+            }
           })
-        } catch (e) {}
-      })
-      .filter(output => output)
-      .join(' ')
-  }, [metapath, metapathOutputs])
+        ),
+      }
+    } catch (e: any) {
+      console.error(e)
+      return { decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
+    }
+  }, [rawInputs, processNode])
+  return { data: inputs, error: error || decodeError, isLoading }
 }

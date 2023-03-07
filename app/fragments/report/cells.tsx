@@ -13,10 +13,9 @@ const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableT
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
+  const descriptionRef = React.useRef<HTMLTextAreaElement>(null)
   const { data: metapath, error } = useSWRImmutableSticky<Array<Metapath>>(id ? `/api/db/fpl/${id}` : undefined)
-  const [metadata, setMetadata] = React.useState({ title: '', description: '', public: false })
-  const head = metapath ? metapath[metapath.length - 1] : undefined
-  const processNode = head ? krg.getProcessNode(head.process.type) : undefined
+  const [metadata, setMetadata] = React.useState({ title: '', description: undefined as string | undefined, public: false })
   return (
     <div className="flex flex-col py-4 gap-2">
       <div className="flex-grow flex-shrink bp4-card p-0">
@@ -31,26 +30,27 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
               />
             </h2>
           </div>
-          <p className="prose w-full">
+          <p
+            className={`prose w-full p-1 border border-white hover:border-gray-200 cursor-text ${metadata.description !== undefined ? 'hidden' : ''}`}
+            onClick={evt => {
+              setMetadata(metadata => ({ ...metadata, description: evt.currentTarget?.textContent||''.replace(/\s+$/, '') }))
+              setTimeout(() => {
+                descriptionRef.current?.focus()
+                descriptionRef.current?.click()
+              }, 100)
+            }}
+          >
             {(metapath||[]).map(head => <Story key={head.id} krg={krg} head={head} />)}
-            <EditableText
-              multiline
-              minLines={2}
-              maxLines={5}
-              placeholder={
-                processNode ?
-                  metapath ?
-                    metapath.length > 1 ?
-                      `A playbook which produces ${processNode.output.meta.label} given a ${krg.getProcessNode(metapath[0].process.type).output.meta.label}.`
-                      : `A playbook which takes a ${krg.getProcessNode(metapath[0].process.type).output.meta.label}.`
-                    : `A playbook`
-                  : `A playbook`
-              }
-              value={metadata.description}
-              onChange={value => {setMetadata(metadata => ({ ...metadata, description: value }))}}
-            />
           </p>
-          {metadata.title || metadata.description ? (
+          <textarea
+            ref={descriptionRef}
+            className={`prose w-full p-1 border border-white ${metadata.description !== undefined ? '' : 'hidden'}`}
+            value={metadata.description}
+            onChange={evt => {
+              setMetadata(metadata => ({ ...metadata, description: evt.target.value }))
+            }}
+          />
+          {metadata.title || metadata.description !== undefined ? (
             <div className="flex flex-row gap-2 items-center">
               <button className="bp4-button bp4-intent-success">Save</button>
               <label className="bp4-control bp4-switch mb-0">

@@ -277,10 +277,16 @@ export class Data {
   constructor(
     public label?: string,
     public description?: string,
-    public visible: boolean = false,
+    public processVisible: boolean = false,
+    public dataVisible: boolean = false,
     public persisted = false,
   ) {
-    this.id = uuid([label, description, visible])
+    this.id = uuid([
+      label,
+      description,
+      processVisible,
+      dataVisible,
+    ])
   }
 
   toJSON = () => {
@@ -288,7 +294,8 @@ export class Data {
       'id': this.id,
       'label': this.label,
       'description': this.description,
-      'visible': this.visible,
+      'processVisible': this.processVisible,
+      'dataVisible': this.dataVisible,
     }
   }
 }
@@ -304,7 +311,8 @@ export const IdOrFPLMetadataC = z.union([
   z.object({
     label: z.string().optional(),
     description: z.string().optional(),
-    visible: z.boolean().optional(),
+    dataVisible: z.boolean().optional(),
+    processVisible: z.boolean().optional(),
   }),
 ])
 export type IdOrFPLMetadata = z.infer<typeof IdOrFPLMetadataC>
@@ -449,7 +457,7 @@ export default class FPPRG {
     if ('id' in metadata) {
       return await this.getFPLMetadata(metadata.id) as FPLMetadata
     } else {
-      return await this.upsertFPLMetadata(new FPLMetadata(metadata.label, metadata.description, metadata.visible))
+      return await this.upsertFPLMetadata(new FPLMetadata(metadata.label, metadata.description, metadata.processVisible, metadata.dataVisible))
     }
   }
   getFPLMetadata = async (id: string) => {
@@ -459,7 +467,8 @@ export default class FPPRG {
         this.fplMetadataTable[id] = new FPLMetadata(
           result.label,
           result.description,
-          result.visible,
+          result.processVisible,
+          result.dataVisible,
           true,
         )
       }
@@ -477,7 +486,8 @@ export default class FPPRG {
             id: metadata.id,
             label: metadata.label,
             description: metadata.description,
-            visible: metadata.visible,
+            processVisible: metadata.processVisible,
+            dataVisible: metadata.dataVisible,
           }
         })
       }

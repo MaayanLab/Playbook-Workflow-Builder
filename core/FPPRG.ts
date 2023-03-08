@@ -118,21 +118,32 @@ export class Resolved {
  */
 export class FPL {
   id: string
-  constructor(public process: Process, public parent: FPL | undefined = undefined, public persisted = false) {
-    this.id = uuid([process.id, parent ? parent.id : null])
+  constructor(
+    public process: Process,
+    public parent: FPL | undefined = undefined,
+    public metadata: FPLMetadata | undefined = undefined, 
+    public persisted = false,
+  ) {
+    this.id = uuid([
+      process.id,
+      metadata,
+      parent ? parent.id : null,
+    ])
   }
 
   toJSONWithOutput = async () => {
     return {
       id: this.id,
+      metadata: this.metadata ? this.metadata.toJSON() : null,
       process: await this.process.toJSONWithOutput(),
     }
   }
 
   toJSON = () => {
     return {
-      'id': this.id,
-      'process': this.process.toJSON(),
+      id: this.id,
+      metadata: this.metadata ? this.metadata.toJSON() : null,
+      process: this.process.toJSON(),
     }
   }
 
@@ -170,6 +181,33 @@ export class FPL {
   extend = (process: Process) => {
     return new FPL(process, this)
   }
+
+  /**
+   * Rebase an LPL's metadata (preserving processes)
+   */
+  rebaseMetadata = (old_fpl: FPL, metadata: FPLMetadata) => {
+    const fpl: FPL[] = [this]
+    let head: FPL | undefined = this
+    while (head.parent !== undefined) {
+      if (head.id === old_fpl.id) break
+      head = head.parent
+      fpl.push(head)
+    }
+    // if we didn't end up on the old_proces, it's not in the FPL
+    if (head.id !== old_fpl.id) {
+      throw new Error(`${old_fpl.id} not found in FPL`)
+    }
+    // Walk forward updating processes, replacing any dependencies with the updated one
+    head = new FPL(head.process, head.parent, metadata)
+    const rebased = head
+    fpl.pop()
+    fpl.reverse()
+    for (const el of fpl) {
+      head = new FPL(el.process, head, el.metadata)
+    }
+    return { rebased, head }
+  }
+
   /**
    * Rebase an LPL, this must deal with invalidated processes
    */
@@ -189,7 +227,7 @@ export class FPL {
     // Replace old_process with new process
     const update = { [head.process.id]: new_process }
     // Walk forward updating processes, replacing any dependencies with the updated one
-    head = new FPL(new_process, head.parent)
+    head = new FPL(new_process, head.parent, head.metadata)
     const rebased = head
     fpl.pop()
     fpl.reverse()
@@ -204,7 +242,7 @@ export class FPL {
         ),
         el.process.db,
       )
-      head = new FPL(new_proc, head)
+      head = new FPL(new_proc, head, el.metadata)
       update[el.process.id] = new_proc
     }
     return { rebased, head }
@@ -230,12 +268,46 @@ export class Data {
   }
 }
 
+/**
+ * De-coupled metadata for an FPL
+ */
+ export class FPLMetadata {
+  id: string
+
+  constructor(
+    public label?: string,
+    public description?: string,
+    public visible: boolean = false,
+    public persisted = false,
+  ) {
+    this.id = uuid([label, description, visible])
+  }
+
+  toJSON = () => {
+    return {
+      'id': this.id,
+      'label': this.label,
+      'description': this.description,
+      'visible': this.visible,
+    }
+  }
+}
 
 export const IdOrDataC = z.union([
   z.object({ id: z.string() }),
   z.object({ type: z.string(), value: z.string() }),
 ])
 export type IdOrData = z.infer<typeof IdOrDataC>
+
+export const IdOrFPLMetadataC = z.union([
+  z.object({ id: z.string() }),
+  z.object({
+    label: z.string().optional(),
+    description: z.string().optional(),
+    visible: z.boolean().optional(),
+  }),
+])
+export type IdOrFPLMetadata = z.infer<typeof IdOrFPLMetadataC>
 
 export type IdOrProcess = { id: string }
 | { type: string, inputs: Record<string, IdOrProcess> }
@@ -259,7 +331,7 @@ export const IdOrProcessC: z.ZodType<IdOrProcess> = z.lazy(() => z.union([
 export type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
 export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
 
-type Schema = Pick<typeof fpprgSchema, 'data' | 'process' | 'process_input' | 'resolved' | 'process_complete' | 'fpl'>
+type Schema = Pick<typeof fpprgSchema, 'data' | 'process' | 'process_input' | 'resolved' | 'process_complete' | 'fpl' | 'fpl_metadata'>
 type TofSchema<T> = T extends TypedSchema<infer T_> ? T_ : never
 type DbSchemaT = { [K in keyof Schema]: TofSchema<Schema[K]> }
 
@@ -271,6 +343,7 @@ export default class FPPRG {
   private fplTable: Record<string, FPL> = {}
   private resolvedTable: Record<string, Resolved> = {}
   private dataTable: Record<string, Data> = {}
+  private fplMetadataTable: Record<string, FPLMetadata> = {}
 
   constructor(public db: Db<DbSchemaT>) {}
 
@@ -370,6 +443,46 @@ export default class FPPRG {
       }
     }
     return this.processTable[process.id] as Process
+  }
+
+  resolveFPLMetadata = async (metadata: IdOrFPLMetadata) => {
+    if ('id' in metadata) {
+      return await this.getFPLMetadata(metadata.id) as FPLMetadata
+    } else {
+      return await this.upsertFPLMetadata(new FPLMetadata(metadata.label, metadata.description, metadata.visible))
+    }
+  }
+  getFPLMetadata = async (id: string) => {
+    if (!(id in this.fplMetadataTable)) {
+      const result = await this.db.objects.fpl_metadata.findUnique({ where: { id } })
+      if (result !== null) {
+        this.fplMetadataTable[id] = new FPLMetadata(
+          result.label,
+          result.description,
+          result.visible,
+          true,
+        )
+      }
+    }
+    return this.fplMetadataTable[id] as FPLMetadata | undefined
+  }
+  upsertFPLMetadata = async (metadata: FPLMetadata) => {
+    if (!metadata.persisted) {
+      if (!(metadata.id in this.fplMetadataTable)) {
+        metadata.persisted = true
+        this.fplMetadataTable[metadata.id] = metadata
+        await this.db.objects.fpl_metadata.upsert({
+          where: { id: metadata.id },
+          create: {
+            id: metadata.id,
+            label: metadata.label,
+            description: metadata.description,
+            visible: metadata.visible,
+          }
+        })
+      }
+    }
+    return this.fplMetadataTable[metadata.id] as FPLMetadata
   }
 
   resolveData = async (data: IdOrData) => {
@@ -487,6 +600,7 @@ export default class FPPRG {
         this.fplTable[result.id] = new FPL(
           (await this.getProcess(result.process)) as Process,
           result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
+          result.metadata ? await this.getFPLMetadata(result.metadata) : undefined,
           true,
         )
       }
@@ -500,6 +614,9 @@ export default class FPPRG {
         if (fpl.parent !== undefined) {
           fpl.parent = await this.upsertFPL(fpl.parent)
         }
+        if (fpl.metadata !== undefined) {
+          fpl.metadata = await this.upsertFPLMetadata(fpl.metadata)
+        }
         fpl.persisted = true
         this.fplTable[fpl.id] = fpl
         await this.db.objects.fpl.upsert({
@@ -507,6 +624,7 @@ export default class FPPRG {
           create: {
             id: fpl.id,
             process: fpl.process.id,
+            metadata: fpl.metadata !== undefined ? fpl.metadata.id : null,
             parent: fpl.parent !== undefined ? fpl.parent.id : null,
           }
         })
@@ -521,6 +639,7 @@ export default class FPPRG {
       processTable: this.processTable,
       resolvedTable: this.resolvedTable,
       fplTable: this.fplTable,
+      fplMetadataTable: this.fplMetadataTable,
     }
   }
 }

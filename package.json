@@ -15,6 +15,7 @@
     "codegen:sql": "mkdir -p db/migrations && ts-node -r tsconfig-paths/register cli/build-sql.ts > db/migrations/00_init.sql",
     "codegen:table": "ts-node -r esm -r tsconfig-paths/register cli/build-table.ts > metanodes.tsv",
     "dev": "npx --workspace=app next dev",
+    "dev:ssl": "concurrently \"npm run dev -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start:worker": "ts-node -r tsconfig-paths/register cli/resolve-process-worker.ts",
     "start": "npx --workspace=app next start"
   },
@@ -44,8 +45,10 @@
     "@types/node": "^18.11.18",
     "@types/pg": "^8.6.6",
     "@types/react": "^18.0.26",
+    "concurrently": "^7.6.0",
     "next": "^12.3.4",
     "next-transpile-modules": "^9.1.0",
+    "ssl-proxy": "^1.0.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
     "typescript": "^4.9.4"

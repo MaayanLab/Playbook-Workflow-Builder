@@ -71,6 +71,8 @@ export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/targetranger"
 components.push("service/targetranger")
+export * from "./service/variantinfo"
+components.push("service/variantinfo")
 export * from "./viz/barplot"
 components.push("viz/barplot")
 export * from "./viz/bokeh"

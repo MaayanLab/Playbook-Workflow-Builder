@@ -28,8 +28,21 @@ export const MyGeneInfoC = z.object({
     gene: z.string(),
   }).optional()
 })
-
 export type MyGeneInfo = z.infer<typeof MyGeneInfoC>
+
+/*
+export const MyGeneInfoByTermC = z.object({
+  data: z.object({
+    ld: z.object({
+      RegulatoryElement: z.array(z.object({ 
+            entId: z.string(), 
+            ldhId: z.string()
+          })
+        )
+    })
+  })
+})
+export type MyGeneInfoByTerm = z.infer<typeof MyGeneInfoByTermC>*/
 
 async function mygeneinfo_query(geneId: string): Promise<{total: number, hits: Array<MyGeneInfoHit>}> {
   const res = await fetch(`https://mygene.info/v3/query?q=${encodeURIComponent(geneId)}`)
@@ -40,6 +53,12 @@ async function mygeneinfo(geneId: string): Promise<MyGeneInfo> {
   const res = await fetch(`https://mygene.info/v3/gene/${encodeURIComponent(geneId)}`)
   return await res.json()
 }
+
+/*
+async function mygeneinfoByGeneTerm(geneId: string): Promise<MyGeneInfoByTerm> {
+  const res = await fetch(`https://genboree.org/cfde-gene-dev/Gene/id/${encodeURIComponent(geneId)}`)
+  return await res.json()
+}*/
 
 export const GeneInfo = MetaNode('GeneInfo')
   .meta({
@@ -64,14 +83,18 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   .inputs({ gene: GeneTerm })
   .output(GeneInfo)
   .resolve(async (props) => {
-    const results = MyGeneInfoHitC.parse(await mygeneinfo_query(props.inputs.gene))
-    const hits = results.hits.filter((hit): hit is MyGeneInfoHit['hits'][0] & { symbol: string } => !!hit.symbol)
-    const exactMatch = hits.filter(hit => hit.symbol.toUpperCase() == props.inputs.gene.toUpperCase())[0]
-    const _id: string | undefined = exactMatch !== undefined ? exactMatch._id : hits[0]._id
-    if (_id === undefined) throw new Error(`Could not identify a gene for the symbol ${props.inputs.gene} in mygene.info`)
-    return await mygeneinfo(_id)
+    return await getGeneData(props.inputs.gene);
   })
   .story(props =>
     `More information about the gene was then obtained with the MyGene.info API [\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}].`
   )
   .build()
+
+  export async function getGeneData(geneSymbol: string){
+    const results = MyGeneInfoHitC.parse(await mygeneinfo_query(geneSymbol))
+    const hits = results.hits.filter((hit): hit is MyGeneInfoHit['hits'][0] & { symbol: string } => !!hit.symbol)
+    const exactMatch = hits.filter(hit => hit.symbol.toUpperCase() == geneSymbol.toUpperCase())[0]
+    const _id: string | undefined = exactMatch !== undefined ? exactMatch._id : hits[0]._id
+    if (_id === undefined) throw new Error(`Could not identify a gene for the symbol ${geneSymbol} in mygene.info`)
+    return await mygeneinfo(_id)
+  }

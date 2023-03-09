@@ -111,6 +111,26 @@ export const Variant = {
   },
 } as Primative
 
+export const RegulatoryElement = {
+  name: 'Regulatory_Element',
+  label: 'Regulatory_Element',
+  //icon: [regElement_icon],
+  color: '#0080FF',
+  extra: {
+    term: {
+      meta: {
+        example: 'EH38E2924876',
+      },
+    },
+    set: {
+      meta: {
+        example: ['EH38E2924876', 'EH12E1234567'],
+        pagerank: 6,
+      }
+    },
+  },
+} as Primative
+
 export const Metabolite = {
   name: 'Metabolite',
   label: 'Metabolite',

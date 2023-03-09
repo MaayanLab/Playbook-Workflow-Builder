@@ -57,6 +57,8 @@ export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/variantinfo"
 components.push("service/variantinfo")
+export * from "./service/regulatoryElementInfo"
+components.push("service/regulatoryElementInfo")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"

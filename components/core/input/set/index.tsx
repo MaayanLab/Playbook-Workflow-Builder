@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
+import { Gene, Variant, RegulatoryElement, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'
@@ -53,6 +53,8 @@ const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
 export const DiseaseSet = Set_T(Disease)
 export const DrugSet = Set_T(Drug)
 export const GeneSet = Set_T(Gene)
+export const VariantSet = Set_T(Variant)
+export const RegulatoryElementSet = Set_T(RegulatoryElement)
 export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
 export const TissueSet = Set_T(Tissue)
@@ -112,4 +114,6 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
   .build()
 
 export const InputGeneSet = Input_Set_T(Gene, GeneSet)
+export const InputVariantSet = Input_Set_T(Variant, VariantSet)
+export const InputRegulatoryElementSet = Input_Set_T(RegulatoryElement, RegulatoryElementSet)
 export const InputDrugSet = Input_Set_T(Drug, DrugSet)

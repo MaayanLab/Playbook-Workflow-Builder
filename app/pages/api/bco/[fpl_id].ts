@@ -17,12 +17,11 @@ export default handler(async (req, res) => {
   const { fpl_id } = QueryType.parse(req.query)
   const fpl = await fpprg.getFPL(fpl_id)
   if (fpl === undefined) throw new NotFoundError()
-  const fullFPL = await Promise.all(fpl.resolve().map((fpl) => fpl.toJSONWithOutput()))
   const session = await getServerSessionWithId(req, res)
   const user = (session && session.user) ? (await db.objects.user.findUnique({ where: { id: session.user.id } })) : undefined
-  const BCO = FPL2BCO({
+  const BCO = await FPL2BCO({
     krg,
-    fpl: fullFPL,
+    fpl,
     author: user && user.name !== undefined ? {
       name: user.name,
       ...dict.filter({

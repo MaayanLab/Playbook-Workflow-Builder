@@ -4,7 +4,8 @@ import type KRG from "@/core/KRG"
 import IEE2791schema from '@/spec/bco'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
-import { FPL } from "./FPPRG"
+import type { FPL } from "@/core/FPPRG"
+import { decode_complete_process_inputs, decode_complete_process_output } from "@/core/engine"
 
 type BCO = z.infer<typeof IEE2791schema>
 type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
@@ -13,30 +14,37 @@ function toBCOTimeString(date?: Date) {
   if (date === undefined) date = new Date()
   return date.toISOString().replace(/Z$/, '000')
 }
-type PromiseType<T> = T extends Promise<infer RT> ? RT : never
-type FullFPL = Array<PromiseType<ReturnType<FPL['toJSONWithOutput']>>>
 type Author = {
   name: string,
   affiliation?: string,
   email?: string,
 }
 
-export default function FPL2BCO(props: { krg: KRG, fpl: FullFPL, author?: Author | null }): BCO {
+export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, author?: Author | null }): Promise<BCO> {
+  const fullFPL = props.fpl.resolve()
   const processLookup = dict.init(
-    props.fpl.map((step, index) => ({
-      key: step.process.id,
-      value: {
-        index,
-        node: step.process,
-        metanode: props.krg.getProcessNode(step.process.type),
-      },
+    await Promise.all(fullFPL.map(async (step, index) => {
+      const metanode = props.krg.getProcessNode(step.process.type)
+      const inputs = await decode_complete_process_inputs(props.krg, step.process)
+      const output = await decode_complete_process_output(props.krg, step.process)
+      const story = metanode.story ? metanode.story({ inputs, output }) : undefined
+      return {
+        key: step.process.id,
+        value: {
+          index,
+          node: step.process,
+          metanode,
+          story,
+        },
+      }
     }))
   )
+  const story = dict.values(processLookup)
+    .filter(({ story }) => !!story)
+    .map(({ story }) => story)
+    .join(' ')
   const baseBCO: BaseBCO = {
-    usability_domain: [
-      // TODO
-      'Some description about this workflow',
-    ],
+    usability_domain: [story],
     provenance_domain: {
       embargo: {}, // ?
       name: 'Playbook Partnership',
@@ -114,7 +122,7 @@ export default function FPL2BCO(props: { krg: KRG, fpl: FullFPL, author?: Author
         {
           uri: {
             uri: `${process.env.PUBLIC_URL}/api/db/fpl/${
-              props.fpl[props.fpl.length - 1].id
+              fullFPL[fullFPL.length - 1].id
             }`,
           },
           // mediatype: 'application/json',
@@ -124,7 +132,7 @@ export default function FPL2BCO(props: { krg: KRG, fpl: FullFPL, author?: Author
         {
           uri: {
             uri: `${process.env.PUBLIC_URL}/api/db/fpl/${
-              props.fpl[props.fpl.length - 1].id
+              fullFPL[fullFPL.length - 1].id
             }/output`,
           },
           mediatype: 'application/json'

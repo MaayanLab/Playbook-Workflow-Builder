@@ -54,7 +54,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
     { kargs: [props.inputs.file.url] },
   ))
   .story(props =>
-    `The input gene matrix count was converted into a standard format.`
+    `The file was parsed as an input gene count matrix.`
   )
   .build()
 

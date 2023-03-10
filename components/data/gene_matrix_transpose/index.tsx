@@ -172,7 +172,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
     )
   })
   .story(props =>
-    `Then, the various get sets collected from these resources were combined into one gene set library.`
+    `The gene sets collected were combined into one gene set library.`
   )
   .build()
 
@@ -187,6 +187,6 @@ export const GMTConcatenate = MetaNode('GMTConcatenate')
     return dict.init(props.inputs.gmts.flatMap(dict.items))
   })
   .story(props =>
-    `The identified gene sets were combined into on gene set library.`
+    `The identified gene sets were combined into one gene set library.`
   )
   .build()

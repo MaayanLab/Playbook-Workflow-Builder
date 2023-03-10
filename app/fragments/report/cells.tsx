@@ -4,7 +4,7 @@ import type KRG from '@/core/KRG'
 import Link from 'next/link'
 import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
-import { Metapath } from './metapath'
+import { Metapath } from '@/app/fragments/metapath'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))

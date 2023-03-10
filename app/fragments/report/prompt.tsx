@@ -1,13 +1,12 @@
 import React from 'react'
 import { z } from 'zod'
 import { useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/graph/types'
 import { PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { func_icon } from '@/icons'
 import dynamic from 'next/dynamic'
-import { useMetapathInputs } from './metapath'
+import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
 
 const Icon = dynamic(() => import('@/app/components/icon'))

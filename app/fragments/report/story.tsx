@@ -1,6 +1,6 @@
 import type KRG from '@/core/KRG'
-import type { Metapath } from '@/app/fragments/graph/types'
-import { useMetapathInputs, useMetapathOutput } from './metapath'
+import type { Metapath } from '@/app/fragments/metapath'
+import { useMetapathInputs, useMetapathOutput } from '@/app/fragments/metapath'
 
 export default function Story({ krg, head }: { krg: KRG, head: Metapath }) {
   const processNode = krg.getProcessNode(head.process.type)

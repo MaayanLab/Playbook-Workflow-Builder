@@ -1,5 +1,5 @@
 import { NextRouter, useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/graph/types'
+import type { Metapath } from '@/app/fragments/metapath'
 import React from 'react'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
 import { z } from 'zod'

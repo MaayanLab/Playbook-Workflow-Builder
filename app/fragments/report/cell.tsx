@@ -3,7 +3,7 @@ import type KRG from '@/core/KRG'
 import Link from 'next/link'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, func_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
-import { Metapath, useMetapathOutput } from './metapath'
+import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))

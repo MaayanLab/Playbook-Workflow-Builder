@@ -1,9 +1,9 @@
-import type { Encoded } from '@/spec/codec'
+import type { Decoded } from '@/spec/codec'
 import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
 
-export type Data<T> = {[K in keyof T]: Encoded<T[K]>}
-export type PartialData<T> = Partial<{[K in keyof T]?: Encoded<T[K]>}>
-export type Where<T> = Partial<{[K in keyof T]?: Encoded<T[K]>}>
+export type Data<T> = {[K in keyof T]: Decoded<T[K]>}
+export type PartialData<T> = Partial<{[K in keyof T]?: Decoded<T[K]>}>
+export type Where<T> = Partial<{[K in keyof T]?: Decoded<T[K]>}>
 export type Find<T> = {
   select?: Partial<{[K in keyof T]?: boolean}>
   where: Where<T>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
+import { RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon } from '@/icons'
 
@@ -30,19 +31,18 @@ export const MyGeneInfoC = z.object({
 })
 export type MyGeneInfo = z.infer<typeof MyGeneInfoC>
 
-/*
 export const MyGeneInfoByTermC = z.object({
   data: z.object({
     ld: z.object({
       RegulatoryElement: z.array(z.object({ 
-            entId: z.string(), 
+            entId: z.string(),
             ldhId: z.string()
           })
         )
     })
   })
 })
-export type MyGeneInfoByTerm = z.infer<typeof MyGeneInfoByTermC>*/
+export type MyGeneInfoByTerm = z.infer<typeof MyGeneInfoByTermC>
 
 async function mygeneinfo_query(geneId: string): Promise<{total: number, hits: Array<MyGeneInfoHit>}> {
   const res = await fetch(`https://mygene.info/v3/query?q=${encodeURIComponent(geneId)}`)
@@ -54,11 +54,10 @@ async function mygeneinfo(geneId: string): Promise<MyGeneInfo> {
   return await res.json()
 }
 
-/*
-async function mygeneinfoByGeneTerm(geneId: string): Promise<MyGeneInfoByTerm> {
-  const res = await fetch(`https://genboree.org/cfde-gene-dev/Gene/id/${encodeURIComponent(geneId)}`)
+async function myGeneInfoByGeneTerm(geneTerm: string): Promise<MyGeneInfoByTerm> {
+  const res = await fetch(`https://genboree.org/cfde-gene-dev/Gene/id/${encodeURIComponent(geneTerm)}`)
   return await res.json()
-}*/
+}
 
 export const GeneInfo = MetaNode('GeneInfo')
   .meta({
@@ -95,3 +94,20 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     if (_id === undefined) throw new Error(`Could not identify a gene for the symbol ${geneSymbol} in mygene.info`)
     return await mygeneinfo(_id)
   }
+
+
+  export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsForGeneInfo')
+  .meta({
+    label: 'Resolve Reg. Elements from Gene Info',
+    description: 'GetRegulatoryElementsForGeneInfo',
+  })
+  .inputs({ geneInfo: GeneInfo  })
+  .output(RegulatoryElementSet)
+  .resolve(async (props) => {
+    const response =  await myGeneInfoByGeneTerm(props.inputs.geneInfo.symbol);
+    if(response.data == null || response.data.ld == null){
+      return [];
+    }
+    return response.data.ld.RegulatoryElement.map(({ entId }) => entId );
+  })
+  .build()

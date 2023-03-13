@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 # Usage: ./python_helper.py mod.path.func_name <<< '{"kargs": ["value"]}' >>> '{"output": "json"}'
 import sys, json, pathlib, importlib
 _, pathspec = sys.argv

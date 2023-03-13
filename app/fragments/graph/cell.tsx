@@ -8,7 +8,7 @@ const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
 export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const processNode = krg.getProcessNode(head.process.type)
-  const { data: { output, outputNode }, error: outputError } = useMetapathOutput(krg, head)
+  const { data: { output, outputNode }, error: outputError, mutate } = useMetapathOutput(krg, head)
   const View = outputNode?.view
   return (
     <div className="flex-grow flex flex-col">
@@ -35,6 +35,14 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
               : output === null ? <div>Waiting for input</div>
               : View(output)}
             </>}
+            <button
+              className="btn btn-primary"
+              onClick={async (evt) => {
+                const req = await fetch(`/api/db/process/${head.process.id}/output/delete`, { method: 'POST' })
+                const res = await req.text()
+                await mutate()
+              }}
+            >Recompute</button>
         </div>
       </>}
     </div>

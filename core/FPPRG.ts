@@ -602,6 +602,18 @@ export default class FPPRG {
     }
     return this.resolvedTable[resolved.id] as Resolved
   }
+  deleteResolved = async (resolved: Resolved) => {
+    if (resolved.id in this.resolvedTable) {
+      if (resolved.persisted) {
+        await this.db.objects.resolved.delete({ where: { id: resolved.id } })
+        resolved.persisted = false
+      }
+      if (resolved.id in this.processTable) {
+        this.processTable[resolved.id].resolved = undefined
+      }
+      delete this.resolvedTable[resolved.id]
+    }
+  }
 
   getFPL = async (id: string) => {
     if (!(id in this.fplTable)) {

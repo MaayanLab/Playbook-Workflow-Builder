@@ -23,6 +23,13 @@ export const MyVariantInfoC =  z.object({
 
 export type MyVariantInfo = z.infer<typeof MyVariantInfoC>
 
+const MyAlleleRegistryExterSourcesListC = z.array(
+  z.object({ 
+    name: z.string(),
+    sources: z.array(z.object({ '@id':z.string() }))
+  })
+);
+
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
     label: 'Variant Iformation',
@@ -42,6 +49,11 @@ export const VariantInfo = MetaNode('VariantInfo')
     return await res.json()
   }
 
+  export async function myAlleleInfo_query(variantId: string): Promise<object> {
+    const res = await fetch(`https://reg.genome.network/allele/${encodeURIComponent(variantId)}`);
+    return await res.json()
+  }
+
   export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
@@ -52,6 +64,64 @@ export const VariantInfo = MetaNode('VariantInfo')
   .output(VariantInfo)
   .resolve(async (props) => {
     return await myvariantinfo_query(props.inputs.variant);
+  })
+  .build()
+
+  export const AlleleRegistryExternalSourcesTable = MetaNode('AlleleRegistryExternalSourcesTable')
+  .meta({
+    label: 'AlleleRegistryExternalSourcesTable',
+    description: ''
+  })
+  .codec(MyAlleleRegistryExterSourcesListC)
+  .view(AlleleRegistryExternalSourcesList => (
+    <table style={{borderCollapse: 'collapse'}}>
+      <tr>
+        <th>External Source Name</th>
+        <th>Source Link</th>
+      </tr>
+      {AlleleRegistryExternalSourcesList.map(externalSource =>
+        <tr style={{borderTop: '1px solid lightgrey'}}>
+          <td>   
+            {externalSource.name}
+          </td>
+          <td>
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {externalSource.sources.map(sources =>
+                  <tr>
+                    <td><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td>
+                  </tr>
+              )}
+            </table> 
+          </td>
+        </tr>
+      )}
+    </table>
+  )).build()
+
+  export const GetAlleleRegistryExternalRecordsForVariantList = MetaNode('GetAlleleRegistryExternalRecordsForVariantList')
+  .meta({
+    label: 'Resolve Allele Registry External Records for Variant List',
+    description: 'GetAlleleRegistryExternalRecordsForVariantList',
+  })
+  .inputs({ variantInfo: VariantInfo  })
+  .output(AlleleRegistryExternalSourcesTable)
+  .resolve(async (props) => {
+    let alleleInfoExternalResources = [];
+    let alleleInfo : any = await myAlleleInfo_query(props.inputs.variantInfo.data.entId);
+
+    if(alleleInfo != null && alleleInfo['externalRecords'] != null){      
+      let externalSources = alleleInfo['externalRecords'];
+      for(let er in externalSources){
+        if(externalSources[er] != null){
+          let  externalResourcesTemp = { 
+            name: er.toString(), 
+            sources: externalSources[er] 
+          };
+          alleleInfoExternalResources.push(externalResourcesTemp);
+        }
+      }
+    }   
+    return alleleInfoExternalResources;
   })
   .build()
 

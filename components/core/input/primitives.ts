@@ -111,6 +111,30 @@ export const Variant = {
   },
 } as Primative
 
+
+export const xQTL_Evidence = {
+  name: 'xQTL_Evidence',
+  label: 'xQTL_Evidence',
+  //icon: [xQTL_evidence_icon],
+  color: '#768760',
+  extra: {
+    term: {
+      meta: {
+        example: 'a4a5d7f192a4a9568607dada4566c6fb8fd9f52f',
+      },
+    },
+    set: {
+      meta: {
+        example: ['a4a5d7f192a4a9568607dada4566c6fb8fd9f52f','affaf9e479851fc7ce5e81b96725b0b3a3f9a8df','40698923dac123e8c2ad8f647084e6f8863a5834'],
+        pagerank: 6,
+      }
+    },
+  },
+} as Primative
+
+
+
+
 export const Metabolite = {
   name: 'Metabolite',
   label: 'Metabolite',

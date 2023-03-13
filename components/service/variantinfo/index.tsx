@@ -1,6 +1,8 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
+import { xQTL_EvidenceSet } from '@/components/core/input/set'
+
 import { z } from 'zod'
 //import { varinat_icon, variantinfo_icon } from '@/icons'
 
@@ -55,3 +57,14 @@ export const VariantInfo = MetaNode('VariantInfo')
   })
   .build()
 
+  export const GetxQTL_EvidencesSetForVariantInfo = MetaNode('GetxQTL_EvidencesSetForVariantInfo')
+  .meta({
+    label: 'Resolve xQTL Evidence Set for Variant Info',
+    description: 'Resolve xQTL Evidence for Variant Info Data',
+  })
+  .inputs({ variantInfo: VariantInfo  })
+  .output(xQTL_EvidenceSet)
+  .resolve(async (props) => {
+    return props.inputs.variantInfo.data.ld.xqtlEvidence.map(({ entId }) => entId);
+  })
+  .build()

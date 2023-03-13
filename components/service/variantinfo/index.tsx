@@ -67,12 +67,15 @@ export const GetRegulatoryElementsForVariantInfo = MetaNode('GetRegulatoryElemen
 .inputs({ variantInfo: VariantInfo  })
 .output(RegulatoryElementSet)
 .resolve(async (props) => {
-  var regElemArray = [];
-  var regElemFromVariant = props.inputs.variantInfo.data.ldFor.RegulatoryElement;
+ /*
+  let regElemArray = [];
+  let regElemFromVariant = props.inputs.variantInfo.data.ldFor.RegulatoryElement;
   for(let r in regElemFromVariant){
     regElemArray.push(regElemFromVariant[r].entId);
   }
-  return regElemArray;
+  //return regElemArray;
+  */
+  return props.inputs.variantInfo.data.ldFor.RegulatoryElement.map(({ entId }) => entId)
 })
 .build()
 

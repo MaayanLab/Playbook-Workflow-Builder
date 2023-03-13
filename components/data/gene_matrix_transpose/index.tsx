@@ -5,8 +5,11 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { Table, Cell, Column, EditableCell } from '@/app/components/Table'
 import { GeneSet } from '@/components/core/input/set'
+import { FileURL } from '@/components/core/file'
 import { downloadBlob } from '@/utils/download'
+import { file_transfer_icon } from '@/icons'
 import dynamic from 'next/dynamic'
+import python from '@/utils/python'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -45,6 +48,20 @@ export const GMT = MetaNode(`GMT`)
       </Table>
     )
   })
+  .build()
+
+export const GMTFromFile = MetaNode('GMTFromFile')
+  .meta({
+    label: 'Resolve A Gene Matrix Tranpose from a File',
+    description: 'Ensure a file contains a gene matrix transpose, load it into a standard format',
+    icon: [file_transfer_icon],
+  })
+  .inputs({ file: FileURL })
+  .output(GMT)
+  .resolve(async (props) => await python(
+    'components.data.gene_matrix_transpose.load_gene_matrix_transpose',
+    { kargs: [props.inputs.file] },
+  ))
   .build()
 
 export const GMTUnion = MetaNode('GMTUnion')

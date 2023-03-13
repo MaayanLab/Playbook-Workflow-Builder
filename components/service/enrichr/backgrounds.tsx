@@ -215,21 +215,10 @@ export const Phenotype_backgrounds = [
 
 export const Tissue_backgrounds = [
   {
-    name: 'GTEx_Tissue_Expression_Up',
-    label: 'GTEx Tissue Expression Up',
+    name: 'GTEx_Tissues_V8_2023',
+    label: 'GTEx Tissues V8 2023',
     termType: 'Tissue',
-    termRe: /^(?<sample_id>[^ ]+) (?<term>.+?) (?<gender>[^ ]+) (?<age>[^ ]+ years)$/,
-    termLabel: 'GTEx Tissue Signatures',
-    termAssociation: 'Containing',
-    extra: {
-      organism: 'human',
-    },
-  },
-  {
-    name: 'GTEx_Tissue_Expression_Down',
-    label: 'GTEx Tissue Expression Down',
-    termType: 'Tissue',
-    termRe: /^(?<sample_id>[^ ]+) (?<term>.+?) (?<gender>[^ ]+) (?<age>[^ ]+ years)$/,
+    termRe: /^(?<term>.+) (?<gender>[^ ]+) (?<age>[^ ]+) (?<direction>[^ ]+)$/,
     termLabel: 'GTEx Tissue Signatures',
     termAssociation: 'Containing',
     extra: {

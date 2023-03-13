@@ -7,8 +7,8 @@ export default function ORMAdapter(): Adapter {
       return await db.objects.user.create({
         data: {
           name: data.name ?? undefined,
-          email: data.email,
-          emailVerified: data.emailVerified ?? undefined,
+          email: data.email ?? '',
+          emailVerified: data.emailVerified ?? null,
           image: data.image ?? undefined,
         }
       })
@@ -17,6 +17,7 @@ export default function ORMAdapter(): Adapter {
       return await db.objects.user.findUnique({ where: { id } })
     },
     getUserByEmail: async (email) => {
+      if (!email) throw new Error('Cannot search by email without one')
       return await db.objects.user.findUnique({ where: { email } })
     },
     getUserByAccount: async (provider_providerAccountId) => {
@@ -32,7 +33,7 @@ export default function ORMAdapter(): Adapter {
         data: {
           name: data.name ?? undefined,
           email: data.email,
-          emailVerified: data.emailVerified ?? undefined,
+          emailVerified: data.emailVerified ?? null,
           image: data.image ?? undefined,
         }
       })

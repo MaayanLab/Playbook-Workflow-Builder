@@ -29,7 +29,7 @@ export const MyRegulatoryElementC = z.object({
 
 export type MyRegulatoryElement = z.infer<typeof MyRegulatoryElementC>
 
-export const RegulatoryElementInfo = MetaNode.createData('RegulatoryElementInfo')
+export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
 .meta({
   label: 'Regulatory Element',
   description: 'Regulatory Element resolver'
@@ -84,12 +84,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
 .inputs({ regElemInfo: RegulatoryElementInfo  })
 .output(VariantSet)
 .resolve(async (props) => {
-   let variantInfoList = [];
-   let geneList = props.inputs.regElemInfo.data.ld.Variant;
-   for(const g of geneList){
-    variantInfoList.push(g.entId);
-   }
-   return variantInfoList; 
+   return props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId)
 })
 .build()
 

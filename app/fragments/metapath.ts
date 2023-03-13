@@ -12,7 +12,7 @@ export type Metapath = ReturnType<FPL['toJSON']>
  * Retreive output from the API, decode and return
  */
 export function useMetapathOutput(krg: KRG, head: Metapath) {
-  const { data: rawOutput, isLoading, error } = useSWRImmutableSticky(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
+  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutableSticky(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
   const processNode = krg.getProcessNode(head.process.type)
   const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
   const { output, decodeError } = React.useMemo(() => {
@@ -23,7 +23,7 @@ export function useMetapathOutput(krg: KRG, head: Metapath) {
       return { data: { output: undefined, outputNode }, decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
     }
   }, [rawOutput, outputNode])
-    return { data: { output, outputNode }, error: error || decodeError, isLoading }
+    return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
 }
 
 /**

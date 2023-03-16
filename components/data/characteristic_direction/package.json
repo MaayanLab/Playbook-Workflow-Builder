@@ -1,0 +1,14 @@
+{
+  "name": "characteristic_direction",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Zhuorui (Sherry) Xie <zhuorui.xie@mssm.edu>",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21"
+  }
+}

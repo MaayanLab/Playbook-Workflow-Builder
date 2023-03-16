@@ -1,0 +1,2 @@
+maayanlab-bioinformatics @ git+https://github.com/Maayanlab/maayanlab-bioinformatics
+pandas

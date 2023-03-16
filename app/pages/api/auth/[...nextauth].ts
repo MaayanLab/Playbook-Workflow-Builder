@@ -18,9 +18,16 @@ export const authOptions: NextAuthOptions = {
       name: 'Development User',
       credentials: {},
       async authorize(credentials, req) {
-        return {
-          id: '00000000-0000-0000-0000-000000000000'
-        }
+        return await db.objects.user.upsert({
+          where: {
+            id: '00000000-0000-0000-0000-000000000000',
+          },
+          create: {
+            id: '00000000-0000-0000-0000-000000000000',
+            name: 'Development User',
+            email: '',
+          },
+        })
       }
     }) : undefined,
     process.env.NEXTAUTH_GOOGLE ? GoogleProvider(JSON.parse(process.env.NEXTAUTH_GOOGLE)) : undefined,

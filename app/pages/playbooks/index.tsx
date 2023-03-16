@@ -10,6 +10,27 @@ import { DataMetaNode } from '@/spec/metanode'
 import useAsyncEffect from 'use-async-effect'
 import { useRouter } from 'next/router'
 
+import ARCHS4_icon from '@/app/public/logos/datasources/ARCHS4.png'
+import ChEA3_icon from '@/app/public/logos/datasources/ChEA3.png'
+import ENCODE_icon from '@/app/public/logos/datasources/ENCODE.png'
+import GTEx_icon from '@/app/public/logos/datasources/GTEx.png'
+import GWAS_icon from '@/app/public/logos/datasources/GWAS.jpeg'
+import IMPC_icon from '@/app/public/logos/datasources/IMPC.png'
+import KOMP_icon from '@/app/public/logos/datasources/KOMP.png'
+import LINCS_icon from '@/app/public/logos/datasources/LINCS.gif'
+import Image, { StaticImageData } from 'next/image'
+
+const dataSourceIcons: Record<string, StaticImageData> = {
+  ARCHS4: ARCHS4_icon,
+  ChEA: ChEA3_icon,
+  ENCODE: ENCODE_icon,
+  GTEx: GTEx_icon,
+  'GWAS Catalog': GWAS_icon,
+  IMPC: IMPC_icon,
+  KOMP: KOMP_icon,
+  'LINCS L1000': LINCS_icon,
+}
+
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Header = dynamic(() => import('@/app/fragments/playbook/header'))
 const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
@@ -106,6 +127,23 @@ export default function Playbooks() {
     if (!isMounted()) return
     setPlaybooks(demoPlaybooks as Array<Playbook>)
   }, [])
+  const DataSourceButton = React.useCallback(({ dataSource, size }: { dataSource: string, size: number }) => (
+    <button
+      key={dataSource}
+      onClick={() => {
+        setDataSourceFilters(({ [dataSource]: cur, ...filters }) => {
+          if (!cur) return {...filters, [dataSource]: !cur}
+          else return filters
+        })
+      }}
+      className={`flex flex-col place-items-center underline`}
+    >
+      <span className={dataSourceFilters[dataSource] ? 'text-shadow' : ''}>{dataSource}</span>
+      {dataSource in dataSourceIcons ?
+        <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} />
+        : null}
+    </button>
+  ), [dataSourceFilters, setDataSourceFilters])
   return (
     <div className="flex flex-col min-w-screen min-h-screen">
       <Head>
@@ -120,18 +158,11 @@ export default function Playbooks() {
             <div className="prose"><h2>Data Sources</h2></div>
             <div className="flex flex-row flex-wrap gap-2">
               {dict.values(allDataSources).map(dataSource => (
-                <button
+                <DataSourceButton
                   key={dataSource}
-                  onClick={() => {
-                    setDataSourceFilters(({ [dataSource]: cur, ...filters }) => {
-                      if (!cur) return {...filters, [dataSource]: !cur}
-                      else return filters
-                    })
-                  }}
-                  className={`underline ${dataSourceFilters[dataSource] ? 'font-bold' : ''}`}
-                >
-                  {dataSource}
-                </button>
+                  dataSource={dataSource}
+                  size={80}
+                />
               ))}
             </div>
           </div>
@@ -281,18 +312,11 @@ export default function Playbooks() {
                       <td>
                         <div className="flex flex-row flex-wrap gap-2 justify-center">
                           {playbook.dataSources.map(dataSource => (
-                            <button
+                            <DataSourceButton
                               key={dataSource}
-                              onClick={() => {
-                                setDataSourceFilters(({ [dataSource]: cur, ...filters }) => {
-                                  if (!cur) return {...filters, [dataSource]: !cur}
-                                  else return filters
-                                })
-                              }}
-                              className={`underline ${dataSourceFilters[dataSource] ? 'font-bold' : ''}`}
-                            >
-                              {dataSource}
-                            </button>
+                              dataSource={dataSource}
+                              size={50}
+                            />
                           ))}
                         </div>
                       </td>

@@ -76,23 +76,11 @@ export default function Breadcrumbs(
   }
 ) {
   const onclick = _onclick === undefined ? () => {} : _onclick
-  const svgRef = React.useRef<SVGSVGElement>(null)
-  React.useEffect(() => {
-    if (!svgRef.current) return
-    const d3SvgRef = d3.select(svgRef.current as Element)
-    d3SvgRef
-      .call(d3.zoom().on('zoom', (e) => {
-        d3SvgRef
-          .selectChild('g')
-          .attr('transform', e.transform)
-      }))
-  }, [svgRef.current])
   const { B, E, W, H } = React.useMemo(() => layout(graph), [graph])
   let w = 1.5 * Math.max(2, W)
   let h = 1.5 * Math.max(2, H)
   return (
     <svg
-      ref={svgRef}
       className="flex-grow"
       viewBox={`-1 -1 ${w} ${h}`}
       preserveAspectRatio="xMinYMid meet"

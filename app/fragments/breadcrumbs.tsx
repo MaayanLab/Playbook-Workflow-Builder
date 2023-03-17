@@ -34,7 +34,7 @@ function layout(graph: BreadcrumbNode[]) {
   //                       & E -- the edges between breadcrumbs
   // W & H keep track of the width/height of the layout
   let W = 1, H = 1
-  const Q = [{id: 'start', x: W-1, y: H-1}]
+  const Q = [{id: 'start', parent: undefined as string | undefined, x: W-1, y: H-1}]
   const B: Record<string, {node: BreadcrumbNode, x: number, y: number}> = {}
   const E: {id: string, src: string, dst: string}[] = []
   while (Q.length > 0) {
@@ -43,6 +43,13 @@ function layout(graph: BreadcrumbNode[]) {
     if (el.y === -1) el.y = H++
     W = Math.max(el.x+1, W)
     B[el.id] = { node: G[el.id], x: el.x, y: el.y }
+    if (el.parent) {
+      E.push({
+        id: `${el.id}__${el.id}__${el.x},${el.y}`,
+        src: el.parent,
+        dst: el.id,
+      })
+    }
     if (el.id in C) {
       // we reverse children here since the last item inserted will be processed next
       const children = [...C[el.id]]
@@ -50,12 +57,8 @@ function layout(graph: BreadcrumbNode[]) {
       children.forEach((cid, rind) => {
         // maintain original children index (even though list is reversed)
         const ind = children.length - rind - 1
-        E.push({
-          id: `${el.id}__${cid}__${el.x},${ind}`,
-          src: el.id,
-          dst: cid,
-        })
         Q.push({
+          parent: el.id,
           id: cid,
           x: el.x+1,
           y: ind === 0 ? el.y : -1, // -1 is used to defer new branch creation

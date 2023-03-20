@@ -32,9 +32,13 @@ export const FileInput = MetaNode('FileInput')
   .inputs()
   .output(FileURL)
   .prompt(props => {
-    const [currentFile, setCurrentFile] = React.useState<boolean>(false)
+    const [currentFile, setCurrentFile] = React.useState<{ description?: string, url?: string }>({})
     const fileInputRef = React.useRef<HTMLInputElement>(null)
     const { data: session } = useSessionWithId()
+    const output = React.useMemo(() => props.output || { description: undefined, url: undefined }, [props.output])
+    React.useEffect(() => {
+      setCurrentFile(output)
+    }, [output])
     return (
       <div>
         {!session || !session.user ? (
@@ -47,22 +51,25 @@ export const FileInput = MetaNode('FileInput')
             onSubmit={async (evt) => {
               evt.preventDefault()
               const formData = new FormData(evt.currentTarget)
+              const rawDescription = formData.get('description')
+              const description = rawDescription === null ? undefined : rawDescription.toString()
               const res = await fetch(`/api/components/core/file/upload`, { method: 'POST', body: formData })
               const records: { file: string[] } = await res.json()
-              props.submit({ url: records.file[0] })
+              props.submit({ description, url: records.file[0] })
             }}
           >
             <input
               ref={fileInputRef}
               name="file"
-              className={`file-input file-input-lg ${props.output && !currentFile ? 'hidden' : ''}`}
+              className={`file-input file-input-lg ${currentFile.url ? 'hidden' : ''}`}
               onChange={evt => {
-                setCurrentFile(!!(evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0]))
+                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
+                setCurrentFile(({ description, url: _ }) => ({ description, url }))
               }}
               type="file"
             />
             <div
-              className={`inline-flex flex-row items-center gap-4 ${!props.output || currentFile ? 'hidden' : ''}`}
+              className={`inline-flex flex-row items-center gap-4 ${currentFile.url ? '' : 'hidden'}`}
               onClick={evt => {
                 evt.preventDefault()
                 if (fileInputRef.current) {
@@ -71,7 +78,17 @@ export const FileInput = MetaNode('FileInput')
               }}
             >
               <button className="btn btn-lg">Choose File</button>
-              <span className="text-lg">{props.output?.url||'No file chosen'}</span>
+              <span className="text-lg">{currentFile.url||'No file chosen'}</span>
+            </div>
+            <div className="bp4-input-group">
+              <input
+                type="text"
+                name="description"
+                className="bp4-input"
+                placeholder={`File description`}
+                onChange={evt => {setCurrentFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                value={currentFile.description||''}
+              />
             </div>
             <div className="inline-flex flex-row">
               <a
@@ -86,7 +103,13 @@ export const FileInput = MetaNode('FileInput')
               </a>
               <Bp4Button
                 large
-                disabled={!currentFile}
+                disabled={
+                  currentFile.url === undefined
+                  || (
+                    currentFile.description === output.description
+                    && currentFile.url === output.url
+                  )
+                }
                 type="submit"
                 text="Submit"
                 rightIcon="send-to-graph"

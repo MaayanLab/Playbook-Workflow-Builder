@@ -1,7 +1,7 @@
 import React from 'react'
 import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
-import { useSWRImmutableSticky } from '@/utils/use-sticky'
+import useSWRImmutable from 'swr/immutable'
 import fetcher from '@/utils/next-rest-fetcher'
 import useSWRMap from '@/utils/swr-map'
 import * as dict from '@/utils/dict'
@@ -12,7 +12,7 @@ export type Metapath = ReturnType<FPL['toJSON']>
  * Retreive output from the API, decode and return
  */
 export function useMetapathOutput(krg: KRG, head: Metapath) {
-  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutableSticky(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
+  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutable(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
   const processNode = krg.getProcessNode(head.process.type)
   const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
   const { output, decodeError } = React.useMemo(() => {

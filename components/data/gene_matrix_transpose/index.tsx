@@ -128,14 +128,20 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .inputs({ genesets: [GeneSet] })
   .output(GMT)
   .prompt(props => {
-    const [terms, setTerms] = React.useState(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: '' }))))
-    const [descriptions, setDescriptions] = React.useState(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
+    const [terms, setTerms] = React.useState({} as Record<number, string>)
+    const [descriptions, setDescriptions] = React.useState({} as Record<number, string>)
+    React.useEffect(() => {
+      if (props.inputs) {
+        setTerms(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
+        setDescriptions(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: '' }))))
+      }
+    }, [props.inputs])
     React.useEffect(() => {
       if (props.output) {
         setTerms(dict.init(dict.keys(props.output).map((key, i) => ({ key: i, value: key }))))
         setDescriptions(dict.init(dict.values(props.output).map(({ description }, i) => ({ key: i, value: description||'' }))))
       }
-    }, [props.inputs, props.output])
+    }, [props.output])
     return (
       <div>
         <Table

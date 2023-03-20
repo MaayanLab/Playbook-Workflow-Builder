@@ -45,6 +45,8 @@ export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
+export * from "./filters"
+components.push("filters")
 export * from "./gly_gen"
 components.push("gly_gen")
 export * from "./service/enrichr"

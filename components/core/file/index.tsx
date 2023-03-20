@@ -50,12 +50,16 @@ export const FileInput = MetaNode('FileInput')
             className="my-2 inline-flex flex-col"
             onSubmit={async (evt) => {
               evt.preventDefault()
-              const formData = new FormData(evt.currentTarget)
-              const rawDescription = formData.get('description')
-              const description = rawDescription === null ? undefined : rawDescription.toString()
-              const res = await fetch(`/api/components/core/file/upload`, { method: 'POST', body: formData })
-              const records: { file: string[] } = await res.json()
-              props.submit({ description, url: records.file[0] })
+              if (currentFile.url && currentFile.url === props.output?.url) {
+                props.submit({ description: currentFile.description, url: currentFile.url })
+              } else {
+                const formData = new FormData(evt.currentTarget)
+                const rawDescription = formData.get('description')
+                const description = rawDescription === null ? undefined : rawDescription.toString()
+                const res = await fetch(`/api/components/core/file/upload`, { method: 'POST', body: formData })
+                const records: { file: string[] } = await res.json()
+                props.submit({ description, url: records.file[0] })
+              }
             }}
           >
             <input

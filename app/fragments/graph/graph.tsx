@@ -68,7 +68,9 @@ function buildBreadcrumbGraph({
           id: `${h.id}:${h.process.id}`,
           kind: 'data' as 'data',
           label: process.output.meta.label,
-          color: h.id === node_id ? '#B3CFFF' : 'lightgrey',
+          color: h.id === node_id ? '#B3CFFF'
+            : 'prompt' in process && h.process.data?.value === undefined ? 'pink'
+            : 'lightgrey',
           icon: process.output.meta.icon || [variable_icon],
           parents: [h.id],
         },

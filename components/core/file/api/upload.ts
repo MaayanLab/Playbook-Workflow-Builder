@@ -45,7 +45,7 @@ export default handler(async (req, res) => {
               create: {
                 url,
                 sha256,
-                size: file.size.toString(),
+                size: file.size,
               },
             })
             await db.objects.user_upload.upsert({

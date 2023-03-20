@@ -33,23 +33,31 @@ function layout(graph: BreadcrumbNode[]) {
   // DFS Through C to create B -- the ordered breadcrumbs with x/y postiions
   //                       & E -- the edges between breadcrumbs
   // W & H keep track of the width/height of the layout
-  let W = 1, H = 1
-  const Q = [{id: 'start', parent: undefined as string | undefined, x: W-1, y: H-1}]
+  let W = 1, H = 0
+  const Q = [{id: 'start', parent: undefined as string | undefined, x: W-1, y: H++}]
   const B: Record<string, {node: BreadcrumbNode, x: number, y: number}> = {}
   const E: {id: string, src: string, dst: string}[] = []
   while (Q.length > 0) {
     const el = Q.pop()
     if (!el) break
-    if (el.y === -1) el.y = H++
-    W = Math.max(el.x+1, W)
-    B[el.id] = { node: G[el.id], x: el.x, y: el.y }
+    if (el.y === -1) {
+      if (el.id in B) el.y = B[el.id].y
+      else if ((G[el.id].parents||[]).some(pid => !(pid in B))) {
+        // defer until all parents have been shown
+        Q.splice(Q.length-2, 0, el)
+        continue
+      } else el.y = H++
+    }
     if (el.parent) {
       E.push({
-        id: `${el.id}__${el.id}__${el.x},${el.y}`,
+        id: `${el.parent}__${el.id}__${el.x},${el.y}`,
         src: el.parent,
         dst: el.id,
       })
     }
+    W = Math.max(el.x+1, W)
+    if (el.id in B) continue
+    B[el.id] = { node: G[el.id], x: el.x, y: el.y }
     if (el.id in C) {
       // we reverse children here since the last item inserted will be processed next
       const children = [...C[el.id]]

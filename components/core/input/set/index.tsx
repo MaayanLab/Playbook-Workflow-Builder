@@ -126,7 +126,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
     )
   })
   .story(props =>
-    `The workflow starts with a ${T.label.toLocaleLowerCase()} set${props.output && props.output.description ? `created from ${props.output.description}` : ''}.`
+    `The workflow starts with a ${T.label.toLocaleLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`
   )
   .build()
 

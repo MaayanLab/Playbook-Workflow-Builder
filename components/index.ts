@@ -55,6 +55,8 @@ export * from "./service/hyposet"
 components.push("service/hyposet")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./service/targetranger"
+components.push("service/targetranger")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"

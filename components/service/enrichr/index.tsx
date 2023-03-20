@@ -145,7 +145,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .resolve(async (props) => {
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
-    formData.append('description', `playbook-partnership`)
+    formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
     const response = await fetch(`${enrichr_url}/addList`, {
       method: 'post',
       body: formData,

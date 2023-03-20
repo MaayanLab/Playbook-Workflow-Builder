@@ -57,9 +57,9 @@ export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/targetranger"
 components.push("service/targetranger")
+export * from "./viz/barplot"
+components.push("viz/barplot")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"
 components.push("viz/plotly")
-export * from "./viz/tissue_barplot"
-components.push("viz/tissue_barplot")

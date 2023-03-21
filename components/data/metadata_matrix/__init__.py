@@ -37,10 +37,10 @@ def np_jsonifyable(x):
   x_ = x.astype('object')
   return x_.tolist()
 
-def metadata_matrix(url):
+def metadata_matrix(file):
   ''' Read the metadata file
   '''
-  d = metadata_from_path(url)
+  d = metadata_from_path(file['url'])
   if d.shape[0] >= 10:
     top = 5
     bottom = 5
@@ -69,7 +69,7 @@ def metadata_matrix(url):
     None,
   ]
   return dict(
-    url=url,
+    url=file['url'],
     shape=d.shape,
     index=index,
     columns=columns,

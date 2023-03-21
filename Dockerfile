@@ -35,6 +35,7 @@ RUN echo "Building app..." && LANDING_PAGE=/graph/extend npm run build
 
 FROM node:latest as app
 WORKDIR /app
+RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install git && rm -rf /var/lib/apt/lists/*
 ENV PYTHON_BIN="python3"
 RUN echo "Installing python..." && apt-get -y update && apt-get -y install python3-dev python3-pip && rm -rf /var/lib/apt/lists/*
 COPY --from=prepare_requirements_txt_complete /app /app

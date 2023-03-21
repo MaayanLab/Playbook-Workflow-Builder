@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, func_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
+import classNames from 'classnames'
 
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -45,7 +46,7 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
             </p>
           </div>
         </div>
-        <div className={`border-t-secondary border-t-2 mt-2 ${metadata.processVisible ? '' : 'hidden'}`}>
+        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !metadata.processVisible })}>
           <Link href={`/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} />
@@ -72,7 +73,7 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
             {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
           </div>
         </div>}
-        <div className={`border-t-secondary border-t-2 mt-2 ${metadata.dataVisible ? '' : 'hidden'}`}>
+        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !metadata.dataVisible })}>
           <Link href={`/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} />

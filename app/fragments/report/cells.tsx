@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
 import { Metapath } from '@/app/fragments/metapath'
+import classNames from 'classnames'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -31,7 +32,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
             </h2>
           </div>
           <p
-            className={`prose w-full p-1 border border-white hover:border-gray-200 cursor-text ${metadata.description !== undefined ? 'hidden' : ''}`}
+            className={classNames('prose w-full p-1 border border-white hover:border-gray-200 cursor-text', { 'hidden': metadata.description !== undefined })}
             onClick={evt => {
               setMetadata(metadata => ({ ...metadata, description: evt.currentTarget?.textContent||''.replace(/\s+$/, '') }))
               setTimeout(() => {
@@ -44,7 +45,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
           </p>
           <textarea
             ref={descriptionRef}
-            className={`prose w-full p-1 border border-white ${metadata.description !== undefined ? '' : 'hidden'}`}
+            className={classNames('prose w-full p-1 border border-white', { 'hidden': metadata.description === undefined })}
             value={metadata.description}
             onChange={evt => {
               setMetadata(metadata => ({ ...metadata, description: evt.target.value }))

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import classNames from 'classnames'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -65,7 +66,7 @@ export const FileInput = MetaNode('FileInput')
             <input
               ref={fileInputRef}
               name="file"
-              className={`file-input file-input-lg ${currentFile.url ? 'hidden' : ''}`}
+              className={classNames('file-input file-input-lg', { 'hidden': currentFile.url })}
               onChange={evt => {
                 const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
                 setCurrentFile(({ description, url: _ }) => ({ description, url }))
@@ -73,7 +74,7 @@ export const FileInput = MetaNode('FileInput')
               type="file"
             />
             <div
-              className={`inline-flex flex-row items-center gap-4 ${currentFile.url ? '' : 'hidden'}`}
+              className={classNames('inline-flex flex-row items-center gap-4', { 'hidden': !currentFile.url })}
               onClick={evt => {
                 evt.preventDefault()
                 if (fileInputRef.current) {

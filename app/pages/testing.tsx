@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import classNames from 'classnames'
 
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
@@ -87,7 +88,7 @@ export default function App() {
     }
   }
   return (
-    <div className={`${styles.App} container mx-auto py-2`}>
+    <div className={classNames(styles.App, 'container mx-auto py-2')}>
       <div className={styles.Process}>
         <progress className="progress w-100" value={loading ? undefined : 0}></progress>
         <div className="prose mb-2">
@@ -227,7 +228,7 @@ export default function App() {
             {dict.values(data.nodes).filter(item => item.type).map((item) => (
               <button
                 key={item.id}
-                className={`btn btn-sm ${data.selected[item.id] ? 'btn-primary' : 'btn-secondary'} rounded-md px-2 whitespace-nowrap`}
+                className={classNames('btn btn-sm rounded-md px-2 whitespace-nowrap', { 'btn-primary': data.selected[item.id], 'btn-secondary': !data.selected[item.id]})}
                 onClick={evt => {
                   setData(({ selected: { [item.id]: currentlySelected, ...selected }, ...data }) => ({
                     ...data,

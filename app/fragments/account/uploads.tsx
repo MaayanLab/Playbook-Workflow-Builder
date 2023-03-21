@@ -9,6 +9,7 @@ import * as schema from '@/db'
 import type { TypedSchemaRecord } from '@/spec/sql'
 import { FileInput, FileURL } from '@/components/core/file'
 import { delete_icon, fork_icon } from '@/icons'
+import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
@@ -46,7 +47,7 @@ export default function Uploads() {
           </div>
         </div>
       </div>
-      <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">
           <table className="table table-compact w-full">

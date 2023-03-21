@@ -38,7 +38,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
           if (Array.isArray(value)) {
             return dict.values(selections).filter(selection => selection.processNode.output.spec === value[0].spec).length > 1
           } else {
-            return dict.values(selections).filter(selection => selection.processNode.output.spec === value.spec && selection.process.id === head.process.id).length >= 1
+            return dict.values(selections).filter(selection => selection.processNode.output.spec === value.spec).length >= 1
           }
         })
       )
@@ -64,11 +64,9 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
                       inputs[`${arg}:${i}`] = { id: selection.process.id }
                     })
                 } else {
-                  dict.values(selections)
-                    .filter(selection => selection.processNode.output.spec === input.spec && selection.process.id === head.process.id)
-                    .forEach(selection => {
-                      inputs[arg] = { id: selection.process.id }
-                    })
+                  const relevantSelections = dict.filter(selections, ({ value: selection }) => selection.processNode.output.spec === input.spec)
+                  const selection = head.process.id in relevantSelections ? head : array.ensureOne(dict.values(relevantSelections))
+                  inputs[arg] = { id: selection.process.id }
                 }
               })
               const req = await fetch(`/api/db/fpl/${id}/extend`, {

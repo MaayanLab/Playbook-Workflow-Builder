@@ -569,7 +569,7 @@ export default class FPPRG {
             }
           }
         })
-        console.debug(`requesting ${id}`)
+        console.debug(`awaiting ${id}`)
         await this.db.send('work-queue', { id })
         setTimeout(() => {
           if (!ctx.resolved) {

@@ -63,5 +63,7 @@ export * from "./viz/barplot"
 components.push("viz/barplot")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
+export * from "./viz/clustergrammer2"
+components.push("viz/clustergrammer2")
 export * from "./viz/plotly"
 components.push("viz/plotly")

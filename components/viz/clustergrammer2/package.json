@@ -1,0 +1,16 @@
+{
+  "name": "@playbook-partnership/clustergrammer2",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
+  "private": true,
+  "main": "index.tsx",
+  "dependencies": {
+    "clustergrammer-gl": "^0.24.2",
+    "clustergrammer2": "^0.18.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21"
+  }
+}

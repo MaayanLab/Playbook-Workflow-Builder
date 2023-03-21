@@ -6,18 +6,6 @@ from components.data.gene_count_matrix import anndata_from_path
 
 targetranger_url = 'https://targetranger.maayanlab.cloud'
 
-# https://github.com/MaayanLab/TargetRanger/blob/main/pages/api/query_db_targets.js#L18-L27
-bg_lookup = {
-  'ARCHS4': 0,
-  'GTEx_transcriptomics': 1,
-  'Tabula_Sapiens': 2,
-  'CCLE_transcriptomics': 3,
-  'HPM': 4,
-  'HPA': 5,
-  'GTEx_proteomics': 6,
-  'CCLE_proteomics': 7,
-}
-
 def targetscreener(url, *, bg):
   ''' We prepare the incoming data for target screener by producing summary stats
   and translate the output into Scored[Gene]
@@ -35,7 +23,7 @@ def targetscreener(url, *, bg):
   req = requests.post(
     f"{targetranger_url}/api/query_db_targets",
     json=dict(
-      bg=bg_lookup[bg],
+      bg=bg,
       inputData=dict(genes=genes.to_dict(), n=n),
     ),
   )

@@ -6,8 +6,8 @@ def fsspec_open_as_iterator(url, *args, **kwargs) -> str:
   with fsspec.open(url, *args, **kwargs) as fr:
     yield fr
 
-def load_gene_matrix_transpose(url):
-  with fsspec_open_as_iterator(url) as fr:
+def load_gene_matrix_transpose(file):
+  with fsspec_open_as_iterator(file['url']) as fr:
     return {
       term: dict(description=description, set=genes)
       for line in fr

@@ -19,6 +19,7 @@ import IMPC_icon from '@/app/public/logos/datasources/IMPC.png'
 import KOMP_icon from '@/app/public/logos/datasources/KOMP.png'
 import LINCS_icon from '@/app/public/logos/datasources/LINCS.gif'
 import Image, { StaticImageData } from 'next/image'
+import classNames from 'classnames'
 
 const dataSourceIcons: Record<string, StaticImageData> = {
   ARCHS4: ARCHS4_icon,
@@ -136,9 +137,9 @@ export default function Playbooks() {
           else return filters
         })
       }}
-      className={`flex flex-col place-items-center underline`}
+      className="flex flex-col place-items-center underline"
     >
-      <span className={dataSourceFilters[dataSource] ? 'text-shadow' : ''}>{dataSource}</span>
+      <span className={classNames({ 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span>
       {dataSource in dataSourceIcons ?
         <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} />
         : null}

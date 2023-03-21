@@ -235,7 +235,7 @@ export const Tissue_backgrounds = [
   },
 ]
 
-export const TranscriptionFactor_backgrounds = [
+export const Gene_backgrounds = [
   {
     name: 'ChEA_2022',
     label: 'ChEA 2022',
@@ -260,6 +260,14 @@ export const TranscriptionFactor_backgrounds = [
     termLabel: 'ARCHS4 Transcription Factors',
     termAssociation: 'Correlated with',
   },
+  {
+    name: 'LINCS_L1000_CRISPR_KO_Consensus_Sigs',
+    label: 'LINCS L1000 CRISPR KO Consensus Sigs',
+    termType: 'Gene',
+    termRe: /^(?<term>.+) (?<direction>.+)$/,
+    termLabel: 'L1000 CRISPR KO Signatures',
+    termAssociation: 'Containing',
+  },
 ]
 
 export const backgrounds = dict.init([
@@ -268,5 +276,5 @@ export const backgrounds = dict.init([
   ...Pathway_backgrounds,
   ...Phenotype_backgrounds,
   ...Tissue_backgrounds,
-  ...TranscriptionFactor_backgrounds,
+  ...Gene_backgrounds,
 ].map((value) => ({ key: value.name, value })))

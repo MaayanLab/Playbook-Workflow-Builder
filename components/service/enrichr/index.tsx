@@ -3,7 +3,7 @@ import { MetaNode, DataMetaNode, InternalDataMetaNode } from '@/spec/metanode'
 import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon, search_icon } from '@/icons'
-import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
+import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, Gene_backgrounds } from './backgrounds'
 import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
@@ -181,7 +181,7 @@ export const EnrichrGenesetSearchT = [
   { backgrounds: Pathway_backgrounds, output: ScoredPathways },
   { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes },
   { backgrounds: Tissue_backgrounds, output: ScoredTissues },
-  { backgrounds: TranscriptionFactor_backgrounds, output: ScoredGenes },
+  { backgrounds: Gene_backgrounds, output: ScoredGenes },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -255,7 +255,7 @@ export const EnrichrGeneSearchT = [
   { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -340,7 +340,7 @@ export const EnrichrTermSearchT = [
   { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
 ].flatMap(({ backgrounds, output }) =>
   backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>

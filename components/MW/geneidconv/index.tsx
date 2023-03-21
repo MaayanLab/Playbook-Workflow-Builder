@@ -38,7 +38,7 @@ export const GeneIDConv = MetaNode('GeneIDConv')
   .build()
 
 // For GeneSet
-export const GeneSetIDConv = MetaNode.createProcess('GeneSetIDConv')
+export const GeneSetIDConv = MetaNode('GeneSetIDConv')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Gene ID Conversion for a set of genes',
@@ -57,7 +57,7 @@ export const GeneSetIDConv = MetaNode.createProcess('GeneSetIDConv')
     // example 3: https://bdcw.org/geneid/rest/species/hsa/GeneIDType/ENTREZID/GeneListStr/3569,3710,9314/View/json
     const species_id = "hsa"
     const geneid_type = "SYMBOL_OR_ALIAS"
-    const gene_id = props.inputs.geneset.join(","); // "HK1" //"${props.inputs.gene}"
+    const gene_id = props.inputs.geneset.set.join(","); // "HK1" //"${props.inputs.gene}"
     //console.log(gene_id)
     const json_or_txt = "json"
     const req = await fetch(`https://bdcw.org/geneid/rest/species/${species_id}/GeneIDType/${geneid_type}/GeneListStr/${gene_id}/View/${json_or_txt}`)
@@ -66,6 +66,9 @@ export const GeneSetIDConv = MetaNode.createProcess('GeneSetIDConv')
     //return props.inputs.gene
     return res
   })
+  .story(props =>
+    `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [REF].`
+  )
   .build()
 
 // Process to convert ConvertedGeneID to GeneInfo

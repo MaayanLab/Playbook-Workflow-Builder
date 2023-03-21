@@ -34,7 +34,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   )
   .build()
 
-  export const MetaboliteSetInfo = MetaNode.createProcess('MetaboliteSetInfo')
+  export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metabolite set information',
@@ -48,7 +48,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   // The resolve function uses the inputs and returns output
   //  both in the shape prescribed by the data type codecs
   .resolve(async (props) => {
-    const metNameSet = props.inputs.metaboliteset
+    const metNameSet = props.inputs.metaboliteset.set
     var jsonArrayObject = []
     //metNameSet.forEach(async metName => {
     for (let metName of metNameSet) {
@@ -63,4 +63,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
     return jsonArrayObject
     //return props.inputs.input
   })
+  .story(props =>
+    `The metabolites were then searched in the Metabolomics Workbench [REF] to extarct more information about the metabolites.`
+  )
   .build()

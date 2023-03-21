@@ -37,7 +37,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
   )
   .build()
 
-  export const MetGeneStudiesGeneSet = MetaNode.createProcess('MetGeneStudiesGeneSet')
+  export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Studies with GeneSet',
@@ -56,7 +56,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     const species_id = "hsa"
     const geneID_type = "SYMBOL_OR_ALIAS"
     
-    const gene_ID = props.inputs.geneset.join(",");
+    const gene_ID = props.inputs.geneset.set.join(",");
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/studies/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
@@ -65,4 +65,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     
     return  res
   })
+  .story(props =>
+    `The geneset was then searched in the Metabolomics Workbench [REF] to identify relevant studies related to the genes.`
+  )
   .build()

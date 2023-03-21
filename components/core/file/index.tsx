@@ -37,7 +37,7 @@ export const FileInput = MetaNode('FileInput')
     const { data: session } = useSessionWithId()
     return (
       <div>
-        {session === null ? (
+        {!session || !session.user ? (
           <div className="alert alert-warning shadow-lg block">
             You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
           </div>

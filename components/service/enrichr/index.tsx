@@ -99,7 +99,7 @@ export const EnrichrSetTToSetT = [
 export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .meta({
     label: 'Enrichr Enrichment Analysis',
-    description: 'A gene set submitted to Enrichr',
+    description: 'A gene set submitted to Enrichr [https://maayanlab.cloud/Enrichr/]',
     icon: [enrichr_icon, gene_icon],
   })
   .codec(z.object({
@@ -197,7 +197,7 @@ backgrounds.map(bg => ({ bg, output }))
       return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
     .story(props =>
-      `The gene set was enriched against the ${bg.label} [REF] library to identify statistically significant ${bg.termLabel}.`
+      `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
     )
     .build()
 )
@@ -271,7 +271,7 @@ backgrounds.map(bg => ({ bg, output }))
       return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
     })
     .story(props =>
-      `Identified matching terms from the ${bg.label} [REF] library were assembled into a collection of gene sets.`
+      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
     )
     .build()
 )
@@ -356,7 +356,7 @@ export const EnrichrTermSearchT = [
       return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
     })
     .story(props =>
-      `Identified matching terms from the ${bg.label} [REF] library were assembled into a collection of gene sets.`
+      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
     )
     .build()
 )

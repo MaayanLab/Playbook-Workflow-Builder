@@ -72,6 +72,6 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     return await mygeneinfo(_id)
   })
   .story(props =>
-    `More information about the gene was then obtained with the MyGene.info API [REF].`
+    `More information about the gene was then obtained with the MyGene.info API [https://mygene.info/].`
   )
   .build()

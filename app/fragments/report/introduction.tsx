@@ -32,7 +32,7 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
             onChange={description => {setMetadata(metadata => ({ ...metadata, description }))}}
           />
         </p>
-        {metadata.title || metadata.description !== undefined ? (
+        {/* {metadata.title || metadata.description !== undefined ? (
           <div className="flex flex-row gap-2 items-center">
             <button className="bp4-button bp4-intent-success">Save</button>
             <label className="bp4-control bp4-switch mb-0">
@@ -43,7 +43,7 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
               Make workflow public
             </label>
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       {error ? <div className="alert alert-error">{error}</div> : null}
       <div className="border-t-secondary border-t-2 mt-2">

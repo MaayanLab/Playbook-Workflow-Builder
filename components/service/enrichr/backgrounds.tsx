@@ -132,8 +132,8 @@ export const Pathway_backgrounds = [
     },
   },
   {
-    name: 'WikiPathway_2019_Human',
-    label: 'WikiPathway 2019 Human',
+    name: 'WikiPathways_2019_Human',
+    label: 'WikiPathways 2019 Human',
     termType: 'Pathway',
     termRe: /^(?<term>.+) (?<id>[^ ]+)$/,
     termLabel: 'WikiPathways',
@@ -143,8 +143,8 @@ export const Pathway_backgrounds = [
     },
   },
   {
-    name: 'WikiPathway_2019_Mouse',
-    label: 'WikiPathway 2019 Mouse',
+    name: 'WikiPathways_2019_Mouse',
+    label: 'WikiPathways 2019 Mouse',
     termType: 'Pathway',
     termRe: /^(?<term>.+)$/,
     termLabel: 'WikiPathways',

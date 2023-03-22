@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { view_in_graph_icon, fork_icon, start_icon } from '@/icons'
+import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon } from '@/icons'
 import { useStory } from '@/app/fragments/report/story'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
@@ -9,7 +9,7 @@ const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableT
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, error }: { id: string, error: any }) {
-  const [metadata, setMetadata] = React.useState({ title: '', description: undefined as string | undefined, public: false })
+  const [metadata, setMetadata] = React.useState({ title: 'Playbook', description: undefined as string | undefined, public: false })
   const story = useStory()
   return (
     <div className="flex-grow flex-shrink bp4-card p-0">
@@ -58,6 +58,11 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
           </button>
         </Link>
         <ShareButton id={id} />
+        {id ? 
+          <a className="bp4-button bp4-minimal" href={`/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`} download={`${metadata.title.replace(/ /g, '-')}-bco.json`}>
+            <Icon icon={biocompute_icon} color="black" title="Create BCO" />
+          </a>
+        : null}
       </div>
     </div>
   )

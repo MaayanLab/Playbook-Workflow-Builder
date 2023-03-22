@@ -75,7 +75,7 @@ export const GetRegulatoryElementsForVariantInfo = MetaNode('GetRegulatoryElemen
   }
   //return regElemArray;
   */
-  return props.inputs.variantInfo.data.ldFor.RegulatoryElement.map(({ entId }) => entId)
+  return { set: props.inputs.variantInfo.data.ldFor.RegulatoryElement.map(({ entId }) => entId) }
 })
 .build()
 

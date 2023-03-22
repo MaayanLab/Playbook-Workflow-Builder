@@ -71,7 +71,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   for(const g of geneList){
     geneInfoList.push(g.entId);
   }
-  return geneInfoList; 
+  return { set: geneInfoList }; 
 })
 .build()
 
@@ -84,7 +84,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
 .inputs({ regElemInfo: RegulatoryElementInfo  })
 .output(VariantSet)
 .resolve(async (props) => {
-   return props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId)
+   return { set: props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId) }
 })
 .build()
 

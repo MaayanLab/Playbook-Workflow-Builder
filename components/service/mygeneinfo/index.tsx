@@ -109,8 +109,8 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   .resolve(async (props) => {
     const response =  await myGeneInfoByGeneTerm(props.inputs.geneInfo.symbol);
     if(response.data == null || response.data.ld == null){
-      return [];
+      return { set: [] };
     }
-    return response.data.ld.RegulatoryElement.map(({ entId }) => entId );
+    return { set: response.data.ld.RegulatoryElement.map(({ entId }) => entId ) };
   })
   .build()

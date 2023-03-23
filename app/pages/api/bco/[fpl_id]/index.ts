@@ -19,14 +19,18 @@ const QueryType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'GET') throw new UnsupportedMethodError()
+  if (req.method !== 'HEAD' && req.method !== 'GET') throw new UnsupportedMethodError()
   const { fpl_id, metadata } = QueryType.parse(req.query)
   const fpl = await fpprg.getFPL(fpl_id)
   if (fpl === undefined) throw new NotFoundError()
+  if (req.method === 'HEAD') {
+    res.status(200).end()
+    return
+  }
   const session = await getServerSessionWithId(req, res)
   const user = (session && session.user) ? (await db.objects.user.findUnique({ where: { id: session.user.id } })) : undefined
   // @ts-ignore
-  const userOrcidAccount = await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } })
+  const userOrcidAccount = user ? await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } }) : undefined
   const BCO = await FPL2BCO({
     krg,
     fpl,

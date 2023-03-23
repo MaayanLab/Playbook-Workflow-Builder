@@ -37,8 +37,8 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
   )
   const processNode = krg.getProcessNode(head.process.type)
   const { inputs, decodeError } = React.useMemo(() => {
-    if (!rawInputs) return { inputs: dict.isEmpty(processNode.inputs) ? {} as Record<string, unknown>: undefined }
     try {
+      if (!rawInputs) return { inputs: dict.isEmpty(processNode.inputs) ? {} as Record<string, unknown>: undefined }
       return {
         inputs: dict.init(
           dict.items(processNode.inputs).map(({ key, value }) => {

@@ -26,7 +26,10 @@ export type MyVariantInfo = z.infer<typeof MyVariantInfoC>
 const MyAlleleRegistryExterSourcesListC = z.array(
   z.object({ 
     name: z.string(),
-    sources: z.array(z.object({ '@id':z.string() }))
+    sources: z.array(z.object({ 
+      '@id':z.string(),
+       id: z.string()
+    }))
   })
 );
 
@@ -76,19 +79,21 @@ export const VariantInfo = MetaNode('VariantInfo')
   .view(AlleleRegistryExternalSourcesList => (
     <table style={{borderCollapse: 'collapse'}}>
       <tr>
-        <th>External Source Name</th>
-        <th>Source Link</th>
+        <th style={{width:'33%'}}>External Source Name</th>
+        <th style={{width:'33%'}}>Source ID</th>
+        <th style={{width:'34%'}}>Source Link</th>
       </tr>
       {AlleleRegistryExternalSourcesList.map(externalSource =>
         <tr style={{borderTop: '1px solid lightgrey'}}>
-          <td>   
+          <td style={{width:'34%'}}>   
             {externalSource.name}
           </td>
-          <td>
+          <td colSpan={2} style={{width:'66%', borderTop: '1px solid lightgrey'}}>
             <table style={{borderCollapse: 'collapse', width:'100%'}}>
               {externalSource.sources.map(sources =>
                   <tr>
-                    <td><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td>
+                    <td style={{width:'50%'}}>{ sources.id }</td>
+                    <td style={{width:'50%'}}><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td>             
                   </tr>
               )}
             </table> 
@@ -113,9 +118,18 @@ export const VariantInfo = MetaNode('VariantInfo')
       let externalSources = alleleInfo['externalRecords'];
       for(let er in externalSources){
         if(externalSources[er] != null){
+
+          let extSources = externalSources[er];
+          for(let indxEs in extSources){
+            var es = extSources[indxEs];
+            if(es.id == null && es.rs != null){
+              es.id = es.rs.toString();
+            }
+          }
+
           let  externalResourcesTemp = { 
             name: er.toString(), 
-            sources: externalSources[er] 
+            sources: extSources 
           };
           alleleInfoExternalResources.push(externalResourcesTemp);
         }

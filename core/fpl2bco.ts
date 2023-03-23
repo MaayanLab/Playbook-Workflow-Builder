@@ -24,6 +24,7 @@ type Author = {
   name: string,
   affiliation?: string,
   email?: string,
+  orcid?: string,
 }
 
 export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<BCO> {

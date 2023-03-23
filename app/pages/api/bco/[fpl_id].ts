@@ -25,6 +25,8 @@ export default handler(async (req, res) => {
   if (fpl === undefined) throw new NotFoundError()
   const session = await getServerSessionWithId(req, res)
   const user = (session && session.user) ? (await db.objects.user.findUnique({ where: { id: session.user.id } })) : undefined
+  // @ts-ignore
+  const userOrcidAccount = await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } })
   const BCO = await FPL2BCO({
     krg,
     fpl,
@@ -34,6 +36,7 @@ export default handler(async (req, res) => {
       ...dict.filter({
         email: user.email,
         affiliation: user.affiliation,
+        orcid: userOrcidAccount ? userOrcidAccount.providerAccountId : undefined,
       }),
     } : undefined,
   })

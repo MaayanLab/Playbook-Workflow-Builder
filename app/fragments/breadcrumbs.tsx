@@ -90,6 +90,7 @@ export default function Breadcrumbs(
   return (
     <svg
       className="flex-grow"
+      style={{ height: 40*h }}
       viewBox={`-1 -1 ${w} ${h}`}
       preserveAspectRatio="xMinYMid meet"
     >

@@ -109,7 +109,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
-      <div className="flex w-auto h-40">
+      <div className="flex w-auto items-center justify-center">
         <Breadcrumbs
           graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}
           onclick={(_evt, id) => {
@@ -121,10 +121,8 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             }
           }}
         />
-        <div className="flex items-center">
-          <RestartButton />
-          <ReportButton graph_id={graph_id} />
-        </div>
+        <RestartButton />
+        <ReportButton graph_id={graph_id} />
       </div>
       <main className="flex-grow flex flex-col">
         {error ? <div>{error}</div> : null}

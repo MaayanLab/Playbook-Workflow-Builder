@@ -2,6 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneInfo } from '../service/mygeneinfo'
 import { z } from 'zod'
+import { glygen_icon } from '@/icons'
 
 export const GlyGenResponse = z.object({
   queryinfo: z.object({
@@ -42,6 +43,7 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
   .meta({
     label: 'Protein Product Information',
     description: 'Search for protein records in GlyGen',
+    icon: [glygen_icon],
   })
   .inputs({ gene: GeneInfo })
   .output(GlyGenResponseNode)

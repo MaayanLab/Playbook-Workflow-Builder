@@ -321,7 +321,7 @@ export const Gene_backgrounds = [
     termLabel: 'L1000 CRISPR KO Signatures',
     termAssociation: 'Containing',
     ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
-    icon: [],
+    icon: [lincs_icon],
   },
 ]
 

@@ -41,8 +41,8 @@ export const GlyGenResponseNode = MetaNode('GlyGenResponse')
 
 export const ProteinProductInformation = MetaNode('ProteinProductInformation')
   .meta({
-    label: 'Protein Product Information',
-    description: 'Search for protein records in GlyGen',
+    label: 'Search Glygen for Protein Products',
+    description: 'Protein product records in GlyGen for the gene',
     icon: [glygen_icon],
   })
   .inputs({ gene: GeneInfo })

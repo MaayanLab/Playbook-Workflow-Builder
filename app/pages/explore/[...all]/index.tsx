@@ -6,6 +6,11 @@ import * as d3 from 'd3'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 import { func_icon, start_icon, variable_icon } from '@/icons'
+import dynamic from 'next/dynamic'
+import Head from 'next/head'
+
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
+const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 function Graph<
   N extends { id: string, x?: number, y?: number },
@@ -158,6 +163,7 @@ function Graph<
 
 export default function Explore() {
   const router = useRouter()
+  const [instructionsOpen, setInstructionsOpen] = React.useState(true)
   const path = [...array.ensureArray(router.query.all)]
   if (path.length === 0) path.push('Start')
   const links_ = [
@@ -183,7 +189,10 @@ export default function Explore() {
   const nodes = dict.values(nodes_)
   const links = dict.keys(links_).map((id) => ({ ...links_[id], id, source: nodes_[links_[id].source], target: nodes_[links_[id].target] }))
   return (
-    <div className="col">
+    <Layout>
+      <Head>
+        <title>Playbook: Explorer</title>
+      </Head>
       <Graph
         origin={path[path.length-1]}
         nodes={nodes}
@@ -192,11 +201,31 @@ export default function Explore() {
           router.push({
             pathname: '/explore/[...all]',
             query: {
-              all: [...path, node.id]
+              all: array.unique([...path, node.id])
             },
-          }, `/explore/${[...path, node.id].join('/')}`, { shallow: true })
+          }, `/explore/${array.unique([...path, node.id]).join('/')}`, { shallow: true })
         }}
       />
-    </div>
+      <Bp4Alert
+        confirmButtonText="Okay"
+        icon="info-sign"
+        intent="primary"
+        isOpen={instructionsOpen}
+        canEscapeKeyCancel
+        canOutsideClickCancel
+        onConfirm={() => {setInstructionsOpen(false)}}
+        onCancel={() => {setInstructionsOpen(false)}}
+      >
+        <p className="prose">
+          The exploration interface allows you to explore the available operations in a dynamic graph.
+          <br /><br />
+          Click and drag or scroll to navigate or zoom in/out respectively.
+          <br /><br />
+          Hover over an icon to see its label.
+          <br /><br />
+          Click a circle to add supported operations which can be applied to that datatype to the graph.
+        </p>
+      </Bp4Alert>
+    </Layout>
   )
 }

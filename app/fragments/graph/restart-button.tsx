@@ -11,19 +11,23 @@ export default function RestartButton() {
   const [isOpen, setIsOpen] = React.useState(false)
   const onConfirm = React.useCallback(() => {
     setIsOpen(false)
-    router.push(`/graph/start/extend`, undefined, { shallow: true })
+    router.push(`/graph/extend`, undefined, { shallow: true })
   }, [router])
-  if (router.asPath === '/graph/start/extend') return null
+  const disabled = router.asPath === '/graph/start' || router.asPath === '/graph/extend' || router.asPath === '/graph/start/extend'
   return (
     <>
-      <button className="bp4-button bp4-minimal" onClick={evt => {
-        if (evt.shiftKey) {
-          onConfirm()
-        } else {
-          setIsOpen(true)
-        }
-      }}>
-        <Icon icon={restart_icon} />
+      <button
+        className="bp4-button bp4-minimal"
+        disabled={disabled}
+        onClick={evt => {
+          if (evt.shiftKey) {
+            onConfirm()
+          } else {
+            setIsOpen(true)
+          }
+        }}
+      >
+        <Icon icon={restart_icon} color={disabled ? '#999' : '#000'} />
       </button>
       <Bp4Alert
         cancelButtonText="Cancel"

@@ -13,8 +13,7 @@ import { MetaNode } from '@/spec/metanode'
 import { UserIdentity } from '@/app/fragments/graph/useridentity'
 import fetcher from '@/utils/next-rest-fetcher'
 
-const Header = dynamic(() => import('@/app/fragments/playbook/header'))
-const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
 
 const ParamType = z.union([
@@ -101,13 +100,7 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
   const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
   const node_id = typeof params !== 'undefined' && 'node_id' in params && params.node_id ? params.node_id : graph_id
   return (
-    <div className="flex flex-col min-w-screen min-h-screen">
-      <Head>
-        <title>Playbook</title>
-      </Head>
-
-      <Header />
-
+    <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
           <Graph
@@ -118,8 +111,6 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
           />
         </main>
       </SWRConfig>
-
-      <Footer />
-    </div>
+    </Layout>
   )
 }

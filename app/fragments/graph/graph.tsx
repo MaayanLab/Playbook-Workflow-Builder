@@ -89,6 +89,18 @@ function buildBreadcrumbGraph({
   return graph
 }
 
+function ReportButton({ graph_id }: { graph_id: string }) {
+  const router = useRouter()
+  const disabled = router.asPath === '/graph/start' || router.asPath === '/graph/extend' || router.asPath === '/graph/start/extend'
+  return (
+    <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
+      <button className='bp4-button bp4-minimal'>
+        <Icon icon={view_report_icon}  color={disabled ? '#999' : '#000'} />
+      </button>
+    </Link>
+  )
+}
+
 export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const krg = useKRG()
@@ -111,11 +123,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
         />
         <div className="flex items-center">
           <RestartButton />
-          <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
-            <button className='bp4-button bp4-minimal'>
-              <Icon icon={view_report_icon} />
-            </button>
-          </Link>
+          <ReportButton graph_id={graph_id} />
         </div>
       </div>
       <main className="flex-grow flex flex-col">

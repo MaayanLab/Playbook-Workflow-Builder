@@ -33,8 +33,7 @@ const dataSourceIcons: Record<string, StaticImageData> = {
 }
 
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Header = dynamic(() => import('@/app/fragments/playbook/header'))
-const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 
 type Playbook = {
   id: string,
@@ -146,12 +145,10 @@ export default function Playbooks() {
     </button>
   ), [dataSourceFilters, setDataSourceFilters])
   return (
-    <div className="flex flex-col min-w-screen min-h-screen">
+    <Layout>
       <Head>
         <title>Playbooks</title>
       </Head>
-
-      <Header />
 
       <main className="flex-grow container mx-auto py-4 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
@@ -360,8 +357,6 @@ export default function Playbooks() {
           </table>
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </Layout>
   )
 }

@@ -3,17 +3,15 @@ import Head from 'next/head'
 import dynamic from 'next/dynamic'
 import Link from 'next/link';
  
-const Header = dynamic(() => import('@/app/fragments/playbook/header'))
-const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Contributors = dynamic(() => import('@/app/fragments/playbook/contributors'))
 
 export default function SiteMap() {
   return (
-    <div className="flex flex-col min-w-screen min-h-screen">
+    <Layout>
       <Head>
-        <title>Playbook</title>
+        <title>Playbook: Site Map</title>
       </Head>
-      <Header />
       <main className="flex-grow container mx-auto py-4 flex flex-col">
         <div className="hero">
           <div className="hero-content prose">
@@ -67,7 +65,6 @@ export default function SiteMap() {
         </div>
         <Contributors />
       </main>
-      <Footer />
-    </div>
+    </Layout>
   )
 }

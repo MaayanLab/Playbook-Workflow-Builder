@@ -1,4 +1,5 @@
 import * as dict from '@/utils/dict'
+import { archs4_icon, gtex_icon, lincs_icon } from '@/icons'
 
 export const Disease_backgrounds = [
   {
@@ -9,6 +10,7 @@ export const Disease_backgrounds = [
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
     ref: 'http://www.ncbi.nlm.nih.gov/geo/',
+    icon: [],
   },
   {
     name: 'Disease_Signatures_from_GEO_up_2014',
@@ -18,6 +20,7 @@ export const Disease_backgrounds = [
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
     ref: 'http://www.ncbi.nlm.nih.gov/geo/',
+    icon: [],
   },
   {
     name: 'GTEx_Aging_Signatures_2021',
@@ -27,6 +30,7 @@ export const Disease_backgrounds = [
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
     ref: 'https://gtexportal.org/',
+    icon: [gtex_icon],
   },
   {
     name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
@@ -36,6 +40,7 @@ export const Disease_backgrounds = [
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
     ref: 'https://www.ncbi.nlm.nih.gov/gene/about-generif',
+    icon: [],
   },
   {
     name: 'Rare_Diseases_GeneRIF_Gene_Lists',
@@ -45,6 +50,7 @@ export const Disease_backgrounds = [
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
     ref: 'https://www.ncbi.nlm.nih.gov/gene/about-generif',
+    icon: [],
   },
 ]
 
@@ -57,6 +63,7 @@ export const Drug_backgrounds = [
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
     ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
+    icon: [lincs_icon],
   },
   {
     name: 'LINCS_L1000_Chem_Pert_up',
@@ -66,6 +73,7 @@ export const Drug_backgrounds = [
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
     ref: 'https://clue.io/',
+    icon: [lincs_icon],
   },
   {
     name: 'LINCS_L1000_Chem_Pert_down',
@@ -75,6 +83,7 @@ export const Drug_backgrounds = [
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
     ref: 'https://clue.io/',
+    icon: [lincs_icon],
   },
 ]
 
@@ -87,6 +96,7 @@ export const Pathway_backgrounds = [
     termLabel: 'GO Biological Processes',
     termAssociation: 'Containing',
     ref: 'http://www.geneontology.org/',
+    icon: [],
   },
   {
     name: 'KEGG_2019_Human',
@@ -99,6 +109,7 @@ export const Pathway_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.kegg.jp/',
+    icon: [],
   },
   {
     name: 'KEGG_2019_Mouse',
@@ -111,6 +122,7 @@ export const Pathway_backgrounds = [
       organism: 'mouse',
     },
     ref: 'https://www.kegg.jp/',
+    icon: [],
   },
   {
     name: 'KEGG_2021_Human',
@@ -123,6 +135,7 @@ export const Pathway_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.kegg.jp/',
+    icon: [],
   },
   {
     name: 'MSigDB_Hallmark_2020',
@@ -132,6 +145,7 @@ export const Pathway_backgrounds = [
     termLabel: 'MSigDB Hallmark Gene Sets',
     termAssociation: 'Containing',
     ref: 'https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp',
+    icon: [],
   },
   {
     name: 'WikiPathway_2021_Human',
@@ -144,6 +158,7 @@ export const Pathway_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.wikipathways.org/',
+    icon: [],
   },
   {
     name: 'WikiPathways_2019_Human',
@@ -156,6 +171,7 @@ export const Pathway_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.wikipathways.org/',
+    icon: [],
   },
   {
     name: 'WikiPathways_2019_Mouse',
@@ -168,6 +184,7 @@ export const Pathway_backgrounds = [
       organism: 'mouse',
     },
     ref: 'https://www.wikipathways.org/',
+    icon: [],
   },
 ]
 
@@ -183,6 +200,7 @@ export const Phenotype_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.ebi.ac.uk/gwas',
+    icon: [],
   },
   {
     name: 'UK_Biobank_GWAS_v1',
@@ -195,6 +213,7 @@ export const Phenotype_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.ukbiobank.ac.uk/tag/gwas/',
+    icon: [],
   },
   {
     name: 'ClinVar_2019',
@@ -207,6 +226,7 @@ export const Phenotype_backgrounds = [
       organism: 'human',
     },
     ref: 'https://www.ncbi.nlm.nih.gov/clinvar/',
+    icon: [],
   },
   {
     name: 'Human_Phenotype_Ontology',
@@ -219,6 +239,7 @@ export const Phenotype_backgrounds = [
       organism: 'human',
     },
     ref: 'http://www.human-phenotype-ontology.org/',
+    icon: [],
   },
   {
     name: 'MGI_Mammalian_Phenotype_Level_4_2019',
@@ -231,6 +252,7 @@ export const Phenotype_backgrounds = [
       organism: 'mouse',
     },
     ref: 'http://www.informatics.jax.org/',
+    icon: [],
   },
 ]
 
@@ -246,6 +268,7 @@ export const Tissue_backgrounds = [
       organism: 'human',
     },
     ref: 'https://gtexportal.org/home/',
+    icon: [gtex_icon],
   },
   {
     name: 'ARCHS4_Tissues',
@@ -255,6 +278,7 @@ export const Tissue_backgrounds = [
     termLabel: 'ARCHS4 Tissue Signatures',
     termAssociation: 'Containing',
     ref: 'https://maayanlab.cloud/archs4/',
+    icon: [archs4_icon],
   },
 ]
 
@@ -267,6 +291,7 @@ export const Gene_backgrounds = [
     termLabel: 'ChEA Transcription Factors',
     termAssociation: 'Targeting',
     ref: 'https://maayanlab.cloud/chea3/',
+    icon: [],
   },
   {
     name: 'ENCODE_TF_ChIP-seq_2015',
@@ -276,6 +301,7 @@ export const Gene_backgrounds = [
     termLabel: 'ENCODE Transcription Factors',
     termAssociation: 'Targeting',
     ref: 'http://genome.ucsc.edu/ENCODE/downloads.html',
+    icon: [],
   },
   {
     name: 'ARCHS4_TFs_Coexp',
@@ -285,6 +311,7 @@ export const Gene_backgrounds = [
     termLabel: 'ARCHS4 Transcription Factors',
     termAssociation: 'Correlated with',
     ref: 'https://maayanlab.cloud/archs4/',
+    icon: [archs4_icon],
   },
   {
     name: 'LINCS_L1000_CRISPR_KO_Consensus_Sigs',
@@ -294,6 +321,7 @@ export const Gene_backgrounds = [
     termLabel: 'L1000 CRISPR KO Signatures',
     termAssociation: 'Containing',
     ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
+    icon: [],
   },
 ]
 

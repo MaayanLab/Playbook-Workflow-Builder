@@ -188,7 +188,7 @@ backgrounds.map(bg => ({ bg, output }))
   MetaNode(`ExtractEnrichrGenesetSearch[${bg.name}]`)
     .meta({
       label: `Extract Enriched ${bg.termLabel}`,
-      icon: [enrichr_icon],
+      icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Significant Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
@@ -262,7 +262,7 @@ backgrounds.map(bg => ({ bg, output }))
   MetaNode(`ExtractEnrichrGeneSearch[${bg.name}]`)
     .meta({
       label: `Extract ${bg.termLabel} ${bg.termAssociation} the Gene`,
-      icon: [enrichr_icon],
+      icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrGeneSearchResults })
@@ -347,7 +347,7 @@ export const EnrichrTermSearchT = [
   MetaNode(`ExtractEnrichrTermSearch[${bg.name}]`)
     .meta({
       label: `Extract ${bg.termLabel} ${bg.termAssociation} the Term Search`,
-      icon: [enrichr_icon],
+      icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrTermSearchResults })

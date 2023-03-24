@@ -2,6 +2,7 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
 import { MetgeneMetaboliteTable } from '../metgene_metabolite_table'
+import { metgene_icon } from '@/icons'
 
 
 // A unique name for your resolver is used here
@@ -10,6 +11,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
   .meta({
     label: 'MetGENE Metabolites',
     description: 'Compute the MetGENE metabolites',
+    icon: [metgene_icon],
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

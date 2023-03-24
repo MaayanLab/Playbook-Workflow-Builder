@@ -3,6 +3,7 @@ import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
 import { ConvertedGeneID } from '../ConvertedGeneID'
 import { uniqJsonSubset } from '../ConvertedGeneID'
+import { metabolomicsworkbench_icon } from '@/icons'
 
 // A unique name for your resolver is used here
 export const GeneIDConv = MetaNode('GeneIDConv')
@@ -10,6 +11,7 @@ export const GeneIDConv = MetaNode('GeneIDConv')
   .meta({
     label: 'Gene ID Conversion',
     description: 'Given one type of gene ID, generate other types of gene IDs',
+    icon: [metabolomicsworkbench_icon],
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

@@ -2,12 +2,14 @@ import { MetaNode } from '@/spec/metanode'
 import { MetaboliteTerm } from '@/components/core/input/term'
 import { MetaboliteSet } from '@/components/core/input/set'
 import { MetaboliteSummary } from '../metabolite_summary'
+import { metabolomicsworkbench_icon } from '@/icons'
 // A unique name for your resolver is used here
 export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metabolite information',
     description: 'Extract information for a metabolite',
+    icon: [metabolomicsworkbench_icon],
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

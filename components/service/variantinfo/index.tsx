@@ -46,7 +46,7 @@ async function myvariantinfo_query(variantId: string): Promise<MyVariantInfo> {
 export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
-    description: 'Resolve variant info from Linked Data Hub [https://genboree.org/cfde-gene-dev/]',
+    description: 'Resolve variant info from [Linked Data Hub](https://genboree.org/cfde-gene-dev/)',
     icon: [linkeddatahub_icon],
   })
   .inputs({ variant: VariantTerm })

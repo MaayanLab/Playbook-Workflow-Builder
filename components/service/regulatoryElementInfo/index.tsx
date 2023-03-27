@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
 import { GeneSet, VariantSet } from '@/components/core/input/set'
 import { z } from 'zod'
+import { linkeddatahub_icon } from '@/icons'
 
 export const MyRegulatoryElementC = z.object({
   data: z.object({
@@ -50,7 +51,8 @@ type RE_PositionalData = z.infer<typeof RE_PositionalDataC>
 export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
   .meta({
     label: 'Regulatory Element',
-    description: 'Regulatory Element resolver'
+    description: 'Regulatory Element resolver',
+    icon: [linkeddatahub_icon],
   })
   .codec(MyRegulatoryElementC)
   .view(regElem => (
@@ -84,6 +86,7 @@ export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegE
   .meta({
     label: 'Resolve Regulatory Element Info from Term',
     description: 'Resolve Regulatory Element info from variant term with MyVariantInfo',
+    icon: [linkeddatahub_icon],
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
   .output(RegulatoryElementInfo)

@@ -5,7 +5,7 @@ import { GeneSet, RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
-//import FormData from 'form-data'
+import { gene_icon, linkeddatahub_icon, mygeneinfo_icon } from '@/icons'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -105,6 +105,7 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
   .meta({
     label: 'Resolve Reg. Elements from Gene Info',
     description: 'GetRegulatoryElementsForGeneInfo',
+    icon: [linkeddatahub_icon],
   })
   .inputs({ geneInfo: GeneInfo  })
   .output(RegulatoryElementSet)

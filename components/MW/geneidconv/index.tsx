@@ -35,7 +35,7 @@ export const GeneIDConv = MetaNode('GeneIDConv')
     return res
   })
   .story(props =>
-    `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [https://bdcw.org/geneid/].`
+    `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
   )
   .build()
 

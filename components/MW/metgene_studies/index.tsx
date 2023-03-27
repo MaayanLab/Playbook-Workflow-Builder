@@ -35,7 +35,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     return  res
   })
   .story(props =>
-    `The gene was then searched in the Metabolomics Workbench [https://www.metabolomicsworkbench.org/] to identify relevant studies related to the gene.`
+    `The gene was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant studies related to the gene.`
   )
   .build()
 
@@ -69,6 +69,6 @@ export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
     return  res
   })
   .story(props =>
-    `The geneset was then searched in the Metabolomics Workbench [REF] to identify relevant studies related to the genes.`
+    `The geneset was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/'}] to identify relevant studies related to the genes.`
   )
   .build()

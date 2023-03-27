@@ -6,6 +6,7 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { FPL } from "@/core/FPPRG"
 import { decode_complete_process_inputs, decode_complete_process_output } from "@/core/engine"
+import extractCitations from "@/utils/extract-citations"
 
 type BCO = z.infer<typeof IEE2791schema>
 type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
@@ -52,10 +53,12 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     }))
   )
   const story = props.metadata?.description || (
-    dict.values(processLookup)
-      .filter(({ story }) => !!story)
-      .map(({ story }) => story)
-      .join(' ')
+    extractCitations(
+      dict.values(processLookup)
+        .filter(({ story }) => !!story)
+        .map(({ story }) => story)
+        .join(' ')
+    )
   )
   const baseBCO: BaseBCO = {
     usability_domain: [story],

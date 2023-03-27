@@ -9,7 +9,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
-    ref: 'http://www.ncbi.nlm.nih.gov/geo/',
+    ref: `\\ref{Gene Expression Omnibus, https://www.ncbi.nlm.nih.gov/geo/}`,
     icon: [],
   },
   {
@@ -19,7 +19,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
-    ref: 'http://www.ncbi.nlm.nih.gov/geo/',
+    ref: `\\ref{Gene Expression Omnibus, https://www.ncbi.nlm.nih.gov/geo/}`,
     icon: [],
   },
   {
@@ -29,7 +29,7 @@ export const Disease_backgrounds = [
     termRe: /^GTEx (?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
-    ref: 'https://gtexportal.org/',
+    ref: `\\ref{Lonsdale, John, et al. "The genotype-tissue expression (GTEx) project." Nature genetics 45.6 (2013): 580-585. doi:/10.1038/ng.265}`,
     icon: [gtex_icon],
   },
   {
@@ -39,7 +39,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
-    ref: 'https://www.ncbi.nlm.nih.gov/gene/about-generif',
+    ref: `\\ref{GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif}`,
     icon: [],
   },
   {
@@ -49,7 +49,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
-    ref: 'https://www.ncbi.nlm.nih.gov/gene/about-generif',
+    ref: `\\ref{GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif}`,
     icon: [],
   },
 ]
@@ -62,7 +62,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<term>.+) (?<direction>Up|Down)$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
-    ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
+    ref: `\\ref{John Erol Evangelista, Daniel J B Clarke, Zhuorui Xie, Alexander Lachmann, Minji Jeon, Kerwin Chen, Kathleen M Jagodnik, Sherry L Jenkins, Maxim V Kuleshov, Megan L Wojciechowicz, Stephan C Schürer, Mario Medvedovic, Avi Ma’ayan, SigCom LINCS: data and metadata search engine for a million gene expression signatures, Nucleic Acids Research, Volume 50, Issue W1, 5 July 2022, Pages W697–W709, doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
   },
   {
@@ -72,7 +72,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<desc>.+?-(?<term>.+)-(?<concentration>.+?))$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
-    ref: 'https://clue.io/',
+    ref: `\\ref{Subramanian A, et al. A Next Generation Connectivity Map: L1000 Platform And The First 1,000,000 Profiles. Cell. 2017/12/1. 171(6):1437–1452}`,
     icon: [lincs_icon],
   },
   {
@@ -82,7 +82,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<desc>.+?-(?<term>.+)-(?<concentration>.+?))$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
-    ref: 'https://clue.io/',
+    ref: `\\ref{Subramanian A, et al. A Next Generation Connectivity Map: L1000 Platform And The First 1,000,000 Profiles. Cell. 2017/12/1. 171(6):1437–1452}`,
     icon: [lincs_icon],
   },
 ]
@@ -95,7 +95,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)\((?<xref>.+?)\)$/,
     termLabel: 'GO Biological Processes',
     termAssociation: 'Containing',
-    ref: 'http://www.geneontology.org/',
+    ref: `\\ref{Ashburner, M et al. “Gene ontology: tool for the unification of biology. The Gene Ontology Consortium.” Nature genetics vol. 25,1 (2000): 25-9. doi:10.1038/75556}`,
     icon: [],
   },
   {
@@ -108,7 +108,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.kegg.jp/',
+    ref: `\\ref{Kanehisa, Minoru. “Toward understanding the origin and evolution of cellular organisms.” Protein science : a publication of the Protein Society vol. 28,11 (2019): 1947-1951. doi:10.1002/pro.3715}`,
     icon: [],
   },
   {
@@ -121,7 +121,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: 'https://www.kegg.jp/',
+    ref: `\\ref{Kanehisa, Minoru. “Toward understanding the origin and evolution of cellular organisms.” Protein science : a publication of the Protein Society vol. 28,11 (2019): 1947-1951. doi:10.1002/pro.3715}`,
     icon: [],
   },
   {
@@ -134,7 +134,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.kegg.jp/',
+    ref: `\\ref{Minoru Kanehisa, Miho Furumichi, Yoko Sato, Masayuki Kawashima, Mari Ishiguro-Watanabe, KEGG for taxonomy-based analysis of pathways and genomes, Nucleic Acids Research, Volume 51, Issue D1, 6 January 2023, Pages D587–D592, doi:10.1093/nar/gkac963}`,
     icon: [],
   },
   {
@@ -144,7 +144,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'MSigDB Hallmark Gene Sets',
     termAssociation: 'Containing',
-    ref: 'https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp',
+    ref: `\\ref{Subramanian, Aravind et al. “Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles.” Proceedings of the National Academy of Sciences of the United States of America vol. 102,43 (2005): 15545-50. doi:10.1073/pnas.0506580102}`,
     icon: [],
   },
   {
@@ -157,7 +157,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.wikipathways.org/',
+    ref: `\\ref{Marvin Martens, Ammar Ammar, Anders Riutta, Andra Waagmeester, Denise N Slenter, Kristina Hanspers, Ryan A. Miller, Daniela Digles, Elisson N Lopes, Friederike Ehrhart, Lauren J Dupuis, Laurent A Winckers, Susan L Coort, Egon L Willighagen, Chris T Evelo, Alexander R Pico, Martina Kutmon, WikiPathways: connecting communities, Nucleic Acids Research, Volume 49, Issue D1, 8 January 2021, Pages D613–D621, doi:10.1093/nar/gkaa1024}`,
     icon: [],
   },
   {
@@ -170,7 +170,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.wikipathways.org/',
+    ref: `\\ref{Marvin Martens, Ammar Ammar, Anders Riutta, Andra Waagmeester, Denise N Slenter, Kristina Hanspers, Ryan A. Miller, Daniela Digles, Elisson N Lopes, Friederike Ehrhart, Lauren J Dupuis, Laurent A Winckers, Susan L Coort, Egon L Willighagen, Chris T Evelo, Alexander R Pico, Martina Kutmon, WikiPathways: connecting communities, Nucleic Acids Research, Volume 49, Issue D1, 8 January 2021, Pages D613–D621, doi:10.1093/nar/gkaa1024}`,
     icon: [],
   },
   {
@@ -183,7 +183,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: 'https://www.wikipathways.org/',
+    ref: `\\ref{Marvin Martens, Ammar Ammar, Anders Riutta, Andra Waagmeester, Denise N Slenter, Kristina Hanspers, Ryan A. Miller, Daniela Digles, Elisson N Lopes, Friederike Ehrhart, Lauren J Dupuis, Laurent A Winckers, Susan L Coort, Egon L Willighagen, Chris T Evelo, Alexander R Pico, Martina Kutmon, WikiPathways: connecting communities, Nucleic Acids Research, Volume 49, Issue D1, 8 January 2021, Pages D613–D621, doi:10.1093/nar/gkaa1024}`,
     icon: [],
   },
 ]
@@ -199,7 +199,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.ebi.ac.uk/gwas',
+    ref: `\\ref{https://www.ebi.ac.uk/gwas}`,
     icon: [],
   },
   {
@@ -212,7 +212,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.ukbiobank.ac.uk/tag/gwas/',
+    ref: `\\ref{https://www.ukbiobank.ac.uk/tag/gwas/}`,
     icon: [],
   },
   {
@@ -225,7 +225,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://www.ncbi.nlm.nih.gov/clinvar/',
+    ref: `\\ref{https://www.ncbi.nlm.nih.gov/clinvar/}`,
     icon: [],
   },
   {
@@ -238,7 +238,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'http://www.human-phenotype-ontology.org/',
+    ref: `\\ref{http://www.human-phenotype-ontology.org/}`,
     icon: [],
   },
   {
@@ -251,7 +251,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: 'http://www.informatics.jax.org/',
+    ref: `\\ref{http://www.informatics.jax.org/}`,
     icon: [],
   },
 ]
@@ -267,7 +267,7 @@ export const Tissue_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: 'https://gtexportal.org/home/',
+    ref: `\\ref{Lonsdale, John, et al. "The genotype-tissue expression (GTEx) project." Nature genetics 45.6 (2013): 580-585. doi:10.1038/ng.265home/}`,
     icon: [gtex_icon],
   },
   {
@@ -277,7 +277,7 @@ export const Tissue_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'ARCHS4 Tissue Signatures',
     termAssociation: 'Containing',
-    ref: 'https://maayanlab.cloud/archs4/',
+    ref: `\\ref{Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma’ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nature Communications 9. Article number: 1366 (2018), doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
   },
 ]
@@ -290,7 +290,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+?) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ChEA Transcription Factors',
     termAssociation: 'Targeting',
-    ref: 'https://maayanlab.cloud/chea3/',
+    ref: `\\ref{Keenan AB, Torre D, Lachmann A, Leong AK, Wojciechowicz M, Utti V, Jagodnik K, Kropiwnicki E, Wang Z, Ma'ayan A (2019) ChEA3: transcription factor enrichment analysis by orthogonal omics integration. Nucleic Acids Research. doi: 10.1093/nar/gkz446}`,
     icon: [],
   },
   {
@@ -300,7 +300,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ENCODE Transcription Factors',
     termAssociation: 'Targeting',
-    ref: 'http://genome.ucsc.edu/ENCODE/downloads.html',
+    ref: `\\ref{http://genome.ucsc.edu/ENCODE/downloads.html}`,
     icon: [],
   },
   {
@@ -310,7 +310,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$/,
     termLabel: 'ARCHS4 Transcription Factors',
     termAssociation: 'Correlated with',
-    ref: 'https://maayanlab.cloud/archs4/',
+    ref: `\\ref{Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma’ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nature Communications 9. Article number: 1366 (2018), doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
   },
   {
@@ -320,7 +320,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>.+) (?<direction>.+)$/,
     termLabel: 'L1000 CRISPR KO Signatures',
     termAssociation: 'Containing',
-    ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
+    ref: `\\ref{John Erol Evangelista, Daniel J B Clarke, Zhuorui Xie, Alexander Lachmann, Minji Jeon, Kerwin Chen, Kathleen M Jagodnik, Sherry L Jenkins, Maxim V Kuleshov, Megan L Wojciechowicz, Stephan C Schürer, Mario Medvedovic, Avi Ma’ayan, SigCom LINCS: data and metadata search engine for a million gene expression signatures, Nucleic Acids Research, Volume 50, Issue W1, 5 July 2022, Pages W697–W709, doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
   },
 ]

@@ -61,6 +61,6 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
     return response
   })
   .story(props =>
-    `Next, the GlyGen database [https://www.glygen.org/] was searched to identify a relevant set of proteins that originate from the gene.`
+    `Next, the GlyGen database [\\ref{York, William S et al. “GlyGen: Computational and Informatics Resources for Glycoscience.” Glycobiology vol. 30,2 (2020): 72-73. doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from the gene.`
   )
   .build()

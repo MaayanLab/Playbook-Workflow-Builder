@@ -10,6 +10,7 @@ import React from 'react'
 import type KRG from '@/core/KRG'
 import type { Metapath } from '@/app/fragments/metapath'
 import { useMetapathInputs, useMetapathOutput } from '@/app/fragments/metapath'
+import extractCitations from '@/utils/extract-citations'
 
 /**
  * Attempt to compute the story for any given step
@@ -46,7 +47,7 @@ export function StoryProvider({ children, metapath, krg }: React.PropsWithChildr
     if (!ref || !ref.current) return
     const observer = new MutationObserver(() => {
       if (!ref || !ref.current) return
-      setStory(() => ref.current?.textContent || '')
+      setStory(() => extractCitations(ref.current?.textContent || ''))
     })
     observer.observe(ref.current, { childList: true, subtree: true })
     return () => {observer.disconnect()}

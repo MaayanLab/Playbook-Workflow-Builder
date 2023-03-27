@@ -32,7 +32,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
     //return props.inputs.input
   })
   .story(props =>
-    `The metabolite was then searched in the Metabolomics Workbench [https://www.metabolomicsworkbench.org/] to extract more information about the metabolite.`
+    `The metabolite was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extract more information about the metabolite.`
   )
   .build()
 

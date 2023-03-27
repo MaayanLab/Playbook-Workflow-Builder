@@ -18,7 +18,7 @@ export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, Sco
       { kargs: [props.inputs.terms], kwargs: { terms: ScoredT.meta.label } },
     ))
     .story(props =>
-      `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a bar plot was created [FIGURE].`
+      `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
     )
     .build()
 )

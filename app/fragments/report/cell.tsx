@@ -5,6 +5,7 @@ import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, 
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import classNames from 'classnames'
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -40,9 +41,11 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
           </div>
           <div className="collapse-content">
             <p className="bp4-ui-text">
-              {metadata.description ? metadata.description
-                : processNode.meta.description ? processNode.meta.description
-                : null}
+              <ReactMarkdown>
+                {metadata.description ? metadata.description
+                  : processNode.meta.description ? processNode.meta.description
+                  : ''}
+              </ReactMarkdown>
             </p>
           </div>
         </div>

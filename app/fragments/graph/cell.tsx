@@ -4,6 +4,7 @@ import { TimeoutError } from '@/spec/error'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import Head from 'next/head'
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
@@ -29,7 +30,7 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
           : <>
           <div className="mb-4">
             <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
-            {processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p> : null}
+            {processNode.meta.description ? <p className="bp4-ui-text"><ReactMarkdown>{processNode.meta.description}</ReactMarkdown></p> : null}
           </div>
           <div className="flex-grow flex flex-col py-4">
             {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error">{outputError.toString()}</div> : null}

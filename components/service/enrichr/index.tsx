@@ -99,7 +99,7 @@ export const EnrichrSetTToSetT = [
 export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .meta({
     label: 'Enrichr Enrichment Analysis',
-    description: 'A gene set submitted to Enrichr [https://maayanlab.cloud/Enrichr/]',
+    description: 'A gene set submitted to [Enrichr](https://maayanlab.cloud/Enrichr/)',
     icon: [enrichr_icon, gene_icon],
   })
   .codec(z.object({

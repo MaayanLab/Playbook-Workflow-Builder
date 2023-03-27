@@ -32,6 +32,8 @@ import bp4Edit from '@blueprintjs/icons/src/generated/20px/paths/edit'; export c
 import bp4Error from '@blueprintjs/icons/src/generated/20px/paths/error'; export const error_icon = { path: bp4Error.join(' '), title: 'Error', size: 20 }
 import bp4FloppyDisk from '@blueprintjs/icons/src/generated/20px/paths/floppy-disk'; export const save_icon = { path: bp4FloppyDisk.join(' '), title: 'Save', size: 20 }
 import bp4Fork from '@blueprintjs/icons/src/generated/20px/paths/fork'; export const fork_icon = { path: bp4Fork.join(' '), title: 'Expand From this Step', size: 20 }
+import bp4HorizontalBarChartAsc from '@blueprintjs/icons/src/generated/20px/paths/horizontal-bar-chart-asc'; export const down_icon = { path: bp4HorizontalBarChartAsc.join(' '), title: 'Down Regulating', size: 20, transform: 'translate(20 20) scale(-1 -1)' }
+import bp4HorizontalBarChartDesc from '@blueprintjs/icons/src/generated/20px/paths/horizontal-bar-chart-desc'; export const up_icon = { path: bp4HorizontalBarChartDesc.join(' '), title: 'Up Regulating', size: 20 }
 import bp4LabTest from '@blueprintjs/icons/src/generated/20px/paths/lab-test'; export const reaction_icon = { path: bp4LabTest.join(' '), title: 'Reaction', size: 20 }
 import bp4ListDetailView from '@blueprintjs/icons/src/generated/20px/paths/list-detail-view'; export const additional_info_icon = { path: bp4ListDetailView.join(' '), title: 'Additional Information', size: 20 }
 import bp4Manual from '@blueprintjs/icons/src/generated/20px/paths/manual'; export const study_icon = { path: bp4Manual.join(' '), title: 'Study', size: 20 }

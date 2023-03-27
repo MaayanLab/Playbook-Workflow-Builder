@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { GeneTerm } from '@/components/core/input/term'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredDrugs, ScoredGenes } from '@/components/core/input/scored'
+import { lincs_icon, plot_icon, up_icon, down_icon } from '@/icons'
 
 const lincs_l1000_reverse_search_dashboard = 'https://lincs-reverse-search-dashboard.dev.maayanlab.cloud'
 
@@ -38,6 +39,7 @@ export const LINCSL1000ReverseSearchDashboard = MetaNode('LINCSL1000ReverseSearc
   .meta({
     label: `LINCS L1000 Reverse Search Dashboard`,
     description: 'A dashboard for performing L1000 Reverse Search queries for a given gene',
+    icon: [lincs_icon, plot_icon],
   })
   .codec(z.object({ gene: z.string() }))
   .view(value => {
@@ -56,6 +58,7 @@ export const LINCSL1000ReverseSearch = MetaNode('LINCSL1000ReverseSearch')
   .meta({
     label: `LINCS L1000 Reverse Search`,
     description: 'Identify RNA-seq-like LINCS L1000 Signatures which reverse the expression of the gene.',
+    icon: [lincs_icon],
   })
   .inputs({ gene: GeneTerm })
   .output(LINCSL1000ReverseSearchDashboard)
@@ -68,6 +71,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
   .meta({
     label: `Extract Up Regulating Perturbagens`,
     description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene.',
+    icon: [up_icon],
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
   .output(ScoredDrugs)
@@ -80,7 +84,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
     return scores
   })
   .story(props =>
-    `Drugs from which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens.`
+    `Drugs from which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{John Erol Evangelista, Daniel J B Clarke, Zhuorui Xie, Alexander Lachmann, Minji Jeon, Kerwin Chen, Kathleen M Jagodnik, Sherry L Jenkins, Maxim V Kuleshov, Megan L Wojciechowicz, Stephan C Schürer, Mario Medvedovic, Avi Ma’ayan, SigCom LINCS: data and metadata search engine for a million gene expression signatures, Nucleic Acids Research, Volume 50, Issue W1, 5 July 2022, Pages W697–W709, doi:10.1093/nar/gkac328}].`
   )
   .build()
 
@@ -88,6 +92,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
   .meta({
     label: `Extract Down Regulating Perturbagens`,
     description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene.',
+    icon: [down_icon],
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
   .output(ScoredDrugs)
@@ -100,7 +105,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
     return scores
   })
   .story(props =>
-    `Drugs from which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens.`
+    `Drugs from which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{John Erol Evangelista, Daniel J B Clarke, Zhuorui Xie, Alexander Lachmann, Minji Jeon, Kerwin Chen, Kathleen M Jagodnik, Sherry L Jenkins, Maxim V Kuleshov, Megan L Wojciechowicz, Stephan C Schürer, Mario Medvedovic, Avi Ma’ayan, SigCom LINCS: data and metadata search engine for a million gene expression signatures, Nucleic Acids Research, Volume 50, Issue W1, 5 July 2022, Pages W697–W709, doi:10.1093/nar/gkac328}].`
   )
   .build()
 
@@ -120,7 +125,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
     return scores
   })
   .story(props =>
-    `Genes from which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts.`
+    `Genes from which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{John Erol Evangelista, Daniel J B Clarke, Zhuorui Xie, Alexander Lachmann, Minji Jeon, Kerwin Chen, Kathleen M Jagodnik, Sherry L Jenkins, Maxim V Kuleshov, Megan L Wojciechowicz, Stephan C Schürer, Mario Medvedovic, Avi Ma’ayan, SigCom LINCS: data and metadata search engine for a million gene expression signatures, Nucleic Acids Research, Volume 50, Issue W1, 5 July 2022, Pages W697–W709, doi:10.1093/nar/gkac328}].`
   )
   .build()
 
@@ -140,6 +145,6 @@ export const LINCSL1000ReverseSearchExtracGeneDown = MetaNode('LINCSL1000Reverse
     return scores
   })
   .story(props =>
-    `Genes from which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts.`
+    `Genes from which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{John Erol Evangelista, Daniel J B Clarke, Zhuorui Xie, Alexander Lachmann, Minji Jeon, Kerwin Chen, Kathleen M Jagodnik, Sherry L Jenkins, Maxim V Kuleshov, Megan L Wojciechowicz, Stephan C Schürer, Mario Medvedovic, Avi Ma’ayan, SigCom LINCS: data and metadata search engine for a million gene expression signatures, Nucleic Acids Research, Volume 50, Issue W1, 5 July 2022, Pages W697–W709, doi:10.1093/nar/gkac328}].`
   )
   .build()

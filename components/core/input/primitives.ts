@@ -104,7 +104,7 @@ export const Variant = {
     },
     set: {
       meta: {
-        example: ['CA13203640', 'CA321211'],
+        example: { set: ['CA13203640', 'CA321211'] },
         pagerank: 6,
       }
     },
@@ -124,7 +124,7 @@ export const RegulatoryElement = {
     },
     set: {
       meta: {
-        example: ['EH38E2924876', 'EH12E1234567'],
+        example: { set: ['EH38E2924876', 'EH12E1234567'] },
         pagerank: 6,
       }
     },

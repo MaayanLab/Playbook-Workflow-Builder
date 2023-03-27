@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 import { RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { gene_icon, mygeneinfo_icon } from '@/icons'
+import { gene_icon, linkeddatahub_icon, mygeneinfo_icon } from '@/icons'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -103,6 +103,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   .meta({
     label: 'Resolve Reg. Elements from Gene Info',
     description: 'GetRegulatoryElementsForGeneInfo',
+    icon: [linkeddatahub_icon],
   })
   .inputs({ geneInfo: GeneInfo  })
   .output(RegulatoryElementSet)

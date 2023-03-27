@@ -123,6 +123,13 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
     };
     return reSet;
   })
+  .story(props =>
+    `More information about the gene was then obtained with the MyGene.info API [${
+      `\\ref{Xin, J., Mark, A., Afrasiabi, C. et al. High-performance web services for querying gene and variant annotation. Genome Biol 17, 91 (2016). doi:10.1186/s13059-016-0953-9}`
+    },${
+      `\\ref{Chunlei Wu, Ian MacLeod, Andrew I. Su, BioGPS and MyGene.info: organizing online, gene-centric information, Nucleic Acids Research, Volume 41, Issue D1, 1 January 2013, Pages D561–D565, doi:10.1093/nar/gks1114}`
+    }].`
+  )
   .build()
 
 const CTDResponseInfoC = z.object({

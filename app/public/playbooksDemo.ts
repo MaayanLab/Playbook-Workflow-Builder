@@ -1,6 +1,35 @@
-import { DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn } from '@/components'
+import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn, ScoredDrugs, ScoredGenes, ProteinProductInformation, MetgeneMetabolites, VariantSet } from '@/components'
 
 const playbooks = [
+  {
+    label: 'Use Case 13: Prioritizing Targets for Individual Cancer patients',
+    description: 'Given RNA-seq samples from a patient tumor, we screen for targets which are highly expressed in the tumor but lowly expressed across all healthy human tissues in GTEx. Detailed information about the the selected target are queried from several DCCs.',
+    published: 'Mar 27, 2023',
+    version: '1.0.0',
+    authors: ['CFDE Playbook Partnership'],
+    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    license: 'CB-BY-NC-SA-4.0',
+    url: 'https://dev.playbook-workflow-builder.cloud/graph/9c14c4b4-a7f4-4433-ee30-b9a3abb6439a',
+    dataSources: [
+      'KidsFirst',
+      'LINCS L1000',
+      'GTEx',
+      'exRNA',
+      'GlyGen',
+      'Metabolomics',
+    ],
+    inputs: [
+      GeneCountMatrix,
+    ],
+    outputs: [
+      ScoredDrugs,
+      ScoredGenes,
+      VariantSet,
+      MetgeneMetabolites,
+      ProteinProductInformation,
+    ],
+    clicks: 5,
+  },
   {
     id: '9abb4a04-8bcd-4ecf-1628-6c9821e16ccc',
     label: 'Use Case 4: Identify the Tissue Activity for a TF based on its Targets',

@@ -123,10 +123,10 @@ export default function Icon({
           return (
             <g key={ind} transform={[
               transformer(ind),
-              transform,
               size && size !== base_size && `scale(${base_size/size})`,
             ].filter((v) => !!v).join(' ')}>
-              <path d={path} style={{ fill: color || 'currentcolor' }} />
+              {transform ? <g transform={transform}><path d={path} style={{ fill: color || 'currentcolor' }} /></g>
+                : <path d={path} style={{ fill: color || 'currentcolor' }} />}
             </g>
           )
         }))}

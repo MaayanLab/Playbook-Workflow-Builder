@@ -183,6 +183,7 @@ export default function Playbooks() {
                       container_color={inputFilters[input.spec] ? '#B3CFFF' : '#ddd'}
                       size={1.5}
                       icon={input.meta.icon}
+                      title={input.meta.label}
                     />
                   </button>
                 ))}
@@ -207,6 +208,7 @@ export default function Playbooks() {
                       container_color={outputFilters[output.spec] ? '#B3CFFF' : '#ddd'}
                       size={1.5}
                       icon={output.meta.icon}
+                      title={output.meta.label}
                     />
                   </button>
                 ))}
@@ -279,6 +281,7 @@ export default function Playbooks() {
                                 container_color={inputFilters[input.spec] ? '#B3CFFF' : '#ddd'}
                                 size={1.5}
                                 icon={input.meta.icon}
+                                title={input.meta.label}
                               />
                             </button>
                           ))}
@@ -302,6 +305,7 @@ export default function Playbooks() {
                                 container_color={outputFilters[output.spec] ? '#B3CFFF' : '#ddd'}
                                 size={1.5}
                                 icon={output.meta.icon}
+                                title={output.meta.label}
                               />
                             </button>
                           ))}

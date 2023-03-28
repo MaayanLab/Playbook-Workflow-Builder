@@ -51,6 +51,8 @@ export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
+export * from "./filters"
+components.push("filters")
 export * from "./gly_gen"
 components.push("gly_gen")
 export * from "./service/enrichr"
@@ -61,9 +63,11 @@ export * from "./service/hyposet"
 components.push("service/hyposet")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./service/targetranger"
+components.push("service/targetranger")
+export * from "./viz/barplot"
+components.push("viz/barplot")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"
 components.push("viz/plotly")
-export * from "./viz/tissue_barplot"
-components.push("viz/tissue_barplot")

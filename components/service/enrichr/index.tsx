@@ -3,7 +3,7 @@ import { MetaNode, DataMetaNode, InternalDataMetaNode } from '@/spec/metanode'
 import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon, search_icon } from '@/icons'
-import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
+import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, Gene_backgrounds } from './backgrounds'
 import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
@@ -80,7 +80,7 @@ export const EnrichrSetTToSetT = [
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
-      .resolve(async (props) => props.inputs.enrichrset.set)
+      .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
@@ -99,7 +99,7 @@ export const EnrichrSetTToSetT = [
 export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .meta({
     label: 'Enrichr Enrichment Analysis',
-    description: 'A gene set submitted to Enrichr',
+    description: 'A gene set submitted to Enrichr [https://maayanlab.cloud/Enrichr/]',
     icon: [enrichr_icon, gene_icon],
   })
   .codec(z.object({
@@ -144,8 +144,8 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .output(EnrichrEnrichmentAnalysis)
   .resolve(async (props) => {
     const formData = new FormData()
-    formData.append('list', props.inputs.geneset.join('\n'))
-    formData.append('description', `playbook-partnership`)
+    formData.append('list', props.inputs.geneset.set.join('\n'))
+    formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
     const response = await fetch(`${enrichr_url}/addList`, {
       method: 'post',
       body: formData,
@@ -181,7 +181,7 @@ export const EnrichrGenesetSearchT = [
   { backgrounds: Pathway_backgrounds, output: ScoredPathways },
   { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes },
   { backgrounds: Tissue_backgrounds, output: ScoredTissues },
-  { backgrounds: TranscriptionFactor_backgrounds, output: ScoredGenes },
+  { backgrounds: Gene_backgrounds, output: ScoredGenes },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -196,6 +196,9 @@ backgrounds.map(bg => ({ bg, output }))
     .resolve(async (props) => {
       return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
+    )
     .build()
 )
 
@@ -252,7 +255,7 @@ export const EnrichrGeneSearchT = [
   { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -267,6 +270,9 @@ backgrounds.map(bg => ({ bg, output }))
     .resolve(async (props) => {
       return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+    )
     .build()
 )
 
@@ -334,7 +340,7 @@ export const EnrichrTermSearchT = [
   { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
 ].flatMap(({ backgrounds, output }) =>
   backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -349,5 +355,8 @@ export const EnrichrTermSearchT = [
     .resolve(async (props) => {
       return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+    )
     .build()
 )

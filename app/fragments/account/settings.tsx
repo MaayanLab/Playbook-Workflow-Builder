@@ -3,6 +3,7 @@ import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 import * as Auth from 'next-auth/react'
 import useSWRMutation from 'swr/mutation'
 import dynamic from 'next/dynamic'
+import classNames from 'classnames'
 
 const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
@@ -15,7 +16,7 @@ function DeleteAccount({ session }: { session: SessionWithId }) {
   return (
     <>
       <h3 className="bp4-heading text-red-600">Delete Account</h3>
-      <progress className={`progress w-full ${isMutating ? '' : 'hidden'}`}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !isMutating })}></progress>
       <Bp4Button
         intent="danger"
         onClick={() => setDeletionConfirmation(true)}

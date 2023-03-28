@@ -71,4 +71,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     if (_id === undefined) throw new Error(`Could not identify a gene for the symbol ${props.inputs.gene} in mygene.info`)
     return await mygeneinfo(_id)
   })
+  .story(props =>
+    `More information about the gene was then obtained with the MyGene.info API [https://mygene.info/].`
+  )
   .build()

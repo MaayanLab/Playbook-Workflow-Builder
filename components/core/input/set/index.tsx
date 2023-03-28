@@ -28,8 +28,8 @@ const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
     },
     ...(T.extra?.set?.meta || {}),
   })
-  .codec(z.array(z.string()))
-  .view(set => {
+  .codec(z.object({ description: z.string().optional(), set: z.array(z.string()) }))
+  .view(({ set }) => {
     return (
       <Table
         height={500}
@@ -58,7 +58,7 @@ export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
 export const TissueSet = Set_T(Tissue)
 
-const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: string[] }>) => MetaNode(`Input[${SetT.spec}]`)
+const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { data: { description?: string, set: string[] } }>) => MetaNode(`Input[${SetT.spec}]`)
   .meta({
     label: `${T.label} Set Input`,
     description: `Start with a set of ${pluralize(T.label)}`,
@@ -77,7 +77,11 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
   .output(SetT)
   .prompt(props => {
     const [set, setSet] = React.useState('')
-    React.useEffect(() => { setSet((props.output||[]).join('\n')) }, [props.output])
+    const [description, setDescription] = React.useState('')
+    React.useEffect(() => {
+      setSet(((props.output||{}).set||[]).join('\n'))
+      setDescription(((props.output||{}).description||''))
+    }, [props.output])
     return (
       <div>
         <Bp4TextArea
@@ -88,13 +92,23 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           onChange={evt => setSet(evt.target.value)}
           value={set}
         />
+        <div className="bp4-input-group">
+          <input
+            type="text"
+            className="bp4-input"
+            placeholder={`${T.label} Set description`}
+            onChange={evt => setDescription(evt.target.value)}
+            value={description}
+          />
+        </div>
         {T.extra?.set?.meta?.example !== undefined ?
           <Bp4Button
             large
             rightIcon="send-to-graph"
             onClick={evt => {
               if (T.extra?.set?.meta?.example !== undefined) {
-                setSet(T.extra.set.meta.example.join('\n'))
+                setDescription(T.extra.set.meta.example.description)
+                setSet(T.extra.set.meta.example.set.join('\n'))
               }
             }}
             text="Example"
@@ -105,11 +119,15 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={evt => props.submit(set.split(/\r?\n/g))}
+          onClick={evt => props.submit({ description: description, set: set.split(/\r?\n/g) })}
+          disabled={set.length === 0}
         />
       </div>
     )
   })
+  .story(props =>
+    `The workflow starts with a ${T.label.toLocaleLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`
+  )
   .build()
 
 export const InputGeneSet = Input_Set_T(Gene, GeneSet)

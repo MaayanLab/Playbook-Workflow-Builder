@@ -58,4 +58,7 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
     const response = GlyGenResponse.parse(await request.json())
     return response
   })
+  .story(props =>
+    `Next, the GlyGen database [https://www.glygen.org/] was searched to identify a relevant set of proteins that originate from the gene.`
+  )
   .build()

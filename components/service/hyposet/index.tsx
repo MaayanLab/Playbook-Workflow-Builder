@@ -24,7 +24,7 @@ export const Supervenn = MetaNode('Supervenn')
   ))
   .build()
 
-export const SuperVennFromGMT = MetaNode('SuperVennFromGMT')
+export const SupervennFromGMT = MetaNode('SupervennFromGMT')
   .meta({
     label: 'Compare sets with Supervenn',
     description: 'Interactively analyse overlap between sets',
@@ -49,4 +49,7 @@ export const SuperVennFromGMT = MetaNode('SuperVennFromGMT')
     })
     return await res.json()
   })
+  .story(props =>
+    `The collection of gene sets was then visualized with a Supervenn diagram [FIGURE].`
+  )
   .build()

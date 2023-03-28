@@ -4,7 +4,7 @@ import type KRG from '@/core/KRG'
 import { z } from 'zod'
 import { start_icon, rightarrow_icon, func_icon, variable_icon } from '@/icons'
 import { ProcessMetaNode } from '@/spec/metanode'
-import type { Metapath } from '@/app/fragments/graph/types'
+import type { Metapath } from '@/app/fragments/metapath'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
@@ -64,11 +64,9 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
                       inputs[`${arg}:${i}`] = { id: selection.process.id }
                     })
                 } else {
-                  dict.values(selections)
-                    .filter(selection => selection.processNode.output.spec === input.spec)
-                    .forEach(selection => {
-                      inputs[arg] = { id: selection.process.id }
-                    })
+                  const relevantSelections = dict.filter(selections, ({ value: selection }) => selection.processNode.output.spec === input.spec)
+                  const selection = head.process.id in relevantSelections ? head : array.ensureOne(dict.values(relevantSelections))
+                  inputs[arg] = { id: selection.process.id }
                 }
               })
               const req = await fetch(`/api/db/fpl/${id}/extend`, {

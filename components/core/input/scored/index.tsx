@@ -8,6 +8,11 @@ import * as array from '@/utils/array'
 import { downloadBlob } from '@/utils/download'
 import pluralize from 'pluralize'
 
+function withPrecision(value: number | string, precision: number) {
+  if (typeof value === 'number') return value.toPrecision(precision)
+  else return value
+}
+
 const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
   .meta({
     label: `Scored ${pluralize(T.label)}`,
@@ -23,7 +28,7 @@ const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
       },
     },
   })
-  .codec(z.array(z.object({ term: z.string(), zscore: z.number() })))
+  .codec(z.array(z.object({ term: z.string(), zscore: z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]) })))
   .view(scored => {
     return (
       <Table
@@ -48,7 +53,7 @@ const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
         />
         <Column
           name="ZScore"
-          cellRenderer={row => <Cell key={row+''}>{scored[row].zscore.toPrecision(3)}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{withPrecision(scored[row].zscore, 3)}</Cell>}
         />
       </Table>
     )

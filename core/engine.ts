@@ -7,6 +7,39 @@ import { UnboundError, TimeoutError } from '@/spec/error'
 
 const JobC = z.object({ data: z.object({ id: z.string() }) })
 
+export async function decode_complete_process_inputs(krg: KRG, instanceProcess: Process) {
+  const metaProcess = krg.getProcessNode(instanceProcess.type)
+  if (metaProcess === undefined) throw new Error('Unrecognized process')
+  return dict.items(await instanceProcess.inputs__outputs()).reduce<Record<string, unknown>>((inputs, { key, value }) => {
+    const [arg, ...i] = (key as string).split(':')
+    if (i.length > 0 && !Array.isArray(metaProcess.inputs[arg])) {
+      throw new Error('Received multiple args, but not an array')
+    } else if (i.length === 0 && Array.isArray(metaProcess.inputs[arg])) {
+      throw new Error('Expected multiple args')
+    }
+    const metaProcessInput = array.ensureOne(metaProcess.inputs[arg])
+    if (value === undefined) {
+      // handle nodes
+      throw new UnboundError()
+    } else if (value.type === 'Error') {
+      // propagate errors
+      throw new Error(`${instanceProcess.type} can't run because of error in ${metaProcessInput.spec}`)
+    }
+    const value_decoded = value ? metaProcessInput.codec.decode(value.value) : undefined
+    if (i.length > 0) {
+      return {...inputs, [arg]: [...(inputs[arg]||[]) as unknown[], value_decoded] }
+    } else {
+      return {...inputs, [arg]: value_decoded }
+    }
+  }, {})
+}
+export async function decode_complete_process_output(krg: KRG, instanceProcess: Process) {
+  const output = await instanceProcess.output()
+  if (!output) throw new Error('No output')
+  const metaDataNode = krg.getDataNode(output.type)
+  return metaDataNode.codec.decode(output.value)
+}
+
 /**
  * Given an instanceProcess, "resolve" its output, this is typically done
  *  by executing it, though prompts are implicitly identity functions.
@@ -17,28 +50,7 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
     if (metaProcess === undefined) throw new Error('Unrecognized process')
     const props = {
       data: instanceProcess.data,
-      inputs: dict.items(await instanceProcess.inputs__outputs()).reduce<Record<string, any>>((inputs, { key, value }) => {
-        const [arg, ...i] = (key as string).split(':')
-        if (i.length > 0 && !Array.isArray(metaProcess.inputs[arg])) {
-          throw new Error('Received multiple args, but not an array')
-        } else if (i.length === 0 && Array.isArray(metaProcess.inputs[arg])) {
-          throw new Error('Expected multiple args')
-        }
-        const metaProcessInput = array.ensureOne(metaProcess.inputs[arg])
-        if (value === undefined) {
-          // handle nodes
-          throw new UnboundError()
-        } else if (value.type === 'Error') {
-          // propagate errors
-          throw new Error(`${instanceProcess.type} can't run because of error in ${metaProcessInput.spec}`)
-        }
-        const value_decoded = value ? metaProcessInput.codec.decode(value.value) : undefined
-        if (i.length > 0) {
-          return {...inputs, [arg]: [...(inputs[arg]||[]), value_decoded] }
-        } else {
-          return {...inputs, [arg]: value_decoded }
-          }
-      }, {}),
+      inputs: await decode_complete_process_inputs(krg, instanceProcess)
     }
     if ('prompt' in metaProcess) {
       console.debug(`Output comes from data`)

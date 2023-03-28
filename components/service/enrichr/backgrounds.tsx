@@ -8,6 +8,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
+    ref: 'http://www.ncbi.nlm.nih.gov/geo/',
   },
   {
     name: 'Disease_Signatures_from_GEO_up_2014',
@@ -16,6 +17,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
+    ref: 'http://www.ncbi.nlm.nih.gov/geo/',
   },
   {
     name: 'GTEx_Aging_Signatures_2021',
@@ -24,6 +26,7 @@ export const Disease_backgrounds = [
     termRe: /^GTEx (?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
+    ref: 'https://gtexportal.org/',
   },
   {
     name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
@@ -32,6 +35,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
+    ref: 'https://www.ncbi.nlm.nih.gov/gene/about-generif',
   },
   {
     name: 'Rare_Diseases_GeneRIF_Gene_Lists',
@@ -40,6 +44,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
+    ref: 'https://www.ncbi.nlm.nih.gov/gene/about-generif',
   },
 ]
 
@@ -51,6 +56,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<term>.+) (?<direction>Up|Down)$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
+    ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
   },
   {
     name: 'LINCS_L1000_Chem_Pert_up',
@@ -59,6 +65,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<desc>.+?-(?<term>.+)-(?<concentration>.+?))$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
+    ref: 'https://clue.io/',
   },
   {
     name: 'LINCS_L1000_Chem_Pert_down',
@@ -67,6 +74,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<desc>.+?-(?<term>.+)-(?<concentration>.+?))$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
+    ref: 'https://clue.io/',
   },
 ]
 
@@ -78,6 +86,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)\((?<xref>.+?)\)$/,
     termLabel: 'GO Biological Processes',
     termAssociation: 'Containing',
+    ref: 'http://www.geneontology.org/',
   },
   {
     name: 'KEGG_2019_Human',
@@ -89,6 +98,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.kegg.jp/',
   },
   {
     name: 'KEGG_2019_Mouse',
@@ -100,6 +110,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'mouse',
     },
+    ref: 'https://www.kegg.jp/',
   },
   {
     name: 'KEGG_2021_Human',
@@ -111,6 +122,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.kegg.jp/',
   },
   {
     name: 'MSigDB_Hallmark_2020',
@@ -119,6 +131,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'MSigDB Hallmark Gene Sets',
     termAssociation: 'Containing',
+    ref: 'https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp',
   },
   {
     name: 'WikiPathway_2021_Human',
@@ -130,10 +143,11 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.wikipathways.org/',
   },
   {
-    name: 'WikiPathway_2019_Human',
-    label: 'WikiPathway 2019 Human',
+    name: 'WikiPathways_2019_Human',
+    label: 'WikiPathways 2019 Human',
     termType: 'Pathway',
     termRe: /^(?<term>.+) (?<id>[^ ]+)$/,
     termLabel: 'WikiPathways',
@@ -141,10 +155,11 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.wikipathways.org/',
   },
   {
-    name: 'WikiPathway_2019_Mouse',
-    label: 'WikiPathway 2019 Mouse',
+    name: 'WikiPathways_2019_Mouse',
+    label: 'WikiPathways 2019 Mouse',
     termType: 'Pathway',
     termRe: /^(?<term>.+)$/,
     termLabel: 'WikiPathways',
@@ -152,6 +167,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'mouse',
     },
+    ref: 'https://www.wikipathways.org/',
   },
 ]
 
@@ -166,6 +182,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.ebi.ac.uk/gwas',
   },
   {
     name: 'UK_Biobank_GWAS_v1',
@@ -177,6 +194,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.ukbiobank.ac.uk/tag/gwas/',
   },
   {
     name: 'ClinVar_2019',
@@ -188,6 +206,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'https://www.ncbi.nlm.nih.gov/clinvar/',
   },
   {
     name: 'Human_Phenotype_Ontology',
@@ -199,6 +218,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
+    ref: 'http://www.human-phenotype-ontology.org/',
   },
   {
     name: 'MGI_Mammalian_Phenotype_Level_4_2019',
@@ -210,31 +230,22 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'mouse',
     },
+    ref: 'http://www.informatics.jax.org/',
   },
 ]
 
 export const Tissue_backgrounds = [
   {
-    name: 'GTEx_Tissue_Expression_Up',
-    label: 'GTEx Tissue Expression Up',
+    name: 'GTEx_Tissues_V8_2023',
+    label: 'GTEx Tissues V8 2023',
     termType: 'Tissue',
-    termRe: /^(?<sample_id>[^ ]+) (?<term>.+?) (?<gender>[^ ]+) (?<age>[^ ]+ years)$/,
+    termRe: /^(?<term>.+) (?<gender>[^ ]+) (?<age>[^ ]+) (?<direction>[^ ]+)$/,
     termLabel: 'GTEx Tissue Signatures',
     termAssociation: 'Containing',
     extra: {
       organism: 'human',
     },
-  },
-  {
-    name: 'GTEx_Tissue_Expression_Down',
-    label: 'GTEx Tissue Expression Down',
-    termType: 'Tissue',
-    termRe: /^(?<sample_id>[^ ]+) (?<term>.+?) (?<gender>[^ ]+) (?<age>[^ ]+ years)$/,
-    termLabel: 'GTEx Tissue Signatures',
-    termAssociation: 'Containing',
-    extra: {
-      organism: 'human',
-    },
+    ref: 'https://gtexportal.org/home/',
   },
   {
     name: 'ARCHS4_Tissues',
@@ -243,10 +254,11 @@ export const Tissue_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'ARCHS4 Tissue Signatures',
     termAssociation: 'Containing',
+    ref: 'https://maayanlab.cloud/archs4/',
   },
 ]
 
-export const TranscriptionFactor_backgrounds = [
+export const Gene_backgrounds = [
   {
     name: 'ChEA_2022',
     label: 'ChEA 2022',
@@ -254,6 +266,7 @@ export const TranscriptionFactor_backgrounds = [
     termRe: /^(?<term>[^ ]+?) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ChEA Transcription Factors',
     termAssociation: 'Targeting',
+    ref: 'https://maayanlab.cloud/chea3/',
   },
   {
     name: 'ENCODE_TF_ChIP-seq_2015',
@@ -262,6 +275,7 @@ export const TranscriptionFactor_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ENCODE Transcription Factors',
     termAssociation: 'Targeting',
+    ref: 'http://genome.ucsc.edu/ENCODE/downloads.html',
   },
   {
     name: 'ARCHS4_TFs_Coexp',
@@ -270,6 +284,16 @@ export const TranscriptionFactor_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$/,
     termLabel: 'ARCHS4 Transcription Factors',
     termAssociation: 'Correlated with',
+    ref: 'https://maayanlab.cloud/archs4/',
+  },
+  {
+    name: 'LINCS_L1000_CRISPR_KO_Consensus_Sigs',
+    label: 'LINCS L1000 CRISPR KO Consensus Sigs',
+    termType: 'Gene',
+    termRe: /^(?<term>.+) (?<direction>.+)$/,
+    termLabel: 'L1000 CRISPR KO Signatures',
+    termAssociation: 'Containing',
+    ref: 'https://maayanlab.cloud/sigcom-lincs/#/Download',
   },
 ]
 
@@ -279,5 +303,5 @@ export const backgrounds = dict.init([
   ...Pathway_backgrounds,
   ...Phenotype_backgrounds,
   ...Tissue_backgrounds,
-  ...TranscriptionFactor_backgrounds,
+  ...Gene_backgrounds,
 ].map((value) => ({ key: value.name, value })))

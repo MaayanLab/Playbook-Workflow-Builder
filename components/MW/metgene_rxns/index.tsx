@@ -30,4 +30,7 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
     return  res
     
   })
+  .story(props =>
+    `The gene was then searched in the Metabolomics Workbench [https://www.metabolomicsworkbench.org/] to identify relevant reactions.`
+  )
   .build()

@@ -97,6 +97,10 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   kind: 'process'
   inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
   output: ExtractKey<T, 'output'>
+  story?(props: {
+    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+  }): string
 }
 
 /**
@@ -176,8 +180,18 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
           ({
             /**
              * Build a ResolveMetaNode
+             * @deprecated add a story handler
              */
-            build: () => ({ spec, meta, kind: 'process', inputs, output, resolve }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>
+            build: () => ({ spec, meta, kind: 'process', inputs, output, resolve }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
+            /**
+             * Describe this metanode's story
+             */
+            story: (story: ResolveMetaNode<{ inputs: INPUTS, output: OUTPUT }>['story']) => ({
+              /**
+               * Build a ProcessMetaNode
+               */
+              build: () => ({ spec, meta, kind: 'process', inputs, output, resolve, story }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
+            })
           }),
           /**
            * Define the prompt function for building a PromptMetaNode -- this function uses the input arguments
@@ -187,8 +201,18 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
           ({
             /**
              * Build a ProcessMetaNode
+             * @deprecated add a story handler
              */
-            build: () => ({ spec, meta, kind: 'process', inputs, output, prompt }) as PromptMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>
+            build: () => ({ spec, meta, kind: 'process', inputs, output, prompt }) as PromptMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
+            /**
+             * Describe this metanode's story
+             */
+            story: (story: PromptMetaNode<{ inputs: INPUTS, output: OUTPUT }>['story']) => ({
+              /**
+               * Build a ProcessMetaNode
+               */
+              build: () => ({ spec, meta, kind: 'process', inputs, output, prompt, story }) as PromptMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
+            })
           })
         })
       })

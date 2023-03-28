@@ -4,6 +4,7 @@ import path from 'path'
 
 const base = path.join(__dirname, '..', 'components')
 const components = glob.sync(path.join(base, '**', 'package.json').replace(/\\/g, '/'))
+  .filter(p => !p.includes('node_modules'))
   .map(p => path.dirname(p))
 components.sort()
 

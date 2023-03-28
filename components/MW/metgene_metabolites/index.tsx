@@ -29,4 +29,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
     //return props.inputs.input
     return  res
   })
+  .story(props =>
+    `The gene was then searched in the Metabolomics Workbench [https://www.metabolomicsworkbench.org/] to identify associated metabolites.`
+  )
   .build()

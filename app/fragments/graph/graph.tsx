@@ -3,7 +3,7 @@ import useSWRImmutable from 'swr/immutable'
 import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/graph/types'
+import type { Metapath } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
@@ -52,28 +52,30 @@ function buildBreadcrumbGraph({
   //  this is because processes with the same content have the same id regardless of position
   //  duplicate processes cause ambiguity which is trivially rectified with this strategy
   const g: Record<string, string> = {}
-  for (const head of metapath) {
-    const process = krg.getProcessNode(head.process.type)
+  for (const h of metapath) {
+    const process = krg.getProcessNode(h.process.type)
     if (process !== undefined) {
       graph.push(
         {
-          id: head.id,
+          id: h.id,
           kind: 'process' as 'process',
           label: process.meta.label,
-          color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
+          color: h.id === node_id ? '#B3CFFF' : 'lightgrey',
           icon: process.meta.icon || [func_icon],
-          parents: dict.isEmpty(head.process.inputs) ? ['start'] : dict.values(head.process.inputs).map(({ id }) => g[id]),
+          parents: dict.isEmpty(h.process.inputs) ? ['start'] : dict.values(h.process.inputs).map(({ id }) => g[id]),
         },
         {
-          id: `${head.id}:${head.process.id}`,
+          id: `${h.id}:${h.process.id}`,
           kind: 'data' as 'data',
           label: process.output.meta.label,
-          color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
+          color: h.id === node_id ? '#B3CFFF'
+            : 'prompt' in process && h.process.data?.value === undefined ? 'pink'
+            : 'lightgrey',
           icon: process.output.meta.icon || [variable_icon],
-          parents: [head.id],
+          parents: [h.id],
         },
       )
-      g[head.process.id] = `${head.id}:${head.process.id}`
+      g[h.process.id] = `${h.id}:${h.process.id}`
     }
   }
   graph.push({
@@ -82,7 +84,7 @@ function buildBreadcrumbGraph({
     label: 'Extend',
     color: extend || suggest ? '#B3CFFF' : 'lightgrey',
     icon: extend_icon,
-    parents: [head ? `${head.id}:${head.process.id}` : 'start'],
+    parents: [head ? `${head.id}:${head.process.id}` : `start`],
   })
   return graph
 }

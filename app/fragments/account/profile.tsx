@@ -4,6 +4,7 @@ import useSWRMutation from 'swr/mutation'
 import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 import fetcher from '@/utils/next-rest-fetcher'
 import dynamic from 'next/dynamic'
+import classNames from 'classnames'
 
 const Bp4ControlGroup = dynamic(() => import('@blueprintjs/core').then(({ ControlGroup }) => ControlGroup))
 const Bp4FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -27,7 +28,7 @@ export default function Profile({ session }: { session: SessionWithId }) {
   return (
     <>
       <h3 className="bp4-heading">Profile Settings</h3>
-      <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       <form onSubmit={async (evt) => {
         evt.preventDefault()
         setUserProfile(userProfileDraft, { revalidate: false })

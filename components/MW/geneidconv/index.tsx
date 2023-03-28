@@ -31,6 +31,9 @@ export const GeneIDConv = MetaNode('GeneIDConv')
     //return props.inputs.gene
     return res
   })
+  .story(props =>
+    `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [https://bdcw.org/geneid/].`
+  )
   .build()
 
 // Process to convert ConvertedGeneID to GeneInfo

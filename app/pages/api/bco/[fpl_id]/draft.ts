@@ -57,13 +57,13 @@ export default handler(async (req, res) => {
       POST_api_objects_draft_create: [
         {
           contents: BCO,
-          prefix:"BCO",
-          schema:"IEEE",
-          owner_group:"bco_drafter"
+          prefix: "BCO",
+          schema: "IEEE",
+          owner_group: "bco_drafter"
         }
       ]
     }),
   })
-  const bcoRes = await bcoReq.json()
-  res.status(200).json(bcoRes)
+  const [bcoRes] = z.array(z.object({ object_id: z.string() })).parse(await bcoReq.json())
+  res.status(bcoReq.status).json(bcoRes)
 })

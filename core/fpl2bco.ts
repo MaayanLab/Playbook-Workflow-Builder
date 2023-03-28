@@ -6,7 +6,7 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { FPL } from "@/core/FPPRG"
 import { decode_complete_process_inputs, decode_complete_process_output } from "@/core/engine"
-import extractCitations from "@/utils/extract-citations"
+import extractCitations from "@/utils/citations"
 
 type BCO = z.infer<typeof IEE2791schema>
 type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>

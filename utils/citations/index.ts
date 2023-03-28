@@ -1,4 +1,15 @@
 import * as dict from '@/utils/dict'
+import doiMappings from './citations'
+
+function convertDOI(text: string) {
+  const m = /^doi:(.+)$/.exec(text)
+  if (m !== null && m[1] in doiMappings) {
+    return `${doiMappings[m[1] as keyof typeof doiMappings]} ${text}`
+  } else if (m !== null) {
+    console.warn(`${m[1]} not registered, call 'npm run codegen:cite -- ${m[1]}'`)
+  }
+  return text
+}
 
 /**
  * This lets you add citations inline and pulls them out and puts them at the end.
@@ -34,7 +45,7 @@ export default function extractCitations(text: string) {
   updatedText += text.substring(i)
   if (!dict.isEmpty(citations)) {
     updatedText += '\n\n' + dict.items(citations)
-      .map(({ key: currentCitation, value: currentCitationNum }) => `${currentCitationNum}. ${currentCitation}`)
+      .map(({ key: currentCitation, value: currentCitationNum }) => `${currentCitationNum}. ${convertDOI(currentCitation)}`)
       .join('\n')
   }
   return updatedText

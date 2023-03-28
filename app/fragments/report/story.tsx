@@ -10,7 +10,7 @@ import React from 'react'
 import type KRG from '@/core/KRG'
 import type { Metapath } from '@/app/fragments/metapath'
 import { useMetapathInputs, useMetapathOutput } from '@/app/fragments/metapath'
-import extractCitations from '@/utils/extract-citations'
+import extractCitations from '@/utils/citations'
 
 /**
  * Attempt to compute the story for any given step

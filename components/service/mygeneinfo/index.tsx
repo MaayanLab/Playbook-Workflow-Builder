@@ -115,6 +115,6 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     return { set: response.data.ld.RegulatoryElement.map(({ entId }) => entId ) };
   })
   .story(props =>
-    `More information about the gene was then obtained with the MyGene.info API [\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}.`
+    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
   )
   .build()

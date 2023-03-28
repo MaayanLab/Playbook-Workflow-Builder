@@ -7,11 +7,9 @@ import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
+const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Bp4Popover = dynamic(() => import('@blueprintjs/popover2').then(({ Popover2 }) => Popover2))
-const Bp4Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
-const Bp4MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 
 export default function Introduction({ id, error }: { id: string, error: any }) {
   const [metadata, setMetadata] = React.useState({ title: 'Playbook', description: undefined as undefined | string, public: false })
@@ -80,33 +78,7 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
             </button>
           </Link>
           <ShareButton id={id} />
-          {id ? 
-            <Bp4Popover
-              className="cursor-pointer"
-              content={
-                <Bp4Menu>
-                  <a href={`/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`} download={`${metadata.title.replace(/ /g, '-')}-bco.json`}>
-                    <Bp4MenuItem
-                      icon="document"
-                      text="Download BCO"
-                    />
-                  </a>
-                  <Bp4MenuItem
-                    icon="send-to"
-                    text="Draft in BioCompute Portal"
-                    onClick={async (evt) => {
-                      const req = await fetch(`/api/bco/${id}/draft`, { method: 'POST' })
-                      const res = await req.json()
-                      console.log(res)
-                    }}
-                  />
-                </Bp4Menu>
-              }
-              placement="bottom"
-            >
-              <Icon icon={biocompute_icon} color="black" title="Create BCO" />
-            </Bp4Popover>
-          : null}
+          <BCOButton id={id} metadata={metadata} />
         </div>
       </div>
     </>

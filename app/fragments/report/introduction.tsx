@@ -32,6 +32,7 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
     published.filter((playbook) => id === playbook.id).forEach(playbook => {
       setMetadata((metadata) => ({
         ...metadata,
+        summary: 'manual',
         title: playbook.label,
         description: playbook.description,
         gpt_summary: playbook.gpt_summary,

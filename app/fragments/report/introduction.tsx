@@ -65,9 +65,9 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
                 className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
                 onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto' }))}}
               >Auto-Generated Summary</button>
-              <div className="tooltip" data-tip={!chatGPTAvailable ? errorAugmentingWithChatGPT : undefined}>
+              <div className="tooltip" data-tip={!chatGPTAvailable && !metadata.gpt_summary ? errorAugmentingWithChatGPT : undefined}>
                 <button
-                  disabled={!chatGPTAvailable}
+                  disabled={!chatGPTAvailable && !metadata.gpt_summary}
                   className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
                   onClick={async (evt) => {
                     setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt' }))

@@ -236,137 +236,138 @@ export default function Playbooks() {
             }}
           />
         </div>
-        <div>
-          <table className="table w-full">
-            <thead>
-              <tr>
-                <th></th>
-                <th className="text-center">Playbook</th>
-                <th className="text-center">Inputs</th>
-                <th className="text-center">Outputs</th>
-                <th className="text-center">Sources</th>
-                <th className="text-center">Clicks</th>
-                <th className="text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ?
-                <tr>
-                  <td colSpan={5}>
-                    <progress className="progress w-full"></progress>
-                  </td>
-                </tr>
-                : null}
-              {searchFilteredPlaybooks ?
-                searchFilteredPlaybooks.length > 0 ?
-                  searchFilteredPlaybooks.flatMap(playbook => [
-                    <tr key={playbook.id}>
-                      <td>
-                        <div className="tooltip z-50" data-tip="Click to view details">
-                          <button
-                            className="btn btn-ghost text-4xl"
-                            onClick={evt => {
-                              setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
-                            }}
-                          >{details[playbook.id] ? '-' : '+'}</button>
-                        </div>
-                      </td>
-                      <td className="prose">{playbook.label}</td>
-                      <td>
-                        <div className="flex flex-row flex-wrap gap-2 justify-center">
-                          {playbook.inputs.map(input => (
-                            <button
-                              key={input.spec}
-                              onClick={() => {
-                                setInputFilters(({ [input.spec]: cur, ...filters }) => {
-                                  if (!cur) return {...filters, [input.spec]: !cur}
-                                  else return filters
-                                })
-                              }}
-                            >
-                              <Icon
-                                container="circle"
-                                container_color={inputFilters[input.spec] ? '#B3CFFF' : '#ddd'}
-                                size={1.5}
-                                icon={input.meta.icon}
-                                title={input.meta.label}
-                              />
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex flex-row flex-wrap gap-2 justify-center">
-                          {playbook.outputs.map(output => (
-                            <button
-                              key={output.spec}
-                              onClick={() => {
-                                setOutputFilters(({ [output.spec]: cur, ...filters }) => {
-                                  if (!cur) return {...filters, [output.spec]: !cur}
-                                  else return filters
-                                })
-                              }}
-                            >
-                              <Icon
-                                key={output.spec}
-                                container="circle"
-                                container_color={outputFilters[output.spec] ? '#B3CFFF' : '#ddd'}
-                                size={1.5}
-                                icon={output.meta.icon}
-                                title={output.meta.label}
-                              />
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex flex-row flex-wrap gap-2 justify-center">
-                          {playbook.dataSources.map(dataSource => (
-                            <DataSourceButton
-                              key={dataSource}
-                              dataSource={dataSource}
-                              size={50}
-                            />
-                          ))}
-                        </div>
-                      </td>
-                      <td className="prose text-center">
-                        {playbook.clicks}
-                      </td>
-                      <td>
-                        <div className="flex flex-row gap-2 justify-center">
-                          <button onClick={() => {
-                            // TODO: register click
-                            router.push(playbook.url)
-                          }}>
-                            <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>,
-                    <tr key={`${playbook.id}-details`} className={details[playbook.id] ? 'display' : 'hidden'}>
-                      <td colSpan={6}>
-                        <div className="mx-auto prose whitespace-normal">
-                          <div className="flex flex-row gap-2 flex-wrap">
-                            <div className="badge badge-primary">v{playbook.version}</div>
-                            <div className="badge bg-gray-300 border-none"><a className="no-underline text-blue-700" href={playbook.licenseUrl} target="blank">{playbook.license}</a></div>
-                          </div>
-                          <p><b>Published</b>: {playbook.published}</p>
-                          <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
-                          <p><b>Description</b>: {playbook.description}</p>
-                          <Link href={playbook.url}><button className="bp4-button bp4-large">Launch</button></Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ])
-                : <tr>
-                  <td colSpan={5}>
-                    <div className="alert">No playbooks currently registered matching this criteria.</div>
-                  </td>
-                </tr>
-                : null}
-            </tbody>
-          </table>
+        <div className="grid grid-rows-2 grid-cols-[min-content_max-content] md:grid-cols-7 md:grid-rows-[min-content_max-content]">
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden rounded-tl-lg"></div>
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Playbook</div>
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Inputs</div>
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Outputs</div>
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Sources</div>
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Clicks</div>
+          <div className="bg-secondary font-bold p-3 text-center md:block hidden rounded-tr-lg">Actions</div>
+          {searchFilteredPlaybooks ?
+            searchFilteredPlaybooks.length > 0 ?
+              searchFilteredPlaybooks.map((playbook, i) =>
+              <>
+                <div className="col-span-1 row-span-1 p-3 hidden md:block">
+                  <div className="tooltip z-50" data-tip="Click to view details">
+                    <button
+                      className="btn btn-ghost text-4xl"
+                      onClick={evt => {
+                        setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
+                      }}
+                    >{details[playbook.id] ? '-' : '+'}</button>
+                  </div>
+                </div>
+                <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
+                <div className="col-span-1 row-span-1 p-3">
+                  <div className="prose md:h-12">{playbook.label}</div>
+                </div>
+                <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
+                <div className="col-span-1 row-span-1 p-3">
+                  <div className="flex flex-row flex-wrap gap-2 justify-center">
+                    {playbook.inputs.map(input => (
+                      <button
+                        key={input.spec}
+                        onClick={() => {
+                          setInputFilters(({ [input.spec]: cur, ...filters }) => {
+                            if (!cur) return {...filters, [input.spec]: !cur}
+                            else return filters
+                          })
+                        }}
+                      >
+                        <Icon
+                          container="circle"
+                          container_color={inputFilters[input.spec] ? '#B3CFFF' : '#ddd'}
+                          size={1.5}
+                          icon={input.meta.icon}
+                          title={input.meta.label}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Outputs</div>
+                <div className="col-span-1 row-span-1 p-3">
+                  <div className="flex flex-row flex-wrap gap-2 justify-center">
+                    {playbook.outputs.map(output => (
+                      <button
+                        key={output.spec}
+                        onClick={() => {
+                          setOutputFilters(({ [output.spec]: cur, ...filters }) => {
+                            if (!cur) return {...filters, [output.spec]: !cur}
+                            else return filters
+                          })
+                        }}
+                      >
+                        <Icon
+                          key={output.spec}
+                          container="circle"
+                          container_color={outputFilters[output.spec] ? '#B3CFFF' : '#ddd'}
+                          size={1.5}
+                          icon={output.meta.icon}
+                          title={output.meta.label}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Sources</div>
+                <div className="col-span-1 row-span-1 p-3">
+                  <div className="flex flex-row flex-wrap gap-2 justify-center">
+                    {playbook.dataSources.map(dataSource => (
+                      <DataSourceButton
+                        key={dataSource}
+                        dataSource={dataSource}
+                        size={50}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Clicks</div>
+                <div className="col-span-1 row-span-1 p-3">
+                  <div className="prose text-center md:h-12">
+                    {playbook.clicks}
+                  </div>
+                </div>
+                <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Actions</div>
+                <div className="col-span-1 row-span-1 p-3">
+                  <div className="flex flex-row gap-2 justify-center">
+                    <button onClick={() => {
+                      // TODO: register click
+                      router.push(playbook.url)
+                    }}>
+                      <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
+                    </button>
+                  </div>
+                </div>
+              {/* </div> */}
+              <div className={classNames('bg-secondary font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
+                <button
+                  className="btn btn-ghost text-4xl"
+                  onClick={evt => {
+                    setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
+                  }}
+                >{details[playbook.id] ? '-' : '+'}</button>
+              </div>
+              <div className={classNames('col-span-1 row-span-1 md:row-span-1 md:col-span-7')}>
+                <div className={classNames('mx-auto prose whitespace-normal px-4', { hidden: !details[playbook.id] })}>
+                  <div className="flex flex-row gap-2 flex-wrap">
+                    <div className="badge badge-primary">v{playbook.version}</div>
+                    <div className="badge bg-gray-300 border-none"><a className="no-underline text-blue-700" href={playbook.licenseUrl} target="blank">{playbook.license}</a></div>
+                  </div>
+                  <p><b>Published</b>: {playbook.published}</p>
+                  <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
+                  <p><b>Description</b>: {playbook.description}</p>
+                  <Link href={playbook.url}><button className="bp4-button bp4-large">Launch</button></Link>
+                </div>
+              </div>
+              <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
+            </>
+          )
+          : <div className="col-span-2 row-span-2 md:row-span-6 md:col-span-1">
+            <div className="alert">No playbooks currently registered matching this criteria.</div>
+          </div>
+          : null}
         </div>
       </main>
     </Layout>

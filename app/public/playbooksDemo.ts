@@ -2,8 +2,10 @@ import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTiss
 
 const playbooks = [
   {
+    id: '9c14c4b4-a7f4-4433-ee30-b9a3abb6439a',
     label: 'Use Case 13: Prioritizing Targets for Individual Cancer patients',
     description: 'Given RNA-seq samples from a patient tumor, we screen for targets which are highly expressed in the tumor but lowly expressed across all healthy human tissues in GTEx. Detailed information about the the selected target are queried from several DCCs.',
+    gpt_summary: undefined,
     published: 'Mar 27, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
@@ -31,9 +33,10 @@ const playbooks = [
     clicks: 5,
   },
   {
-    id: '9abb4a04-8bcd-4ecf-1628-6c9821e16ccc',
+    id: '0db222e1-9958-b01d-4e22-fef5599ce1f5',
     label: 'Use Case 4: Identify the Tissue Activity for a TF based on its Targets',
     description: 'Given a Transcription Factor, we collect its targets by various resources and then Enrich the set of consensus targets against GTEx Tissue expression. The result is ranked tissues potentially regulated by the transcription factor.',
+    gpt_summary: undefined,
     published: 'Mar 16, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
@@ -55,9 +58,10 @@ const playbooks = [
     clicks: 2,
   },
   {
-    id: 'd30f6646-f29b-4427-41bb-641be48805a4',
+    id: '0c0e357d-79b7-47d0-ec94-7915a88bf493',
     label: 'Use Case 2: Explain MOAs of Side Effects for Approved Drugs',
     description: 'For a side effect and a drug, I would like to know if there are genes from the LINCS L1000 experiments that are up or down-regulated by the drugs that are also known to be involved with the side effect based on literature co-mentions or GWAS. I would like to know if such overlap is statistically significant. I would also like the results to be visualized using a SuperVenn diagram.',
+    gpt_summary: undefined,
     published: 'Mar 16, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],

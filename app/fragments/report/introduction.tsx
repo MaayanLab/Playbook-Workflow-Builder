@@ -6,6 +6,7 @@ import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon } from '@/ic
 import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
+import useAsyncEffect from 'use-async-effect'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
@@ -20,6 +21,18 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
     summary: 'auto' as 'auto' | 'manual' | 'gpt',
     public: false,
   })
+  useAsyncEffect(async (isMounted) => {
+    const published = (await import('@/app/public/playbooksDemo')).default
+    if (!isMounted()) return
+    published.filter((playbook) => id === playbook.id).forEach(playbook => {
+      setMetadata((metadata) => ({
+        ...metadata,
+        title: playbook.label,
+        description: playbook.description,
+        gpt_summary: playbook.gpt_summary,
+      }))
+    })
+  }, [id])
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
   const [storyText, storyCitations] = story.split('\n\n')

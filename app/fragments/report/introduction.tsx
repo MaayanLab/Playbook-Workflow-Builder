@@ -5,6 +5,7 @@ import Head from 'next/head'
 import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon } from '@/icons'
 import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
+import classNames from 'classnames'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
@@ -12,9 +13,16 @@ const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableT
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, error }: { id: string, error: any }) {
-  const [metadata, setMetadata] = React.useState({ title: 'Playbook', description: undefined as undefined | string, public: false })
+  const [metadata, setMetadata] = React.useState({
+    title: 'Playbook',
+    description: undefined as undefined | string,
+    gpt_summary: undefined as undefined | string,
+    summary: 'auto' as 'auto' | 'manual' | 'gpt',
+    public: false,
+  })
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
+  const [storyText, storyCitations] = story.split('\n\n')
   return (
     <>
       <Head>
@@ -32,26 +40,52 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
               />
             </h2>
           </div>
-          <p className="prose mb-2">
-            <EditableText
-              placeholder="Playbook description"
-              value={metadata.description !== undefined ? metadata.description : story}
-              multiline
-              onChange={description => {setMetadata(metadata => ({ ...metadata, description }))}}
-            />
-            <div className="tooltip" data-tip={!chatGPTAvailable ? errorAugmentingWithChatGPT : undefined}>
+          <div className="prose">
+            <div className="tabs">
               <button
-                className="btn"
-                disabled={!chatGPTAvailable}
-                onClick={async (evt) => {
-                  const description = await augmentWithChatGPT(metadata.description !== undefined ? metadata.description : story)
-                  setMetadata(metadata => ({ ...metadata, description }))
-                }}
-              >Augment with ChatGPT</button>
+                className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
+                onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto' }))}}
+              >Auto-Generated Summary</button>
+              <div className="tooltip" data-tip={!chatGPTAvailable ? errorAugmentingWithChatGPT : undefined}>
+                <button
+                  disabled={!chatGPTAvailable}
+                  className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
+                  onClick={async (evt) => {
+                    setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt' }))
+                    if (!metadata.gpt_summary) {
+                      const gpt_summary = await augmentWithChatGPT(story)
+                      setMetadata((metadata) => ({ ...metadata, gpt_summary }))
+                    }
+                  }}
+                >GPT-Augmented Summary</button>
+              </div>
+              <button
+                className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'manual' })}
+                onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual' }))}}
+              >Manual Summary</button>
             </div>
-            {chatGPTAvailable && isAugmentingWithChatGPT ? <progress className="progress" /> : null}
-            {chatGPTAvailable && errorAugmentingWithChatGPT ? <div className="alert alert-error">{errorAugmentingWithChatGPT.toString()}</div> : null}
-          </p>
+            {metadata.summary === 'auto' ?
+              <>
+                <p className="prose-lg mt-1">{storyText}</p>
+                <div className="prose-sm whitespace-pre-line">{storyCitations}</div>
+              </>
+            : metadata.summary === 'manual' ?
+              <p className="prose-lg mt-1">
+                <EditableText
+                  placeholder="Add your manual summary here to be included when publishing."
+                  value={metadata.description || ''}
+                  multiline
+                  onChange={description => {setMetadata(metadata => ({ ...metadata, description }))}}
+                />
+              </p>
+              : metadata.summary === 'gpt' ?
+              <>
+                {chatGPTAvailable && isAugmentingWithChatGPT ? <progress className="progress" /> : null}
+                {chatGPTAvailable && errorAugmentingWithChatGPT ? <div className="alert alert-error">{errorAugmentingWithChatGPT.toString()}</div> : null}
+                <p className="prose-lg mt-1 whitespace-pre-line">{metadata.gpt_summary}</p>
+              </>
+              : null}
+          </div>
           {/* {metadata.title || metadata.description !== undefined ? (
             <div className="flex flex-row gap-2 items-center">
               <button className="bp4-button bp4-intent-success">Save</button>
@@ -78,7 +112,18 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
             </button>
           </Link>
           <ShareButton id={id} />
-          <BCOButton id={id} metadata={metadata} />
+          <BCOButton
+            id={id}
+            metadata={{
+              title: metadata.title,
+              description: (
+                metadata.summary === 'auto' ? story
+                : metadata.summary === 'gpt' ? metadata.gpt_summary
+                : metadata.summary === 'manual' ? metadata.description
+                : undefined
+              ),
+            }}
+          />
         </div>
       </div>
     </>

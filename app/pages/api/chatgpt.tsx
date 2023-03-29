@@ -40,9 +40,9 @@ export default handler(async (req, res) => {
     })),
   }).parse(await gptReq.json())
   const gptResponse = (
-    `${gptRes.choices[0].message.content
+    gptRes.choices[0].message.content
       .replace(/^\n*/g, '')
-      .replace(/\n*$/g, '')} (ChatGPT)`
+      .replace(/\n*$/g, '')
   )
   res.status(200).send(JSON.stringify(gptResponse))
 })

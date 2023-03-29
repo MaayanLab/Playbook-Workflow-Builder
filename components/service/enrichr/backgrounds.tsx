@@ -9,7 +9,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{Gene Expression Omnibus, https://www.ncbi.nlm.nih.gov/geo/}`,
+    ref: `\\ref{doi:10.1093/nar/gks1193}`,
     icon: [],
   },
   {
@@ -19,7 +19,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{Gene Expression Omnibus, https://www.ncbi.nlm.nih.gov/geo/}`,
+    ref: `\\ref{doi:10.1093/nar/gks1193}`,
     icon: [],
   },
   {
@@ -199,7 +199,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{https://www.ebi.ac.uk/gwas}`,
+    ref: `\\ref{doi:10.1093/nar/gkac1010}`,
     icon: [],
   },
   {
@@ -212,7 +212,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{https://www.ukbiobank.ac.uk/tag/gwas/}`,
+    ref: `\\ref{doi:10.1371/journal.pmed.1001779}`,
     icon: [],
   },
   {
@@ -225,7 +225,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{https://www.ncbi.nlm.nih.gov/clinvar/}`,
+    ref: `\\ref{doi:10.1093/nar/gkx1153}`,
     icon: [],
   },
   {
@@ -238,7 +238,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{http://www.human-phenotype-ontology.org/}`,
+    ref: `\\ref{doi:10.1093/nar/gkaa1043}`,
     icon: [],
   },
   {
@@ -251,7 +251,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: `\\ref{http://www.informatics.jax.org/}`,
+    ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
     icon: [],
   },
 ]
@@ -300,7 +300,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ENCODE Transcription Factors',
     termAssociation: 'Targeting',
-    ref: `\\ref{http://genome.ucsc.edu/ENCODE/downloads.html}`,
+    ref: `\\ref{doi:10.1038/nature11247}`,
     icon: [],
   },
   {

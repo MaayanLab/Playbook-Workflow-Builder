@@ -9,7 +9,7 @@ const playbooks = [
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CB-BY-NC-SA-4.0',
-    url: 'https://dev.playbook-workflow-builder.cloud/graph/9c14c4b4-a7f4-4433-ee30-b9a3abb6439a',
+    url: 'https://dev.playbook-workflow-builder.cloud/report/9c14c4b4-a7f4-4433-ee30-b9a3abb6439a',
     dataSources: [
       'KidsFirst',
       'LINCS L1000',
@@ -39,7 +39,7 @@ const playbooks = [
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CB-BY-NC-SA-4.0',
-    url: 'https://playbook-partnership.maayanlab.cloud/report/9abb4a04-8bcd-4ecf-1628-6c9821e16ccc',
+    url: 'https://dev.playbook-workflow-builder.cloud/report/0db222e1-9958-b01d-4e22-fef5599ce1f5',
     dataSources: [
       'ENCODE',
       'ChEA',
@@ -63,7 +63,7 @@ const playbooks = [
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CB-BY-NC-SA-4.0',
-    url: 'https://playbook-partnership.dev.maayanlab.cloud/graph/c28a9d39-077f-43d7-ad9b-af961a3055d7',
+    url: 'https://dev.playbook-workflow-builder.cloud/report/0c0e357d-79b7-47d0-ec94-7915a88bf493',
     dataSources: [
       'GWAS Catalog',
       'KOMP',

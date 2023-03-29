@@ -22,6 +22,11 @@ export default function Introduction({ id, error }: { id: string, error: any }) 
     public: false,
   })
   useAsyncEffect(async (isMounted) => {
+    setMetadata((metadata) => ({
+      ...metadata,
+      summary: metadata.summary === 'gpt' ? 'auto' : metadata.summary,
+      gpt_summary: undefined,
+    }))
     const published = (await import('@/app/public/playbooksDemo')).default
     if (!isMounted()) return
     published.filter((playbook) => id === playbook.id).forEach(playbook => {

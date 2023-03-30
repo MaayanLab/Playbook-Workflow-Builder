@@ -42,6 +42,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             <div className="hidden lg:flex">
               <Link href="/playbooks"><button className="btn btn-ghost">Published Playbooks</button></Link>
               <Link href="/explore"><button className="btn btn-ghost">Explore Components</button></Link>
+              <Link href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md"><button className="btn btn-ghost">Contribute</button></Link>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -88,6 +89,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
         <ul className="menu p-4 w-80 bg-base-100">
           <li><Link href="/playbooks">Published Playbooks</Link></li>
           <li><Link href="/explore">Explore Components</Link></li>
+          <li><Link href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md">Contribute</Link></li>
         </ul>
       </div>
     </div>

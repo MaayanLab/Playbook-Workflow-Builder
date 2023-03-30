@@ -11,7 +11,7 @@ const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { output, outputNode }, error: outputError, mutate } = useMetapathOutput(krg, head)
-  const View = outputNode?.view
+  const View = outputNode ? ({ output }: { output: any }) => outputNode.view(output) : undefined
   return (
     <>
       <Head>
@@ -39,7 +39,7 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
                 <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
                 {!View || output === undefined ? <div>Loading...</div>
                 : output === null ? <div>Waiting for input</div>
-                : View(output)}
+                : <View output={output} />}
               </>}
               <button
                 className="btn btn-primary"

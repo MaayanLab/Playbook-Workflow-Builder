@@ -105,6 +105,7 @@ export const Variant = {
     set: {
       meta: {
         example: { description: 'Example variantset', set: ['CA13203640', 'CA321211']},
+        pagerank: 6,
       }
     },
   },
@@ -124,10 +125,12 @@ export const RegulatoryElement = {
     set: {
       meta: {
         example: { description: 'Example regulatory-element set', set: ['EH38E2924876', 'EH12E1234567']},
+        pagerank: 6,
       }
     },
   },
 } as Primative
+
 export const Metabolite = {
   name: 'Metabolite',
   label: 'Metabolite',

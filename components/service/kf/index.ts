@@ -7,7 +7,8 @@ import { GeneTerm } from '@/components/core/input/term'
 export const KFTumorExpression = MetaNode('KFTumorExpression')
   .meta({
     label: 'Query KF Gene Expression in Tumor',
-    description: 'Use KF API to obtain tumors expressing the given gene'
+    description: 'Use KF API to obtain tumors expressing the given gene',
+    pagerank: 1,
   })
   .inputs({ gene_info: GeneInfo })
   .output(GeneExpressionInTumor)

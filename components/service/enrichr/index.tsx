@@ -223,7 +223,7 @@ export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
 
 export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .meta({
-    label: `Enrichr Gene Search`,
+    label: `Extract Gene Sets Containing the Gene`,
     icon: [enrichr_icon, search_icon, gene_icon],
     description: `Find terms in Enrichr Libraries containing the gene`,
   })

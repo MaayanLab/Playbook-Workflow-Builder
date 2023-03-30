@@ -20,8 +20,9 @@ export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
 
 export const GlyGenResponseNode = MetaNode('GlyGenResponse')
   .meta({
-    label: 'GlyGen Response',
-    description: 'GlyGen response object',
+    label: 'GlyGen Protein Products',
+    description: 'Protein product records in GlyGen',
+    icon: [glygen_icon],
   })
   .codec(GlyGenResponse)
   .view(data => (
@@ -43,7 +44,7 @@ export const GlyGenResponseNode = MetaNode('GlyGenResponse')
 export const ProteinProductInformation = MetaNode('ProteinProductInformation')
   .meta({
     label: 'Search Glygen for Protein Products',
-    description: 'Protein product records in GlyGen for the gene',
+    description: 'Find protein product records in GlyGen for the gene',
     icon: [glygen_icon],
     pagerank: 2,
   })

@@ -19,6 +19,10 @@ export * from "./MW/metgene_studies"
 components.push("MW/metgene_studies")
 export * from "./MW/metgene_study_table"
 components.push("MW/metgene_study_table")
+export * from "./MW/metgene_summary"
+components.push("MW/metgene_summary")
+export * from "./MW/metgene_summary_table"
+components.push("MW/metgene_summary_table")
 export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"

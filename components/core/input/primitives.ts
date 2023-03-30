@@ -95,7 +95,7 @@ export const Variant = {
   name: 'Variant',
   label: 'Variant',
   icon: [gene_icon],
-  color: '#768760',
+  color: '#a1e8cc',
   extra: {
     term: {
       meta: {
@@ -115,7 +115,7 @@ export const RegulatoryElement = {
   name: 'Regulatory_Element',
   label: 'Regulatory Element',
   icon: [gene_icon],
-  color: '#0080FF',
+  color: '#BDE0FE',
   extra: {
     term: {
       meta: {

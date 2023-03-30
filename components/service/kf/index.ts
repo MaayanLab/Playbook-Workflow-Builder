@@ -1,7 +1,8 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneInfo } from '@/components/service/mygeneinfo'
+import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { GeneExpressionInTumor } from '@/components/core/input/tumor'
 import python from '@/utils/python'
+import { GeneTerm } from '@/components/core/input/term'
 
 export const KFTumorExpression = MetaNode('KFTumorExpression')
   .meta({
@@ -15,5 +16,15 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
       'components.service.kf.main',
       { kargs: [props.inputs.gene_info.ensembl?.gene]},
     )
+  })
+  .build()
+
+export const KFTumorExpressionFromGene = MetaNode('KFTumorExpressionFromGene')
+  .meta(KFTumorExpression.meta)
+  .inputs({ gene: GeneTerm })
+  .output(KFTumorExpression.output)
+  .resolve(async (props) => {
+    const gene_info = await GeneInfoFromGeneTerm.resolve(props)
+    return await KFTumorExpression.resolve({ inputs: { gene_info } })
   })
   .build()

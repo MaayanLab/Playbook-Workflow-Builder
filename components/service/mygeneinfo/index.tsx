@@ -3,9 +3,8 @@ import { FileURL } from '@/components/core/file'
 import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet, RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { gene_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
+import { gene_icon, linkeddatahub_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
-import { gene_icon, linkeddatahub_icon, mygeneinfo_icon } from '@/icons'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -316,3 +315,16 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   }).story(props =>
     `CTD_Graph_Nodes.`
   ).build()
+
+export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryElementsForGeneInfoFromGene')
+  .meta(GetRegulatoryElementsForGeneInfo.meta)
+  .inputs({ gene: GeneTerm })
+  .output(GetRegulatoryElementsForGeneInfo.output)
+  .resolve(async (props) => {
+    const geneInfo = await GeneInfoFromGeneTerm.resolve(props)
+    return await GetRegulatoryElementsForGeneInfo.resolve({ inputs: { geneInfo } })
+  })
+  .story(props =>
+    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
+  )
+  .build()

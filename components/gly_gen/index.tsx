@@ -45,6 +45,7 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
     label: 'Search Glygen for Protein Products',
     description: 'Protein product records in GlyGen for the gene',
     icon: [glygen_icon],
+    pagerank: 2,
   })
   .inputs({ gene: GeneInfo })
   .output(GlyGenResponseNode)

@@ -10,6 +10,7 @@ export const GTExTissueExpression = MetaNode('GTExTissueExpression')
     label: 'Query GTEx Median Tissue Expression',
     description: 'Use GTEx API to obtain median tissue expression for the given gene',
     icon: [gtex_icon],
+    pagerank: 1,
   })
   .inputs({ gene_info: GeneInfo })
   .output(ScoredTissues)

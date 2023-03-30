@@ -104,6 +104,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     label: 'Resolve Reg. Elements from Gene Info',
     description: 'GetRegulatoryElementsForGeneInfo',
     icon: [linkeddatahub_icon],
+    pagerank: 1,
   })
   .inputs({ geneInfo: GeneInfo  })
   .output(RegulatoryElementSet)

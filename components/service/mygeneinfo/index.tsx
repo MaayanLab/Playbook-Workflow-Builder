@@ -118,3 +118,16 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
   )
   .build()
+
+export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryElementsForGeneInfoFromGene')
+  .meta(GetRegulatoryElementsForGeneInfo.meta)
+  .inputs({ gene: GeneTerm })
+  .output(GetRegulatoryElementsForGeneInfo.output)
+  .resolve(async (props) => {
+    const geneInfo = await GeneInfoFromGeneTerm.resolve(props)
+    return await GetRegulatoryElementsForGeneInfo.resolve({ inputs: { geneInfo } })
+  })
+  .story(props =>
+    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
+  )
+  .build()

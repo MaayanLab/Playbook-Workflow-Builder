@@ -94,7 +94,7 @@ function ReportButton({ graph_id }: { graph_id: string }) {
   const disabled = router.asPath === '/graph/start' || router.asPath === '/graph/extend' || router.asPath === '/graph/start/extend'
   return (
     <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
-      <button className='bp4-button bp4-minimal'>
+      <button className='bp4-button bp4-minimal' disabled={disabled}>
         <Icon icon={view_report_icon}  color={disabled ? '#999' : '#000'} />
       </button>
     </Link>

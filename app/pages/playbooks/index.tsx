@@ -18,6 +18,7 @@ import GWAS_icon from '@/app/public/logos/datasources/GWAS.jpeg'
 import IMPC_icon from '@/app/public/logos/datasources/IMPC.png'
 import KOMP_icon from '@/app/public/logos/datasources/KOMP.png'
 import LINCS_icon from '@/app/public/logos/datasources/LINCS.gif'
+import IDG_icon from '@/app/public/logos/datasources/IDG.png'
 import Metabolomics_icon from '@/app/public/logos/Metabolomics.png'
 import KidsFirst_icon from '@/app/public/logos/KidsFirst.png'
 import GlyGen_icon from '@/app/public/logos/glygen.svg'
@@ -38,6 +39,7 @@ const dataSourceIcons: Record<string, StaticImageData> = {
   'GlyGen': GlyGen_icon,
   'KidsFirst': KidsFirst_icon,
   'exRNA': exRNA_icon,
+  'IDG': IDG_icon,
 }
 
 const Icon = dynamic(() => import('@/app/components/icon'))

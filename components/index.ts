@@ -59,6 +59,8 @@ export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/hyposet"
 components.push("service/hyposet")
+export * from "./service/idg"
+components.push("service/idg")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/targetranger"

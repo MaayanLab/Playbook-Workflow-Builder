@@ -85,7 +85,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
     return scores
   })
   .story(props =>
-    `Drugs from which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
+    `Drugs which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
   )
   .build()
 
@@ -106,7 +106,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
     return scores
   })
   .story(props =>
-    `Drugs from which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
+    `Drugs which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
   )
   .build()
 
@@ -127,7 +127,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
     return scores
   })
   .story(props =>
-    `Genes from which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
+    `Genes which up-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
   )
   .build()
 
@@ -148,6 +148,6 @@ export const LINCSL1000ReverseSearchExtracGeneDown = MetaNode('LINCSL1000Reverse
     return scores
   })
   .story(props =>
-    `Genes from which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
+    `Genes which down-regulate the expression of ${props.inputs.search.gene} were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
   )
   .build()

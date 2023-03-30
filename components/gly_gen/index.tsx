@@ -64,7 +64,7 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
     return response
   })
   .story(props =>
-    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from the gene.`
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs.gene.symbol}.`
   )
   .build()
 
@@ -77,6 +77,6 @@ export const ProteinProductInformationFromGene = MetaNode('ProteinProductInforma
     return await ProteinProductInformation.resolve({ inputs: { gene } })
   })
   .story(props =>
-    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from the gene.`
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs.gene}.`
   )
   .build()

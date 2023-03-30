@@ -6,39 +6,18 @@ import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon } from '@/ic
 import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
-import useAsyncEffect from 'use-async-effect'
+import type { ReportMetadata } from './cells'
 
 const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Introduction({ id, error }: { id: string, error: any }) {
-  const [metadata, setMetadata] = React.useState({
-    title: 'Playbook',
-    description: undefined as undefined | string,
-    gpt_summary: undefined as undefined | string,
-    summary: 'auto' as 'auto' | 'manual' | 'gpt',
-    public: false,
-  })
-  useAsyncEffect(async (isMounted) => {
-    setMetadata((metadata) => ({
-      ...metadata,
-      summary: metadata.summary === 'gpt' ? 'auto' : metadata.summary,
-      gpt_summary: undefined,
-    }))
-    const published = (await import('@/app/public/playbooksDemo')).default
-    if (!isMounted()) return
-    published.filter((playbook) => id === playbook.id).forEach(playbook => {
-      setMetadata((metadata) => ({
-        ...metadata,
-        summary: 'manual',
-        title: playbook.label,
-        description: playbook.description,
-        gpt_summary: playbook.gpt_summary,
-      }))
-    })
-  }, [id])
+export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
+  const [metadata, setMetadata] = React.useState<ReportMetadata>(defaultMetadata)
+  React.useEffect(() => {
+    setMetadata((metadata) => ({ ...metadata, ...defaultMetadata }))
+  }, [defaultMetadata])
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
   const [storyText, storyCitations] = story.split('\n\n')

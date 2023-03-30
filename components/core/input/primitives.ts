@@ -95,7 +95,7 @@ export const Metabolite = {
   name: 'Metabolite',
   label: 'Metabolite',
   icon: [drug_icon],
-  color: '#A0E7E5',
+  color: '#ffb997',
   extra: {
     term: {
       meta: {
@@ -109,7 +109,7 @@ export const Pathway = {
   name: 'Pathway',
   label: 'Pathway or Biological Process',
   icon: [pathway_icon],
-  color: '#FFAEBC',
+  color: '#CDB4DB',
 } as Primative
 
 export const Phenotype = {
@@ -123,7 +123,7 @@ export const Tissue = {
   name: 'Tissue',
   label: 'Tissue',
   icon: [tissue_icon],
-  color: '#98D7C2',
+  color: '#FFC8DD',
   extra: {
     term: {
       meta: {

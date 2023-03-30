@@ -102,8 +102,8 @@ export async function getGeneData(geneSymbol: string){
 
 export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsForGeneInfo')
   .meta({
-    label: 'Resolve Reg. Elements from Gene Info',
-    description: 'GetRegulatoryElementsForGeneInfo',
+    label: 'Resolve Regulatory Elements from LDH',
+    description: 'Resolve regulatory elements from gene with Linked Data Hub',
     icon: [linkeddatahub_icon],
     pagerank: 1,
   })

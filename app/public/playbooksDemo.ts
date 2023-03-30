@@ -1,17 +1,17 @@
-import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn, ScoredDrugs, ScoredGenes, ProteinProductInformation, MetgeneMetabolites, VariantSet } from '@/components'
+import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn, ScoredDrugs, ScoredGenes, MetgeneMetabolites, /*VariantSet,*/ LINCSL1000ReverseSearchDashboard, MetGeneSummary, GlyGenResponseNode, MetGeneRxns } from '@/components'
 
 const playbooks = [
   {
-    id: '9c14c4b4-a7f4-4433-ee30-b9a3abb6439a',
+    id: '1d66906d-980b-b690-111e-c341145aa080',
     label: 'Use Case 13: Prioritizing Targets for Individual Cancer patients',
     description: 'Given RNA-seq samples from a patient tumor, we screen for targets which are highly expressed in the tumor but lowly expressed across all healthy human tissues in GTEx. Detailed information about the the selected target are queried from several DCCs.',
-    gpt_summary: 'A file containing samples from a lung cancer patient was uploaded and parsed as an input gene count matrix. Significantly over-expressed genes when compared to normal tissue in GTEx were identified, and IMP3 was chosen for further investigation. Genes that up-regulate the expression of IMP3 were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts [1], while drugs that down-regulate the expression of IMP3 were identified from RNA-seq-like LINCS L1000 Chemical Perturbagens [1]. More information about the gene was obtained with the MyGene.info API [2,3], and regulatory elements were obtained from the Linked Data Hub [4]. Next, the GlyGen database [5] was searched to identify a relevant set of proteins that originate from the gene. Finally, the gene was searched in the Metabolomics Workbench [6] to identify associated metabolites.\n\nReferences:\n1. Evangelista, J. E. et al. SigCom LINCS: data and metadata search engine for a million gene expression signatures. Nucleic Acids Research vol. 50 W697–W709 (2022). doi:10.1093/nar/gkac328\n2. Xin, J. et al. High-performance web services for querying gene and variant annotation. Genome Biology vol. 17 (2016). doi:10.1186/s13059-016-0953-9\n3. Wu, C., MacLeod, I. & Su, A. I. BioGPS and MyGene.info: organizing online, gene-centric information. Nucleic Acids Research vol. 41 D561–D565 (2012). doi:10.1093/nar/gks1114\n4. Linked Data Hub, https://genboree.org/cfde-gene-dev/\n5. York, W. S. et al. GlyGen: Computational and Informatics Resources for Glycoscience. Glycobiology vol. 30 72–73 (2019). doi:10.1093/glycob/cwz080\n6. The Metabolomics Workbench, https://www.metabolomicsworkbench.org/',
-    published: 'Mar 27, 2023',
+    gpt_summary: 'The process began with the upload of a file, which was then parsed as an input gene count matrix. The next step involved identifying significantly over-expressed genes in comparison to normal tissue in GTEx, resulting in the selection of IMP3 for further investigation.\n\nTo identify drugs that down-regulate IMP3 expression, RNA-seq-like LINCS L1000 Chemical Perturbagens were utilized. Additionally, genes that down-regulate IMP3 were identified from RNA-seq-like LINCS L1000 CRISPR Knockouts. The list of genes was then filtered by IDG Understudied Proteins.\n\nThe Metabolomics Workbench was used to identify associated metabolites and relevant reactions for IMP3. Regulatory elements were obtained from the Linked Data Hub. Lastly, the GlyGen database was searched to identify a relevant set of proteins originating from IMP3.',
+    published: 'Mar 30, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CB-BY-NC-SA-4.0',
-    url: 'https://dev.playbook-workflow-builder.cloud/report/9c14c4b4-a7f4-4433-ee30-b9a3abb6439a',
+    url: 'https://playbook-workflow-builder.cloud/report/1d66906d-980b-b690-111e-c341145aa080',
     dataSources: [
       'KidsFirst',
       'LINCS L1000',
@@ -19,17 +19,31 @@ const playbooks = [
       'exRNA',
       'GlyGen',
       'Metabolomics',
+      'IDG',
     ],
     inputs: [
       GeneCountMatrix,
     ],
     outputs: [
-      ScoredDrugs,
+      LINCSL1000ReverseSearchDashboard,
+      MetGeneSummary,
       ScoredGenes,
-      VariantSet,
+      ScoredDrugs,
+      MetGeneRxns,
       MetgeneMetabolites,
-      ProteinProductInformation,
+      /*VariantSet,*/
+      GlyGenResponseNode,
     ],
+    collapsed: {
+      4: false,
+      5: false,
+      7: false,
+      8: false,
+      9: false,
+      10: false,
+      11: false,
+      12: false,
+    } as Record<number, boolean>,
     clicks: 5,
   },
   {
@@ -42,7 +56,7 @@ const playbooks = [
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CB-BY-NC-SA-4.0',
-    url: 'https://dev.playbook-workflow-builder.cloud/report/0db222e1-9958-b01d-4e22-fef5599ce1f5',
+    url: 'https://playbook-workflow-builder.cloud/report/0db222e1-9958-b01d-4e22-fef5599ce1f5',
     dataSources: [
       'ENCODE',
       'ChEA',
@@ -55,6 +69,7 @@ const playbooks = [
     outputs: [
       ScoredTissues,
     ],
+    collapsed: {} as Record<number, boolean>,
     clicks: 2,
   },
   {
@@ -67,7 +82,7 @@ const playbooks = [
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CB-BY-NC-SA-4.0',
-    url: 'https://dev.playbook-workflow-builder.cloud/report/0c0e357d-79b7-47d0-ec94-7915a88bf493',
+    url: 'https://playbook-workflow-builder.cloud/report/0c0e357d-79b7-47d0-ec94-7915a88bf493',
     dataSources: [
       'GWAS Catalog',
       'KOMP',
@@ -81,6 +96,7 @@ const playbooks = [
       GeneSet,
       Supervenn,
     ],
+    collapsed: {} as Record<number, boolean>,
     clicks: 1,
   },
 ]

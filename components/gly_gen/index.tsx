@@ -1,8 +1,9 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneInfo } from '../service/mygeneinfo'
+import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon } from '@/icons'
+import { GeneTerm } from '@/components/core/input/term'
 
 export const GlyGenResponse = z.object({
   queryinfo: z.object({
@@ -59,6 +60,19 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
       })
     const response = GlyGenResponse.parse(await request.json())
     return response
+  })
+  .story(props =>
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from the gene.`
+  )
+  .build()
+
+export const ProteinProductInformationFromGene = MetaNode('ProteinProductInformationFromGene')
+  .meta(ProteinProductInformation.meta)
+  .inputs({ gene: GeneTerm })
+  .output(ProteinProductInformation.output)
+  .resolve(async (props) => {
+    const gene = await GeneInfoFromGeneTerm.resolve(props)
+    return await ProteinProductInformation.resolve({ inputs: { gene } })
   })
   .story(props =>
     `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from the gene.`

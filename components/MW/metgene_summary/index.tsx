@@ -2,7 +2,9 @@ import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
 import { metgene_icon, plot_icon } from '@/icons'
 import { GeneTerm } from '@/components/core/input/term'
-import classNames from 'classnames'
+import dynamic from 'next/dynamic'
+
+const IFrame = dynamic(() => import('@/app/components/IFrame'))
 
 export const MetGeneSummary = MetaNode('MetGeneSummary')
   .meta({
@@ -14,10 +16,8 @@ export const MetGeneSummary = MetaNode('MetGeneSummary')
   .view(value => {
     return (
       <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
-        <progress className={classNames('progress w-full', { 'hidden': !loading })}></progress>
-        <iframe
-          ref={ref}
-          className={classNames('flex-grow border-0', { 'hidden': loading })}
+        <IFrame
+          className="flex-grow border-0"
           src={`https://bdcw.org/MetGENE/summary.php?species=hsa&GeneIDType=SYMBOL&anatomy=NA&disease=NA&phenotype=NA&GeneInfoStr=${encodeURIComponent(value.gene)}`}
         />
       </div>

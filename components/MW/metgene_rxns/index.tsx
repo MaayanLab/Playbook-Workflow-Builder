@@ -35,7 +35,7 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
     
   })
   .story(props =>
-    `The gene was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+    `${props.inputs.summary.gene} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
   )
   .build()
 

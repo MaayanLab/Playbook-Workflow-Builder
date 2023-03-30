@@ -6,9 +6,9 @@ import python from '@/utils/python'
 import { archs4_icon, gtex_icon, targetranger_icon } from '@/icons'
 
 export const TargtRangerScreenTargetsT = [
-  { label: 'GTEx', bg: 'GTEx_transcriptomics', icon: gtex_icon, },
-  { label: 'ARCHS4', bg: 'ARCHS4', icon: archs4_icon },
-].map(({ label, bg, icon }) =>
+  { label: 'GTEx', bg: 'GTEx_transcriptomics', icon: gtex_icon, ref: '\\ref{10.1038/ng.2653}', },
+  { label: 'ARCHS4', bg: 'ARCHS4', icon: archs4_icon, ref: '\\ref{doi:10.1038/s41467-018-03751-6}', },
+  ].map(({ label, bg, ref, icon }) =>
   MetaNode(`TargetRangerScreenTargets[${bg}]`)
     .meta({
       label: `Screen for Targets against ${label}`,
@@ -23,6 +23,6 @@ export const TargtRangerScreenTargetsT = [
         { kargs: [props.inputs.input.url], kwargs: { bg } },
       )
     })
-    .story(props => `Significantly over-expressed genes when compared to normal tissue in ${label} were identified.`)
+    .story(props => `Significantly over-expressed genes when compared to normal tissue in ${label} [${ref}] were identified.`)
     .build()
 )

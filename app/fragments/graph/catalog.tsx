@@ -107,7 +107,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
     return group_values_filtered
   }, [items_filtered_searched])
   return (
-    <div className="flex-grow flex flex-col">
+    <div className="flex-grow flex flex-col mx-4">
       <FormGroup label="Filter">
         <InputGroup
           leftIcon="filter"

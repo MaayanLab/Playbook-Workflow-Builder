@@ -18,6 +18,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     <>
       <Head>
         <title>Playbook</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
       <RuntimeConfig>
         <SessionProvider session={session}>

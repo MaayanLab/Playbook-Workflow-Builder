@@ -160,7 +160,7 @@ export default function Playbooks() {
         <title>Playbooks</title>
       </Head>
 
-      <main className="flex-grow container mx-auto py-4 flex flex-col gap-6">
+      <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2">
             <div className="prose"><h2>Data Sources</h2></div>

@@ -38,30 +38,30 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
               />
             </h2>
           </div>
-          <div className="prose">
-            <div className="tabs">
+          <div className="tabs">
+            <button
+              className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto' }))}}
+            >Auto-Generated Summary</button>
+            <div className="tooltip" data-tip={!chatGPTAvailable && !metadata.gpt_summary ? errorAugmentingWithChatGPT : undefined}>
               <button
-                className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
-                onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto' }))}}
-              >Auto-Generated Summary</button>
-              <div className="tooltip" data-tip={!chatGPTAvailable && !metadata.gpt_summary ? errorAugmentingWithChatGPT : undefined}>
-                <button
-                  disabled={!chatGPTAvailable && !metadata.gpt_summary}
-                  className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
-                  onClick={async (evt) => {
-                    setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt' }))
-                    if (!metadata.gpt_summary) {
-                      const gpt_summary = await augmentWithChatGPT(story)
-                      setMetadata((metadata) => ({ ...metadata, gpt_summary }))
-                    }
-                  }}
-                >GPT-Augmented Summary</button>
-              </div>
-              <button
-                className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'manual' })}
-                onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual' }))}}
-              >Manual Summary</button>
+                disabled={!chatGPTAvailable && !metadata.gpt_summary}
+                className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
+                onClick={async (evt) => {
+                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt' }))
+                  if (!metadata.gpt_summary) {
+                    const gpt_summary = await augmentWithChatGPT(story)
+                    setMetadata((metadata) => ({ ...metadata, gpt_summary }))
+                  }
+                }}
+              >GPT-Augmented Summary</button>
             </div>
+            <button
+              className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'manual' })}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual' }))}}
+            >Manual Summary</button>
+          </div>
+          <div className="prose">
             {metadata.summary === 'auto' ?
               <>
                 <p className="prose-lg mt-1">{storyText}</p>

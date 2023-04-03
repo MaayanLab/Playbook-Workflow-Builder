@@ -216,7 +216,7 @@ export default function Explore() {
         onConfirm={() => {setInstructionsOpen(false)}}
         onCancel={() => {setInstructionsOpen(false)}}
       >
-        <p className="prose">
+        <p className="prose prose-md">
           The exploration interface allows you to explore the available operations in a dynamic graph.
           <br /><br />
           Click and drag or scroll to navigate or zoom in/out respectively.

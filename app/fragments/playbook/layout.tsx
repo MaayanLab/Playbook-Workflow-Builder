@@ -38,7 +38,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
               <h1 className="text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
             </Link>
           </div>
-          <div className="navbar-end">
+          <div className="navbar-end hidden md:flex">
             <div className="hidden lg:flex">
               <Link href="/playbooks"><button className="btn btn-ghost">Published Playbooks</button></Link>
               <Link href="/explore"><button className="btn btn-ghost">Explore Components</button></Link>
@@ -87,9 +87,21 @@ export default function Layout({ children }: React.PropsWithChildren) {
       <div className="drawer-side">
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label> 
         <ul className="menu p-4 w-80 bg-base-100">
+          <li className="menu-title">
+            <span>Playbook</span>
+          </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
           <li><Link href="/explore">Explore Components</Link></li>
           <li><a href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank">Contribute</a></li>
+          <li className="menu-title">
+            <span>Account</span>
+          </li>
+          {session && session.user ?
+              <>
+                <li><Link href="/account">Settings</Link></li>
+                <li><Link href="/api/auth/signout">Sign Out</Link></li>
+              </>
+              : <li><Link href="/api/auth/signin">Sign in</Link></li>}
         </ul>
       </div>
     </div>

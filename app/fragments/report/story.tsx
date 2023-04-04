@@ -15,23 +15,25 @@ import extractCitations from '@/utils/citations'
 /**
  * Attempt to compute the story for any given step
  */
-function StoryNode({ krg, head }: { krg: KRG, head: Metapath }) {
+function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange: () => void }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: inputs } = useMetapathInputs(krg, head)
   const { data: { output } } = useMetapathOutput(krg, head)
-  if (!inputs || !processNode.story) return null
-  try {
-    return (
-      <>
+  const story = React.useMemo(() => {
+    if (!inputs || !processNode.story) return null
+    try {
+      return <>
         {processNode.story({
           inputs,
           output,
         })}&nbsp;
       </>
-    )
-  } catch (e) {
-    return null
-  }
+    } catch (e) {
+      return null
+    }
+  }, [inputs, processNode, output])
+  React.useEffect(onChange, [story])
+  return story
 }
 
 const StoryContext = React.createContext('')
@@ -43,22 +45,17 @@ const StoryContext = React.createContext('')
 export function StoryProvider({ children, metapath, krg }: React.PropsWithChildren<{ metapath: Metapath[], krg: KRG }>) {
   const ref = React.useRef<HTMLSpanElement>(null)
   const [story, setStory] = React.useState('')
-  React.useEffect(() => {
-    if (!ref || !ref.current) return
-    const observer = new MutationObserver(() => {
-      if (!ref || !ref.current) return
-      setStory(() => extractCitations(ref.current?.textContent || ''))
-    })
-    observer.observe(ref.current, { childList: true, subtree: true })
-    return () => {observer.disconnect()}
-  }, [ref, ref.current])
   return (
     <>
       <StoryContext.Provider value={story}>
         {children}
       </StoryContext.Provider>
       <span ref={ref} className="hidden">
-        {(metapath||[]).map(head => <StoryNode key={head.id} krg={krg} head={head} />)}
+        {(metapath||[]).map(head =>
+          <StoryNode key={head.id} krg={krg} head={head} onChange={() => {
+            setStory(() => extractCitations(ref.current?.textContent || ''))
+          }} />
+        )}
       </span>
     </>
   )

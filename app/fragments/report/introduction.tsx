@@ -15,12 +15,12 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
   const [metadata, setMetadata] = React.useState<ReportMetadata>(defaultMetadata)
+  const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
+  const story = useStory()
+  const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   React.useEffect(() => {
     setMetadata((metadata) => ({ ...metadata, ...defaultMetadata }))
   }, [defaultMetadata])
-  const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
-  const story = useStory()
-  const [storyText, storyCitations] = story.split('\n\n')
   return (
     <>
       <Head>

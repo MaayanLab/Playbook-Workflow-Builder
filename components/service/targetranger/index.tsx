@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { ScoredGenes } from '@/components/core/input/scored'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import python from '@/utils/python'
+import { targetranger_icon } from '@/icons'
 
 export const TargtRangerScreenTargetsT = [
   { label: 'GTEx', bg: 'GTEx_transcriptomics' },
@@ -12,6 +13,7 @@ export const TargtRangerScreenTargetsT = [
     .meta({
       label: `Screen for Targets against ${label}`,
       description: `Identify significantly overexpressed genes when compared to normal tissue in ${label}`,
+      icon: [targetranger_icon],
     })
     .inputs({ input: GeneCountMatrix })
     .output(ScoredGenes)

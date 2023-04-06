@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_transfer_icon } from '@/icons'
+import { file_transfer_icon, metadata_file_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 
@@ -13,6 +13,7 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
   .meta({
     label: 'Class Metadata of a Gene Count Matrix',
     description: 'Class metadata for samples in a gene count matrix',
+    icon: [metadata_file_icon],
   })
   .codec(z.object({
     url: z.string(),
@@ -44,6 +45,7 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .meta({
     label: 'Resolve A Metadata Matrix from a File',
     description: 'Ensure a file contains a metadata matrix and load it into a standard format',
+    icon: [file_transfer_icon],
   })
   .inputs({ file: FileURL })
   .output(MetadataMatrix)

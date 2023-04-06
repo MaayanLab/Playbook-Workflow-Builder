@@ -6,11 +6,13 @@ import { z } from 'zod'
 import Matrix from '@/app/components/Matrix'
 import { downloadUrl } from '@/utils/download'
 import { GMT } from '../gene_matrix_transpose'
+import { differential_expression_icon, file_transfer_icon } from '@/icons'
 
 export const GeneSignature = MetaNode('GeneSignature')
   .meta({
     label: 'Gene Signature',
     description: 'A gene expression signature',
+    icon: [differential_expression_icon],
   })
   .codec(z.object({
     url: z.string(),
@@ -42,6 +44,7 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
   .meta({
     label: 'Resolve a Gene Signature from a File',
     description: 'Load a gene signature into a standard format',
+    icon: [file_transfer_icon],
   })
   .inputs({ file: FileURL })
   .output(GeneSignature)

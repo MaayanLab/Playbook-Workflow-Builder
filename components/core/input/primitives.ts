@@ -94,7 +94,7 @@ export const Gene = {
 export const Variant = {
   name: 'Variant',
   label: 'Variant',
-  //icon: [variant_icon],
+  icon: [gene_icon],
   color: '#768760',
   extra: {
     term: {
@@ -114,7 +114,7 @@ export const Variant = {
 export const RegulatoryElement = {
   name: 'Regulatory_Element',
   label: 'Regulatory Element',
-  //icon: [regElement_icon],
+  icon: [gene_icon],
   color: '#0080FF',
   extra: {
     term: {

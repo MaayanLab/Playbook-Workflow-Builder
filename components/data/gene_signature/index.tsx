@@ -4,7 +4,7 @@ import { FileURL } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
 import Matrix from '@/app/components/Matrix'
-import { datafile_icon, filter_icon, file_transfer_icon } from '@/icons'
+import { datafile_icon, filter_icon, differential_expression_icon, file_transfer_icon } from '@/icons'
 import { downloadUrl } from '@/utils/download'
 import { GMT } from '../gene_matrix_transpose'
 import { GeneSet } from '@/components/core/input/set'
@@ -13,7 +13,7 @@ export const GeneSignature = MetaNode('GeneSignature')
   .meta({
     label: 'Gene Signature',
     description: 'A gene expression signature',
-    icon: [datafile_icon],
+    icon: [differential_expression_icon],
   })
   .codec(z.object({
     url: z.string(),

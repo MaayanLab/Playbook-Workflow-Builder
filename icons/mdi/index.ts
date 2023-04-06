@@ -1,4 +1,5 @@
 import { mdiArrowRight } from '@mdi/js'; export const rightarrow_icon = { path: mdiArrowRight, size: 24 }
+import { mdiBiohazard } from '@mdi/js'; export const tumor_icon = { path: mdiBiohazard, title: 'Tumor', size: 24 }
 import { mdiCameraMeteringMatrix } from '@mdi/js'; export const tissue_icon = { path: mdiCameraMeteringMatrix, title: 'Tissue', size: 24 }
 import { mdiChartBar } from '@mdi/js'; export const barchart_icon = { path: mdiChartBar, title: 'Bar Chart', size: 24 }
 import { mdiChartBoxOutline } from '@mdi/js'; export const plot_icon = { path: mdiChartBoxOutline, title: 'Plot', size: 24 }

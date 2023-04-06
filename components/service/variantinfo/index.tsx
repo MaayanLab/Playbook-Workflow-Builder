@@ -4,6 +4,7 @@ import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
+import { linkeddatahub_icon } from '@/icons'
 
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),
@@ -90,6 +91,7 @@ export const VariantInfo = MetaNode('VariantInfo')
   .meta({
     label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
+    icon: [linkeddatahub_icon],
   })
   .codec(AlleleRegistryVariantInfoC)
   .view(variantinfo => (
@@ -113,6 +115,7 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
     description: 'Resolve variant info (Allele registry API) from variant term with MyVariantInfo',
+    icon: [linkeddatahub_icon],
   })
   .inputs({ variant: VariantTerm })
   .output(VariantInfo)

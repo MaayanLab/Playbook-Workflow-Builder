@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
+import { Table, Cell, Column, EditableCell } from '@/app/components/Table'
 import { z } from 'zod'
 //import { varinat_icon, variantinfo_icon } from '@/icons'
 
@@ -76,32 +77,38 @@ export const VariantInfo = MetaNode('VariantInfo')
     description: ''
   })
   .codec(MyAlleleRegistryExterSourcesListC)
-  .view(AlleleRegistryExternalSourcesList => (
-    <table style={{borderCollapse: 'collapse'}}>
-      <tr>
-        <th style={{width:'33%'}}>External Source Name</th>
-        <th style={{width:'33%'}}>Source ID</th>
-        <th style={{width:'34%'}}>Source Link</th>
-      </tr>
-      {AlleleRegistryExternalSourcesList.map(externalSource =>
-        <tr style={{borderTop: '1px solid lightgrey'}}>
-          <td style={{width:'34%'}}>   
-            {externalSource.name}
-          </td>
-          <td colSpan={2} style={{width:'66%', borderTop: '1px solid lightgrey'}}>
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {externalSource.sources.map(sources =>
-                  <tr>
-                    <td style={{width:'50%'}}>{ sources.id }</td>
-                    <td style={{width:'50%'}}><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td>             
-                  </tr>
-              )}
-            </table> 
-          </td>
-        </tr>
-      )}
-    </table>
-  )).build()
+  .view(AlleleRegistryExternalSourcesList => {
+        let sourcesList = AlleleRegistryExternalSourcesList;
+
+        return (
+          <Table
+            height={500}
+            cellRendererDependencies={[AlleleRegistryExternalSourcesList]}
+            numRows={AlleleRegistryExternalSourcesList.length}
+            enableGhostCells
+            enableFocusedCell
+          >
+            <Column
+              name="External Source Name"
+              cellRenderer={row => <Cell key={row+''}>{AlleleRegistryExternalSourcesList[row].name}</Cell>}
+            />
+            <Column
+              name="Source Id and Link"
+              cellRenderer={row => 
+              <Cell key={row+''}>
+                  {AlleleRegistryExternalSourcesList[row].sources.map(sources =>
+                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      <tr>
+                        <td style={{width:'50%'}}>{ sources.id }</td>
+                        <td style={{width:'50%'}}><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td>             
+                      </tr>
+                    </table>
+                  )}
+              </Cell>}
+            />
+          </Table>
+        )
+}).build()
 
   export const GetAlleleRegistryExternalRecordsForVariantList = MetaNode('GetAlleleRegistryExternalRecordsForVariantList')
   .meta({

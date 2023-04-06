@@ -8,8 +8,8 @@ import { GeneSignature } from '@/components/data/gene_signature'
 export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
   .meta({
     label: 'Compute a Characteristic Direction Signature from a Gene Count Matrix',
-    description: `From a given counts matrix and metadata, return a charateristic
-                  direction differential gene expression signature`
+    description: `From a given counts matrix and metadata, return a Charateristic
+                  Direction differential gene expression signature`
   })
   .inputs({ 
     data: GeneCountMatrix, 

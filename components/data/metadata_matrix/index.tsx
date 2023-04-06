@@ -13,6 +13,7 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
   .meta({
     label: 'Class Metadata of a Gene Count Matrix',
     description: 'Class metadata for samples in a gene count matrix',
+    icon: [datafile_icon],
   })
   .codec(z.object({
     url: z.string(),
@@ -42,18 +43,15 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
 
 export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .meta({
-    label: 'Resolve A Metadata Matrix from a File',
+    label: 'Resolve a Metadata Matrix from a File',
     description: 'Ensure a file contains a metadata matrix and load it into a standard format',
+    icon: [file_transfer_icon],
   })
   .inputs({ file: FileURL })
   .output(MetadataMatrix)
   .resolve(async (props) => await python(
     'components.data.metadata_matrix.metadata_matrix',
-    { kargs: [props.inputs.file] },
+    { kargs: [props.inputs.file.url] },
   ))
   .build()
 
-// const SampleGroupCol = () => MetaNode('')
-//   .meta({
-//     label: 'Sample Group Column'
-//   })

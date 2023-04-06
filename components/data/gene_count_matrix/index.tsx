@@ -43,7 +43,7 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
 
 export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   .meta({
-    label: 'Resolve A Gene Count Matrix from a File',
+    label: 'Resolve a Gene Count Matrix from a File',
     description: 'Ensure a file contains a gene count matrix, load it into a standard format',
     icon: [file_transfer_icon],
   })

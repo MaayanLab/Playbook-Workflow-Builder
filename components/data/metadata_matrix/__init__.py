@@ -26,7 +26,7 @@ def metadata_from_path(path):
       return pd.read_csv(fr, sep='\t', index_col=0)
   elif path.endswith('.txt') or path.endswith('.tab') or path.endswith('.data'):
     with fsspec_open_as_iterator(path, 'r') as fr:
-      return pd.read_csv(fr, sep=None, index_col=0)
+      return pd.read_csv(fr, sep=None, index_col=0, engine='python')
   elif path.endswith('.xlsx'):
     with fsspec_open_as_path(path, 'r') as fr:
       return pd.read_excel(fr, index_col=0)

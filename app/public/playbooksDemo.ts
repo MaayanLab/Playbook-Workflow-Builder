@@ -1,4 +1,4 @@
-import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn, ScoredDrugs, ScoredGenes, MetgeneMetabolites, /*VariantSet,*/ LINCSL1000ReverseSearchDashboard, MetGeneSummary, GlyGenResponseNode, MetGeneRxns } from '@/components'
+import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn, ScoredDrugs, ScoredGenes, MetgeneMetabolites, VariantSet, LINCSL1000ReverseSearchDashboard, MetGeneSummary, GlyGenResponseNode, MetGeneRxns } from '@/components'
 
 const playbooks = [
   {
@@ -31,7 +31,7 @@ const playbooks = [
       ScoredDrugs,
       MetGeneRxns,
       MetgeneMetabolites,
-      /*VariantSet,*/
+      VariantSet,
       GlyGenResponseNode,
     ],
     collapsed: {

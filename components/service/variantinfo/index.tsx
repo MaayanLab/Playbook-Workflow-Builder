@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
+import { linkeddatahub_icon } from '@/icons'
 
 export const MyVariantInfoC =  z.object({
     data: z.object({
@@ -27,6 +28,7 @@ export const VariantInfo = MetaNode('VariantInfo')
   .meta({
     label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
+    icon: [linkeddatahub_icon],
   })
   .codec(MyVariantInfoC)
   .view(varinatinfo => (
@@ -45,6 +47,7 @@ export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
     description: 'Resolve variant info from Linked Data Hub [https://genboree.org/cfde-gene-dev/]',
+    icon: [linkeddatahub_icon],
   })
   .inputs({ variant: VariantTerm })
   .output(VariantInfo)

@@ -2,12 +2,14 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import python from '@/utils/python'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
+import { norm_icon } from '@/icons'
 
 
 export const LogNormalizeGeneCountMatrix = MetaNode('LogNormalizeGeneCountMatrix')
   .meta({
     label: 'Log Normalize A Gene Count Matrix',
     description: 'Log_2 normalize a gene count matrix, return a gene count matrix',
+    icon: [norm_icon],
   })
   .inputs({ matrix: GeneCountMatrix })
   .output(GeneCountMatrix)

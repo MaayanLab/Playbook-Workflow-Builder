@@ -2,10 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementSet } from '@/components/core/input/set'
-import * as dict from '@/utils/dict'
-import * as array from '@/utils/array'
 import { z } from 'zod'
-//import { varinat_icon, variantinfo_icon } from '@/icons'
 
 export const MyVariantInfoC =  z.object({
     data: z.object({
@@ -28,9 +25,8 @@ export type MyVariantInfo = z.infer<typeof MyVariantInfoC>
 
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
-    label: 'Variant Iformation',
+    label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
-    //icon: [varinat_icon]
   })
   .codec(MyVariantInfoC)
   .view(varinatinfo => (
@@ -48,8 +44,7 @@ async function myvariantinfo_query(variantId: string): Promise<MyVariantInfo> {
 export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
-    description: 'Resolve variant info from variant term with MyVarinatInfo',
-    //icon: [variantinfo_icon],
+    description: 'Resolve variant info from Linked Data Hub [https://genboree.org/cfde-gene-dev/]',
   })
   .inputs({ variant: VariantTerm })
   .output(VariantInfo)

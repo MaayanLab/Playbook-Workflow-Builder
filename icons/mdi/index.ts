@@ -21,6 +21,7 @@ import { mdiProgressCheck } from '@mdi/js'; export const status_complete_icon = 
 import { mdiProgressClock } from '@mdi/js'; export const status_waiting_icon = { path: mdiProgressClock, title: 'Waiting for output...', size: 24 }
 import { mdiProgressPencil } from '@mdi/js'; export const status_awaiting_input_icon = { path: mdiProgressPencil, title: 'Waiting for input', size: 24 }
 import { mdiReorderVertical } from '@mdi/js'; export const transpose_icon = { path: mdiReorderVertical, title: 'Transpose', size: 24 }
+import { mdiScatterPlot } from '@mdi/js'; export const scatterplot_icon = { path: mdiScatterPlot, title: 'Scatter Plot', size: 24 }
 import { mdiSearchWeb } from '@mdi/js'; export const search_icon = { path: mdiSearchWeb, title: 'Search', size: 24 }
 import { mdiSetNone } from '@mdi/js'; export const supervenn_icon = { path: mdiSetNone, title: 'Supervenn', size: 24 }
 import { mdiVariable } from '@mdi/js'; export const variable_icon = { path: mdiVariable, title: 'Variable', size: 24 }

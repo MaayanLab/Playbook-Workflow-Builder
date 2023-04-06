@@ -2,11 +2,13 @@ import python from '@/utils/python'
 import { BokehPlot } from '@/components/viz/bokeh'
 import { MetaNode } from '@/spec/metanode'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
+import { scatterplot_icon } from '@/icons'
 
 export const UMAPBokehPlotFromGeneCountMatrix = MetaNode('UMAPBokehPlotFromGeneCountMatrix')
   .meta({
     label: 'UMAP Bokeh Plot From Gene Count Matrix',
     description: 'Construct UMAP bokeh plot From gene count matrix',
+    icon: [scatterplot_icon],
   })
   .inputs({ matrix: GeneCountMatrix })
   .output(BokehPlot)

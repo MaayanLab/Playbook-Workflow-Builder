@@ -83,24 +83,23 @@ export async function getRegElemPositionData(regElemId: string): Promise<RE_Posi
 export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegElementTerm')
 .meta({
   label: 'Resolve Regulatory Element Info from Term',
-  description: 'Resolve Regultory Element info from variant term with MyVarinatInfo',
-  //icon: [regulatoryElementInfo_icon],
+  description: 'Resolve Regulatory Element info from variant term with MyVariantInfo',
 })
-.inputs({ regulatoryEelement: RegulatoryElementTerm })
+.inputs({ regulatoryElement: RegulatoryElementTerm })
 .output(RegulatoryElementInfo)
 .resolve(async (props) => {
-  const rePositionData = await getRegElemPositionData(props.inputs.regulatoryEelement);
-  const reponse = await myRegElemInfo_query(props.inputs.regulatoryEelement);
+  const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
+  const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
   if(rePositionData.data.cCREQuery[0].coordinates != null){
-    reponse.data.coordinates = rePositionData.data.cCREQuery[0].coordinates;
+    response.data.coordinates = rePositionData.data.cCREQuery[0].coordinates;
   }else{
-    reponse.data.coordinates = { 
+    response.data.coordinates = { 
         chromosome: "",
         start: 0,
         end: 0
     };
   }
-  return reponse;
+  return response;
 })
 .build()
 
@@ -114,7 +113,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
 .resolve(async (props) => {
   let geneNames =  props.inputs.regElemInfo.data.ldFor.Gene.map(({ entId }) => entId);
   let geneSet = { 
-    description: 'Gene set for reglatory element '+props.inputs.regElemInfo.data.entId, 
+    description: 'Gene set for regulatory element '+props.inputs.regElemInfo.data.entId, 
     set: geneNames
   };
   return geneSet;
@@ -132,7 +131,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
 .resolve(async (props) => {
   let variantNames =  props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId);
   let variantSet = { 
-    description: 'Variant set for reglatory element '+props.inputs.regElemInfo.data.entId, 
+    description: 'Variant set for regulatory element '+props.inputs.regElemInfo.data.entId, 
     set: variantNames
   };
   return variantSet;

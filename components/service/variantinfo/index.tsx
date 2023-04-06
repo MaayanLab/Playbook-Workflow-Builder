@@ -4,7 +4,6 @@ import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
-//import { varinat_icon, variantinfo_icon } from '@/icons'
 
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),
@@ -89,14 +88,13 @@ export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
 
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
-    label: 'Variant Iformation',
+    label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
-    //icon: [varinat_icon]
   })
   .codec(AlleleRegistryVariantInfoC)
-  .view(varinatinfo => (
+  .view(variantinfo => (
     <div>
-      <a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${varinatinfo.entId}`}>{varinatinfo.entId}</a> (variant)
+      <a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${variantinfo.entId}`}>{variantinfo.entId}</a> (variant)
     </div>  
   ))
   .build()
@@ -111,11 +109,10 @@ export async function getAlleleRegistryVariantInfo(variantId: string): Promise<A
     return await res.json()
 }
 
-export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
+export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
-    description: 'Resolve variant info (Allele registry API) from variant term with MyVarinatInfo',
-    //icon: [variantinfo_icon],
+    description: 'Resolve variant info (Allele registry API) from variant term with MyVariantInfo',
   })
   .inputs({ variant: VariantTerm })
   .output(VariantInfo)
@@ -292,8 +289,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     description: ''
   })
   .codec(GitHubVariantInfoC)
-  .view(varinatinfo => {
-    let xqtlEvidences = varinatinfo.data.ld.xqtlEvidence;
+  .view(variantinfo => {
+    let xqtlEvidences = variantinfo.data.ld.xqtlEvidence;
     return (
       <Table
         height={500}
@@ -331,7 +328,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   })
   .build()
 
-  export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
+export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
   .meta({
     label: 'Resolve xQTL Evidence Data for Variant Info',
     description: 'Resolve xQTL Evidence Data for Variant Info Data',

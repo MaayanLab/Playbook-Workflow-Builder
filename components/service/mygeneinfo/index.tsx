@@ -91,7 +91,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   )
   .build()
 
-  export async function getGeneData(geneSymbol: string){
+export async function getGeneData(geneSymbol: string){
     const results = MyGeneInfoHitC.parse(await mygeneinfo_query(geneSymbol))
     const hits = results.hits.filter((hit): hit is MyGeneInfoHit['hits'][0] & { symbol: string } => !!hit.symbol)
     const exactMatch = hits.filter(hit => hit.symbol.toUpperCase() == geneSymbol.toUpperCase())[0]
@@ -101,7 +101,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   }
 
 
-  export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsForGeneInfo')
+export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsForGeneInfo')
   .meta({
     label: 'Resolve Reg. Elements from Gene Info',
     description: 'GetRegulatoryElementsForGeneInfo',
@@ -124,46 +124,46 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     return reSet;
   })
   .build()
-  
-  const CTDResponseInfoC = z.object({ 
-      "highlyConnectedGenes": z.any(),
-      "guiltyByAssociationGenes": z.any(),
-      "jsonGraph": z.object({ 
-        "nodes": z.array(z.object({
-          "name": z.string(),
-          "type": z.string()
-        })),
-        "interactions": z.array(z.object({
-          "source": z.string(),
-          "target": z.string()
-        })),
-      })
-  });
-  export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
-  
-  export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
-    const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/file`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      body: formData
-    })
-    return await res.json()
-  }
 
-  export async function getCTDGenSetResponse(strValue: string): Promise<CTDResponseInfo> {
-    const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/geneList`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: strValue
+const CTDResponseInfoC = z.object({ 
+    "highlyConnectedGenes": z.any(),
+    "guiltyByAssociationGenes": z.any(),
+    "jsonGraph": z.object({ 
+      "nodes": z.array(z.object({
+        "name": z.string(),
+        "type": z.string()
+      })),
+      "interactions": z.array(z.object({
+        "source": z.string(),
+        "target": z.string()
+      })),
     })
-    return await res.json()
-  }
+});
+export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
 
-  export const CTDResponseInfo = MetaNode('CTDResponseInfo')
+export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
+  const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/file`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    body: formData
+  })
+  return await res.json()
+}
+
+export async function getCTDGenSetResponse(strValue: string): Promise<CTDResponseInfo> {
+  const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/geneList`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: strValue
+  })
+  return await res.json()
+}
+
+export const CTDResponseInfo = MetaNode('CTDResponseInfo')
   .meta({
     label: 'CTDResponseInfo',
     description: '',
@@ -216,7 +216,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   ).build()
 
 
-  export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
+export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .meta({
     label: `GenesFile_CTD_Kegg`,
     description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
@@ -233,7 +233,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     return await getCTDFileResponse(formData);
   }).build()
 
-  export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
+export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
     label: `GenesFile_CTD_String`,
     description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
@@ -250,7 +250,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     return await getCTDFileResponse(formData);
   }).build()
 
-  export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
+export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
   .meta({
     label: `Highly_Connected_Genes`,
     description: "Get a list of Highly_Connected_Genes from the CTD response."
@@ -267,7 +267,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a list of Highly_Connected_Genes from the CTD response.`
   ).build()
 
-  export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
+export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
   .meta({
     label: `Guilty_By_Association_Genes`,
     description: "Get a list of Guilty_By_Association_Genes from the CTD response."
@@ -284,8 +284,8 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a list of Guilty_By_Association_Genes from the CTD response.`
   ).build()
 
-  //just for demo, this needs to be presented with a proper graph visualization
-  export const CTDGraph = MetaNode('CTDGraph')
+//just for demo, this needs to be presented with a proper graph visualization
+export const CTDGraph = MetaNode('CTDGraph')
   .meta({
     label: 'CTDGraph',
     description: '',
@@ -300,7 +300,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     )
   }).build()
 
-  export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
+export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .meta({
     label: `CTD_Graph_Nodes`,
     description: "CTD_Graph_Nodes."

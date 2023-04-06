@@ -54,22 +54,5 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
     "typescript": "^4.9.4"
-  },
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MmPersida/playbook-partnership-cfde_persida.git"
-  },
-  "keywords": [
-    "playbook_cfde_persida"
-  ],
-  "author": "playbook_parthnership_cfde_persida",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/MmPersida/playbook-partnership-cfde_persida/issues"
-  },
-  "homepage": "https://github.com/MmPersida/playbook-partnership-cfde_persida#readme"
+  }
 }

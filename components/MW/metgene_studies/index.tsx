@@ -2,6 +2,7 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
 import { MetGeneStudyTable } from '../metgene_study_table'
+import { additional_info_icon, gene_icon, set_icon } from '@/icons'
 
 // A unique name for your resolver is used here
 export const MetGeneStudies = MetaNode('MetGeneStudies')
@@ -37,11 +38,12 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
   )
   .build()
 
-  export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
+export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Studies with GeneSet',
     description: 'Compute the MetGENE studies function for a GeneSet',
+    icon: [gene_icon, set_icon, additional_info_icon],
   })
 
 

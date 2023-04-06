@@ -35,7 +35,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
   )
   .build()
 
-  export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
+export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Metabolites with GeneSet',

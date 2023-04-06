@@ -2,8 +2,6 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementSet } from '@/components/core/input/set'
-import * as dict from '@/utils/dict'
-import * as array from '@/utils/array'
 import { z } from 'zod'
 //import { varinat_icon, variantinfo_icon } from '@/icons'
 
@@ -67,14 +65,6 @@ export const GetRegulatoryElementsForVariantInfo = MetaNode('GetRegulatoryElemen
 .inputs({ variantInfo: VariantInfo  })
 .output(RegulatoryElementSet)
 .resolve(async (props) => {
- /*
-  let regElemArray = [];
-  let regElemFromVariant = props.inputs.variantInfo.data.ldFor.RegulatoryElement;
-  for(let r in regElemFromVariant){
-    regElemArray.push(regElemFromVariant[r].entId);
-  }
-  //return regElemArray;
-  */
   return props.inputs.variantInfo.data.ldFor.RegulatoryElement.map(({ entId }) => entId)
 })
 .build()

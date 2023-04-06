@@ -48,8 +48,8 @@ function Graph<
     }
 
     const simulation = d3.forceSimulation(N)
-      .force('charge', d3.forceManyBody().strength(-150))
-      .force("link", d3.forceLink(L).distance(15))
+      .force('charge', d3.forceManyBody().strength(-100))
+      .force("link", d3.forceLink(L).distance(1))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force("x", d3.forceX())
       .force("y", d3.forceY())

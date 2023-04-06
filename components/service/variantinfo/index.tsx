@@ -1,8 +1,8 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
-import { xQTL_EvidenceSet } from '@/components/core/input/set'
 import { z } from 'zod'
+import { Table, Cell, Column } from '@/app/components/Table'
 //import { varinat_icon, variantinfo_icon } from '@/icons'
 
 
@@ -19,16 +19,19 @@ export const MyVariantInfoC =  z.object({
           entContent: z.object({
             GTExIri: z.string(),
             score: z.number(),
-            sourceDescription: z.string()
-            /*
+            sourceDescription: z.string(),
             eQTL: z.object({
               nes: z.string(),
               sig: z.string()
-            }),
+            }).optional(),
             sQTL: z.object({
               nes: z.string(),
               sig: z.string()
-            })*/
+            }).optional(),
+            esQTL: z.object({
+              nes: z.string(),
+              sig: z.string()
+            }).optional()
           })
         })
       )
@@ -75,46 +78,53 @@ export const VariantInfo = MetaNode('VariantInfo')
   })
   .build()
 
-  export const GetxQTL_EvidencesSetForVariantInfo = MetaNode('GetxQTL_EvidencesSetForVariantInfo')
-  .meta({
-    label: 'Resolve xQTL Evidence Set for Variant Info',
-    description: 'Resolve xQTL Evidence for Variant Info Data',
-  })
-  .inputs({ variantInfo: VariantInfo  })
-  .output(xQTL_EvidenceSet)
-  .resolve(async (props) => {
-    return props.inputs.variantInfo.data.ld.xqtlEvidence.map(({ entId }) => entId);
-  })
-  .build()
-
   export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
     label: 'xQTL_EvidenceDataTable',
     description: ''
   })
   .codec(MyVariantInfoC)
-  .view(varinatinfo => (
-    <table style={{borderCollapse: 'collapse'}}>
-    <thead>
-      <tr>
-        <th>LDH Id</th>
-        <th>GTEx Portal</th>
-        <th>Score</th>
-        <th>Source Description</th>     
-      </tr>
-    </thead>
-    <tbody>
-      {varinatinfo.data.ld.xqtlEvidence.map(xqtlEvidence =>
-        <tr style={{borderTop: '1px solid lightgrey'}}>
-          <td style={{verticalAlign: 'center', borderRight: '2px solid lightgrey', borderLeft: '2px solid lightgrey', minWidth: '100px'}}>{xqtlEvidence.ldhId}</td>
-          <td style={{verticalAlign: 'center', borderRight: '2px solid lightgrey', minWidth: '100px'}}><a target="_blank" href={`${xqtlEvidence.entContent.GTExIri}`}>evidence link</a></td>
-          <td style={{verticalAlign: 'center', borderRight: '2px solid lightgrey', minWidth: '70px', fontWeight:'normal'}}>{xqtlEvidence.entContent.score}</td>
-          <td style={{verticalAlign: 'center', borderRight: '2px solid lightgrey', minWidth: '100px', fontWeight:'normal'}}>{xqtlEvidence.entContent.sourceDescription}</td>
-        </tr>
-      )}
-    </tbody>
-    </table>
-  ))
+  .view(varinatinfo => {
+    let xqtlEvidences = varinatinfo.data.ld.xqtlEvidence;
+    return (
+      <Table
+        height={500}
+        cellRendererDependencies={[xqtlEvidences]}
+        numRows={xqtlEvidences.length}
+        enableGhostCells
+        enableFocusedCell
+      >
+        <Column
+          name="ldhId"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].ldhId}</Cell>}
+        />
+        <Column
+          name="entId"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entId}</Cell>}
+        />
+        <Column
+          name="Evidence link"
+          cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
+        />
+        <Column
+          name="Score"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.score}</Cell>}
+        />
+        <Column
+          name="Description"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription}</Cell>}
+        />
+        <Column
+          name="Normalized Effect Size (nes)"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.nes}</Cell>}
+        />
+        <Column
+          name="P-Value (sig)"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.sig}</Cell>}
+        />
+      </Table>
+    )
+  })
   .build()
   /*
   <th>Normalized Effect Size (nes)</th>
@@ -131,6 +141,17 @@ export const VariantInfo = MetaNode('VariantInfo')
   .inputs({ variantInfo: VariantInfo  })
   .output(xQTL_EvidenceDataTable)
   .resolve(async (props) => {
+    let xqtlEvidences = props.inputs.variantInfo.data.ld.xqtlEvidence;
+      for(let e in xqtlEvidences){
+        let xqtlE_entContent = xqtlEvidences[e].entContent;
+        if(xqtlE_entContent.hasOwnProperty('eQTL')){
+          xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
+          delete xqtlE_entContent.eQTL;         
+        }else if(xqtlE_entContent.hasOwnProperty('sQTL')){
+          xqtlE_entContent.esQTL = xqtlE_entContent.sQTL;
+          delete xqtlE_entContent.sQTL;
+        }
+      }
     return props.inputs.variantInfo;
   })
   .build()

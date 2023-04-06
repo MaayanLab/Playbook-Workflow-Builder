@@ -4,6 +4,7 @@ import { Primative, TumorGeneExpression} from '@/components/core/input/primitive
 import { z } from 'zod'
 import { Table, Cell, Column } from '@/app/components/Table'
 import * as array from '@/utils/array'
+import { tumor_icon } from '@/icons'
 
 
 
@@ -20,6 +21,7 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
         Scored: 1,
       },
     },
+    icon: [tumor_icon],
   })
   .codec(z.array(z.object({ TPM_mean : z.number(), 
                             TPM_sd : z.number(), 

@@ -8,7 +8,7 @@ __all__ = ['PedcbioIngestor']
 class PedcbioIngestor:
 
     url = 'https://pedcbioportal.kidsfirstdrc.org/api/api-docs'
-    token = os.environ['PEDCBIO_TOKEN']
+    token = os.environ['KF_TOKEN']
 
     def __init__(self):
         self.cbio = PedcbioIngestor.get_request_client()

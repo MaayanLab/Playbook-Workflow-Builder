@@ -30,6 +30,7 @@ import bp4Edit from '@blueprintjs/icons/src/generated/20px/paths/edit'; export c
 import bp4Error from '@blueprintjs/icons/src/generated/20px/paths/error'; export const error_icon = { path: bp4Error.join(' '), title: 'Error', size: 20 }
 import bp4FloppyDisk from '@blueprintjs/icons/src/generated/20px/paths/floppy-disk'; export const save_icon = { path: bp4FloppyDisk.join(' '), title: 'Save', size: 20 }
 import bp4Fork from '@blueprintjs/icons/src/generated/20px/paths/fork'; export const fork_icon = { path: bp4Fork.join(' '), title: 'Expand From this Step', size: 20 }
+import bp4PanelTable from '@blueprintjs/icons/src/generated/20px/paths/panel-table'; export const gmt_icon = { path: bp4PanelTable.join(' '), title: 'Gene Matrix Transpose', size: 20 }
 import bp4Reset from '@blueprintjs/icons/src/generated/20px/paths/reset'; export const restart_icon = { path: bp4Reset.join(' '), title: 'Restart', size: 20 }
 import bp4SendToGraph from '@blueprintjs/icons/src/generated/20px/paths/send-to-graph'; export const view_in_graph_icon = { path: bp4SendToGraph.join(' '), title: 'View in Graph', size: 20 }
 import bp4SendToMap from '@blueprintjs/icons/src/generated/20px/paths/send-to-map'; export const view_report_icon = { path: bp4SendToMap.join(' '), title: 'View Report', size: 20 }

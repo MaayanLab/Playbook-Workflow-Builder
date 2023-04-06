@@ -7,7 +7,7 @@ import { Table, Cell, Column, EditableCell } from '@/app/components/Table'
 import { GeneSet } from '@/components/core/input/set'
 import { FileURL } from '@/components/core/file'
 import { downloadBlob } from '@/utils/download'
-import { file_transfer_icon } from '@/icons'
+import { file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
 
@@ -17,6 +17,7 @@ export const GMT = MetaNode(`GMT`)
   .meta({
     label: `Gene Matrix Transpose`,
     description: 'Terms mapped to genes',
+    icon: [gmt_icon],
   })
   .codec(z.record(z.string(), z.object({ description: z.string().optional(), set: z.array(z.string()) })))
   .view(gmt => {

@@ -24,6 +24,7 @@ import { mdiSetNone } from '@mdi/js'; export const supervenn_icon = { path: mdiS
 import { mdiVariable } from '@mdi/js'; export const variable_icon = { path: mdiVariable, title: 'Variable', size: 24 }
 import { mdiViewList } from '@mdi/js'; export const weighted_icon = { path: mdiViewList, title: 'Weighted', size: 24 }
 import { mdiWebhook } from '@mdi/js'; export const pathway_icon = { path: mdiWebhook, title: 'Pathway', size: 24 }
+import { mdiFilter } from '@mdi/js'; export const filter_icon = { path: mdiFilter, title: 'Filter', size: 24 }
 import bp4Delete from '@blueprintjs/icons/src/generated/20px/paths/delete'; export const delete_icon = { path: bp4Delete.join(' '), title: 'Delete', size: 20 }
 import bp4Edit from '@blueprintjs/icons/src/generated/20px/paths/edit'; export const edit_icon = { path: bp4Edit.join(' '), title: 'Edit', size: 20 }
 import bp4FloppyDisk from '@blueprintjs/icons/src/generated/20px/paths/floppy-disk'; export const save_icon = { path: bp4FloppyDisk.join(' '), title: 'Save', size: 20 }

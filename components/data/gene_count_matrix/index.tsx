@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_transfer_icon } from '@/icons'
+import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 
@@ -61,7 +61,8 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   export const Transpose = MetaNode('Transpose')
   .meta({
     label: 'Transpose',
-    description: 'A demonstrative transpose operation',
+    description: 'Re-orient the matrix',
+    icon: [transpose_icon],
   })
   .inputs({ file: GeneCountMatrix })
   .output(GeneCountMatrix)

@@ -26,6 +26,7 @@ import { mdiViewList } from '@mdi/js'; export const weighted_icon = { path: mdiV
 import { mdiWebhook } from '@mdi/js'; export const pathway_icon = { path: mdiWebhook, title: 'Pathway', size: 24 }
 import bp4Delete from '@blueprintjs/icons/src/generated/20px/paths/delete'; export const delete_icon = { path: bp4Delete.join(' '), title: 'Delete', size: 20 }
 import bp4Edit from '@blueprintjs/icons/src/generated/20px/paths/edit'; export const edit_icon = { path: bp4Edit.join(' '), title: 'Edit', size: 20 }
+import bp4Error from '@blueprintjs/icons/src/generated/20px/paths/error'; export const error_icon = { path: bp4Error.join(' '), title: 'Error', size: 20 }
 import bp4FloppyDisk from '@blueprintjs/icons/src/generated/20px/paths/floppy-disk'; export const save_icon = { path: bp4FloppyDisk.join(' '), title: 'Save', size: 20 }
 import bp4Fork from '@blueprintjs/icons/src/generated/20px/paths/fork'; export const fork_icon = { path: bp4Fork.join(' '), title: 'Expand From this Step', size: 20 }
 import bp4Reset from '@blueprintjs/icons/src/generated/20px/paths/reset'; export const restart_icon = { path: bp4Reset.join(' '), title: 'Restart', size: 20 }

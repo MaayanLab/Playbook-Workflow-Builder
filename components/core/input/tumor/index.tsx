@@ -21,9 +21,13 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
       },
     },
   })
-  .codec(z.array(z.object({ Disease : z.string(), 
+  .codec(z.array(z.object({ TPM_mean : z.number(), 
+                            TPM_sd : z.number(), 
+                            TPM_median : z.number(),
+                            Disease : z.string(), 
                             Gene_symbol : z.string(),
-                            TPM_mean : z.number()})))
+                            Gene_Ensembl_ID : z.string(),
+                            Dataset : z.string()})))
   .view(expressionTable => {
     return (
       <Table
@@ -32,18 +36,34 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
         numRows={expressionTable.length}
         enableGhostCells
         enableFocusedCell
-      >
+      > 
+        <Column
+          name={"TPM Mean"}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].TPM_mean}</Cell>}
+        />
+        <Column
+          name={"TPM Stand. Dev."}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].TPM_sd}</Cell>}
+        />
+        <Column
+          name={"TPM Median"}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].TPM_median}</Cell>}
+        />
         <Column
           name={"Disease"}
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Disease}</Cell>}
         />
         <Column
-          name="GeneSymbol"
+          name="Gene Symbol"
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_symbol}</Cell>}
         />
         <Column
-          name="TpmMean"
-          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].TPM_mean}</Cell>}
+          name="Gene Ensembl ID"
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_Ensembl_ID}</Cell>}
+        />
+        <Column
+          name="Data Set Id"
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Dataset}</Cell>}
         />
       </Table>
     )

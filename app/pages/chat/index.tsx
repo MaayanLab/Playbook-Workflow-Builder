@@ -13,7 +13,22 @@ const Item = ({ entity }: any) => <div key={entity}>{entity}</div>;
 
 export default function Chat() {
   const [value, setValue] = React.useState('')
-  const processOutputLookup = React.useMemo(() => dict.init(krg.getProcessNodes().map(proc => ({ key: proc.meta.description, value: proc.output.spec }))), [])
+  const { processStory, processLookup, processOutputLookup } = React.useMemo(() => {
+    const processNodes = krg.getProcessNodes()
+    const processStory = dict.init(processNodes.map(proc => ({
+      key: proc.spec,
+      value:
+        (
+          proc.story ? proc.story({ inputs: dict.init(dict.items(proc.inputs).map(({ key }) => ({ key, value: '[INPUT]' }))), output: '[INPUT]' })
+          : proc.meta.description
+        ).replace(/\.$/g, '')
+      })))
+    return {
+      processStory,
+      processLookup: dict.init(processNodes.map(proc => ({ key: processStory[proc.spec], value: proc.spec }))),
+      processOutputLookup: dict.init(processNodes.map(proc => ({ key: processStory[proc.spec], value: proc.output.spec }))),
+    }
+  }, [])
   return (
     <>
       <Head>
@@ -44,7 +59,7 @@ export default function Chat() {
                   if (next.length === 0) next = krg.getNextProcess('')
                   return array.unique(
                     next
-                      .map(proc => `${proc.meta.description}.  `)
+                      .map(proc => `${processStory[proc.spec]}.  `)
                       .filter(label => label.toLowerCase().startsWith(token.toLowerCase()))
                   )
                 },

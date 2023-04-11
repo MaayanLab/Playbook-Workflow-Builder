@@ -127,19 +127,11 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].ldhId}</Cell>}
         />
         <Column
-          name="entId"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entId}</Cell>}
-        />
-        <Column
           name="Evidence link"
           cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
         />
         <Column
-          name="Score"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.score}</Cell>}
-        />
-        <Column
-          name="Description"
+          name="Tissue site"
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription}</Cell>}
         />
         <Column
@@ -147,7 +139,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.nes}</Cell>}
         />
         <Column
-          name="P-Value (sig)"
+          name="p-value"
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.sig}</Cell>}
         />
       </Table>
@@ -199,8 +191,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
               name="External Source Name"
               cellRenderer={row => <Cell key={row+''}>{AlleleRegistryExternalSourcesList[row].name}</Cell>}
             />
-            <Column
-              name="Source Id and Link"
+            <Column 
+              name="Source Id and Link"             
               cellRenderer={row => 
               <Cell key={row+''}>
                   {AlleleRegistryExternalSourcesList[row].sources.map(sources =>
@@ -237,7 +229,13 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           for(let indxEs in extSources){
             var es = extSources[indxEs];
             if(es.id == null && es.rs != null){
-              es.id = es.rs.toString();
+              es.id = es.rs.toString();   
+            }else if(es.id == null && es.preferredName != null){
+              //for ClinVarAlleles
+              es.id = es.preferredName.toString();
+            }else if(es.id == null && es.variationId != null){
+              //ClinVarVariations
+              es.id = es.variationId.toString();
             }
           }
 

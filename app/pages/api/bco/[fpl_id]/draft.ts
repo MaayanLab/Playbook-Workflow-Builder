@@ -64,6 +64,10 @@ export default handler(async (req, res) => {
       ]
     }),
   })
+  if (bcoReq.status !== 200) {
+    res.status(bcoReq.status).end(await bcoReq.text())
+    return
+  }
   const [bcoRes] = z.array(z.object({ object_id: z.string() })).parse(await bcoReq.json())
-  res.status(bcoReq.status).json(bcoRes)
+  res.status(200).json(bcoRes)
 })

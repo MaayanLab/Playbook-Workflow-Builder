@@ -7,6 +7,7 @@ const MetGeneRxnObjC = z.object({
   Gene: z.string(),
   KEGG_REACTION_ID: z.string(),
   KEGG_REACTION_NAME: z.string(),
+  KEGG_REACTION_EQN: z.string()
 });
 
 export type  MetGeneRxnObj = z.infer<typeof  MetGeneRxnObjC>
@@ -42,8 +43,9 @@ export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
   .view(data => {
     
     const heading1 = "Gene"
-    const heading2 = "Kegg Rxn Id"
-    const heading3 = "Kegg Rxn Name"
+    const heading2 = "KEGG Rxn Id"
+    const heading3 = "KEGG Rxn Name"
+    const heading4 = "KEGG Rxn Equation"
     
     return (
       
@@ -58,6 +60,7 @@ export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
               <th>{heading1}</th>
               <th>{heading2}</th>
               <th>{heading3}</th>
+              <th>{heading4}</th>
             </tr>
             </thead>
              
@@ -69,6 +72,7 @@ export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
                   <td>{val.Gene}</td>
                   <td><a href = {`https://www.kegg.jp/entry/rn:${val.KEGG_REACTION_ID}`} target = "__blank">{val.KEGG_REACTION_ID}</a></td>
                   <td>{val.KEGG_REACTION_NAME}</td>
+                  <td>{val.KEGG_REACTION_EQN}</td>
                 </tr>
               )
             })}

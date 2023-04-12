@@ -38,6 +38,18 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
         enableFocusedCell
       > 
         <Column
+          name="Gene ID"
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_symbol}</Cell>}
+        />
+        <Column
+          name="Data Set"
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Dataset}</Cell>}
+        />
+        <Column
+          name={"Disease"}
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Disease}</Cell>}
+        />
+        <Column
           name={"TPM Mean"}
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].TPM_mean}</Cell>}
         />
@@ -50,20 +62,8 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].TPM_median}</Cell>}
         />
         <Column
-          name={"Disease"}
-          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Disease}</Cell>}
-        />
-        <Column
-          name="Gene Symbol"
-          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_symbol}</Cell>}
-        />
-        <Column
-          name="Gene Ensembl ID"
+          name="Ensembl ID"
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_Ensembl_ID}</Cell>}
-        />
-        <Column
-          name="Data Set Id"
-          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Dataset}</Cell>}
         />
       </Table>
     )

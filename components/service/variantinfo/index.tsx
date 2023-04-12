@@ -113,9 +113,9 @@ export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
   .build()
 
 
-export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementsForThisVariant')
+export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
 .meta({
-  label: 'Resolve Reg. Elements from Var. Info',
+  label: 'Resolve Reg. Element from Var. Info',
   description: 'GetRegulatoryElementsForThisVariant',
 })
 .inputs({ variantInfo: VariantInfo  })

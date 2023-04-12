@@ -44,7 +44,7 @@ export default function BCOButton({ id, metadata }: { id?: string, metadata: { t
               text="Draft in BioCompute Portal"
               onClick={async (evt) => {
                 trigger().then((res) => {
-                  if (res) window.open(res.object_id, '_blank')
+                  if (res) window.open(`https://biocomputeobject.org/builder?${res.object_id}`, '_blank')
                 })
               }}
             />

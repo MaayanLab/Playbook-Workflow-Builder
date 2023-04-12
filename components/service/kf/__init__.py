@@ -1,13 +1,28 @@
 import pandas as pd
-import requests as rq
+import requests
 
 
-def main(ensembl_id):
+def main(ensembl_id: str) -> dict:
+    """
+    Retrieves gene expression data for the specified Ensembl gene ID from the Open Pediatric Cancer Atlas API.
+    
+    Args:
+        ensembl_id (str): The Ensembl gene ID to retrieve data for.
+        
+    Returns:
+        dict: A dictionary containing the gene expression data as key-value pairs.
+            The dictionary is sorted by TPM_sd in descending order.
+    """
+
     api_url = 'https://openpedcan-api.d3b.io/tpm/gene-all-cancer/json'
     query_params = {'ensemblId':ensembl_id,'includeTumorDesc':'primaryOnly'}
 
-    get_request = rq.get(api_url,query_params)
-    request_df = pd.read_json(get_request.text,'records')
+    with requests.Session() as session:
+        response = session.get(api_url,params=query_params)
+        response.raise_for_status()
+        
+
+    request_df = pd.read_json(response.text,'records')
 
     gene_expression_df = request_df[['TPM_mean','TPM_sd','TPM_median',
                                      'Disease','Gene_symbol','Gene_Ensembl_ID',

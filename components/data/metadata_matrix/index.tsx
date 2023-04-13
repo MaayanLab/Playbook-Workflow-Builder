@@ -3,16 +3,16 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
+import { datafile_icon, file_transfer_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
-export const GeneCountMatrix = MetaNode('GeneCountMatrix')
+export const MetadataMatrix = MetaNode('MetadataMatrix')
   .meta({
-    label: 'Gene Count Matrix',
-    description: 'A gene count matrix file',
+    label: 'Class Metadata of a Gene Count Matrix',
+    description: 'Class metadata for samples in a gene count matrix',
     icon: [datafile_icon],
   })
   .codec(z.object({
@@ -20,7 +20,7 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()),
     index: z.array(z.string()),
-    values: z.array(z.array(z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]))),
+    values: z.array(z.array(z.string())),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
   }))
   .view(props => {
@@ -41,36 +41,17 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
   })
   .build()
 
-export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
+export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .meta({
-    label: 'Resolve a Gene Count Matrix from a File',
-    description: 'Ensure a file contains a gene count matrix, load it into a standard format',
+    label: 'Resolve a Metadata Matrix from a File',
+    description: 'Ensure a file contains a metadata matrix and load it into a standard format',
     icon: [file_transfer_icon],
   })
   .inputs({ file: FileURL })
-  .output(GeneCountMatrix)
+  .output(MetadataMatrix)
   .resolve(async (props) => await python(
-    'components.data.gene_count_matrix.gene_count_matrix',
+    'components.data.metadata_matrix.metadata_matrix',
     { kargs: [props.inputs.file.url] },
   ))
-  .story(props =>
-    `The file was parsed as an input gene count matrix.`
-  )
   .build()
 
-  export const Transpose = MetaNode('Transpose')
-  .meta({
-    label: 'Transpose',
-    description: 'Re-orient the matrix',
-    icon: [transpose_icon],
-  })
-  .inputs({ file: GeneCountMatrix })
-  .output(GeneCountMatrix)
-  .resolve(async (props) => await python(
-    'components.data.gene_count_matrix.transpose',
-    { kargs: [props.inputs.file] },
-  ))
-  .story(props =>
-    `The gene count matrix was then transposed`
-  )
-  .build()

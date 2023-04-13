@@ -113,7 +113,7 @@ export const Variant = {
 
 export const RegulatoryElement = {
   name: 'Regulatory_Element',
-  label: 'Regulatory_Element',
+  label: 'Regulatory Element',
   //icon: [regElement_icon],
   color: '#0080FF',
   extra: {

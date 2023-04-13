@@ -149,14 +149,14 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             <Column
               name="ldhId"
               cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidences[row].ldhId}</Cell>}
+            />           
+            <Column
+              name="Tissue Site od Cell Type"
+              cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
             />
             <Column
               name="ldhIri"
               cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${alleleSpecificEvidences[row].ldhIri}`}>evidence link</a></Cell>}
-            />
-            <Column
-              name="Source description"
-              cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
             />
           </Table>
       )
@@ -208,8 +208,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
         />
         <Column
-          name="Tissue site"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
+          name="Type"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.type}</Cell>}
         />
         <Column
           name="Normalized Effect Size (nes)"
@@ -220,8 +220,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.sig}</Cell>}
         />
         <Column
-          name="Type"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.type}</Cell>}
+          name="Tissue site"
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
         />
       </Table>
     )

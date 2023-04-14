@@ -27,14 +27,6 @@ export default function SiteMap() {
                     </div>
                   </div>
                 </Link>
-                <Link href="/report">
-                  <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
-                    <div className="card-body prose">
-                      <h4 className="card-title">Report Mode</h4>
-                      <p>A jupyter-notebook style interface for sequential execution of MetaNode Processes.</p>
-                    </div>
-                  </div>
-                </Link>
                 <Link href="/playbooks">
                   <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
                     <div className="card-body prose">

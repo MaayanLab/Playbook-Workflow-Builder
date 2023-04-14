@@ -11,6 +11,8 @@ From a powershell prompt run:
 ```powershell
 scoop bucket add main
 scoop install nodejs git python
+scoop bucket add versions
+scoop install python310
 scoop bucket add extras
 scoop install vscode
 ```
@@ -21,7 +23,7 @@ See <https://chocolatey.org/install> for install instructions.
 
 From an admin powershell prompt run:
 ```powershell
-choco install vscode nodejs git python==3.8.5 -y
+choco install vscode nodejs git python310 -y
 ```
 
 ### Mac OS X

@@ -2,8 +2,24 @@
 When starting from scratch (without nodejs, python, git, or vscode installed), this document may help you get started with the prerequisites to the [contributions guide](./contributions.md) depending on your operating system. It is not the only way these things can be installed but it's a way which has been tested to work.
 
 ### Windows
-1. Install Chocolatey: https://chocolatey.org/install
-2. From an admin powershell prompt run:
+
+#### With Scoop Installed
+
+See <https://scoop.sh/> for install instructions.
+
+From a powershell prompt run:
+```powershell
+scoop bucket add main
+scoop install nodejs git python
+scoop bucket add extras
+scoop install vscode
+```
+
+#### With Chocolatey Insalled
+
+See <https://chocolatey.org/install> for install instructions.
+
+From an admin powershell prompt run:
 ```powershell
 choco install vscode nodejs git python==3.8.5 -y
 ```

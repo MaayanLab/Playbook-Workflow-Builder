@@ -22,7 +22,7 @@ def main(ensembl_id: str) -> dict:
         response.raise_for_status()
         
 
-    request_df = pd.read_json(response.text,'records')
+    request_df = pd.read_json(path_or_buf=response.text,orient='records')
 
     gene_expression_df = request_df[['TPM_mean','TPM_sd','TPM_median',
                                      'Disease','Gene_symbol','Gene_Ensembl_ID',

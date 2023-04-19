@@ -1,7 +1,7 @@
 {
   "name": "kf",
   "version": "1.0.0",
-  "license": "unk",
+  "license": "CC-BY-NC-SA-4.0",
   "author": "William Khan <khanwn@chop.edu>",
   "private": true,
   "main": "index.ts",

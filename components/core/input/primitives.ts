@@ -141,7 +141,7 @@ export const TumorGeneExpression = {
   extra: {
     term: {
       meta: {
-        example: 'Brain',
+        example: 'Meningioma',
       },
     },
   },

@@ -1,10 +1,15 @@
 import dynamic from 'next/dynamic'
+import Head from 'next/head'
 
 const Contributors = dynamic(() => import('@/app/fragments/playbook/contributors'))
 
 export default function Home() {
   return (
     <>
+      <Head>
+        <title>Playbook: Start</title>
+      </Head>
+
       <div className="bp4-running-text">
         <h2 className="bp4-heading">Construct a Playbook</h2>
         <p className="bp4-text-large bp4-text-muted">This interactive tool enables dynamic exploration and construction of user-driven workflows leveraging curated APIs.</p>

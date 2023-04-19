@@ -4,12 +4,20 @@ import db from '@/app/db'
 export default function ORMAdapter(): Adapter {
   return {
     createUser: async (data) => {
-      return await db.objects.user.create({ data })
+      return await db.objects.user.create({
+        data: {
+          name: data.name ?? undefined,
+          email: data.email ?? '',
+          emailVerified: data.emailVerified ?? null,
+          image: data.image ?? undefined,
+        }
+      })
     },
     getUser: async (id) => {
       return await db.objects.user.findUnique({ where: { id } })
     },
     getUserByEmail: async (email) => {
+      if (!email) throw new Error('Cannot search by email without one')
       return await db.objects.user.findUnique({ where: { email } })
     },
     getUserByAccount: async (provider_providerAccountId) => {
@@ -20,7 +28,15 @@ export default function ORMAdapter(): Adapter {
       return user
     },
     updateUser: async (data) => {
-      const user = await db.objects.user.update({ where: { id: data.id }, data })
+      const user = await db.objects.user.update({
+        where: { id: data.id },
+        data: {
+          name: data.name ?? undefined,
+          email: data.email,
+          emailVerified: data.emailVerified ?? null,
+          image: data.image ?? undefined,
+        }
+      })
       if (user === null) throw new Error('User not found')
       return user
     },

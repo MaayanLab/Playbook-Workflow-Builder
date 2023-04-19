@@ -5,6 +5,7 @@ import '@blueprintjs/table/lib/css/table.css'
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css'
 import '@/app/styles/styles.css'
 import type { AppProps } from 'next/app'
+import Head from 'next/head'
 import dynamic from 'next/dynamic'
 
 const SessionProvider = dynamic(() => import('next-auth/react').then(({ SessionProvider }) => SessionProvider))
@@ -15,6 +16,10 @@ const Analytics = dynamic(() => import('@/app/fragments/analytics'), { ssr: fals
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps & { pageProps: { session: any } }) {
   return (
     <>
+      <Head>
+        <title>Playbook</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
       <RuntimeConfig>
         <SessionProvider session={session}>
           <HotkeysProvider>

@@ -9,8 +9,7 @@ import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import fetcher from '@/utils/next-rest-fetcher'
 
-const Header = dynamic(() => import('@/app/fragments/playbook/header'))
-const Footer = dynamic(() => import('@/app/fragments/playbook/footer'))
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Cells = dynamic(() => import('@/app/fragments/report/cells'))
 
 const QueryType = z.object({
@@ -49,20 +48,12 @@ export default function App({ fallback }: { fallback: any }) {
   const router = useRouter()
   const params = QueryType.parse(router.query)
   return (
-    <div className="flex flex-col min-w-screen min-h-screen">
-      <Head>
-        <title>Playbook</title>
-      </Head>
-
-      <Header />
-
+    <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
           <Cells krg={krg} id={params.id || ''} />
         </main>
       </SWRConfig>
-
-      <Footer />
-    </div>
+    </Layout>
   )
 }

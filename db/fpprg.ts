@@ -96,10 +96,30 @@ export const process_complete = View.create('process_complete')
     })))
     .build()
 
+export const fpl_metadata = Table.create('fpl_metadata')
+  .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
+  .field('label', 'varchar', '', z.string())
+  .field('description', 'varchar', '', z.string())
+  .field('processVisible', 'boolean', '', z.boolean())
+  .field('dataVisible', 'boolean', '', z.boolean())
+  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .build()
+
+export const fpl_metadata_trigger = SQL.create()
+  .up(`
+    create trigger fpl_metadata_notify after insert on fpl_metadata
+    for each row execute procedure notify_trigger('fpl_metadata');
+  `)
+  .down(`
+    drop trigger fpl_metadata_notify on fpl_metadata cascade;
+  `)
+  .build()
+  
 export const fpl = Table.create('fpl')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('process', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
   .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().nullable())
+  .field('metadata', 'uuid', 'references fpl_metadata ("id") on delete cascade', z_uuid().nullable())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 

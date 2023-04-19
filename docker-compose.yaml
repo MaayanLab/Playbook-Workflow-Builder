@@ -1,5 +1,33 @@
 version: '3.9'
+x-logging:
+  &default-logging
+  driver: 'json-file'
+  options:
+    max-size: '100k'
+    max-file: '10'
 services:
+  # ingress in front of the app for TLS termination among other uses
+  ingress:
+    image: traefik:v2.9
+    deploy:
+      replicas: ${DEPLOY_INGRESS}
+    command: >
+      --providers.docker=true
+      --providers.docker.exposedByDefault=false
+      --entrypoints.web.address=:80
+      --entrypoints.web.http.redirections.entrypoint.to=websecure
+      --entrypoints.web.http.redirections.entrypoint.scheme=https
+      --entrypoints.websecure.address=:443
+      --certificatesresolvers.letsencrypt-prod.acme.email=${LETSENCRYPT_EMAIL}
+      --certificatesresolvers.letsencrypt-prod.acme.storage=/data/acme.json
+      --certificatesresolvers.letsencrypt-prod.acme.tlschallenge=true
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - ./data/ingress:/data
+    logging: *default-logging
   # app serves the UI & API, it registers user interactions into the database (pg)
   app:
     image: maayanlab/playbook-partnership-ui
@@ -10,14 +38,27 @@ services:
       # this can be safely replicated if necessary but an ingress will be required
       replicas: 1
     environment:
-    - PUBLIC_URL=${PUBLIC_URL}
-    - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-    - EMAIL_SERVER=${EMAIL_SERVER}
-    - EMAIL_FROM=${EMAIL_FROM}
-    - DATABASE_URL=${DATABASE_URL}
+    - PUBLIC_URL
+    - LANDING_PAGE
+    - NEXTAUTH_SECRET
+    - NEXTAUTH_GOOGLE
+    - NEXTAUTH_ORCID
+    - EMAIL_SERVER
+    - EMAIL_FROM
+    - DATABASE_URL
+    - NEXT_PUBLIC_MATOMO_URL
+    - NEXT_PUBLIC_MATOMO_SITE_ID
     - N_WORKERS=0
     ports:
     - 3000:3000
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.app.rule=Host(`${SERVER_NAME}`)"
+    - "traefik.http.services.app.loadbalancer.server.port=3000"
+    - "traefik.http.routers.app.tls=true"
+    - "traefik.http.routers.app.tls.certresolver=letsencrypt-prod"
+    - "traefik.http.routers.app.tls.domains[0].main=${SERVER_NAME}"
+    logging: *default-logging
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   worker:
@@ -33,6 +74,7 @@ services:
     - PUBLIC_URL=${PUBLIC_URL}
     - DATABASE_URL=${DATABASE_URL}
     - N_WORKERS=5
+    logging: *default-logging
   # the database is used by everything it can be provisioned with
   #  dbmate (`dbmate up`)
   pg:
@@ -43,6 +85,9 @@ services:
     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
     - 5432:5432
+    volumes:
+    - ./data/pg:/var/lib/postgresql/data
+    logging: *default-logging
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
@@ -57,3 +102,4 @@ services:
     user: "${DOCKER_USER}"
     volumes:
     - ./:/app
+    logging: *default-logging

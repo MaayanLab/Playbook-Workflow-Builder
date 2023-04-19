@@ -45,20 +45,22 @@ export default handler(async (req, res) => {
               create: {
                 url,
                 sha256,
-                size: file.size.toString(),
+                size: file.size,
               },
             })
-            await db.objects.user_upload.upsert({
-              where: {
-                user: session.user.id,
-                upload: upload.id,
-              },
-              create: {
-                user: session.user.id,
-                upload: upload.id,
-                filename: file.originalFilename,
-              },
-            })
+            if (session.user.id !== '00000000-0000-0000-0000-000000000000' || process.env.NODE_ENV === 'development') {
+              await db.objects.user_upload.upsert({
+                where: {
+                  user: session.user.id,
+                  upload: upload.id,
+                },
+                create: {
+                  user: session.user.id,
+                  upload: upload.id,
+                  filename: file.originalFilename,
+                },
+              })
+            }
             return url
           })),
         }

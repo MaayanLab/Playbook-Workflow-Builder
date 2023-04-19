@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { additional_info_icon, gene_icon } from '@/icons'
 //import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 
 // How the schema validation works: https://codex.so/zod-validation-en
@@ -51,8 +52,9 @@ export function uniqJsonSubset(data:MyGeneIDOutputArray) {
 export const ConvertedGeneID = MetaNode('ConvertedGeneID')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'JSON for converted gene IDs table',
-    description: 'JSON for converted gene IDs table',
+    label: 'Gene IDs table',
+    description: 'Gene IDs table',
+    icon: [gene_icon, additional_info_icon],
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

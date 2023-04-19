@@ -3,7 +3,7 @@ import useSWRImmutable from 'swr/immutable'
 import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/graph/types'
+import type { Metapath } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
@@ -52,28 +52,30 @@ function buildBreadcrumbGraph({
   //  this is because processes with the same content have the same id regardless of position
   //  duplicate processes cause ambiguity which is trivially rectified with this strategy
   const g: Record<string, string> = {}
-  for (const head of metapath) {
-    const process = krg.getProcessNode(head.process.type)
+  for (const h of metapath) {
+    const process = krg.getProcessNode(h.process.type)
     if (process !== undefined) {
       graph.push(
         {
-          id: head.id,
+          id: h.id,
           kind: 'process' as 'process',
           label: process.meta.label,
-          color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
+          color: h.id === node_id ? '#B3CFFF' : 'lightgrey',
           icon: process.meta.icon || [func_icon],
-          parents: dict.isEmpty(head.process.inputs) ? ['start'] : dict.values(head.process.inputs).map(({ id }) => g[id]),
+          parents: dict.isEmpty(h.process.inputs) ? ['start'] : dict.values(h.process.inputs).map(({ id }) => g[id]),
         },
         {
-          id: `${head.id}:${head.process.id}`,
+          id: `${h.id}:${h.process.id}`,
           kind: 'data' as 'data',
           label: process.output.meta.label,
-          color: head.id === node_id ? '#B3CFFF' : 'lightgrey',
+          color: h.id === node_id ? '#B3CFFF'
+            : 'prompt' in process && h.process.data?.value === undefined ? 'pink'
+            : 'lightgrey',
           icon: process.output.meta.icon || [variable_icon],
-          parents: [head.id],
+          parents: [h.id],
         },
       )
-      g[head.process.id] = `${head.id}:${head.process.id}`
+      g[h.process.id] = `${h.id}:${h.process.id}`
     }
   }
   graph.push({
@@ -82,9 +84,21 @@ function buildBreadcrumbGraph({
     label: 'Extend',
     color: extend || suggest ? '#B3CFFF' : 'lightgrey',
     icon: extend_icon,
-    parents: [head ? `${head.id}:${head.process.id}` : 'start'],
+    parents: [head ? `${head.id}:${head.process.id}` : `start`],
   })
   return graph
+}
+
+function ReportButton({ graph_id }: { graph_id: string }) {
+  const router = useRouter()
+  const disabled = router.asPath === '/graph/start' || router.asPath === '/graph/extend' || router.asPath === '/graph/start/extend'
+  return (
+    <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
+      <button className='bp4-button bp4-minimal' disabled={disabled}>
+        <Icon icon={view_report_icon}  color={disabled ? '#999' : '#000'} />
+      </button>
+    </Link>
+  )
 }
 
 export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
@@ -95,7 +109,7 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
-      <div className="flex w-auto h-40">
+      <div className="flex w-auto items-center justify-center">
         <Breadcrumbs
           graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}
           onclick={(_evt, id) => {
@@ -107,14 +121,8 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             }
           }}
         />
-        <div className="flex items-center">
-          <RestartButton />
-          <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
-            <button className='bp4-button bp4-minimal'>
-              <Icon icon={view_report_icon} />
-            </button>
-          </Link>
-        </div>
+        <RestartButton />
+        <ReportButton graph_id={graph_id} />
       </div>
       <main className="flex-grow flex flex-col">
         {error ? <div>{error}</div> : null}

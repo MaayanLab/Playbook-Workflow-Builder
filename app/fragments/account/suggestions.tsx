@@ -9,6 +9,7 @@ import { z } from 'zod'
 import fetcher from '@/utils/next-rest-fetcher'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
@@ -23,7 +24,7 @@ export default function Suggestions() {
   return (
     <>
       <h3 className="bp4-heading">Suggestions</h3>
-      <progress className={`progress w-full ${isLoading || isMutating ? '' : 'hidden'}`}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {suggestions ? (
         <div className="overflow-x-auto">
           <table className="table table-compact w-full">

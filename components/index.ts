@@ -19,6 +19,8 @@ export * from "./MW/metgene_studies"
 components.push("MW/metgene_studies")
 export * from "./MW/metgene_study_table"
 components.push("MW/metgene_study_table")
+export * from "./MW/metgene_summary"
+components.push("MW/metgene_summary")
 export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
@@ -31,12 +33,18 @@ export * from "./core/input/term"
 components.push("core/input/term")
 export * from "./core/input/tumor"
 components.push("core/input/tumor")
+export * from "./data/characteristic_direction"
+components.push("data/characteristic_direction")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
 export * from "./data/gene_matrix_transpose"
 components.push("data/gene_matrix_transpose")
+export * from "./data/gene_signature"
+components.push("data/gene_signature")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
+export * from "./data/metadata_matrix"
+components.push("data/metadata_matrix")
 export * from "./data/pca_transformation"
 components.push("data/pca_transformation")
 export * from "./data/quantile_normalization"
@@ -47,8 +55,12 @@ export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
+export * from "./filters"
+components.push("filters")
 export * from "./gly_gen"
 components.push("gly_gen")
+export * from "./lincs/l1000-reverse-search"
+components.push("lincs/l1000-reverse-search")
 export * from "./service/enrichr"
 components.push("service/enrichr")
 export * from "./service/gtex"
@@ -57,11 +69,15 @@ export * from "./service/hyposet"
 components.push("service/hyposet")
 export * from "./service/kf"
 components.push("service/kf")
+export * from "./service/idg"
+components.push("service/idg")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./service/targetranger"
+components.push("service/targetranger")
+export * from "./viz/barplot"
+components.push("viz/barplot")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"
 components.push("viz/plotly")
-export * from "./viz/tissue_barplot"
-components.push("viz/tissue_barplot")

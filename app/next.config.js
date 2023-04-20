@@ -48,5 +48,20 @@ module.exports = withBundleAnalyzer({
         permanent: false,
       },
     ]
+  },
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'pg-native': false,
+        tls: false,
+        dns: false,
+        net: false,
+        fs: false,
+        child_process: false,
+        stream: false,
+      };
+    }
+    return config
   }
 })

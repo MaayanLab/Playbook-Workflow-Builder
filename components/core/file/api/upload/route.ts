@@ -3,19 +3,7 @@ import handler from '@/utils/next-rest'
 import * as dict from '@/utils/dict'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
 import { UnauthorizedError } from "@/spec/error"
-import db from "@/app/db"
-import fs from 'fs'
-import { createHash } from 'crypto'
-
-function sha256FromFile(path: string) {
-  return new Promise<string>((resolve, reject) => {
-    const hash = createHash('sha256')
-    fs.createReadStream(path)
-      .on('error', (err) => reject(err))
-      .on('data', (buf) => hash.update(buf))
-      .on('end', () => resolve(hash.digest('hex')))
-  })
-}
+import { uploadFile } from "."
 
 export const POST = handler(async (req, res) => {
   const session = await getServerSessionWithId(req, res)
@@ -27,40 +15,13 @@ export const POST = handler(async (req, res) => {
       else resolve({ fields, files })
     })
   })
-  // TODO: store it in fsspec
   const arg_paths = dict.init(
     await Promise.all(
       dict.items(raw.files).map(async ({ key, value: files }) => {
         return {
           key,
           value: await Promise.all(files.map(async (file) => {
-            const url = `file://${file.path}`
-            const sha256 = await sha256FromFile(file.path)
-            const upload = await db.objects.upload.upsert({
-              where: {
-                url,
-                sha256,
-              },
-              create: {
-                url,
-                sha256,
-                size: file.size,
-              },
-            })
-            if (session.user.id !== '00000000-0000-0000-0000-000000000000' || process.env.NODE_ENV === 'development') {
-              await db.objects.user_upload.upsert({
-                where: {
-                  user: session.user.id,
-                  upload: upload.id,
-                },
-                create: {
-                  user: session.user.id,
-                  upload: upload.id,
-                  filename: file.originalFilename,
-                },
-              })
-            }
-            return url
+            return (await uploadFile(file)).url
           })),
         }
       })

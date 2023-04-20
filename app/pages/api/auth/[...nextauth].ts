@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions, Session } from 'next-auth'
+import NextAuth, { ISODateString, NextAuthOptions, Session } from 'next-auth'
 import type { Provider } from "next-auth/providers"
 import db from '@/app/db'
 import CredentialsProvider from 'next-auth/providers/credentials'
@@ -8,7 +8,10 @@ import ORMAdapter from '@/app/extensions/next-auth/orm-adapter'
 import ORCIDProvider from '@/app/extensions/next-auth/orcid-provider'
 
 export type AuthOptions = typeof authOptions
-export type SessionWithId = Session & { user: { id: string } }
+export type SessionWithId = {
+  user: Session['user'] & { id: string },
+  expires: ISODateString,
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: ORMAdapter(),

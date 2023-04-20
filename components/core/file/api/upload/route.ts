@@ -2,7 +2,7 @@ import multiparty from "multiparty"
 import handler from '@/utils/next-rest'
 import * as dict from '@/utils/dict'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
-import { UnauthorizedError, UnsupportedMethodError } from "@/spec/error"
+import { UnauthorizedError } from "@/spec/error"
 import db from "@/app/db"
 import fs from 'fs'
 import { createHash } from 'crypto'
@@ -17,10 +17,9 @@ function sha256FromFile(path: string) {
   })
 }
 
-export default handler(async (req, res) => {
+export const POST = handler(async (req, res) => {
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
   const form = new multiparty.Form({ autoFiles: true })
   const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {
     form.parse(req, function (err, fields, files) {

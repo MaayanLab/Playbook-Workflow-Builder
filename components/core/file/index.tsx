@@ -57,7 +57,7 @@ export const FileInput = MetaNode('FileInput')
                 const formData = new FormData(evt.currentTarget)
                 const rawDescription = formData.get('description')
                 const description = rawDescription === null ? undefined : rawDescription.toString()
-                const res = await fetch(`/api/components/core/file/upload`, { method: 'POST', body: formData })
+                const res = await fetch(`/api/v1/components/core/file/upload`, { method: 'POST', body: formData })
                 const records: { file: string[] } = await res.json()
                 props.submit({ description, url: records.file[0] })
               }

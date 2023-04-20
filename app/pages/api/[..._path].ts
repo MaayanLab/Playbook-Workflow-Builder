@@ -8,6 +8,8 @@
 import { z } from 'zod'
 import handler, { RouteHandler } from '@/utils/next-rest'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
+import { components } from '@/components'
+import { create_prefix_tree_from_paths, search_prefix_tree } from '@/utils/prefix_tree'
 
 export const config = {
   api: {
@@ -15,6 +17,10 @@ export const config = {
   },
 }
 
+/**
+ * Build a data structure for prefix-tree matching
+ */
+const component_tree = create_prefix_tree_from_paths(components)
 
 /**
  * Ensure we don't end up with weird strings
@@ -31,7 +37,7 @@ function sanitize(component: string): string {
  * Get sanitized path from query
  */
 const QueryType = z.object({
-  _path: z.array(z.string().transform(sanitize)).transform(ps => ps.join('/')),
+  _path: z.array(z.string().transform(sanitize)),
 }).transform(({_path}) => _path)
 
 /**
@@ -42,7 +48,13 @@ export default handler(async (req, res) => {
   let component_handlers: Record<string, RouteHandler> = {}
   if (!req.method) throw new UnsupportedMethodError()
   try {
-    Object.assign(component_handlers, await require(`@/app/api/${_path}/route.ts`))
+    if (/^v\d+$/.exec(_path[0]) !== null && _path[1] === 'components') {
+      const { prefix: component, path } = search_prefix_tree(component_tree, _path.slice(2).join('/'))
+      if (component === undefined || path === undefined) throw new NotFoundError()
+      Object.assign(component_handlers, await require(`@/components/${component}/api/${path}/route.ts`))
+    } else {
+      Object.assign(component_handlers, await require(`@/app/api/${_path.join('/')}/route.ts`))
+    }
   } catch (e) {
     console.warn(e)
     throw new NotFoundError()

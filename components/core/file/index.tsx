@@ -6,6 +6,9 @@ import { file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
+import { downloadFile } from  '@/components/core/file/api/download'
+import { uploadFile, fileFromStream } from  '@/components/core/file/api/upload'
+import { clientUploadFile } from  '@/components/core/file/api/upload/client'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -15,7 +18,12 @@ export const FileURL = MetaNode('FileURL')
     description: 'URL to a File',
     icon: [file_icon],
   })
-  .codec(z.object({ description: z.string().optional(), url: z.string() }))
+  .codec(z.object({
+    description: z.string().optional(),
+    url: z.string(),
+    filename: z.string(),
+    size: z.number(),
+  }))
   .view(({ url }) => (
     <div>
       <h2>File: {url}</h2>
@@ -33,10 +41,10 @@ export const FileInput = MetaNode('FileInput')
   .inputs()
   .output(FileURL)
   .prompt(props => {
-    const [currentFile, setCurrentFile] = React.useState<{ description?: string, url?: string }>({})
+    const [currentFile, setCurrentFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
     const fileInputRef = React.useRef<HTMLInputElement>(null)
     const { data: session } = useSessionWithId()
-    const output = React.useMemo(() => props.output || { description: undefined, url: undefined }, [props.output])
+    const output = React.useMemo(() => props.output || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.output])
     React.useEffect(() => {
       setCurrentFile(output)
     }, [output])
@@ -51,15 +59,20 @@ export const FileInput = MetaNode('FileInput')
             className="my-2 inline-flex flex-col"
             onSubmit={async (evt) => {
               evt.preventDefault()
-              if (currentFile.url && currentFile.url === props.output?.url) {
-                props.submit({ description: currentFile.description, url: currentFile.url })
+              if (currentFile.url && currentFile.url === props.output?.url && currentFile.filename && currentFile.size) {
+                props.submit({
+                  description: currentFile.description,
+                  url: currentFile.url,
+                  filename: currentFile.filename,
+                  size: currentFile.size,
+                })
               } else {
                 const formData = new FormData(evt.currentTarget)
                 const rawDescription = formData.get('description')
                 const description = rawDescription === null ? undefined : rawDescription.toString()
-                const res = await fetch(`/api/v1/components/core/file/upload`, { method: 'POST', body: formData })
-                const records: { file: string[] } = await res.json()
-                props.submit({ description, url: records.file[0] })
+                const { file: [record] } = await clientUploadFile(formData)
+                console.log({ record })
+                props.submit({ description, ...record })
               }
             }}
           >
@@ -83,7 +96,7 @@ export const FileInput = MetaNode('FileInput')
               }}
             >
               <button className="btn btn-lg">Choose File</button>
-              <span className="text-lg">{currentFile.url||'No file chosen'}</span>
+              <span className="text-lg">{currentFile.filename||currentFile.url||'No file chosen'}</span>
             </div>
             <div className="bp4-input-group">
               <input

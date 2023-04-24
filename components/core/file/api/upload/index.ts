@@ -25,11 +25,13 @@ function statsFromStream(reader: Readable, writer?: Writable) {
 }
 
 export async function fileFromStream(reader: Readable, originalFilename: string) {
-  const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ppwb-')), 'file.bin')
+  const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ppwb-')), originalFilename)
   const writer = fs.createWriteStream(tmp)
   const { sha256, size } = await statsFromStream(reader, writer)
   return { path: tmp, sha256, size, originalFilename }
 }
+
+export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>
 
 export async function uploadFile(file: { path: string, size: number, sha256?: string, originalFilename: string }, session?: SessionWithId) {
   if (!file.sha256) {

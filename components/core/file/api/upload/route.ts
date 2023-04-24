@@ -21,7 +21,7 @@ export const POST = handler(async (req, res) => {
         return {
           key,
           value: await Promise.all(files.map(async (file) => {
-            return (await uploadFile(file)).url
+            return await uploadFile(file)
           })),
         }
       })

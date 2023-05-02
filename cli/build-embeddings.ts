@@ -94,15 +94,67 @@ const ProcessNodeSpecs = dict.init(
     })
 )
 
-async function main() {
-  const keys = dict.keys(ProcessNodeSpecs)
+/**
+ * Create more elaborate context for a metanode, including the node itself and its next processes
+ */
+const S2ProcessNodeSpecFactory = () => dict.init(
+  krg.getProcessNodes()
+    .map(metanode => {
+      const nextProcessNodes = krg.getNextProcess(metanode.output.spec)
+      return {
+        key: metanode.spec,
+        value: [
+          ...array.unique(
+            [metanode, ...nextProcessNodes].flatMap(metanode =>
+              dict.values(metanode.inputs)
+                .flatMap(value => array.ensureArray(value))
+                .map(value => value.spec)
+            )
+          ).map(spec => DataNodeSpecs[spec]),
+          ...[metanode, ...nextProcessNodes].map(processNode => ProcessNodeSpecs[processNode.spec]),
+          `async function main({`,
+          ...dict.keys(metanode.inputs).map(key =>
+            `  ${slugify(key)},`
+          ),
+          `}: {`,
+          ...dict.items(metanode.inputs).map(({ key, value }) =>
+            `  ${slugify(key)}: ${Array.isArray(value) ? `${slugify(value[0].spec)}[]` : slugify(value.spec)},`,
+          ),
+          `}) {`,
+          `  const x: ${slugify(metanode.output.spec)} = await ${slugify(metanode.spec)}({${dict.keys(metanode.inputs).map(key => slugify(key)).join(', ')}})`,
+          ...nextProcessNodes.map(nextMetanode =>
+            `  console.log(await ${slugify(nextMetanode.spec)}({${
+              dict.items(nextMetanode.inputs).map(({ key, value }) =>
+                metanode.output.spec === array.ensureArray(value)[0].spec ?
+                  `${slugify(key)}: ${Array.isArray(value) ? `[x]` : `x`}`
+                  : slugify(key)
+              ).join(', ')}}))`
+          ),
+          `}`,
+        ].join('\n')
+      }
+    })
+)
+
+async function main(dry_run = true, s2 = false) {
+  const Specs = s2 ? S2ProcessNodeSpecFactory() : ProcessNodeSpecs
+  const keys = dict.keys(Specs)
   console.log(['id','embedding'].join('\t'))
-  const embeddings = await openai.createEmbedding({
-    model: 'text-embedding-ada-002',
-    input: keys.map(key => ProcessNodeSpecs[key]),
-  })
-  embeddings.data.data.forEach((datum, i) => {
-    console.log([keys[datum.index], JSON.stringify(datum.embedding)].join('\t'))
-  })
+  if (dry_run) {
+    keys.forEach(key => {
+      console.log([key, JSON.stringify(Specs[key])].join('\t'))
+    })
+  } else {
+    const embeddings = await openai.createEmbedding({
+      model: 'text-embedding-ada-002',
+      input: keys.map(key => Specs[key]),
+    })
+    embeddings.data.data.forEach((datum, i) => {
+      console.log([keys[datum.index], JSON.stringify(datum.embedding)].join('\t'))
+    })
+  }
 }
-main()
+main(
+  !process.argv.slice(2).some(arg => arg === '--embed'),
+  process.argv.slice(2).some(arg => arg === '--s2'),
+)

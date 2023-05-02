@@ -1,5 +1,4 @@
 const Viz = () => null
-// const Viz = dynamic(() => import('@/app/fragments/metagraph-viz'))
 
 export default function Home() {
   return (

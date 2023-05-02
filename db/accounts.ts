@@ -1,18 +1,17 @@
 import { SQL, Table } from '@/spec/sql'
-import * as z from 'zod'
+import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
+import { z_uuid, nullable_undefined_codec, z_bigint_codec } from '@/utils/zod'
 
-const z_uuid = z.string
-const nullable_undefined_codec = <C>(type: z.ZodType<C>) => ({
-  decode: type.nullable().transform(v => v !== null ? v : undefined).parse,
-  encode: type.optional().transform(v => v !== undefined ? v : null).parse,
-})
 
 export const user = Table.create('user')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('name', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('email', 'varchar', 'not null', z.string())
-  .field('emailVerified', 'timestamp', '', z.date())
+  .field('emailVerified', 'timestamp', '', z.date().nullable())
   .field('image', 'varchar', '', nullable_undefined_codec(z.string()))
+  .field('affiliation', 'varchar', '', nullable_undefined_codec(z.string()))
+  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 
 export const user_email_index = SQL.create()
@@ -21,14 +20,14 @@ export const user_email_index = SQL.create()
   .build()
 
 export const account = Table.create('account')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('userId', 'uuid', 'not null references "user" ("id") on delete cascade', z_uuid())
   .field('type', 'varchar', 'not null', z.enum(["oauth", "email", "credentials"]))
   .field('provider', 'varchar', 'not null', z.string())
   .field('providerAccountId', 'varchar', 'not null', z.string())
   .field('refresh_token', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('access_token', 'varchar', '', nullable_undefined_codec(z.string()))
-  .field('expires_at', 'int', '', z.number())
+  .field('expires_at', 'bigint', '', z_bigint_codec())
   .field('token_type', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('scope', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('id_token', 'varchar', '', nullable_undefined_codec(z.string()))
@@ -38,14 +37,15 @@ export const account = Table.create('account')
   .build()
 
 export const session = Table.create('session')
-  .field('id', 'uuid', 'primary key default uuid_generate_v4()', z_uuid())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('expires', 'timestamp', '', z.date())
   .field('sessionToken', 'varchar', 'not null', z.string())
   .field('userId', 'uuid', 'not null references "user" ("id") on delete cascade', z_uuid())
   .build()
 
 export const verification_token = Table.create('verification_token')
-  .field('identifier', 'varchar', 'primary key', z.string())
+  .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
+  .field('identifier', 'varchar', '', z.string())
   .field('token', 'varchar', '', z.string())
   .field('expires', 'timestamp', '', z.date())
   .build()

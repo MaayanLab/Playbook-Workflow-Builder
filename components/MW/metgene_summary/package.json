@@ -2,7 +2,7 @@
   "name": "metgene_summary",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
-  "author": "Sumana Srinivasan <susrinivasan@eng.ucsd.edu>",
+  "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
   "main": "index.tsx",
   "dependencies": {

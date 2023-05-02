@@ -1,135 +1,149 @@
-import styles from './breadcrumbs.module.css'
+import React from 'react'
+import type { Icon as IconT } from '@/icons'
 import Icon from '@/app/components/icon'
 import * as dict from '@/utils/dict'
-import { ensureArray } from '@/utils/array'
+import * as array from '@/utils/array'
+import * as d3 from 'd3'
 
-type Icon = Array<{ path: string, title: string }>
+type BreadcrumbNode = {
+  id: string,
+  kind: 'data' | 'process',
+  label: string,
+  color: string,
+  parents?: string[],
+  icon: IconT,
+}
+
+/**
+ * Breadcrumb layout algorithm -- at a high level, it's a depth first traversal
+ *  through node children where steps down the tree expand in the x direction
+ *  and steps over in the tree expand in the y direction.
+ */
+function layout(graph: BreadcrumbNode[]) {
+  // Construct C -- a mapping from id to children
+  //         & G -- a mapping from id to node
+  const C: Record<string, string[]> = {}
+  const G = dict.init(graph.map(node => {
+    (node.parents??[]).forEach(pid => {
+      if (!(pid in C)) C[pid] = []
+      C[pid].push(node.id)
+    })
+    return { key: node.id, value: node }
+  }))
+  // DFS Through C to create B -- the ordered breadcrumbs with x/y postiions
+  //                       & E -- the edges between breadcrumbs
+  // W & H keep track of the width/height of the layout
+  let W = 1, H = 0
+  const Q = [{id: 'start', parent: undefined as string | undefined, x: W-1, y: H++}]
+  const B: Record<string, {node: BreadcrumbNode, x: number, y: number}> = {}
+  const E: {id: string, src: string, dst: string}[] = []
+  while (Q.length > 0) {
+    const el = Q.pop()
+    if (!el) break
+    if (el.y === -1) {
+      if (el.id in B) el.y = B[el.id].y
+      else if ((G[el.id].parents||[]).some(pid => !(pid in B))) {
+        // defer until all parents have been shown
+        Q.splice(Q.length-2, 0, el)
+        continue
+      } else el.y = H++
+    }
+    if (el.parent) {
+      E.push({
+        id: `${el.parent}__${el.id}__${el.x},${el.y}`,
+        src: el.parent,
+        dst: el.id,
+      })
+    }
+    W = Math.max(el.x+1, W)
+    if (el.id in B) continue
+    B[el.id] = { node: G[el.id], x: el.x, y: el.y }
+    if (el.id in C) {
+      // we reverse children here since the last item inserted will be processed next
+      const children = [...C[el.id]]
+      children.reverse()
+      children.forEach((cid, rind) => {
+        // maintain original children index (even though list is reversed)
+        const ind = children.length - rind - 1
+        Q.push({
+          parent: el.id,
+          id: cid,
+          x: el.x+1,
+          y: ind === 0 ? el.y : -1, // -1 is used to defer new branch creation
+        })
+      })
+    }
+  }
+  return { B, E, W, H }
+}
 
 export default function Breadcrumbs(
   { graph, onclick: _onclick }: {
-    graph: Array<{
-      id: string,
-      kind: 'data' | 'process',
-      label: string,
-      color: string,
-      parents?: string[],
-    } & ({ icon: Icon } | { content: string })>,
+    graph: Array<BreadcrumbNode>,
     onclick?: (evt: React.MouseEvent, node: string) => void
   }
 ) {
   const onclick = _onclick === undefined ? () => {} : _onclick
-  const g = dict.init(
-    graph.map((value, index) => ({
-      key: value.id,
-      value: {
-        ...value,
-        parents: (value.parents || []),
-        index,
-        x: 2 * (index + 1) - 1,
-      },
-    }))
-  )
-  const e: Array<{ src: string, dst: string, dist: number, side: number }> = []
-  let side = -1 // alternate bezier curve position (top/bottom)
-  for (const i in g) {
-    const { id, index, parents } = g[i]
-    // edges
-    for (const parent of parents) {
-      if (!(id in g) || !(parent in g)) {
-        console.error({ id: id, parent, g, graph })
-        continue
-      }
-      // how many hops is this node away from the parent its connected to
-      const dist = Math.abs(index - g[parent].index)
-      // add the edge from the parent to the node with the distance and side
-      e.push({
-        src: parent,
-        dst: id,
-        dist,
-        side,
-      })
-      // if the distance is > 1 hop (bezier instead of line), we'll alternate the side
-      if (dist > 1) side *= -1
-    }
-  }
-  
-  let w = 2 * graph.length
-  let h = 0.6 * Math.max(6, graph.length)
+  const { B, E, W, H } = React.useMemo(() => layout(graph), [graph])
+  let w = 1.5 * Math.max(2, W)
+  let h = 1.5 * Math.max(2, H)
   return (
     <svg
       className="flex-grow"
-      viewBox={`0 ${-h/2} ${w} ${h}`}
+      style={{ height: 40*h }}
+      viewBox={`-1 -1 ${w} ${h}`}
       preserveAspectRatio="xMinYMid meet"
     >
-      {e.map((d) => {
-        const { src, dst, side, dist } = d
-        let path
-        if (dist === 0) { // self
-          // self loop
-          throw new Error('NotImplemented')
-        } else if (dist === 1) { // direct neighbors
-          // draw line
-          path = `M${g[src].x},0 L${g[dst].x},0`
-        } else {
-          // draw bezier curve
-          path = `M${g[src].x},0 C${g[src].x},${0.4*side*dist} ${g[dst].x},${0.4*side*dist} ${g[dst].x},0`
-        }
-        return (
-          <path
-            key={`${src}__${dst}:${side}`}
-            className={styles.edges}
-            stroke="black"
-            strokeWidth={0.05}
-            fill="none"
-            d={path}
-          />
-        )
-      })}
-      {Object.values(g).map((d) => {
-        const { id, label, x, color, kind } = d
-        const title = label || ensureArray('icon' in d ? d.icon : []).map(({ title }) => title).join(': ') || id
-        return (
-          <g
-            key={`${id}`}
-            className={`${styles.nodes} ${styles.data}`}
-            transform={`translate(${x} 0)`}
-            onClick={(evt) => onclick(evt, d.id)}
-          >
-            {kind === 'data' ? (
-              <circle
-                fill={color}
-                stroke="black"
-                strokeWidth={0.001}
-                r={0.5}
-                cx={0}
-                cy={0}
-              />
-            ) : (
-              <rect
-                fill={color}
-                x={-0.5}
-                y={-0.5}
-                width={1}
-                height={1}
-              />
-            )}
-            {'icon' in d ? (
+      <g>
+        {E.map(({ id, src, dst }) => {
+          return (
+            <line
+              key={id}
+              stroke="black"
+              strokeWidth={0.05}
+              fill="none"
+              x1={B[src].x*1.25}
+              y1={B[src].y*1.25}
+              x2={B[dst].x*1.25}
+              y2={B[dst].y*1.25}
+            />
+          )
+        })}
+        {dict.values(B).map((d) => {
+          const { node: { id, label, color, kind, icon }, x, y } = d
+          const title = label || array.ensureArray(icon).map(({ title }) => title).join(': ') || id
+          return (
+            <g
+              key={`${id}`}
+              className="cursor-pointer"
+              transform={`translate(${x*1.25} ${y*1.25})`}
+              onClick={(evt) => onclick(evt, id)}
+            >
+              {kind === 'data' ? (
+                <circle
+                  fill={color}
+                  stroke="black"
+                  strokeWidth={0.001}
+                  r={0.5}
+                  cx={0}
+                  cy={0}
+                />
+              ) : (
+                <rect
+                  fill={color}
+                  x={-0.5}
+                  y={-0.5}
+                  width={1}
+                  height={1}
+                />
+              )}
               <g transform={`scale(0.035 0.035) translate(-12 -12)`}>
-                <Icon icon={d.icon} without_svg />
+                <Icon icon={icon} title={title} without_svg />
               </g>
-            ) : (
-              <text
-                x={0}
-                y={0}
-                fontSize="0.5px"
-                dominantBaseline="middle"
-                textAnchor="middle"
-              >{d.content}</text>
-            )}
-            <title>{title}</title>
-          </g>
-        )
-      })}
+            </g>
+          )
+        })}
+      </g>
     </svg>
   )
 }

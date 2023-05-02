@@ -1,7 +1,9 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneInfo } from '../service/mygeneinfo'
+import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
+import { glygen_icon } from '@/icons'
+import { GeneTerm } from '@/components/core/input/term'
 
 export const GlyGenResponse = z.object({
   queryinfo: z.object({
@@ -16,10 +18,11 @@ export const GlyGenResponse = z.object({
 
 export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
 
-export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
+export const GlyGenResponseNode = MetaNode('GlyGenResponse')
   .meta({
-    label: 'GlyGen Response',
-    description: 'GlyGen response object',
+    label: 'GlyGen Protein Products',
+    description: 'Protein product records in GlyGen',
+    icon: [glygen_icon],
   })
   .codec(GlyGenResponse)
   .view(data => (
@@ -38,10 +41,12 @@ export const GlyGenResponseNode = MetaNode.createData('GlyGenResponse')
   ))
   .build()
 
-export const ProteinProductInformation = MetaNode.createProcess('ProteinProductInformation')
+export const ProteinProductInformation = MetaNode('ProteinProductInformation')
   .meta({
-    label: 'Protein Product Information',
-    description: 'Search for protein records in GlyGen',
+    label: 'Search Glygen for Protein Products',
+    description: 'Find protein product records in GlyGen for the gene',
+    icon: [glygen_icon],
+    pagerank: 2,
   })
   .inputs({ gene: GeneInfo })
   .output(GlyGenResponseNode)
@@ -58,4 +63,20 @@ export const ProteinProductInformation = MetaNode.createProcess('ProteinProductI
     const response = GlyGenResponse.parse(await request.json())
     return response
   })
+  .story(props =>
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs.gene.symbol}.`
+  )
+  .build()
+
+export const ProteinProductInformationFromGene = MetaNode('ProteinProductInformationFromGene')
+  .meta(ProteinProductInformation.meta)
+  .inputs({ gene: GeneTerm })
+  .output(ProteinProductInformation.output)
+  .resolve(async (props) => {
+    const gene = await GeneInfoFromGeneTerm.resolve(props)
+    return await ProteinProductInformation.resolve({ inputs: { gene } })
+  })
+  .story(props =>
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs.gene}.`
+  )
   .build()

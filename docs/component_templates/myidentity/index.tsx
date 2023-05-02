@@ -2,7 +2,7 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 
 // A unique name for your resolver is used here
-export const MyIdentity = MetaNode.createProcess('MyIdentity')
+export const MyIdentity = MetaNode('MyIdentity')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'My Identity Function',

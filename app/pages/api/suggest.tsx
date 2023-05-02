@@ -1,33 +1,33 @@
 import krg from '@/app/krg'
-import suggestionsdb from '@/app/suggestionsdb'
+import db from '@/app/db'
 import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
+import { UserIdentity } from '@/app/fragments/graph/useridentity'
 
 const BodyType = z.object({
   name: z.string(),
   inputs: z.string(),
   output: z.string(),
-  author_name: z.string(),
-  author_email: z.string(),
-  author_org: z.string(),
+  user: z.string(),
   description: z.string(),
 })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET')  {
-      res.status(200).json(await suggestionsdb.suggestions())
+      res.status(200).json(await db.objects.suggestion.findMany())
     } else if (req.method === 'POST') {
       const suggestion = BodyType.parse(JSON.parse(req.body))
       // add the suggested KRG node(s)
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {
-        OutputNode = MetaNode.createData(suggestion.output)
+        OutputNode = MetaNode(suggestion.output)
           .meta({
-            label: suggestion.output,
+            label: `${suggestion.output} (Suggestion)`,
             description: `A data type, suggested as part of ${suggestion.name}`,
+            pagerank: -100,
           })
           .codec<any>()
           .view((props) => {
@@ -36,10 +36,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .build()
         krg.add(OutputNode)
       }
-      const ProcessNode = MetaNode.createProcess(suggestion.name)
+      const ProcessNode = MetaNode(suggestion.name)
         .meta({
-          label: suggestion.name,
+          label: `${suggestion.name} (Suggestion)`,
           description: suggestion.description,
+          pagerank: -100,
         })
         .inputs(suggestion.inputs ?
             dict.init(suggestion.inputs.split(',').map((spec, ind) =>
@@ -47,11 +48,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {
-          return <div>This was suggested by {suggestion.author_name} &lt;{suggestion.author_email}&gt; ({suggestion.author_org})</div>
+          return <div>This was suggested by <UserIdentity user={suggestion.user} />.</div>
         })
         .build()
       krg.add(ProcessNode)
-      await suggestionsdb.suggest(suggestion)
+      await db.objects.suggestion.create({ data: suggestion })
       res.status(200).end()
     } else {
       throw new Error('Unsupported method')

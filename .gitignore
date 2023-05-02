@@ -1,4 +1,6 @@
 __pycache__
 .env
+.npm
+/data
 /requirements.txt
 node_modules

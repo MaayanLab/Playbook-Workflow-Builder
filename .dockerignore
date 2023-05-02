@@ -1,5 +1,7 @@
 __pycache__
 .env
 .next
+/data
 Dockerfile
+docs
 node_modules

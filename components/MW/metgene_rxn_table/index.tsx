@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { additional_info_icon, reaction_icon } from '@/icons';
 
 // object: {}
 const MetGeneRxnObjC = z.object({
@@ -28,11 +29,12 @@ export const MetGeneRxnObjArray2C = z.array(
 export type MetGeneRxnObjArray2 = z.infer<typeof MetGeneRxnObjArray2C>
 
 // A unique name for your data type is used here
-export const MetGeneRxnTable = MetaNode.createData('MetGeneRxnTable')
+export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Reaction Table',
-    description: 'MetGENE Reaction Table, rendered',
+    description: 'MetGENE Reaction Table',
+    icon: [reaction_icon, additional_info_icon],
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { additional_info_icon } from '@/icons';
 
 const MetSummaryObjC = z.object({
   name: z.string(),
@@ -23,11 +24,12 @@ export type MetSummaryObjArray = z.infer<typeof MetSummaryObjArrayC>
 
 
 // A unique name for your data type is used here
-export const MetaboliteSummary = MetaNode.createData('MetaboliteSummary')
+export const MetaboliteSummary = MetaNode('MetaboliteSummary')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metabolite Summary',
     description: 'Metabolite Summary, rendered',
+    icon: [additional_info_icon],
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

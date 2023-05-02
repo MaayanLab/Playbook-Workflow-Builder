@@ -12,10 +12,10 @@ export type PlotlyJson = {
   frames?: PlotParams['frames'],
 }
 
-export const PlotlyPlot = MetaNode.createData('PlotlyPlot')
+export const PlotlyPlot = MetaNode('PlotlyPlot')
   .meta({
     label: 'Plotly Plot',
-    description: 'A plot rendered using the plotly.js library',
+    description: 'A plot rendered using the [plotly.js library](https://plotly.com/javascript/)',
     icon: [plot_icon],
   })
   .codec<PlotlyJson>()

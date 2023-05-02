@@ -3,6 +3,7 @@ import multiparty from "multiparty"
 import type { NextApiRequest, NextApiResponse } from 'next'
 import krg from '@/app/krg'
 import { z } from 'zod'
+import * as array from '@/utils/array'
 
 const QueryType = z.object({
   spec: z.string(),
@@ -36,23 +37,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
     const inputs: Record<string, unknown> = {}
     for (const i in processNode.inputs) {
+      const processNodeInput_i = array.ensureOne(processNode.inputs[i])
+      let inputs_i
       if (i in raw.fields) {
-        inputs[i] = processNode.inputs[i].codec.decode(one(raw.fields[i]))
+        inputs_i = raw.fields[i].map(processNodeInput_i.codec.decode)
       } else if (i in raw.files) {
-        inputs[i] = processNode.inputs[i].codec.decode(
-          await new Promise((resolve, reject) =>
-            fs.readFile(one(raw.files[i]).path, (err, data) => {
-              if (err) reject(err)
-              else resolve(data.toString())
-            })
-          )
-        )
+        inputs_i = (
+          await Promise.all(raw.files[i].map(file =>
+            new Promise<string>((resolve, reject) =>
+              fs.readFile(file.path, (err, data) => {
+                if (err) reject(err)
+                else resolve(data.toString())
+              })
+            )
+          ))
+        ).map(processNodeInput_i.codec.decode)
+      } else {
+        throw new Error(`argument ${JSON.stringify(i)} is missing`)
       }
+      if (Array.isArray(processNode.inputs[i])) inputs[i] = inputs_i
+      else inputs[i] = one(inputs_i)
     }
     const ouput = await processNode.resolve({ inputs })
     res.status(200).json(processNode.output.codec.encode(ouput))
   } catch (e) {
     console.error(e)
-    res.status(500).end((e as Error).toString())
+    res.status(500).json(JSON.stringify((e as Error).toString()))
   }
 }

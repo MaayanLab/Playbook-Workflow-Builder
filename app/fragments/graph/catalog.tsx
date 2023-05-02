@@ -1,14 +1,12 @@
 import React from 'react'
 import Masonry from 'react-masonry-css'
-import tsvector from "@/utils/tsvector"
+import tsvector, { type TSVector } from "@/utils/tsvector"
 import dynamic from "next/dynamic"
-// import { useQsState } from "@/components/qsstate"
+import * as array from '@/utils/array'
+import * as dict from '@/utils/dict'
 
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
-
-const any = <T extends {}>(L: T[]) => L.some(el => el)
-const all = <T extends {}>(L: T[]) => !any(L)
 
 type KVCounts = { [key: string]: { [val: string]: number } }
 
@@ -19,68 +17,97 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
 }) {
   const [search, setSearch] = React.useState('')
   const [filters, setFilters] = React.useState({} as Record<string, Record<string, number>>)
-  const _search = tsvector(search)
-  const _group_values: KVCounts = {}
-  for (const k in items) {
-    const item = items[k]
-    const item_meta = item.meta||{}
-    if (!('tags' in item_meta)) continue
-    for (const group in item_meta.tags) {
-      if (!(group in _group_values)) {
-        _group_values[group] = {}
-      }
-      for (const value in item_meta.tags[group]) {
-        if (!(value in _group_values[group])) {
-          _group_values[group][value] = 0
+  const search_ts = React.useMemo(() => tsvector(search), [search])
+  const { group_values, item_search_ts, pagerank_max } = React.useMemo(() => {
+    const group_values: KVCounts = {}
+    const item_search_ts: Record<string, TSVector> = {}
+    let pagerank_max = 1
+    for (const k in items) {
+      const item = items[k]
+      const item_meta = item.meta||{}
+      item_search_ts[k] = tsvector(serialize(item))
+      pagerank_max = Math.max(item_meta.pagerank||0, pagerank_max)
+      if (!('tags' in item_meta)) continue
+      for (const group in item_meta.tags) {
+        if (!(group in group_values)) {
+          group_values[group] = {}
         }
-        _group_values[group][value] += 1
+        for (const value in item_meta.tags[group]) {
+          if (!(value in group_values[group])) {
+            group_values[group][value] = 0
+          }
+          group_values[group][value] += 1
+        }
       }
     }
-  }
-  // filtered
-  const _items_filtered = Object.values(items)
-    .filter((item) => {
-      const item_meta = item.meta || {}
-      const item_meta_tags = item_meta.tags || {}
-      return all(
-        Object.keys(filters)
-          .map(group => any(
-            Object.keys(item_meta_tags[group]||{})
-              .map(value => (filters[group]||{})[value] === 1)
-          ))
+    return { group_values, item_search_ts, pagerank_max }
+  }, [items])
+  const items_filtered = React.useMemo(() =>
+    array.arange(items.length)
+      .filter((k) => {
+        const item = items[k]
+        const item_meta = item.meta || {}
+        const item_meta_tags = item_meta.tags || {}
+        return array.all(
+          dict.keys(filters)
+            .map(group => array.any(
+              dict.keys(item_meta_tags[group]||{})
+                .map(value => (filters[group]||{})[value] === 1)
+            ))
+        )
+      }),
+    [items, filters]
+  )
+  const items_filtered_searched = React.useMemo(() => {
+    let items_filtered_search_score_max = 1
+    const items_filtered_search_score: Record<number, number> = {}
+    const items_filtered_searched =
+      !search ? items_filtered
+      : items_filtered
+        .filter((k) => {
+          const _fts = item_search_ts[k]
+          const score = _fts.intersect(search_ts).size
+          items_filtered_search_score[k] = score
+          items_filtered_search_score_max = Math.max(score, items_filtered_search_score_max)
+          return score !== 0
+        })
+    items_filtered_searched.sort((a, b) => {
+      const a_meta = items[a].meta || {}
+      const b_meta = items[b].meta || {}
+      return (
+        ((b_meta.pagerank||0.)/pagerank_max
+          + 2 * ((items_filtered_search_score[b]||0.)/items_filtered_search_score_max))
+        - (
+        ((a_meta.pagerank||0.)/pagerank_max)
+          + 2 * ((items_filtered_search_score[a]||0.)/items_filtered_search_score_max))
       )
     })
-    .filter((item) => {
-      if (_search.size === 0) return true
-      const _fts = tsvector(serialize(item))
-      return _fts.intersect(_search).size !== 0
-    })
-  // sort
-  _items_filtered.sort((a, b) => {
-    const a_meta = a.meta || {}
-    const b_meta = b.meta || {}
-    return (b_meta.pagerank||0) - (a_meta.pagerank||0)
-  })
-
-  const _group_values_filtered: KVCounts = {}
-  for (const k in _items_filtered) {
-    const item = _items_filtered[k]
-    const item_meta = item.meta||{}
-    const item_meta_tags = item_meta.tags || {}
-    for (const group in item_meta_tags) {
-      if (!(group in _group_values_filtered)) {
-        _group_values_filtered[group] = {}
-      }
-      for (const value in item_meta_tags[group]) {
-        if (!(value in _group_values_filtered[group])) {
-          _group_values_filtered[group][value] = 0
+    return items_filtered_searched.map(k => items[k])
+  },
+    [items_filtered, search_ts, item_search_ts, pagerank_max]
+  )
+  const group_values_filtered = React.useMemo(() => {
+    const group_values_filtered: KVCounts = {}
+    for (const k in items_filtered_searched) {
+      const item = items_filtered_searched[k]
+      const item_meta = item.meta||{}
+      const item_meta_tags = item_meta.tags || {}
+      for (const group in item_meta_tags) {
+        if (!(group in group_values_filtered)) {
+          group_values_filtered[group] = {}
         }
-        _group_values_filtered[group][value] += 1
+        for (const value in item_meta_tags[group]) {
+          if (!(value in group_values_filtered[group])) {
+            group_values_filtered[group][value] = 0
+          }
+          group_values_filtered[group][value] += 1
+        }
       }
     }
-  }
+    return group_values_filtered
+  }, [items_filtered_searched])
   return (
-    <div className="flex-grow flex flex-col">
+    <div className="flex-grow flex flex-col mx-4">
       <FormGroup label="Filter">
         <InputGroup
           leftIcon="filter"
@@ -91,15 +118,15 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
       </FormGroup>
       <div className="flex-grow flex flex-row">
         <div className="sm:col-span-12 md:col-span-4 lg:col-span-3">
-          {Object.keys(_group_values)
-            .filter(group => Object.keys(_group_values[group]).length > 1)
+          {dict.keys(group_values)
+            .filter(group => dict.keys(group_values[group]).length > 1)
             .map(group => (
-              <fieldset key={group}>
+              <fieldset key={group} className="pr-2">
                 <legend>{group}</legend>
                 <div className="ml-2 mb-4">
-                  {Object.keys(_group_values[group])
+                  {dict.keys(group_values[group])
                     .map(value => (
-                      <label key={value} className="bp3-control bp3-switch">
+                      <label key={value} className="bp4-control bp4-switch">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -111,7 +138,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
                               if (value in _filters[group]) {
                                 delete _filters[group][value]
                               }
-                              if (Object.keys(_filters[group]).length === 0) {
+                              if (dict.isEmpty(_filters[group])) {
                                 delete _filters[group]
                               }
                             } else {
@@ -124,13 +151,13 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
                             setFilters(_filters)
                           }}
                         />
-                        <span className="bp3-control-indicator"></span>
-                        {value} [{
-                        (_group_values_filtered[group]||{})[value] === _group_values[group][value] ? (
-                          _group_values[group][value]
+                        <span className="bp4-control-indicator"></span>
+                        {value} <span className="whitespace-nowrap">[{
+                        (group_values_filtered[group]||{})[value] === group_values[group][value] ? (
+                          group_values[group][value]
                         ) : (
-                          `${(_group_values_filtered[group]||{})[value]||0} / ${_group_values[group][value]}`
-                        )} card{_group_values[group][value] > 1 ? 's' : ''}]
+                          `${(group_values_filtered[group]||{})[value]||0} / ${group_values[group][value]}`
+                        )} card{group_values[group][value] > 1 ? 's' : ''}]</span>
                       </label>
                   ))}
                 </div>
@@ -152,7 +179,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
             className="flex flex-row gap-2"
             columnClassName="flex-grow flex flex-col gap-2"
           >
-            {_items_filtered.map(item => children(item))}
+            {items_filtered_searched.map(item => children(item))}
           </Masonry>
         </div>
       </div>

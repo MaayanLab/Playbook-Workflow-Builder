@@ -1,7 +1,7 @@
 import React from 'react'
-import { MetaNode } from '@/spec/metanode'
+import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative, Metabolite } from '@/components/core/input/primitives'
+import { Gene, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
 
@@ -9,13 +9,13 @@ const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 })
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 
-const Term_T = (T: Primative) => MetaNode.createData(`Term[${T.name}]`)
+const Term_T = (T: Primative) => MetaNode(`Term[${T.name}]`)
   .meta({
     label: T.label,
     description: `${T.label} Term`,
     color: T.color,
     icon: T.icon,
-    example: T.examples.term,
+    ...(T.extra?.term?.meta || {}),
   })
   .codec(z.string())
   .view(term => {
@@ -23,10 +23,13 @@ const Term_T = (T: Primative) => MetaNode.createData(`Term[${T.name}]`)
   })
   .build()
 
-export const GeneTerm = Term_T(Gene)
+export const DiseaseTerm = Term_T(Disease)
 export const DrugTerm = Term_T(Drug)
+export const GeneTerm = Term_T(Gene)
 export const MetaboliteTerm = Term_T(Metabolite)
-
+export const PathwayTerm = Term_T(Pathway)
+export const PhenotypeTerm = Term_T(Phenotype)
+export const TissueTerm = Term_T(Tissue)
 
 const itemRenderer = (item: unknown, { modifiers: { active, disabled }, handleClick }: { modifiers: { active: boolean, disabled: boolean }, handleClick: React.MouseEventHandler }) => (
   <MenuItem
@@ -48,18 +51,27 @@ const createNewItemRenderer = (item: string, active: boolean, handleClick: React
 const createNewItemFromQuery = (item: unknown) => item+''
 const inputValueRenderer = (item: unknown) => item+''
 
-const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createProcess(`Input[${T.name}]`)
+const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & { data: string }>) => MetaNode(`Input[${T.name}]`)
   .meta({
     label: `${T.label} Input`,
-    description: `Start with a ${T.label} term`,
-    icon: [input_icon, ...T.icon],
+    description: `Start with a ${T.label}`,
+    icon: [input_icon],
+    tags: {
+      Type: {
+        [T.label]: 1,
+      },
+      Cardinality: {
+        Term: 1,
+      },
+    },
+    ...(T.extra?.term?.meta || {}),
   })
   .inputs()
   .output(Term_T)
   .prompt(props => {
     const [item, setItem] = React.useState('')
     const [query, setQuery] = React.useState('')
-    const { items, error } = 'autocomplete' in T && 'term' in T.autocomplete ? T.autocomplete.term(query) : { items: [], error: undefined }
+    const { items, error } = T.extra?.term?.autocomplete !== undefined ? T.extra.term.autocomplete(query) : { items: [], error: undefined }
     if (error) console.warn(error)
     React.useEffect(() => { setItem(props.output || '') }, [props.output])
     return (
@@ -85,24 +97,38 @@ const Input_Term_T = (T: Primative, Term_T: typeof GeneTerm) => MetaNode.createP
           popoverProps={{ minimal: true }}
           onQueryChange={q => setQuery(q)}
         />
-        <Button
-          large
-          type="submit"
-          text="Submit"
-          rightIcon="send-to-graph"
-          onClick={evt => props.submit(item)}
-        />
-        <Button
-          large
-          text="Example"
-          rightIcon="bring-data"
-          onClick={evt => props.submit(T.examples.term)}
-        />
+        {T.extra?.term?.meta?.example !== undefined ?
+          <Button
+            large
+            text="Example"
+            rightIcon="bring-data"
+            onClick={evt => {
+              if (T.extra?.term?.meta?.example !== undefined) {
+                setItem(T.extra.term.meta.example)
+              }
+            }}
+          />
+          : null}
+          <Button
+            large
+            type="submit"
+            text="Submit"
+            rightIcon="send-to-graph"
+            onClick={evt => props.submit(item)}
+          />
       </div>
     )
   })
+  .story(props =>
+    props.output ? `The workflow starts with selecting ${props.output} as the search term.`
+    : `The workflow starts with selecting a search term.`
+  )
   .build()
 
-export const InputGeneTerm = Input_Term_T(Gene, GeneTerm)
+export const InputDiseaseTerm = Input_Term_T(Disease, DiseaseTerm)
 export const InputDrugTerm = Input_Term_T(Drug, DrugTerm)
+export const InputGeneTerm = Input_Term_T(Gene, GeneTerm)
 export const InputMetaboliteTerm = Input_Term_T(Metabolite, MetaboliteTerm)
+export const InputPathwayTerm = Input_Term_T(Pathway, PathwayTerm)
+export const InputPhenotypeTerm = Input_Term_T(Phenotype, PhenotypeTerm)
+export const InputTissueTerm = Input_Term_T(Tissue, TissueTerm)

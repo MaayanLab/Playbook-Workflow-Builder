@@ -1,0 +1,17 @@
+import fpprg from '@/app/fpprg'
+import { z } from 'zod'
+import handler from '@/utils/next-rest'
+import { NotFoundError } from '@/spec/error'
+
+const QueryType = z.object({
+  process_id: z.string(),
+})
+
+export default handler(async (req, res) => {
+  if (req.method !== 'GET') throw new Error('Unsupported method')
+  const { process_id } = QueryType.parse(req.query)
+  const process = await fpprg.getProcess(process_id)
+  if (process === undefined) throw new NotFoundError()
+  const output = await process.output()
+  res.status(200).json(output ? output.toJSON() : null)
+})

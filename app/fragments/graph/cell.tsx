@@ -1,54 +1,57 @@
-import useSWRImmutable from 'swr/immutable'
-import { z } from 'zod'
-import { useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/graph/types'
+import React from 'react'
 import type KRG from '@/core/KRG'
+import { TimeoutError } from '@/spec/error'
+import dynamic from 'next/dynamic'
+import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
+import Head from 'next/head'
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
+
+const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
 export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
-  const router = useRouter()
-  const { data: rawOutput, error: outputError } = useSWRImmutable(`/api/db/process/${head.process.id}/output`)
   const processNode = krg.getProcessNode(head.process.type)
-  const inputs: any = head.process.inputs
-  const outputNode = rawOutput && !outputError ? krg.getDataNode(rawOutput.type) : processNode.output
-  const output = rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput
-  const View = outputNode ? outputNode.view : undefined
-  const Prompt = 'prompt' in processNode ? processNode.prompt : undefined
+  const { data: { output, outputNode }, error: outputError, mutate } = useMetapathOutput(krg, head)
+  const View = outputNode ? ({ output }: { output: any }) => outputNode.view(output) : undefined
   return (
-    <div className="flex-grow flex flex-col">
-      <div className="mb-4">
-        <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
-        {Prompt ? <Prompt
-          inputs={inputs}
-          output={output}
-          submit={async (output) => {
-            const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: head.process.type,
-                data: {
-                  type: processNode.output.spec,
-                  value: processNode.output.codec.encode(output),
-                },
-                inputs,
-              })
-            })
-            const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-            router.push(`/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
-          }}
-        />
-        : processNode.meta.description ? <p className="bp4-ui-text">{processNode.meta.description}</p>
-        : null}
+    <>
+      <Head>
+        <title>Playbook: {processNode.meta.label}</title>
+      </Head>
+      <div className="flex-grow flex flex-col">
+        {'prompt' in processNode ?
+          <Prompt
+            id={id}
+            krg={krg}
+            head={head}
+            processNode={processNode}
+            output={output}
+            autoextend={autoextend}
+          />
+          : <>
+          <div className="mb-4">
+            <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
+            {processNode.meta.description ? <p className="bp4-ui-text"><ReactMarkdown>{processNode.meta.description}</ReactMarkdown></p> : null}
+          </div>
+          <div className="flex-grow flex flex-col py-4">
+            {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error">{outputError.toString()}</div> : null}
+            {!outputNode ? <div>Loading...</div>
+            : <>
+                <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
+                {!View || output === undefined ? <div>Loading...</div>
+                : output === null ? <div>Waiting for input</div>
+                : <View output={output} />}
+              </>}
+              <button
+                className="btn btn-primary"
+                onClick={async (evt) => {
+                  const req = await fetch(`/api/db/process/${head.process.id}/output/delete`, { method: 'POST' })
+                  const res = await req.text()
+                  await mutate()
+                }}
+              >Recompute</button>
+          </div>
+        </>}
       </div>
-      <div className="flex-grow flex flex-col py-4">
-        {outputNode ? (
-          <>
-            <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
-            {View && output ? View(output) : 'Waiting for input'}
-          </>
-        ) : (
-          <div>Loading...</div>
-        )}
-      </div>
-    </div>
+    </>
   )
 }

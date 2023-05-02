@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 
 // A unique name for your prompt is used here
-export const MyPrompt = MetaNode.createProcess('MyPrompt')
+export const MyPrompt = MetaNode('MyPrompt')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'My Prompt',

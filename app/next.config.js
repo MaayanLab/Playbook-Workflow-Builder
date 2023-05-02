@@ -1,9 +1,19 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.NEXT_ANALYZE === 'true',
+})
 const fs = require('fs')
+const path = require('path')
 const dotenv = require('dotenv')
 
 // create .env from .env.example if not present
 if (!fs.existsSync('../.env')) {
-  fs.copyFileSync('../.env.example', '../.env')
+  const envExample = fs.readFileSync(path.join('..', '.env.example')).toString()
+  // Auto-generate NEXTAUTH_SECRET
+  const crypto = require('crypto')
+  fs.writeFileSync(path.join('..', '.env'), envExample.replace(
+    /(\n)?#(NEXTAUTH_SECRET=)(\r?\n)/,
+    `$1$2${crypto.randomBytes(20).toString('hex')}$3`
+  ))
 }
 
 // update environment with .env
@@ -20,8 +30,10 @@ if (!process.env.PUBLIC_URL) process.env.PUBLIC_URL = 'http://127.0.0.1:3000'
 if (!process.env.NEXT_PUBLIC_URL) process.env.NEXT_PUBLIC_URL = process.env.PUBLIC_URL
 if (!process.env.NEXTAUTH_URL_INTERNAL) process.env.NEXTAUTH_URL_INTERNAL = 'http://127.0.0.1:3000'
 if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
+if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
+if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 
-module.exports = {
+module.exports = withBundleAnalyzer({
   experimental: {
     externalDir: true,
   },
@@ -32,9 +44,9 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/sitemap',
+        destination: process.env.LANDING_PAGE,
         permanent: false,
       },
     ]
   }
-}
+})

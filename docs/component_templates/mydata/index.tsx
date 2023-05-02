@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 
 // A unique name for your data type is used here
-export const MyData = MetaNode.createData('MyData')
+export const MyData = MetaNode('MyData')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'My Data',

@@ -1,62 +1,40 @@
+import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
+import { metgene_icon, plot_icon } from '@/icons'
 import { GeneTerm } from '@/components/core/input/term'
-import { GeneSet } from '@/components/core/input/set'
-import { MetGeneSummaryTable } from '../metgene_summary_table'
+import dynamic from 'next/dynamic'
 
-// A unique name for your resolver is used here
-export const MetGeneSummary = MetaNode.createProcess('MetGeneSummary')
-  // Human readble descriptors about this node should go here
+const IFrame = dynamic(() => import('@/app/components/IFrame'))
+
+export const MetGeneSummary = MetaNode('MetGeneSummary')
   .meta({
-    label: 'MetGene Summary',
-    description: 'Compute the MetGene Summary function',
+    label: `MetGENE Summary`,
+    description: 'A dashboard for reviewing gene-centric information for a given gene from metabolomics',
+    icon: [metgene_icon, plot_icon],
   })
-  // This should be a mapping from argument name to argument type
-  //  the types are previously defined Meta Node Data Types
-  .inputs({ gene: GeneTerm })
-  // This should be a single Meta Node Data Type
-  .output(MetGeneSummaryTable)
-  // The resolve function uses the inputs and returns output
-  //  both in the shape prescribed by the data type codecs
-  .resolve(async (props) => {
-    const species_id = "hsa"
-    const geneID_type = "SYMBOL_OR_ALIAS"
-    
-    const gene_ID = props.inputs.gene
-    const vtf = "json"
-    const req = await fetch(`https://bdcw.org/MetGENE/rest/summary/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
-    const res = await req.json()
-    
-
-    //return props.inputs.input
-    return  res
+  .codec(z.object({ gene: z.string() }))
+  .view(value => {
+    return (
+      <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
+        <IFrame
+          className="flex-grow border-0"
+          src={`https://bdcw.org/MetGENE/summary.php?species=hsa&GeneIDType=SYMBOL&anatomy=NA&disease=NA&phenotype=NA&GeneInfoStr=${encodeURIComponent(value.gene)}`}
+        />
+      </div>
+    )
   })
   .build()
 
-  export const MetGeneSummaryGeneSet = MetaNode.createProcess('MetGeneSummaryGeneSet')
-  // Human readble descriptors about this node should go here
+export const MetGeneSearch = MetaNode('MetGeneSearch')
   .meta({
-    label: 'MetGENE Summary with GeneSet',
-    description: 'Compute the MetGENE Summary for a GeneSet',
+    label: `MetGENE Search`,
+    description: 'Identify gene-centric information from Metabolomics.',
+    icon: [metgene_icon],
+    pagerank: 2,
   })
-  // This should be a mapping from argument name to argument type
-  //  the types are previously defined Meta Node Data Types
-  .inputs({ geneset: GeneSet })
-  // This should be a single Meta Node Data Type
-  .output(MetGeneSummaryTable)
-  // The resolve function uses the inputs and returns output
-  //  both in the shape prescribed by the data type codecs
+  .inputs({ gene: GeneTerm })
+  .output(MetGeneSummary)
   .resolve(async (props) => {
-    const species_id = "hsa"
-    const geneID_type = "SYMBOL_OR_ALIAS"
-    
-    const gene_ID = props.inputs.geneset.join(",");
-    const vtf = "json"
-    const req = await fetch(`https://bdcw.org/MetGENE/rest/summary/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
-    const res = await req.json()
-    
-
-    //return props.inputs.input
-    return  res
-    
+    return { gene: props.inputs.gene }
   })
   .build()

@@ -92,6 +92,7 @@ export type IdentifiableMetaNode<T = InternalIdentifiableMetaNode> = {
  */
 export type DataMetaNode<T = InternalDataMetaNode> = IdentifiableMetaNode<T> & {
   kind: 'data'
+  zod: z.ZodType
   codec: Codec<ExtractKey<T, 'data'>>
   view(value: ExtractKey<T, 'data'>): React.ReactElement
 }
@@ -176,7 +177,7 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
           /**
            * Build a DataMetaNode
            */
-          build: () => ({ spec, meta, kind: 'data', codec: 'parse' in codec ? codecFrom(codec) : codec, view }) as DataMetaNode<{ spec: ID, meta: META, data: DATA }>,
+          build: () => ({ spec, meta, kind: 'data', zod: 'parse' in codec ? codec : z.any(), codec: 'parse' in codec ? codecFrom(codec) : codec, view }) as DataMetaNode<{ spec: ID, meta: META, data: DATA }>,
         })
       }),
       /**

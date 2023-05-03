@@ -1,24 +1,11 @@
 import Link from 'next/link'
 import * as Auth from 'next-auth/react'
-import type { Session } from 'next-auth'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
 import ThemeToggle from '@/app/components/ThemeToggle'
+import dynamic from 'next/dynamic'
 
-function UserAvatar({ session }: { session: Session | null }) {
-  if (typeof session?.user?.image === 'string') {
-    return <img src={session.user.image} />
-  } else if (session?.user?.name) {
-    const name_split = session.user.name.split(' ')
-    const first_name = name_split[0]
-    const last_name = name_split[name_split.length-1]
-    return <span className="text-xl">{first_name[0].toUpperCase()}{last_name[0].toUpperCase()}</span>
-  } else if (session?.user?.email) {
-    return <span className="text-xl">{session.user.email[0].toUpperCase()}</span>
-  } else {
-    return <span className="text-xl">U</span>
-  }
-}
+const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
 
 export default function Layout({ children }: React.PropsWithChildren) {
   const publicUrl = usePublicUrl()

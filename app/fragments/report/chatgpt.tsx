@@ -10,7 +10,7 @@ import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
  */
 export function useChatGPT({ session_id }: { session_id?: string }) {
   const [chatGPTAvailable, setChatGPTAvailable] = React.useState(false)
-  const { trigger, isMutating: isAugmentingWithChatGPT, error } = useSWRMutation(`${session_id ? `/api/socket/${session_id}` : ''}/api/chatgpt`, fetcherPOST<{ description: string }, string>)
+  const { trigger, isMutating: isAugmentingWithChatGPT, error } = useSWRMutation(`${session_id ? `/api/socket/${session_id}` : ''}/api/gpt/summarize`, fetcherPOST<{ description: string }, string>)
   const { data: userSession } = useSessionWithId()
   const augmentWithChatGPT = React.useCallback((description: string) => {
     if (!chatGPTAvailable) throw new Error('ChatGPT is unavailable')
@@ -18,7 +18,7 @@ export function useChatGPT({ session_id }: { session_id?: string }) {
   }, [trigger, chatGPTAvailable])
   useAsyncEffect(async (isMounted) => {
     if (userSession?.user === null) return
-    const req = await fetch(`/api/chatgpt`, { method: 'HEAD' })
+    const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/gpt/summarize`, { method: 'HEAD' })
     if (!isMounted()) return
     if (req.status === 200) setChatGPTAvailable(() => true)
   }, [userSession?.user])

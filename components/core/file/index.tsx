@@ -6,8 +6,6 @@ import { file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
-import { downloadFile } from  '@/components/core/file/api/download'
-import { uploadFile, fileFromStream } from  '@/components/core/file/api/upload'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
@@ -71,7 +69,6 @@ export const FileInput = MetaNode('FileInput')
                 const rawDescription = formData.get('description')
                 const description = rawDescription === null ? undefined : rawDescription.toString()
                 const { file: [record] } = await clientUploadFile(formData)
-                console.log({ record })
                 props.submit({ description, ...record })
               }
             }}

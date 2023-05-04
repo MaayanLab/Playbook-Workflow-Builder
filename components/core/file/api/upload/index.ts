@@ -3,8 +3,10 @@ import os from 'os'
 import path from 'path'
 import db from "@/app/db"
 import { createHash } from 'crypto'
-import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
 import type { Writable, Readable } from 'stream'
+import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
+import { toReadable } from '@/utils/readable'
+import { fileAsStream } from '@/components/core/file/api/download'
 
 function statsFromStream(reader: Readable, writer?: Writable) {
   return new Promise<{ sha256: string, size: number }>((resolve, reject) => {
@@ -24,33 +26,33 @@ function statsFromStream(reader: Readable, writer?: Writable) {
   })
 }
 
-export async function fileFromStream(reader: Readable, originalFilename: string) {
-  const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ppwb-')), originalFilename)
+export async function fileFromStream(reader_: Readable | ReadableStream<Uint8Array>, filename: string) {
+  const reader = await toReadable(reader_)
+  const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ppwb-')), filename)
   const writer = fs.createWriteStream(tmp)
   const { sha256, size } = await statsFromStream(reader, writer)
-  return { path: tmp, sha256, size, originalFilename }
+  return { url: `file://${tmp}`, sha256, size, filename }
 }
 
 export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>
 
-export async function uploadFile(file: { path: string, size: number, sha256?: string, originalFilename: string }, session?: SessionWithId) {
+export async function uploadFile(file: { url: string, size: number, sha256?: string, filename: string }, session?: SessionWithId) {
   if (!file.sha256) {
-    const stats = await statsFromStream(fs.createReadStream(file.path))
+    const stats = await statsFromStream(await fileAsStream(file))
     file.sha256 = stats.sha256
     if (file.size !== stats.size) {
       file.size = stats.size
       console.warn('mismatched filesize')
     }
   }
-  const url = `file://${file.path}`
   // TODO: store it in fsspec
   const upload = await db.objects.upload.upsert({
     where: {
-      url,
+      url: file.url,
       sha256: file.sha256,
     },
     create: {
-      url,
+      url: file.url,
       sha256: file.sha256,
       size: file.size,
     },
@@ -64,9 +66,9 @@ export async function uploadFile(file: { path: string, size: number, sha256?: st
       create: {
         user: session.user.id,
         upload: upload.id,
-        filename: file.originalFilename,
+        filename: file.filename,
       },
     })
   }
-  return { url, filename: file.originalFilename, sha256: file.sha256, size: file.size }
+  return { url: file.url, filename: file.filename, sha256: file.sha256, size: file.size }
 }

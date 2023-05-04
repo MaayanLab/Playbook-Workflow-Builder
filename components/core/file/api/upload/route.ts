@@ -21,7 +21,11 @@ export const POST = handler(async (req, res) => {
         return {
           key,
           value: await Promise.all(files.map(async (file) => {
-            return await uploadFile(file)
+            return await uploadFile({
+              url: `file://${file.path}`,
+              size: file.size,
+              filename: file.originalFilename,
+            })
           })),
         }
       })

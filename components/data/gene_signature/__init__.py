@@ -1,19 +1,6 @@
-import re
-import contextlib
-import fsspec
 import numpy as np
 import pandas as pd
-
-@contextlib.contextmanager
-def fsspec_open_as_iterator(url, *args, **kwargs) -> str:
-  with fsspec.open(url, *args, **kwargs) as fr:
-    yield fr
-
-@contextlib.contextmanager
-def fsspec_open_as_path(url, *args, **kwargs) -> str:
-  m = re.match(r'^file://(.+)$', url)
-  assert m, 'protocol not yet supported'
-  yield m.group(1)
+from components.core.file import fsspec_open_as_path, fsspec_open_as_iterator
 
 def signature_from_path(path):
   ''' Read from a bunch of different formats, get a metadata table

@@ -1,10 +1,4 @@
-import fsspec
-import contextlib
-
-@contextlib.contextmanager
-def fsspec_open_as_iterator(url, *args, **kwargs) -> str:
-  with fsspec.open(url, *args, **kwargs) as fr:
-    yield fr
+from components.core.file import fsspec_open_as_iterator
 
 def load_gene_matrix_transpose(file):
   with fsspec_open_as_iterator(file['url']) as fr:

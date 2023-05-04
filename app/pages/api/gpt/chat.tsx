@@ -2,9 +2,12 @@ import handler from '@/utils/next-rest'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
 import { UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
 import { z } from 'zod'
+import dedent from 'ts-dedent'
 
 const GPTRequest = z.object({
   model: z.string(),
+  temperature: z.number(),
+  stop: z.array(z.string()),
   messages: z.array(z.object({
     role: z.string(),
     content: z.string(),
@@ -46,50 +49,18 @@ async function chatGPT(body: z.TypeOf<typeof GPTRequest>) {
 
 const BodyType = z.object({
   messages: z.array(z.object({
-    role: z.enum(['user', 'assistant']),
+    role: z.enum(['system', 'user', 'assistant']),
     content: z.string(),
   })),
 })
 
-const PROMPT = {
-  model: 'gpt-3.5-turbo',
-  temperature: 0.0,
-  messages: [
-    {
-      role: 'system',
-      content: `
-Your task is to perform actions to interact with a user and ultimately answer their questions. You can perform the following actions:
-
-FindComponent - Locate components relevant for the task at hand
-ShowComponent - Show a component to the user as an answer to their question
-Reply - Reply directly to the user to ask follow up questions
-
-Use the following format:
-
-Q: Question to be answered
-T: Thought, you should always think about what to do
-A: Action to take, should be one of ["FindComponent", "ShowComponent", "Reply"]
-I: Input argument for the action
-O: Observation, the result of the action
-... (this Q/T/A/I/O will continue to repeat)
-
-Begin!
-
-Q: I'm looking for drugs which down regulate ACE2.
-T: I should capture the gene the user provided.
-A: Input
-I: { "type": "Gene", "value": "ACE2" }
-T: The user wants drugs, I should find a way to get drugs given a gene.
-A: FindPaths
-I: { "type": "Drugs" }
-O: [{"name": "LINCSL1000ReverseSearchDashboard", "input": "Gene", "output": "Drugs", "description": "A dashboard for performing L1000 Reverse Search queries for a given gene"}]
-`,
-    },
-  ],
-  stop: [
-    '\nO:', // don't try to make the observations yourself
-    '\nQ:', // don't try to ask questions for the user
-  ],
+function find(content: string) {
+  return [
+    { id: 'Gene', description: 'A gene' },
+    { id: 'Drug', description: 'A drug' },
+    { id: 'Metabolite', description: 'A metabolite' },
+    { id: 'Variant', description: 'A genomic variant' },
+  ]
 }
 
 export default handler(async (req, res) => {
@@ -101,24 +72,51 @@ export default handler(async (req, res) => {
   }
   if (req.method !== 'POST') throw new UnsupportedMethodError()
   const body = BodyType.parse(JSON.parse(req.body))
+  const lastMessage = body.messages[body.messages.length-1]
+  if (lastMessage.role !== 'user') throw new Error('Unexpected input')
+  const content = [
+    dedent`
+      You are a workflow builder, you're helping a user construct a workflow.
+      Your first goal is to figure out what the user is looking for and what they can provide.
+
+      Use the following format:
+      Q: the user's message
+      O: possible types and their descriptions
+      A: confirm with the user, of the possible types, what they're looking for and what they can provide
+      ... Repeat Q/O/A until you're certain of the types.
+      F: Looking For: {all,type,ids} Can Provide: {all,type,ids}
+
+      Begin!
+    `,
+    ...body.messages.map(message => {
+      if (message.role === 'user') return `Q: ${message.content}`
+      else if (message.role === 'assistant') return `A: ${message.content}`
+      else return message.content
+    }),
+    `O: ${JSON.stringify(find(lastMessage.content))}`
+  ].join('\n')
   const gptRes = await chatGPT({
-    ...PROMPT,
+    model: 'gpt-3.5-turbo',
+    temperature: 0.0,
     messages: [
-      ...PROMPT.messages,
-      ...body.messages.map(message =>
-        message.role === 'user' ? {
-          role: 'user', content: `Q: ${message.content}`,
-        } : message
-      ),
+      {
+        role: 'user',
+        content,
+      },
+    ],
+    stop: [
+      '\nQ:',
+      '\nO:',
     ],
   })
   const gptResponse = {
-    role: 'assistant',
-    content: (
-      gptRes.choices[0].message.content
+    nodes: {},
+    messages: [{
+      role: 'assistant',
+      content: gptRes.choices[0].message.content
         .replace(/^\n*/g, '')
         .replace(/\n*$/g, '')
-    ),
+    }]
   }
-  res.status(200).send(JSON.stringify(gptResponse))
+  res.status(200).json(gptResponse)
 })

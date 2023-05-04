@@ -8,7 +8,8 @@ import type { Session } from 'next-auth'
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
 
-function Message({ session, role, children }: React.PropsWithChildren<{ session: Session | null, role: 'user' | 'assistant' | 'error' }>) {
+function Message({ session, role, children }: React.PropsWithChildren<{ session: Session | null, role: 'user' | 'assistant' | 'system' | 'error' }>) {
+  if (role === 'system') return null
   return (
     <div className={classNames('chat', { 'chat-end': role === 'user', 'chat-start': role !== 'user' })}>
       <div className="chat-image btn btn-ghost btn-circle avatar placeholder">
@@ -28,8 +29,10 @@ export default function Chat() {
   const [message, setMessage] = React.useState('')
   const [chat, setChat] = React.useState({
     waitingForReply: false,
-    messages: [] as { role: 'user' | 'assistant' | 'error', content: string }[],
+    messages: [] as { role: 'system' | 'user' | 'assistant' | 'error', content: string }[],
+    nodes: {} as Record<number, { id: number, type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown> } }>,
   })
+  console.log(chat)
   return (
     <Layout>
       <Head><title>Chat</title></Head>
@@ -37,7 +40,9 @@ export default function Chat() {
         <Message role="assistant" session={session}>
           I'm an AI-powered chat assistant interface designed to help you access the functionality of the playbook workflow builder. Please start by asking your question of interest, and I'll try my best to help you answer it through the construction of a playbook workflow.
         </Message>
-        {chat.messages.map((message, i) => <Message key={i} role={message.role} session={session}>{message.content}</Message>)}
+        {chat.messages.map((message, i) =>
+          <Message key={i} role={message.role} session={session}>{message.content}</Message>
+        )}
         {chat.waitingForReply ?
           <Message role="assistant" session={session}>
             <progress className="progress w-full"></progress>
@@ -49,16 +54,16 @@ export default function Chat() {
             onSubmit={async (evt) => {
               evt.preventDefault()
               if (chat.waitingForReply) return
-              setChat((cc) => ({ waitingForReply: true, messages: [...cc.messages, { role: 'user', content: message }] }))
+              setChat((cc) => ({ waitingForReply: true, nodes: cc.nodes, messages: [...cc.messages, { role: 'user', content: `Q: ${message}` }] }))
               setMessage(() => '')
               const req = await fetch('/api/gpt/chat', {
                 method: 'POST',
                 body: JSON.stringify({
-                  messages: chat.messages.filter(({ role }) => role !== 'error'),
+                  messages: [...chat.messages, { role: 'user', content: `Q: ${message}`}].filter(({ role }) => role !== 'error'),
                 }),
               })
-              const msg = req.ok ? await req.json() : { role: 'error', content: await req.text() }
-              setChat((cc) => ({ waitingForReply: false, messages: [...cc.messages, msg] }))
+              const res = req.ok ? await req.json() : { nodes: {}, messages: { role: 'error', content: await req.text() } }
+              setChat((cc) => ({ waitingForReply: false, nodes: { ...cc.nodes, ...res.nodes }, messages: [...cc.messages, ...res.messages] }))
             }}
           >
             <input

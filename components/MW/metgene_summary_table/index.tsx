@@ -20,7 +20,7 @@ export const MetGeneSummaryObjArrayC = z.array(
 
 export type MetGeneSummaryObjArray = z.infer<typeof MetGeneSummaryObjArrayC>
 // A unique name for your data type is used here
-export const MetGeneSummaryTable = MetaNode.createData('MetGeneSummaryTable')
+export const MetGeneSummaryTable = MetaNode('MetGeneSummaryTable')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metgene Summary Table',

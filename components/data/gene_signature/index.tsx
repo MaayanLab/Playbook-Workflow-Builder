@@ -51,7 +51,7 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
   .output(GeneSignature)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gene_signature',
-    { kargs: [props.inputs.file] },
+    { kargs: [props.inputs.file.url] },
   ))
   .build()
 

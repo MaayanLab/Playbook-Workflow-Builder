@@ -33,6 +33,8 @@ export * from "./core/input/set"
 components.push("core/input/set")
 export * from "./core/input/term"
 components.push("core/input/term")
+export * from "./core/input/tumor"
+components.push("core/input/tumor")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
 export * from "./data/gene_count_matrix"
@@ -67,6 +69,8 @@ export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/hyposet"
 components.push("service/hyposet")
+export * from "./service/kf"
+components.push("service/kf")
 export * from "./service/idg"
 components.push("service/idg")
 export * from "./service/mygeneinfo"

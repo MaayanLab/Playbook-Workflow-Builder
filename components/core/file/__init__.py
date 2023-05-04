@@ -50,13 +50,13 @@ def upsert_file(suffix=''):
     tmp.unlink()
 
 @contextlib.contextmanager
-def fsspec_open_as_iterator(url, *args, **kwargs) -> str:
+def file_as_stream(url, *args, **kwargs) -> str:
   import fsspec
   with fsspec.open(url, *args, **kwargs) as fr:
     yield fr
 
 @contextlib.contextmanager
-def fsspec_open_as_path(url, *args, **kwargs) -> str:
+def file_as_path(url, *args, **kwargs) -> str:
   m = re.match(r'^file://(.+)$', url)
   assert m, 'protocol not yet supported'
   yield m.group(1)

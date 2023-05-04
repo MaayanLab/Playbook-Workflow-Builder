@@ -1,21 +1,21 @@
 import numpy as np
 import pandas as pd
-from components.core.file import fsspec_open_as_path, fsspec_open_as_iterator
+from components.core.file import file_as_path, file_as_stream
 
 def signature_from_path(path):
   ''' Read from a bunch of different formats, get a metadata table
   '''
   if path.endswith('.csv'):
-    with fsspec_open_as_iterator(path, 'r') as fr:
+    with file_as_stream(path, 'r') as fr:
       return pd.read_csv(fr, index_col=0)
   elif path.endswith('.tsv'):
-    with fsspec_open_as_iterator(path, 'r') as fr:
+    with file_as_stream(path, 'r') as fr:
       return pd.read_csv(fr, sep='\t', index_col=0)
   elif path.endswith('.txt') or path.endswith('.tab') or path.endswith('.data'):
-    with fsspec_open_as_iterator(path, 'r') as fr:
+    with file_as_stream(path, 'r') as fr:
       return pd.read_csv(fr, sep=None, index_col=0, engine='python')
   elif path.endswith('.xlsx'):
-    with fsspec_open_as_path(path, 'r') as fr:
+    with file_as_path(path, 'r') as fr:
       return pd.read_excel(fr, index_col=0)
   else:
     raise NotImplementedError

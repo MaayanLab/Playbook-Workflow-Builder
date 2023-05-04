@@ -16,6 +16,7 @@
     "nodemailer": "^6.8.0",
     "prismjs": "^1.29.0",
     "react-markdown": "^8.0.6",
+    "raw-body": "^2.5.2",
     "react-masonry-css": "^1.0.16",
     "react-simple-code-editor": "^0.13.1",
     "use-async-effect": "^2.2.7",

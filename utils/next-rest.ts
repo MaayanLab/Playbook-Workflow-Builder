@@ -1,9 +1,22 @@
 import { ResponseCodedError } from '@/spec/error'
+import getRawBody from 'raw-body'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-const handler = (handler_: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) => async (req: NextApiRequest, res: NextApiResponse) => {
+export type NextApiRequestWithExtras = NextApiRequest & { json: () => Promise<any> }
+export type RouteHandler = ReturnType<typeof handler>
+
+function augmentRequestWithExtras(req: NextApiRequest) {
+  async function json() {
+    const body = await getRawBody(req)
+    return JSON.parse(body.toString())
+  }
+  Object.assign(req, { json })
+  return req as NextApiRequestWithExtras
+}
+
+const handler = (handler_: (req: NextApiRequestWithExtras, res: NextApiResponse) => Promise<void>) => async (req: NextApiRequest, res: NextApiResponse, { throwOnError = false }: { throwOnError?: boolean } = {}) => {
   try {
-    await handler_(req, res)
+    await handler_(augmentRequestWithExtras(req), res)
   } catch (e) {
     res
       .status(('error_code' in (e as ResponseCodedError)) ? (e as ResponseCodedError).error_code : 500)

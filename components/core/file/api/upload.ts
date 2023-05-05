@@ -18,8 +18,10 @@ function sha256FromFile(path: string) {
 }
 
 export default handler(async (req, res) => {
+  /*
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
+  */
   if (req.method !== 'POST') throw new UnsupportedMethodError()
   const form = new multiparty.Form({ autoFiles: true })
   const raw = await new Promise<{ fields: Record<string, string[]>, files: Record<string, multiparty.File[]> }>((resolve, reject) => {
@@ -50,11 +52,11 @@ export default handler(async (req, res) => {
             })
             await db.objects.user_upload.upsert({
               where: {
-                user: session.user.id,
+                //user: session.user.id,
                 upload: upload.id,
               },
               create: {
-                user: session.user.id,
+                //user: session.user.id,
                 upload: upload.id,
                 filename: file.originalFilename,
               },

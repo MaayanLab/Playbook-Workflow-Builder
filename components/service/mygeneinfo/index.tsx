@@ -1,9 +1,10 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
+import { FileURL } from '@/components/core/file'
 import { GeneTerm } from '@/components/core/input/term'
 import { RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { gene_icon, mygeneinfo_icon } from '@/icons'
+import { gene_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -111,3 +112,90 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     return response.data.ld.RegulatoryElement.map(({ entId }) => entId );
   })
   .build()
+  
+  const CTDResponseInfoC = z.object({ 
+      "highlyConnectedGenes": z.any(),
+      "guiltyByAssociationGenes": z.any(),
+      "jsonGraph": z.object({ 
+        "nodes": z.array(z.object({
+          "name": z.string(),
+          "type": z.string()
+        })),
+        "interactions": z.array(z.object({
+          "source": z.string(),
+          "target": z.string()
+        })),
+      })
+  });
+  export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
+
+  
+  export async function getCTDResponse(formData: FormData): Promise<CTDResponseInfo> {
+    const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/file`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData
+    })
+    return await res.json()
+  }
+
+  export const CTDResponseInfo = MetaNode('CTDResponseInfo')
+  .meta({
+    label: 'CTDResponseInfo',
+    description: '',
+    icon: [datafile_icon]
+  })
+  .codec()
+  .view(props => {
+    return(
+      <div>
+        {JSON.stringify(props)}
+      </div>
+    )
+  }).build()
+/*
+        <p>Highly Connected Genes num: {props.highlyConnectedGenes.length}</p>
+        <p>Guilty By Association Genes num: {props.guiltyByAssociationGenes.length}</p>
+        <p>Json Graph Nodes num: {props.jsonGraph.nodes.length}</p>
+*/
+
+
+
+
+
+
+export const GeneCTD = MetaNode('GeneCTD')
+  .meta({
+    label: `GeneCTD`,
+    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
+    icon: [file_transfer_icon]
+  })
+  .inputs({ file: FileURL })
+  .output(CTDResponseInfo)
+  .resolve(async (props) => {
+    const formData = new FormData();
+ 
+    async function download(file: { url: string }) {
+      if (file.url.startsWith('file://')) {
+        const fs = typeof window === 'undefined' ? require('fs') : undefined;
+        return fs.readFileSync(file.url.slice('file://'.length)).toString();
+      } else {
+        const req = await fetch(file.url);
+        return await req.text();
+      }
+    }
+
+    const myFileContent = await download({"url": props.inputs.file});
+    //let file = new File([myFileContent], "CTD_test.csv", { type: "text/html" });
+    formData.append('csvGenesFile', new Blob([myFileContent], { type: "text/html" }), "CTD_test.csv");
+
+    return await getCTDResponse(formData);
+  })
+  .build()
+
+
+  
+  
+   

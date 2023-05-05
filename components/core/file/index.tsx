@@ -37,11 +37,6 @@ export const FileInput = MetaNode('FileInput')
     const { data: session } = useSessionWithId()
     return (
       <div>
-        {session === null ? (
-          <div className="alert alert-warning shadow-lg block">
-            You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
-          </div>
-        ) : (
           <form
             className="my-2 inline-flex flex-col"
             onSubmit={async (evt) => {
@@ -93,8 +88,18 @@ export const FileInput = MetaNode('FileInput')
               />
             </div>
           </form>
-        )}
       </div>
     )
   })
   .build()
+
+
+  /*
+            {session === null ? (
+            <div className="alert alert-warning shadow-lg block">
+              You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
+            </div>
+          ) : 
+          (
+          )}
+  */

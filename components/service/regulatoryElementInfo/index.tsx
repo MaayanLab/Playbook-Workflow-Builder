@@ -54,7 +54,7 @@ export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
 })
 .codec(MyRegulatoryElementC)
 .view(regElem => (
-  <div> {regElem.data.entId} {regElem.data.entType}<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end}</div>  
+  <div> {regElem.data.entId} {regElem.data.entType}<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>  
 ))
 .build()
 

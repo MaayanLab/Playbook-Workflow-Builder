@@ -23,6 +23,7 @@
     "start:worker": "ts-node cli/resolve-process-worker.ts",
     "start:run-wes-worker": "ts-node cli/run-wes-worker.ts",
     "start": "npm run --workspace=app start",
+    "chat": "ts-node cli/chat.ts",
     "version": "ts-node cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
     "postversion": "docker-compose push"
   },

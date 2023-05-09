@@ -1,10 +1,17 @@
+import krg from '@/app/krg'
 import handler from '@/utils/next-rest'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
 import { UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
 import { z } from 'zod'
-import dedent from 'ts-dedent'
+import * as dict from '@/utils/dict'
+import * as array from '@/utils/array'
+import type { ProcessMetaNode } from '@/spec/metanode'
 
-const GPTRequest = z.object({
+function strip(s: string) {
+  return s.replace(/^\s+/g, '').replace(/\s+$/g, '')
+}
+
+const OpenAICompletionsRequest = z.object({
   model: z.string(),
   temperature: z.number(),
   stop: z.array(z.string()),
@@ -14,7 +21,7 @@ const GPTRequest = z.object({
   })),
 })
 
-const GPTResponse = z.object({
+const OpenAICompletionsResponse = z.object({
   choices: z.array(z.object({
     message: z.object({
       role: z.string(),
@@ -23,29 +30,76 @@ const GPTResponse = z.object({
   }))
 })
 
-async function chatGPT(body: z.TypeOf<typeof GPTRequest>) {
-  const gptReq = await fetch(`https://api.openai.com/v1/chat/completions`, {
+async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', temperature = 0.7, ...kwargs }: Partial<z.TypeOf<typeof OpenAICompletionsRequest>>) {
+  console.log(`gpt> ${JSON.stringify(messages)}`)
+  const req = await fetch(`https://api.openai.com/v1/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ messages, model, temperature, ...kwargs }),
   })
-  const gptRes = GPTResponse.parse(await gptReq.json())
-  return gptRes
+  return OpenAICompletionsResponse.parse(await req.json())
 }
 
-/**
- * 
- * Q: I'm looking for drugs which down regulate ACE2.
- * T: I need to find a component to help the user answer their question.
- * A: FindComponents
- * I: { "input": [{ "type": "Gene", "data": "ACE2" }], "output": [{ "type": "Drug" }] }
- * O: [{"name": "LINCSL1000ReverseSearchDashboard", "description": "A dashboard for performing L1000 Reverse Search queries for a given gene"}]
- * T: I can reply to the user.
- * R: LINCSL1000ReverseSearchDashboard
- */
+async function identifyInputSpec(question: string) {
+  const res = await openaiCompletions({
+    messages: [{
+      role: 'user',
+      content: [
+        'Consider the following question:',
+        question,
+        'Consider choices below:',
+        ...array.unique(krg.getNextProcess('').map((node, i) => `${node.spec}: ${node.output.meta.description}`)),
+        '*Pluralality implies sets rather than terms.',
+        'Respond with a precise JSON serialized mapping id to the applicable information from the question.',
+      ].join('\n'),
+    }]
+  })
+  try {
+    return { success: true, data: JSON.parse(strip(res.choices[0].message.content)) }
+  } catch (e) {
+    return { success: false, message: strip(res.choices[0].message.content) }
+  }
+}
+
+function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, output?: string }) {
+  if (node.story && Object.keys(node.inputs).length === 1) {
+    try {
+      node.story({
+        inputs: { [Object.keys(node.inputs)[0] as any]: input || '' },
+        output,
+      })
+    } catch (e) {}
+  }
+  return node.meta.description
+}
+
+async function identifyWorkflow(question: string, inputSpec: Record<string, string>) {
+  const choices = dict.items(inputSpec).flatMap(({ key, value }) =>
+    krg.getNextProcess(krg.getProcessNode(key).output.spec).map(node => ({
+      input: key, inputData: value, output: node.spec,
+      description: `${nodeDesc(krg.getProcessNode(key), { output: value })}. ${nodeDesc(node, { input: value })}.`
+    }))
+  )
+  const res = await openaiCompletions({
+    messages: [{
+      role: 'user',
+      content: [
+        'Consider the following question:',
+        question,
+        'Consider choices below:',
+        ...choices.map((choice, i) => `${i}: ${choice.description}`),
+        'Respond with the most appropriate choice to the applicable information from the question. (e.g. 1)',
+      ].join('\n'),
+    }]
+  })
+  const m = /(\d+)/.exec(strip(res.choices[0].message.content))
+  if (!m || !((+m[1]) in choices)) return strip(res.choices[0].message.content)
+  const choice = choices[+m[1]]
+  return '```workflow\n' + JSON.stringify([{ spec: choice.input, data: choice.inputData }, { spec: choice.output }]) + '\n```'
+}
 
 const BodyType = z.object({
   messages: z.array(z.object({
@@ -53,15 +107,6 @@ const BodyType = z.object({
     content: z.string(),
   })),
 })
-
-function find(content: string) {
-  return [
-    { id: 'Gene', description: 'A gene' },
-    { id: 'Drug', description: 'A drug' },
-    { id: 'Metabolite', description: 'A metabolite' },
-    { id: 'Variant', description: 'A genomic variant' },
-  ]
-}
 
 export default handler(async (req, res) => {
   const session = await getServerSessionWithId(req, res)
@@ -73,50 +118,8 @@ export default handler(async (req, res) => {
   if (req.method !== 'POST') throw new UnsupportedMethodError()
   const body = BodyType.parse(JSON.parse(req.body))
   const lastMessage = body.messages[body.messages.length-1]
-  if (lastMessage.role !== 'user') throw new Error('Unexpected input')
-  const content = [
-    dedent`
-      You are a workflow builder, you're helping a user construct a workflow.
-      Your first goal is to figure out what the user is looking for and what they can provide.
-
-      Use the following format:
-      Q: the user's message
-      O: possible types and their descriptions
-      A: confirm with the user, of the possible types, what they're looking for and what they can provide
-      ... Repeat Q/O/A until you're certain of the types.
-      F: Looking For: {all,type,ids} Can Provide: {all,type,ids}
-
-      Begin!
-    `,
-    ...body.messages.map(message => {
-      if (message.role === 'user') return `Q: ${message.content}`
-      else if (message.role === 'assistant') return `A: ${message.content}`
-      else return message.content
-    }),
-    `O: ${JSON.stringify(find(lastMessage.content))}`
-  ].join('\n')
-  const gptRes = await chatGPT({
-    model: 'gpt-3.5-turbo',
-    temperature: 0.0,
-    messages: [
-      {
-        role: 'user',
-        content,
-      },
-    ],
-    stop: [
-      '\nQ:',
-      '\nO:',
-    ],
-  })
-  const gptResponse = {
-    nodes: {},
-    messages: [{
-      role: 'assistant',
-      content: gptRes.choices[0].message.content
-        .replace(/^\n*/g, '')
-        .replace(/\n*$/g, '')
-    }]
-  }
-  res.status(200).json(gptResponse)
+  if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
+  const inputs = await identifyInputSpec(lastMessage.content)
+  const content = inputs.success ? await identifyWorkflow(lastMessage.content, inputs.data) : inputs.message
+  res.status(200).json({ role: 'assistant', content })
 })

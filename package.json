@@ -26,6 +26,7 @@
     "start:wes-worker": "NODE_ENV=production ts-node cli/wes-worker.ts",
     "start:ssl": "concurrently \"npm run start -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start": "npx --workspace=app next start",
+    "chat": "ts-node cli/chat.ts",
     "version": "docker build -t maayanlab/playbook-partnership:${npm_package_version} .",
     "postversion": "docker push maayanlab/playbook-partnership:${npm_package_version}"
   },

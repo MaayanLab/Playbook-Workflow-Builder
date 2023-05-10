@@ -57,7 +57,7 @@ export const LINCSL1000ReverseSearchDashboard = MetaNode('LINCSL1000ReverseSearc
 export const LINCSL1000ReverseSearch = MetaNode('LINCSL1000ReverseSearch')
   .meta({
     label: `LINCS L1000 Reverse Search`,
-    description: 'Identify RNA-seq-like LINCS L1000 Signatures which reverse the expression of the gene.',
+    description: 'Identify RNA-seq-like LINCS L1000 Signatures which reverse the expression of the gene',
     icon: [lincs_icon],
     pagerank: 2,
   })
@@ -74,7 +74,7 @@ export const LINCSL1000ReverseSearch = MetaNode('LINCSL1000ReverseSearch')
 export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseSearchExtract[Drug, Up]')
   .meta({
     label: `Extract Up Regulating Perturbagens`,
-    description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene.',
+    description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene',
     icon: [up_icon],
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
@@ -95,7 +95,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
 export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000ReverseSearchExtract[Drug, Down]')
   .meta({
     label: `Extract Down Regulating Perturbagens`,
-    description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene.',
+    description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene',
     icon: [down_icon],
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
@@ -116,7 +116,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
 export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseSearchExtract[Gene, Up]')
   .meta({
     label: `Extract Up Regulating CRISPR KO Genes`,
-    description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene.',
+    description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene',
     icon: [up_icon],
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
@@ -137,7 +137,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
 export const LINCSL1000ReverseSearchExtractGeneDown = MetaNode('LINCSL1000ReverseSearchExtract[Gene, Down]')
   .meta({
     label: `Extract Down Regulating CRISPR KOs`,
-    description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene.',
+    description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene',
     icon: [down_icon],
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })

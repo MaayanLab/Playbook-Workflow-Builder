@@ -73,7 +73,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
       MetaNode(`SuggestInteractiveEdge[${input.spec}]`)
         .meta({
           label: 'Suggest a visualization method',
-          description: `This would visualize the ${input.meta.label || input.spec}. Provide a description about what should be here.`,
+          description: `This would visualize the ${input.meta.label || input.spec}. Provide a description about what should be here`,
           pagerank: -99,
         })
         .inputs({ input })
@@ -86,7 +86,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
       MetaNode(`SuggestResolveEdge[${input.spec}]`)
         .meta({
           label: 'Suggest an algorithm or data transformation method',
-          description: `This would transform the ${input.meta.label || input.spec}. Provide a description about what should be here.`,
+          description: `This would transform the ${input.meta.label || input.spec}. Provide a description about what should be here`,
           pagerank: -99,
         })
         .inputs({ input })

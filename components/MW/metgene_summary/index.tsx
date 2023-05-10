@@ -28,7 +28,7 @@ export const MetGeneSummary = MetaNode('MetGeneSummary')
 export const MetGeneSearch = MetaNode('MetGeneSearch')
   .meta({
     label: `MetGENE Search`,
-    description: 'Identify gene-centric information from Metabolomics.',
+    description: 'Identify gene-centric information from Metabolomics',
     icon: [metgene_icon],
     pagerank: 2,
   })

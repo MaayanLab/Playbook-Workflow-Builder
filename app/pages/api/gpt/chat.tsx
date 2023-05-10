@@ -30,8 +30,8 @@ const OpenAICompletionsResponse = z.object({
   }))
 })
 
-async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', temperature = 0.7, ...kwargs }: Partial<z.TypeOf<typeof OpenAICompletionsRequest>>) {
-  console.log(`gpt> ${JSON.stringify(messages)}`)
+async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', temperature = 0.0, ...kwargs }: Partial<z.TypeOf<typeof OpenAICompletionsRequest>>) {
+  console.debug(`send ${JSON.stringify(messages)}`)
   const req = await fetch(`https://api.openai.com/v1/chat/completions`, {
     method: 'POST',
     headers: {
@@ -40,7 +40,9 @@ async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', tempe
     },
     body: JSON.stringify({ messages, model, temperature, ...kwargs }),
   })
-  return OpenAICompletionsResponse.parse(await req.json())
+  const res = await req.json()
+  console.debug(`recv ${JSON.stringify(res)}`)
+  return OpenAICompletionsResponse.parse(res)
 }
 
 async function identifyInputSpec(question: string) {
@@ -50,17 +52,17 @@ async function identifyInputSpec(question: string) {
       content: [
         'Consider the following question:',
         question,
-        'Consider choices below:',
-        ...array.unique(krg.getNextProcess('').map((node, i) => `${node.spec}: ${node.output.meta.description}`)),
+        'Consider the choices below:',
+        JSON.stringify(krg.getNextProcess('').map((node, i) => ({ id: node.spec, description: node.output.meta.description }))),
         '*Pluralality implies sets rather than terms.',
-        'Respond with a precise JSON serialized mapping id to the applicable information from the question.',
+        'Respond with a precise JSON serialized mapping choice id to the applicable information from the question.',
       ].join('\n'),
     }]
   })
   try {
-    return { success: true, data: JSON.parse(strip(res.choices[0].message.content)) }
+    return { success: true, content: JSON.parse(strip(res.choices[0].message.content)) }
   } catch (e) {
-    return { success: false, message: strip(res.choices[0].message.content) }
+    return { success: false, content: strip(res.choices[0].message.content) }
   }
 }
 
@@ -77,28 +79,29 @@ function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, ou
 }
 
 async function identifyWorkflow(question: string, inputSpec: Record<string, string>) {
-  const choices = dict.items(inputSpec).flatMap(({ key, value }) =>
-    krg.getNextProcess(krg.getProcessNode(key).output.spec).map(node => ({
+  const choices = dict.items(inputSpec).flatMap(({ key, value }) => {
+    const inputNode = krg.getProcessNode(key)
+    if (!inputNode) return []
+    return krg.getNextProcess(inputNode.output.spec).map(node => ({
       input: key, inputData: value, output: node.spec,
-      description: `${nodeDesc(krg.getProcessNode(key), { output: value })}. ${nodeDesc(node, { input: value })}.`
+      description: `${nodeDesc(inputNode, { output: value })}. ${nodeDesc(node, { input: value })}.`,
     }))
-  )
+  })
   const res = await openaiCompletions({
     messages: [{
       role: 'user',
       content: [
         'Consider the following question:',
         question,
-        'Consider choices below:',
-        ...choices.map((choice, i) => `${i}: ${choice.description}`),
-        'Respond with the most appropriate choice to the applicable information from the question. (e.g. 1)',
+        'Consider the choices below:',
+        JSON.stringify(choices.map((choice, i) => ({ id: i, description: choice.description }))),
+        'Respond only with the most appropriate choice id for addressing the question.',
       ].join('\n'),
     }]
   })
-  const m = /(\d+)/.exec(strip(res.choices[0].message.content))
-  if (!m || !((+m[1]) in choices)) return strip(res.choices[0].message.content)
-  const choice = choices[+m[1]]
-  return '```workflow\n' + JSON.stringify([{ spec: choice.input, data: choice.inputData }, { spec: choice.output }]) + '\n```'
+  const choice = choices[Number(strip(res.choices[0].message.content))]
+  if (!choice) return { success: false, content: strip(res.choices[0].message.content) }
+  else return { success: true, content: '```workflow\n' + JSON.stringify([{ spec: choice.input, data: choice.inputData }, { spec: choice.output }]) + '\n```' }
 }
 
 const BodyType = z.object({
@@ -120,6 +123,6 @@ export default handler(async (req, res) => {
   const lastMessage = body.messages[body.messages.length-1]
   if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
   const inputs = await identifyInputSpec(lastMessage.content)
-  const content = inputs.success ? await identifyWorkflow(lastMessage.content, inputs.data) : inputs.message
+  const { content } = inputs.success ? await identifyWorkflow(lastMessage.content, inputs.content) : inputs
   res.status(200).json({ role: 'assistant', content })
 })

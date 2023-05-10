@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .text-shadow {
+    text-shadow: 1px 0 0;
+  }
+
+  .text-shadow-none {
+    text-shadow: none;
+  }
+}
+
 body, html {
   height: 100vh;
   max-width: 100vw;

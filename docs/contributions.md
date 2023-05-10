@@ -24,10 +24,19 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
     ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
 3. Install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
     ```bash
+    # install dependencies
     npm i
+    # start dev server
     npm run dev
     ```
     ![Prototype UI screenshot](./figures/prototype-ui.png)
+4. (OPTIONAL) Install existing python dependencies to execute some of the existing components.
+    ```bash
+    # collect requirements.txt from components into one
+    npm run codegen:requirements
+    # install them
+    pip install -r requirements.txt
+    ```
 5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run codegen:components` which adds it to the full graph.
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.

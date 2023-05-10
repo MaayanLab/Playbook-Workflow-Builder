@@ -4,6 +4,7 @@ Newly created files should be upserted with the upsert_file function,
 this will ensure the file is accessible to any worker that needs to
 access it.
 '''
+import re
 import os
 import tempfile
 import requests
@@ -47,3 +48,15 @@ def upsert_file(suffix=''):
   finally:
     # we remove the temporary file
     tmp.unlink()
+
+@contextlib.contextmanager
+def file_as_stream(url, *args, **kwargs) -> str:
+  import fsspec
+  with fsspec.open(url, *args, **kwargs) as fr:
+    yield fr
+
+@contextlib.contextmanager
+def file_as_path(url, *args, **kwargs) -> str:
+  m = re.match(r'^file://(.+)$', url)
+  assert m, 'protocol not yet supported'
+  yield m.group(1)

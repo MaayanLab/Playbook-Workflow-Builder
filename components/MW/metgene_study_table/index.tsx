@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { additional_info_icon, study_icon } from '@/icons';
 
 const MetGeneStudyObjC = z.object({
   KEGG_COMPOUND_ID: z.string(),
@@ -24,6 +25,7 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
   .meta({
     label: 'MetGENE Studies Table',
     description: 'Studies table corresponding to gene',
+    icon: [study_icon, additional_info_icon],
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
@@ -52,7 +54,8 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
           
           return (
             <tr key={key}>
-              <td>{val.KEGG_COMPOUND_ID}</td>
+              
+              <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "_blank">{val.KEGG_COMPOUND_ID}</a></td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
                 {study_id_arr.map((study_id: string, i: number) => 

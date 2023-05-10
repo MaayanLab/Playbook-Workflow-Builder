@@ -1,19 +1,27 @@
 import type { OAuthConfig, OAuthUserConfig } from "next-auth/providers"
 
-export default function ORCIDProvider<P extends { sub:string, name: string, email: string }>(options: OAuthUserConfig<P>): OAuthConfig<P> {
+export default function ORCIDProvider<P extends { sub: string, given_name: string, family_name: string, }>(options: OAuthUserConfig<P>, db: any): OAuthConfig<P> {
   return {
     id: 'orcid',
     name: 'ORCID',
     type: 'oauth',
     wellKnown: "https://orcid.org/.well-known/openid-configuration",
-    authorization: { params: { scope: "openid email" } },
+    authorization: { params: { scope: "openid" } },
     idToken: true,
     checks: ["pkce", "state"],
-    profile(profile) {
+    async profile(profile, tokens) {
+      // keep account up to date
+      // @ts-ignore
+      await db.objects.account.update({
+        where: {
+          provider: 'orcid',
+          providerAccountId: profile.sub,
+        },
+        data: tokens,
+      })
       return {
         id: profile.sub,
-        name: profile.name,
-        email: profile.email,
+        name: `${profile.given_name} ${profile.family_name}`,
       }
     },
     style: {

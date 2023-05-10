@@ -4,7 +4,9 @@ import dynamic from 'next/dynamic'
 import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import classNames from 'classnames'
 
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
@@ -87,197 +89,199 @@ export default function App() {
     }
   }
   return (
-    <div className={`${styles.App} container mx-auto py-2`}>
-      <div className={styles.Process}>
-        <progress className="progress w-100" value={loading ? undefined : 0}></progress>
-        <div className="prose mb-2">
-          <h2>Apply Process</h2>
-        </div>
-        <div className="flex flex-col gap-1">
-          {krg.getNextProcess(currentNode.type).map(proc =>
-            <div key={proc.spec} className="whitespace-nowrap">
-              <button
-                className={[
-                  dict.values(proc.inputs)
-                    .some((i) => array.ensureOne(i).spec === currentNode.type) ? 'font-bold' : '',
-                  'btn btn-sm btn-secondary rounded-sm',
-                ].join(' ')}
-                disabled={!array.all(
-                  // all inputs should be satisfiable
-                  dict.values(proc.inputs).map((value) => {
-                    if (Array.isArray(value)) {
-                      return dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).length > 1
+    <Layout>
+      <div className={styles.App}>
+        <div className={styles.Process}>
+          <progress className="progress w-100" value={loading ? undefined : 0}></progress>
+          <div className="prose mb-2">
+            <h2>Apply Process</h2>
+          </div>
+          <div className="flex flex-col gap-1">
+            {krg.getNextProcess(currentNode.type).map(proc =>
+              <div key={proc.spec} className="whitespace-nowrap">
+                <button
+                  className={[
+                    dict.values(proc.inputs)
+                      .some((i) => array.ensureOne(i).spec === currentNode.type) ? 'font-bold' : '',
+                    'btn btn-sm btn-secondary rounded-sm',
+                  ].join(' ')}
+                  disabled={!array.all(
+                    // all inputs should be satisfiable
+                    dict.values(proc.inputs).map((value) => {
+                      if (Array.isArray(value)) {
+                        return dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).length > 1
+                      } else {
+                        return dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).length == 1
+                      }
+                    })
+                  )}
+                  onClick={async () => {
+                    if ('prompt' in proc) {
+                      const inputs: Record<string, string | string[]> = {}
+                      dict.items(proc.inputs).forEach(({ key, value }) => {
+                        if (Array.isArray(value)) {
+                          inputs[key] = []
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
+                            (inputs[key] as string[]).push(data.nodes[id].data)
+                          })
+                        } else {
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
+                            inputs[key] = data.nodes[id].data
+                          })
+                        }
+                      })
+                      appendData({
+                        type: proc.output.spec,
+                        data: '',
+                        prompt: {
+                          type: proc.spec,
+                          inputs,
+                        },
+                      })
                     } else {
-                      return dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).length == 1
-                    }
-                  })
-                )}
-                onClick={async () => {
-                  if ('prompt' in proc) {
-                    const inputs: Record<string, string | string[]> = {}
-                    dict.items(proc.inputs).forEach(({ key, value }) => {
-                      if (Array.isArray(value)) {
-                        inputs[key] = []
-                        dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                          (inputs[key] as string[]).push(data.nodes[id].data)
+                      setLoading(() => true)
+                      const formData = new FormData()
+                      dict.items(proc.inputs).forEach(({ key, value }) => {
+                        if (Array.isArray(value)) {
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
+                            formData.append(key, data.nodes[id].data)
+                          })
+                        } else {
+                          dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
+                            formData.append(key, data.nodes[id].data)
+                          })
+                        }
+                      })
+                      try {
+                        const req = await fetch(`/api/resolver/${proc.spec}`, {
+                          method: 'POST',
+                          body: formData,
                         })
-                      } else {
-                        dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                          inputs[key] = data.nodes[id].data
+                        const res = await req.json()
+                        appendData({
+                          type: req.status === 200 ? proc.output.spec : 'Error',
+                          data: res,
                         })
+                      } catch (e) {
+                        appendData({
+                          type: 'Error',
+                          data: JSON.stringify((e as Error).toString()),
+                        })
+                      } finally {
+                        setLoading(() => false)
                       }
-                    })
-                    appendData({
-                      type: proc.output.spec,
-                      data: '',
-                      prompt: {
-                        type: proc.spec,
-                        inputs,
-                      },
-                    })
-                  } else {
-                    setLoading(() => true)
-                    const formData = new FormData()
-                    dict.items(proc.inputs).forEach(({ key, value }) => {
-                      if (Array.isArray(value)) {
-                        dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                          formData.append(key, data.nodes[id].data)
-                        })
-                      } else {
-                        dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                          formData.append(key, data.nodes[id].data)
-                        })
-                      }
-                    })
-                    try {
-                      const req = await fetch(`/api/resolver/${proc.spec}`, {
-                        method: 'POST',
-                        body: formData,
-                      })
-                      const res = await req.json()
-                      appendData({
-                        type: req.status === 200 ? proc.output.spec : 'Error',
-                        data: res,
-                      })
-                    } catch (e) {
-                      appendData({
-                        type: 'Error',
-                        data: JSON.stringify((e as Error).toString()),
-                      })
-                    } finally {
-                      setLoading(() => false)
                     }
-                  }
-                }}
-              >{proc.meta.label}</button>
-              <span> =&gt; </span>
-              <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className={styles.Data}>
-        <div className="prose">
-          <h2>Current Data</h2>
-        </div>
-        <div style={{
-          flex: '1 0 auto',
-          height: 0,
-          overflow: 'auto',
-        }}>
-          <JsonEditor
-            value={currentNode.data}
-            onValueChange={value => {
-              setData(data => ({ ...data,
-                nodes: {
-                  ...data.nodes,
-                  [data.current]: {
-                    ...data.nodes[data.current],
-                    data: value,
-                  },
-                },
-              }))
-            }}
-            style={{
-              fontFamily: 'monospace',
-              fontSize: 12,
-              border: '1px solid black',
-            }}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-row flex-wrap mt-1 gap-1">
-            <button
-              className="btn btn-sm btn-secondary rounded-md p-2"
-              onClick={() => {
-                setData(_ => ({
-                  latest: 0,
-                  current: 0,
-                  selected: { [0]: true },
-                  nodes: { [0]: { id: 0, type: '', data: '' } }
-                }))
-              }}>Reset</button>
-            <button
-              className="btn btn-sm btn-secondary rounded-md p-2"
-              onClick={() => {
-                appendData({ type: '', data: '' })
-              }}>Start</button>
-          </div>
-          <div className="flex flex-row flex-wrap gap-1">
-            {dict.values(data.nodes).filter(item => item.type).map((item) => (
-              <button
-                key={item.id}
-                className={`btn btn-sm ${data.selected[item.id] ? 'btn-primary' : 'btn-secondary'} rounded-md px-2 whitespace-nowrap`}
-                onClick={evt => {
-                  setData(({ selected: { [item.id]: currentlySelected, ...selected }, ...data }) => ({
-                    ...data,
-                    current: item.id,
-                    selected: {
-                      ...(evt.shiftKey ? selected : {}),
-                      ...(evt.shiftKey && currentlySelected ? {} : { [item.id]: true }),
-                    },
-                  }))
-                }}
-              >{item.type}[{item.id}]</button>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className={styles.View}>
-        <div className="prose">
-          <h2>Current View</h2>
-        </div>
-        <div className="form-control w-full max-w-xs">
-          <label className="label">
-            <span className="label-text">Change the current renderer</span>
-          </label>
-          <select
-            className="select select-bordered"
-            value={currentNode.type}
-            onChange={evt => {
-              setData(data => ({ ...data,
-                nodes: {
-                  ...data.nodes,
-                  [data.current]: {
-                    ...data.nodes[data.current],
-                    type: evt.target.value,
-                    prompt: undefined,
-                  },
-                },
-              }))
-            }}
-          >
-            <option disabled selected></option>
-            {krg.getDataNodes().map(dataNode =>
-              <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
+                  }}
+                >{proc.meta.label}</button>
+                <span> =&gt; </span>
+                <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
+              </div>
             )}
-          </select>
+          </div>
         </div>
-        <div className="m-2 flex-grow flex flex-col gap-2">
-          {promptNodeView ? promptNodeView : null}
-          {dataNodeView ? dataNodeView : null}
+        <div className={styles.Data}>
+          <div className="prose">
+            <h2>Current Data</h2>
+          </div>
+          <div style={{
+            flex: '1 0 auto',
+            height: 0,
+            overflow: 'auto',
+          }}>
+            <JsonEditor
+              value={currentNode.data}
+              onValueChange={value => {
+                setData(data => ({ ...data,
+                  nodes: {
+                    ...data.nodes,
+                    [data.current]: {
+                      ...data.nodes[data.current],
+                      data: value,
+                    },
+                  },
+                }))
+              }}
+              style={{
+                fontFamily: 'monospace',
+                fontSize: 12,
+                border: '1px solid black',
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-row flex-wrap mt-1 gap-1">
+              <button
+                className="btn btn-sm btn-secondary rounded-md p-2"
+                onClick={() => {
+                  setData(_ => ({
+                    latest: 0,
+                    current: 0,
+                    selected: { [0]: true },
+                    nodes: { [0]: { id: 0, type: '', data: '' } }
+                  }))
+                }}>Reset</button>
+              <button
+                className="btn btn-sm btn-secondary rounded-md p-2"
+                onClick={() => {
+                  appendData({ type: '', data: '' })
+                }}>Start</button>
+            </div>
+            <div className="flex flex-row flex-wrap gap-1">
+              {dict.values(data.nodes).filter(item => item.type).map((item) => (
+                <button
+                  key={item.id}
+                  className={classNames('btn btn-sm rounded-md px-2 whitespace-nowrap', { 'btn-primary': data.selected[item.id], 'btn-secondary': !data.selected[item.id]})}
+                  onClick={evt => {
+                    setData(({ selected: { [item.id]: currentlySelected, ...selected }, ...data }) => ({
+                      ...data,
+                      current: item.id,
+                      selected: {
+                        ...(evt.shiftKey ? selected : {}),
+                        ...(evt.shiftKey && currentlySelected ? {} : { [item.id]: true }),
+                      },
+                    }))
+                  }}
+                >{item.type}[{item.id}]</button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className={styles.View}>
+          <div className="prose">
+            <h2>Current View</h2>
+          </div>
+          <div className="form-control w-full max-w-xs">
+            <label className="label">
+              <span className="label-text">Change the current renderer</span>
+            </label>
+            <select
+              className="select select-bordered"
+              value={currentNode.type}
+              onChange={evt => {
+                setData(data => ({ ...data,
+                  nodes: {
+                    ...data.nodes,
+                    [data.current]: {
+                      ...data.nodes[data.current],
+                      type: evt.target.value,
+                      prompt: undefined,
+                    },
+                  },
+                }))
+              }}
+            >
+              <option disabled selected></option>
+              {krg.getDataNodes().map(dataNode =>
+                <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
+              )}
+            </select>
+          </div>
+          <div className="m-2 flex-grow flex flex-col gap-2">
+            {promptNodeView ? promptNodeView : null}
+            {dataNodeView ? dataNodeView : null}
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

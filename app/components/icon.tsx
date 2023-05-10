@@ -6,7 +6,23 @@ import type { Icon } from '@/icons'
 const base_size = 24
 const tooltip_offset_top = 5
 
-export default function Icon({ icon, color: color_, size: size_, title, without_svg }: { icon?: Icon, color?: string, size?: number, title?: string | null, without_svg?: boolean }) {
+export default function Icon({
+  icon,
+  color: color_,
+  size: size_,
+  title,
+  without_svg,
+  container,
+  container_color,
+}: {
+  icon?: Icon,
+  color?: string,
+  size?: number,
+  title?: string | null,
+  without_svg?: boolean,
+  container?: 'circle' | 'square',
+  container_color?: string,
+}) {
   const tooltipContainerRef = React.useRef<SVGRectElement>(null)
   const tooltipRef = React.useRef<{ tooltip: HTMLDivElement, listener: (evt: MouseEvent) => void }>(null)
   const color = color_ !== undefined ? color_ : 'auto'
@@ -78,7 +94,7 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
   }, [])
   const Svg = without_svg ? (
     ({ children }: { children: ReactNode }) =>
-      <>{children}</>
+      <g transform={`scale(${size})`}>{children}</g>
   ) : (
     ({ children }: { children: ReactNode }) =>
     <svg
@@ -86,19 +102,35 @@ export default function Icon({ icon, color: color_, size: size_, title, without_
       style={{ width: `${size*2}rem`, height: `${size*2}rem`, display: 'inline-block' }}
     >{children}</svg>
   )
+  const Container = ({ children }: { children: ReactNode }) =>
+    container === 'circle' ? <g transform={`translate(${base_size/2} ${base_size/2})`}>
+      <circle r={base_size/2} fill={container_color || '#ddd'} />
+      <g transform={`translate(-${base_size/2-0.1*base_size} -${base_size/2-0.1*base_size}) scale(0.8)`}>
+        {children}
+      </g>
+    </g>
+    : container === 'square' ? <g>
+      <rect width={base_size} height={base_size} fill={container_color || '#ddd'} />
+      <g transform={`translate(${0.1*base_size} ${0.1*base_size}) scale(0.8)`}>
+        {children}
+      </g>
+    </g>
+    : <>{children}</>
   return (
     <Svg>
-      {icons.map((({ path, transform, size }, ind) => {
-        return (
-          <g key={ind} transform={[
-            transformer(ind),
-            transform,
-            size && size !== base_size && `scale(${base_size/size})`,
-          ].filter((v) => !!v).join(' ')}>
-            <path d={path} style={{ fill: color || 'currentcolor' }} />
-          </g>
-        )
-      }))}
+      <Container>
+        {icons.map((({ path, transform, size }, ind) => {
+          return (
+            <g key={ind} transform={[
+              transformer(ind),
+              size && size !== base_size && `scale(${base_size/size})`,
+            ].filter((v) => !!v).join(' ')}>
+              {transform ? <g transform={transform}><path d={path} style={{ fill: color || 'currentcolor' }} /></g>
+                : <path d={path} style={{ fill: color || 'currentcolor' }} />}
+            </g>
+          )
+        }))}
+      </Container>
       {title !== null ?
         <rect
           ref={tooltipContainerRef}

@@ -2,11 +2,18 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.NEXT_ANALYZE === 'true',
 })
 const fs = require('fs')
+const path = require('path')
 const dotenv = require('dotenv')
 
 // create .env from .env.example if not present
 if (!fs.existsSync('../.env')) {
-  fs.copyFileSync('../.env.example', '../.env')
+  const envExample = fs.readFileSync(path.join('..', '.env.example')).toString()
+  // Auto-generate NEXTAUTH_SECRET
+  const crypto = require('crypto')
+  fs.writeFileSync(path.join('..', '.env'), envExample.replace(
+    /(\n)?#(NEXTAUTH_SECRET=)(\r?\n)/,
+    `$1$2${crypto.randomBytes(20).toString('hex')}$3`
+  ))
 }
 
 // update environment with .env
@@ -41,5 +48,20 @@ module.exports = withBundleAnalyzer({
         permanent: false,
       },
     ]
+  },
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'pg-native': false,
+        tls: false,
+        dns: false,
+        net: false,
+        fs: false,
+        child_process: false,
+        stream: false,
+      };
+    }
+    return config
   }
 })

@@ -1,7 +1,9 @@
 FROM node:latest as prepare_package_json
 WORKDIR /app
 COPY . /app
-RUN find /app -type f -a \! \( -name "package.json" -o -name "package-lock.json" \) | xargs rm -f
+RUN find /app -type d -name "node_modules" -exec rm -rf {} + \
+  && find /app -type f -a \! \( -name "package.json" -o -name "package-lock.json" \) -delete \
+  && find /app -type d -empty -delete
 
 FROM node:latest as prepare_npm_i
 WORKDIR /app

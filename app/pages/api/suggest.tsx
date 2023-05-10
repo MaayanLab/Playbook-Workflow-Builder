@@ -25,8 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (OutputNode === undefined) {
         OutputNode = MetaNode(suggestion.output)
           .meta({
-            label: suggestion.output,
+            label: `${suggestion.output} (Suggestion)`,
             description: `A data type, suggested as part of ${suggestion.name}`,
+            pagerank: -100,
           })
           .codec<any>()
           .view((props) => {
@@ -37,8 +38,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       const ProcessNode = MetaNode(suggestion.name)
         .meta({
-          label: suggestion.name,
+          label: `${suggestion.name} (Suggestion)`,
           description: suggestion.description,
+          pagerank: -100,
         })
         .inputs(suggestion.inputs ?
             dict.init(suggestion.inputs.split(',').map((spec, ind) =>

@@ -17,3 +17,11 @@ export default async function fetcher<T>(...args: Parameters<typeof fetch>): Pro
     throw e
   }
 }
+
+export async function fetcherGET<T>(input: RequestInfo | URL) {
+  return await fetcher<T>(input, { method: 'GET' })
+}
+
+export async function fetcherPOST<A, R>(input: RequestInfo | URL, { arg: body }: { arg: A }) {
+  return await fetcher<R>(input, { method: 'POST', body: JSON.stringify(body) })
+}

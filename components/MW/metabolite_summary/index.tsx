@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { additional_info_icon } from '@/icons';
 
 const MetSummaryObjC = z.object({
   name: z.string(),
@@ -15,19 +16,27 @@ const MetSummaryObjC = z.object({
 
 export type  MetSummaryObj = z.infer<typeof  MetSummaryObjC>
 
+export const MetSummaryObjArrayC = z.array(
+  MetSummaryObjC
+)
+
+export type MetSummaryObjArray = z.infer<typeof MetSummaryObjArrayC>
+
+
 // A unique name for your data type is used here
 export const MetaboliteSummary = MetaNode('MetaboliteSummary')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metabolite Summary',
     description: 'Metabolite Summary, rendered',
+    icon: [additional_info_icon],
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(MetSummaryObjC)
+  .codec(MetSummaryObjArrayC)
   // react component rendering your data goes here
   .view(data => {
-    var data1 = [data];
+    //var data1 = [data];
     return (
       //<div>{JSON.stringify(data)}</div>
       <div>
@@ -41,20 +50,24 @@ export const MetaboliteSummary = MetaNode('MetaboliteSummary')
           <th> Main class </th>
           <th> Sub class </th>
           <th> InChI</th>
-        {data1.map((val: MetSummaryObj, key: number) => {
-          return (
-            <tr key={key}>
-              <td>{val.name}</td>
-              <td>{val.pubchem_cid}</td>
-              <td>{val.exactmass}</td>
-              <td>{val.formula}</td>
-              <td>{val.super_class}</td>
-              <td>{val.sub_class}</td>
-              <td>{val.main_class}</td>
-              <td>{val.inchi_key}</td>
-            </tr>
-          )})
-        }
+        {data.map((val: MetSummaryObj, i: number) => {
+          
+            return (
+              <tr key={i}>
+                <td>{val.name}</td>
+                <td>{val.pubchem_cid}</td>
+                <td>{val.exactmass}</td>
+                <td>{val.formula}</td>
+                <td>{val.super_class}</td>
+                <td>{val.sub_class}</td>
+                <td>{val.main_class}</td>
+                <td>{val.inchi_key}</td>
+              </tr>
+            )
+        })}
+        
+        
+        
         </table>
       </div>
     )

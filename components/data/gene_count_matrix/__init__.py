@@ -1,22 +1,9 @@
-import re
-import contextlib
-import fsspec
 import numpy as np
 import anndata as ad
-
-@contextlib.contextmanager
-def fsspec_open_as_iterator(url, *args, **kwargs) -> str:
-  with fsspec.open(url, *args, **kwargs) as fr:
-    yield fr
-
-@contextlib.contextmanager
-def fsspec_open_as_path(url, *args, **kwargs) -> str:
-  m = re.match(r'^file://(.+)$', url)
-  assert m, 'protocol not yet supported'
-  yield m.group(1)
+from components.core.file import file_as_path, file_as_stream, upsert_file
 
 def anndata_from_gctx(path):
-  with fsspec_open_as_path(path) as fr:
+  with file_as_path(path) as fr:
     import h5py
     f = h5py.File(fr, 'r')
     return ad.AnnData(
@@ -26,7 +13,7 @@ def anndata_from_gctx(path):
     )
 
 def anndata_from_gct(path):
-  with fsspec_open_as_iterator(path, 'r') as fr:
+  with file_as_stream(path, 'r') as fr:
     import pandas as pd
     version = fr.readline()
     shape = list(map(int, fr.readline().split('\t')))
@@ -41,26 +28,26 @@ def anndata_from_path(path):
   ''' Read from a bunch of different formats, get an anndata file
   '''
   if path.endswith('.h5ad'):
-    with fsspec_open_as_path(path, 'r') as fr:
+    with file_as_path(path, 'r') as fr:
       return ad.read_h5ad(fr)
   elif path.endswith('.csv'):
-    with fsspec_open_as_iterator(path, 'r') as fr:
+    with file_as_stream(path, 'r') as fr:
       return ad.read_text(fr, delimiter=',')
   elif path.endswith('.tsv'):
-    with fsspec_open_as_iterator(path, 'r') as fr:
+    with file_as_stream(path, 'r') as fr:
       return ad.read_text(fr, delimiter='\t')
   elif path.endswith('.txt') or path.endswith('.tab') or path.endswith('.data'):
-    with fsspec_open_as_iterator(path, 'r') as fr:
+    with file_as_stream(path, 'r') as fr:
       return ad.read_text(fr, delimiter=None)
   elif path.endswith('.xlsx'):
-    with fsspec_open_as_path(path, 'r') as fr:
+    with file_as_path(path, 'r') as fr:
       return ad.read_excel(fr)
   elif path.endswith('.gctx'):
     return anndata_from_gctx(path)
   elif path.endswith('.gct'):
     return anndata_from_gct(path)
   elif path.endswith('.h5'):
-    with fsspec_open_as_path(path, 'r') as fr:
+    with file_as_path(path, 'r') as fr:
       return ad.read_hdf(fr)
   else:
     raise NotImplementedError
@@ -116,7 +103,6 @@ def gene_count_matrix(url):
   )
 
 def transpose(m):
-  from components.core.file import upsert_file
   d = anndata_from_path(m['url'])
   d = d.T
   with upsert_file('.h5ad') as f:

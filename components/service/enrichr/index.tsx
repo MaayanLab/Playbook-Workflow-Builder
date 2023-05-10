@@ -3,7 +3,7 @@ import { MetaNode, DataMetaNode, InternalDataMetaNode } from '@/spec/metanode'
 import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon, search_icon } from '@/icons'
-import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, TranscriptionFactor_backgrounds } from './backgrounds'
+import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, Gene_backgrounds } from './backgrounds'
 import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
@@ -74,19 +74,19 @@ export const EnrichrSetTToSetT = [
 ].flatMap(({ T, EnrichrSetT, SetT }) => [
     MetaNode(`EnrichrSetTToSetT[${T.name}]`)
       .meta({
-        label: `Enrichr Set of ${T.label} as Set`,
+        label: `${EnrichrSetT.meta.label} as Set`,
         icon: [enrichr_icon],
-        description: `Treat enrichr set as standard set`,
+        description: `Treat Enrichr set as standard set`,
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
-      .resolve(async (props) => props.inputs.enrichrset.set)
+      .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
-        label: `Enrichr Set of ${T.label} as GMT`,
+        label: `${EnrichrSetT.meta.label} as GMT`,
         icon: [enrichr_icon],
-        description: `Treat enrichr set as gmt`,
+        description: `Treat Enrichr set as GMT`,
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
@@ -99,7 +99,7 @@ export const EnrichrSetTToSetT = [
 export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .meta({
     label: 'Enrichr Enrichment Analysis',
-    description: 'A gene set submitted to Enrichr',
+    description: 'A gene set submitted to [Enrichr](https://maayanlab.cloud/Enrichr/)',
     icon: [enrichr_icon, gene_icon],
   })
   .codec(z.object({
@@ -138,14 +138,14 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
       },
     },
     icon: [enrichr_icon],
-    description: "Fisher's exact test, odd ratio, Jaccard index",
+    description: 'Perform Enrichment Analysis',
   })
   .inputs({ geneset: GeneSet })
   .output(EnrichrEnrichmentAnalysis)
   .resolve(async (props) => {
     const formData = new FormData()
-    formData.append('list', props.inputs.geneset.join('\n'))
-    formData.append('description', `playbook-partnership`)
+    formData.append('list', props.inputs.geneset.set.join('\n'))
+    formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
     const response = await fetch(`${enrichr_url}/addList`, {
       method: 'post',
       body: formData,
@@ -181,21 +181,24 @@ export const EnrichrGenesetSearchT = [
   { backgrounds: Pathway_backgrounds, output: ScoredPathways },
   { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes },
   { backgrounds: Tissue_backgrounds, output: ScoredTissues },
-  { backgrounds: TranscriptionFactor_backgrounds, output: ScoredGenes },
+  { backgrounds: Gene_backgrounds, output: ScoredGenes },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
   MetaNode(`ExtractEnrichrGenesetSearch[${bg.name}]`)
     .meta({
-      label: `Extract Significant ${bg.label} Signatures`,
-      icon: [enrichr_icon],
-      description: `Extract significant terms from ${bg.label} libraries`,
+      label: `Extract Enriched ${bg.termLabel}`,
+      icon: [enrichr_icon, ...(bg.icon||[])],
+      description: `Extract Significant Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
     .resolve(async (props) => {
       return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
+    )
     .build()
 )
 
@@ -203,7 +206,7 @@ export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
   .meta({
     label: `Enrichr Gene Search Results`,
     icon: [enrichr_icon, search_icon, gene_icon],
-    description: `Results of an Enrichr Gene Search`,
+    description: `Find terms in Enrichr Libraries containing the gene`,
   })
   .codec(z.string())
   .view(gene => {
@@ -220,7 +223,7 @@ export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
 
 export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .meta({
-    label: `Enrichr Gene Search`,
+    label: `Extract Gene Sets Containing the Gene`,
     icon: [enrichr_icon, search_icon, gene_icon],
     description: `Find terms in Enrichr Libraries containing the gene`,
   })
@@ -252,21 +255,24 @@ export const EnrichrGeneSearchT = [
   { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
   MetaNode(`ExtractEnrichrGeneSearch[${bg.name}]`)
     .meta({
-      label: `Extract ${bg.label} Signatures`,
-      icon: [enrichr_icon],
-      description: `Extract terms from ${bg.label} libraries`,
+      label: `Extract ${bg.termLabel} ${bg.termAssociation} the Gene`,
+      icon: [enrichr_icon, ...(bg.icon||[])],
+      description: `Extract Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrGeneSearchResults })
     .output(output)
     .resolve(async (props) => {
       return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+    )
     .build()
 )
 
@@ -301,9 +307,9 @@ export const EnrichrTermTSearch = [
 ].map(({ T, TermT }) =>
   MetaNode(`EnrichrTermSearch[${T.name}]`)
     .meta({
-      label: `Enrichr ${T.label} Term Search`,
+      label: `Extract Gene Sets Containing the ${T.label} in the Set Label`,
       icon: [...array.ensureArray(T.icon), enrichr_icon],
-      description: `Find ${T.label} terms in Enrichr Libraries`,
+      description: `Find ${T.label} Terms in Enrichr Libraries`,
     })
     .inputs({ term: TermT })
     .output(EnrichrTermSearchResults)
@@ -334,20 +340,23 @@ export const EnrichrTermSearchT = [
   { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: TranscriptionFactor_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
 ].flatMap(({ backgrounds, output }) =>
   backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
   MetaNode(`ExtractEnrichrTermSearch[${bg.name}]`)
     .meta({
-      label: `Extract ${bg.label} Signatures`,
-      icon: [enrichr_icon],
-      description: `Extract terms from ${bg.label} libraries`,
+      label: `Extract ${bg.termLabel} ${bg.termAssociation} the Term Search`,
+      icon: [enrichr_icon, ...(bg.icon||[])],
+      description: `Extract Terms from the ${bg.label} Library`,
     })
     .inputs({ searchResults: EnrichrTermSearchResults })
     .output(output)
     .resolve(async (props) => {
       return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
     })
+    .story(props =>
+      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+    )
     .build()
 )

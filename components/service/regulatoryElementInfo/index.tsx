@@ -112,7 +112,12 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
 .inputs({ regElemInfo: RegulatoryElementInfo  })
 .output(GeneSet)
 .resolve(async (props) => {
-  return props.inputs.regElemInfo.data.ldFor.Gene.map(({ entId }) => entId);
+  let geneNames =  props.inputs.regElemInfo.data.ldFor.Gene.map(({ entId }) => entId);
+  let geneSet = { 
+    description: 'Gene set for reglatory element '+props.inputs.regElemInfo.data.entId, 
+    set: geneNames
+  };
+  return geneSet;
 })
 .build()
 
@@ -125,7 +130,12 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
 .inputs({ regElemInfo: RegulatoryElementInfo  })
 .output(VariantSet)
 .resolve(async (props) => {
-   return props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId);
+  let variantNames =  props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId);
+  let variantSet = { 
+    description: 'Variant set for reglatory element '+props.inputs.regElemInfo.data.entId, 
+    set: variantNames
+  };
+  return variantSet;
 })
 .build()
 

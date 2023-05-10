@@ -1,5 +1,5 @@
 import { NextRouter, useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/graph/types'
+import type { Metapath } from '@/app/fragments/metapath'
 import React from 'react'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
 import { z } from 'zod'
@@ -59,6 +59,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .meta({
           label: 'Suggest a core data type',
           description: `This would be usable as an initial or intermediary data`,
+          pagerank: -99,
         })
         .inputs()
         .output(Suggestion)
@@ -72,6 +73,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .meta({
           label: 'Suggest a visualization method',
           description: `This would visualize the ${input.meta.label || input.spec}. Provide a description about what should be here.`,
+          pagerank: -99,
         })
         .inputs({ input })
         .output(Suggestion)
@@ -83,6 +85,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .meta({
           label: 'Suggest an algorithm or data transformation method',
           description: `This would transform the ${input.meta.label || input.spec}. Provide a description about what should be here.`,
+          pagerank: -99,
         })
         .inputs({ input })
         .output(Suggestion)
@@ -224,8 +227,9 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
           if (OutputNode === undefined) {
             OutputNode = MetaNode(suggestion_final.output)
               .meta({
-                label: suggestion_final.output,
+                label: `${suggestion_final.output} (Suggestion)`,
                 description: `A data type, suggested as part of ${suggestion_final.name}`,
+                pagerank: -100,
               })
               .codec<any>()
               .view((props) => {
@@ -236,8 +240,9 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
           }
           const ProcessNode = MetaNode(suggestion_final.name)
             .meta({
-              label: suggestion_final.name,
+              label: `${suggestion_final.name} (Suggestion)`,
               description: suggestion_final.description,
+              pagerank: -100,
             })
             .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
             ({ key: ind.toString(), value: krg.getDataNode(spec) }))))

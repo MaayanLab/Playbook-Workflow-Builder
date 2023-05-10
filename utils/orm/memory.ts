@@ -1,11 +1,13 @@
 import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import { z } from 'zod'
 import { Find, Create, Delete, Update, DbTable, FindMany, Upsert, DbDatabase } from './common'
 
 export class MemoryDatabase implements DbDatabase {
   public objects: any
   private listeners: Record<number, (evt: string, data: unknown) => void> = {}
+  private active: Record<string, Promise<void>> = {}
   private id = 0
 
   constructor(public data: Record<string, Record<string, Record<string, unknown>>> = {}) {}
@@ -27,8 +29,14 @@ export class MemoryDatabase implements DbDatabase {
   }
 
   work = async (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => {
-    return this.listen(async (evt, work: unknown) => {
-      if (evt === `boss:${queue}`) await cb({ data: work })
+    return this.listen(async (evt, data: unknown) => {
+      if (evt === `boss:${queue}`) {
+        const { id } = z.object({ id: z.string() }).parse(data)
+        if (!(id in this.active)) {
+          this.active[id] = cb({ data }).finally(() => { delete this.active[id] })
+        }
+        return await this.active[id]
+      }
     })
   }
 }

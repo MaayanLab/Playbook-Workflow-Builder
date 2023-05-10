@@ -4,6 +4,68 @@
 
 Besides expressing the shape of the data with [zod](https://zod.dev/), it's also possible to convert from existing schemas to zod. For example, if an OpenAPI/SmartAPI spec was already created, the schema of those parameters can be used with the [JSON Schema to Zod converter](https://stefanterdell.github.io/json-schema-to-zod-react/). Alternatively, if you just have raw JSON, you can get a head start using the [JSON to Zod converter](https://rsinohara.github.io/json-to-zod-react/).
 
+## How can I use files in MetaNodes?
+
+To avoid storing large files in the database or in memory we pass around pointers to those files in the form of URLs. To interact with files you must first resolve it before you can manipulate it and potentially produce a new file which needs to be uploaded and turned back into a pointer. Since how this is done is subject to change (i.e. storing on the filesystem, in s3, or other mechanisms), helper functions are available for managing files.
+
+### Access files from Python-Implemented Components
+
+```python
+# turning a file object into content:
+#  when reading sequentially, you can read it as a stream directly from
+#  wherever it is. it behaves like a file object
+from components.core.file import file_as_stream
+with file_as_stream(file['url']) as fh: # you get something like a file handle here
+  for line in fh:
+    print(line)
+
+# if your file needs seek support (like some database formats, i.e. h5)
+#  you'll need to use file_as_path which ensures its on the disk
+from components.core.file import file_as_path
+with file_as_path(file['url']) as path: # you get an actual path rather than a handle
+  with open(path, 'r+') as fh:
+    print(fh.read())
+
+# turning content into a file object
+from components.core.file import upsert_file
+with upsert_file('.ext') as f:
+  # f.file is a python file handler
+  f.file.write('test')
+# after the context manager, f.url contains the uploaded file url
+return {'url': f.url}
+```
+
+### Access files from NodeJS-Implemented Resolvers
+
+Please note only **resolvers** should be operating on files, *views* and *prompts* should operate on prepared datatypes which resolvers could set up. That-is picking options in a way that depends on information in a file would need to prepare those options in a resolver. This is because potentially large files should not be downloaded to an end user's browser which is where views and prompts run.
+
+```tsx
+import { fileAsStream } from  '@/components/core/file/api/download'
+import { fileFromStream } from  '@/components/core/file/api/upload'
+
+export const SomeFileOp = MetaNode('SomeFileOp')
+  .meta({ label: 'Some File Operation', description: 'Perform an operation' })
+  .inputs({ file: FileURL })
+  .output(FileURL)
+  .resolve(async (props) => {
+    // read the file as a stream
+    const fileReader: any = await fileAsStream(props.inputs.file)
+    // send that file somewhere for processing
+    const formData = new FormData()
+    formData.append('file', fileReader, props.inputs.file.filename)
+    const res = await fetch('https://example.com/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    if (!res.ok) throw new Error(await res.text())
+    if (res.body === null) throw new Error('An unexpected error occurred')
+    // create a new file object from a stream
+    const file = await fileFromStream(res.body, `derived.${props.inputs.file.filename}`)
+    return file
+  })
+  .build()
+```
+
 ## How can I safely pass private credentials for accessing an API?
 
 The current way this can be done is through a service account token which can be passed as an environment variable to your component by including the token in the `.env` file and accessing it with `process.env.MY_SECRET_TOKEN`. Ultimately, this token will need to be shared with the current deployment maintainer to add to the deployment environment.

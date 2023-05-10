@@ -44,7 +44,7 @@ export const GeneSetIDConv = MetaNode('GeneSetIDConv')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Gene ID Conversion for a set of genes',
-    description: 'Given one type of gene ID for a set of genes, generate other types of gene IDs.',
+    description: 'Given one type of gene ID for a set of genes, generate other types of gene IDs',
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

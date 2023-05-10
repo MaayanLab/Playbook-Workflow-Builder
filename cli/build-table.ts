@@ -32,9 +32,10 @@ console.log(
       'prompt' in node ? 'Prompt'
         : node.kind === 'process' ? 'Resolver'
         : 'Data',
-        node.kind === 'process' ? `${slugify(node.spec)}(${dict.items(node.inputs).map(({ key, value }) =>
-        `${key}: ${Array.isArray(value) ? `list[${slugify(value[0].spec)}]` : slugify(value.spec)}`,
-      ).join(', ')}) -> ${node.output.spec}` : '',
+        node.kind === 'process' ? `${slugify(node.spec)}(${[
+          ...dict.items(node.inputs).map(({ key, value }) => `${key}: ${Array.isArray(value) ? `list[${slugify(value[0].spec)}]` : slugify(value.spec)}`),
+          ...('prompt' in node ? ['input: str'] : []),
+        ].join(', ')}) -> ${slugify(node.output.spec)}` : '',
       node.meta.label,
       node.meta.description,
       'story' in node ? try_story(node, {

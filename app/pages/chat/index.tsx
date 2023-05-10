@@ -11,23 +11,20 @@ import type { Session } from 'next-auth'
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
 
-function Workflow({ workflow }: { workflow: { spec: string, data?: string }[] }) {
-  const [state, setState] = React.useState({} as Record<number, string>)
+function Workflow({ state, setState, workflow }: {
+  state: Record<number, string>, setState: React.Dispatch<React.SetStateAction<Record<number, string>>>,
+  workflow: { step: number, workflow: { spec: string, data?: string }[] },
+}) {
   React.useEffect(() => {
-    setState(() => dict.init(
-      workflow
-        .filter((workflow): workflow is { spec: string, data: string } => workflow.data !== undefined)
-        .map(({ data }, i) => ({ key: i, value: data }))))
-  }, [workflow])
-  React.useEffect(() => {
-    if (Object.keys(state).length > 0 && Object.keys(state).length < workflow.length) {
-      console.log({ state, workflow })
-      const n = Math.max(...Object.keys(state).map(k => +k))
-      const proc = krg.getProcessNode(workflow[n+1].spec)
+    const n = Math.max(-1, ...Object.keys(state).map(k => +k))+1
+    if (n === 0 && workflow.step === 0) {
+      setState(() => ({ [0]: workflow.workflow[0].data || '' }))
+    } else if (n >= workflow.step && n < workflow.workflow.length) {
+      const proc = krg.getProcessNode(workflow.workflow[n].spec)
       if ('resolve' in proc) {
         const formData = new FormData()
         dict.items(proc.inputs).forEach(({ key, value }) => {
-          formData.append(key, value.codec.encode(state[n]))
+          formData.append(key, value.codec.encode(state[n-1]))
         })
         const req = fetch(`/api/resolver/${proc.spec}`, {
           method: 'POST',
@@ -36,41 +33,40 @@ function Workflow({ workflow }: { workflow: { spec: string, data?: string }[] })
         .then(res => {
           let result: any
           try { result = proc.output.codec.decode(res) }
-          catch (e) { result = '' }
-          setState(state => ({ ...state, [n+1]: result }))
+          catch (e) { console.warn(e); result = '' }
+          setState((state) => ({ ...state, [n]: result }))
         })
       }
     }
-  }, [state, workflow.length])
+  }, [state, workflow])
   return (
     <div className='flex flex-col gap-2'>
-      {workflow.map(({ spec, data }, i) => {
+      {workflow.workflow.slice(workflow.step).map(({ spec, data }, i) => {
         const metanode = krg.getProcessNode(spec)
         if (!metanode) return <span>Invalid metanode {spec}</span>
         if ('prompt' in metanode) {
           const Prompt = metanode.prompt
-          return <div key={i}>
+          return <div key={i+workflow.step}>
             <h3 className="m-0">{metanode.meta.label}</h3>
-            <Prompt inputs={{}} output={state[i]} submit={(output) => {
-              setState((data) => {
-                const newData = {} as Record<number, string>
-                for (const k in data) {
-                  if (+k >= i) continue
-                  newData[k] = data[k]
-                }
-                newData[i] = output as string
-                return newData
-              })
+            <Prompt inputs={{}} output={state[i+workflow.step]} submit={(output) => {
+              console.log({ output, workflow })
+              const newState = {} as Record<number, string>
+              for (const k in state) {
+                if (+k >= i+workflow.step) continue
+                newState[k] = state[k]
+              }
+              newState[i+workflow.step] = output as string
+              setState(newState)
             }} />
           </div>
         } else {
           let viewOutput
           try {
-            viewOutput = metanode.output.view(state[i])
+            viewOutput = metanode.output.view(state[i+workflow.step])
           } catch (e) {
-            viewOutput = <div>Error: {e.toString()}</div>
+            viewOutput = <div>Error: {(e as any).toString()}</div>
           }
-          return <div key={i}>
+          return <div key={i+workflow.step}>
             <h3 className="m-0">{metanode.meta.label}</h3>
             {viewOutput}
           </div>
@@ -80,7 +76,30 @@ function Workflow({ workflow }: { workflow: { spec: string, data?: string }[] })
   )
 }
 
-function Message({ session, role, children }: React.PropsWithChildren<{ session: Session | null, role: 'user' | 'assistant' | 'system' | 'error' }>) {
+function MessageOutput({ children, state, setState }: React.PropsWithChildren<{
+  state: Record<number, string>, setState: React.Dispatch<React.SetStateAction<Record<number, string>>>,
+}>) {
+  const { workflow } = React.useMemo(() => {
+    if (typeof children === 'string') {
+      const m = /```workflow\n(.+)\n```/g.exec(children)
+      if (m) {
+        return { workflow: JSON.parse(m[1]) }
+      }
+    }
+    return {}
+  }, [children])
+  if (workflow) return <Workflow workflow={workflow} state={state} setState={setState} />
+  else if (typeof children === 'string') return <ReactMarkdown>{children}</ReactMarkdown>
+  else return <>{children}</>
+}
+
+function Message({
+  session, role, children,
+  state, setState,
+}: React.PropsWithChildren<{
+  session: Session | null, role: 'welcome' | 'user' | 'assistant' | 'system' | 'error'
+  state: Record<number, string>, setState: React.Dispatch<React.SetStateAction<Record<number, string>>>,
+}>) {
   return (
     <div className={classNames('chat', { 'chat-end': role === 'user', 'chat-start': role !== 'user', 'hidden': role === 'system' })}>
       <div className="chat-image btn btn-ghost btn-circle avatar placeholder">
@@ -88,32 +107,21 @@ function Message({ session, role, children }: React.PropsWithChildren<{ session:
           {role !== 'user' ? "PWB" : <UserAvatar session={session} />}
         </div>
       </div>
-      <div className={classNames('chat-bubble rounded-xl w-full prose', { 'chat-bubble-primary': role === 'user', 'chat-bubble-secondary': role === 'assistant', 'chat-bubble-error': role === 'error' })}>
-        {typeof children === 'string' ?
-          <ReactMarkdown
-            components={React.useMemo(() => ({
-              pre({ className, children, ...props }) {
-                return <div {...props} className={classNames(className, 'bg-transparent')}>{children}</div>
-              },
-              code({ node, inline, className, children, ...props }) {
-                const workflow = React.useMemo(() => {
-                  const match = /language-(\w+)/.exec(className || '')
-                  if (!inline && match && match[1] === 'workflow') {
-                    return JSON.parse(children.join('\n'))
-                  }
-                }, [className])
-                return workflow ? <Workflow workflow={workflow} /> : <code {...props} className={classNames(className, 'bg-secondary-content')}>{children}</code>
-              }
-            }), [])}
-          >{children}</ReactMarkdown>
-          : children}
+      <div className={classNames('chat-bubble rounded-xl w-full prose', { 'chat-bubble-primary': role === 'user', 'chat-bubble-secondary': role === 'assistant' || role === 'welcome', 'chat-bubble-error': role === 'error' })}>
+        <MessageOutput state={state} setState={setState}>{children}</MessageOutput>
       </div>
+      {role === 'assistant' ? 
+        <div className={classNames('chat-footer text-lg cursor-pointer')}>
+          <div className="bp4-icon bp4-icon-link" /> <div className="bp4-icon bp4-icon-thumbs-up" /> <div className="bp4-icon bp4-icon-thumbs-down" />
+        </div>
+        : null}
     </div>
   )
 }
 
 export default function Chat() {
   const { data: session } = Auth.useSession()
+  const [state, setState] = React.useState({} as Record<number, string>)
   const [message, setMessage] = React.useState('')
   const [chat, setChat] = React.useState({
     waitingForReply: false,
@@ -123,18 +131,18 @@ export default function Chat() {
     <Layout>
       <Head><title>Chat</title></Head>
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6 justify-end">
-        <Message role="assistant" session={session}>
+        <Message role="welcome" session={session} state={state} setState={setState}>
           I'm an AI-powered chat assistant interface designed to help you access the functionality of the playbook workflow builder. Please start by asking your question of interest, and I'll try my best to help you answer it through the construction of a playbook workflow.
         </Message>
         {chat.messages.map((message, i) =>
-          <Message key={i} role={message.role} session={session}>{message.content}</Message>
+          <Message key={i} role={message.role} session={session} state={state} setState={setState}>{message.content}</Message>
         )}
         {chat.waitingForReply ?
-          <Message role="assistant" session={session}>
+          <Message role="assistant" session={session} state={state} setState={setState}>
             <progress className="progress w-full"></progress>
           </Message>
           : null}
-        <Message role="user" session={session}>
+        <Message role="user" session={session} state={state} setState={setState}>
           <form
             className="flex flex-row items-center"
             onSubmit={async (evt) => {

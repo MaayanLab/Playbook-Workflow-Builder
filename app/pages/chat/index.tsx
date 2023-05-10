@@ -96,12 +96,13 @@ function Message({ session, role, children }: React.PropsWithChildren<{ session:
                 return <div {...props} className={classNames(className, 'bg-transparent')}>{children}</div>
               },
               code({ node, inline, className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || '')
-                if (!inline && match && match[1] === 'workflow') {
-                  const workflow = JSON.parse(children.join('\n'))
-                  return <Workflow workflow={workflow} />
-                }
-                return <code {...props} className={classNames(className, 'bg-secondary-content')}>{children}</code>
+                const workflow = React.useMemo(() => {
+                  const match = /language-(\w+)/.exec(className || '')
+                  if (!inline && match && match[1] === 'workflow') {
+                    return JSON.parse(children.join('\n'))
+                  }
+                }, [className])
+                return workflow ? <Workflow workflow={workflow} /> : <code {...props} className={classNames(className, 'bg-secondary-content')}>{children}</code>
               }
             }), [])}
           >{children}</ReactMarkdown>

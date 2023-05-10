@@ -4,7 +4,6 @@ import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
 import { UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
-import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
 
 function strip(s: string) {
@@ -45,17 +44,17 @@ async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', tempe
   return OpenAICompletionsResponse.parse(res)
 }
 
-async function identifyInputSpec(question: string) {
+async function identifyInputs(question: string) {
   const res = await openaiCompletions({
     messages: [{
       role: 'user',
       content: [
-        'Consider the following question:',
+        'Consider the following user query:',
         question,
         'Consider the choices below:',
         JSON.stringify(krg.getNextProcess('').map((node, i) => ({ id: node.spec, description: node.output.meta.description }))),
         '*Pluralality implies sets rather than terms.',
-        'Respond with a precise JSON serialized mapping choice id to the applicable information from the question.',
+        'Respond with a precise JSON serialized mapping choice id to the applicable information from the query.',
       ].join('\n'),
     }]
   })
@@ -70,7 +69,7 @@ function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, ou
   if (node.story && Object.keys(node.inputs).length === 1) {
     try {
       node.story({
-        inputs: { [Object.keys(node.inputs)[0] as any]: input || '' },
+        inputs: { [Object.keys(node.inputs)[0] as any]: input || `[${Object.keys(node.inputs)[0]}]` },
         output,
       })
     } catch (e) {}
@@ -78,12 +77,15 @@ function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, ou
   return node.meta.description
 }
 
-async function identifyWorkflow(question: string, inputSpec: Record<string, string>) {
-  const choices = dict.items(inputSpec).flatMap(({ key, value }) => {
+async function identifyWorkflow(question: string, inputs: Record<string, string>) {
+  const workflows = dict.items(inputs).flatMap(({ key, value }) => {
     const inputNode = krg.getProcessNode(key)
     if (!inputNode) return []
     return krg.getNextProcess(inputNode.output.spec).map(node => ({
-      input: key, inputData: value, output: node.spec,
+      workflow: [
+        { spec: key, data: value },
+        { spec: node.spec },
+      ],
       description: `${nodeDesc(inputNode, { output: value })}. ${nodeDesc(node, { input: value })}.`,
     }))
   })
@@ -91,17 +93,74 @@ async function identifyWorkflow(question: string, inputSpec: Record<string, stri
     messages: [{
       role: 'user',
       content: [
-        'Consider the following question:',
+        'Consider the following user query:',
         question,
-        'Consider the choices below:',
-        JSON.stringify(choices.map((choice, i) => ({ id: i, description: choice.description }))),
-        'Respond only with the most appropriate choice id for addressing the question.',
+        'Consider the workflows below:',
+        JSON.stringify(workflows.map((choice, i) => ({ id: i, ...choice }))),
+        'Response should be a JSON serialization which satisfies the typescript type:',
+        `{ /* most appropriate workflow id satisfying the query */ "workflow": number } | { /* ask the user if no choices are applicable */ "question": string }`,
       ].join('\n'),
     }]
   })
-  const choice = choices[Number(strip(res.choices[0].message.content))]
-  if (!choice) return { success: false, content: strip(res.choices[0].message.content) }
-  else return { success: true, content: '```workflow\n' + JSON.stringify([{ spec: choice.input, data: choice.inputData }, { spec: choice.output }]) + '\n```' }
+  const content = strip(res.choices[0].message.content)
+  try {
+    const m = /\{.+?\}/gms.exec(content)
+    const contentParsed = JSON.parse(m ? m[0] : '')
+    if (typeof contentParsed.workflow === 'number') {
+      const { workflow = undefined } = workflows[contentParsed.workflow] || {}
+      if (workflow) return { success: true, content: '```workflow\n' + JSON.stringify({ step: 0, workflow }) + '\n```' }
+    }
+    return { success: false, content: contentParsed.question }
+  } catch (e) {}
+  return { success: false, content }
+}
+
+async function identifyFollowupWorkflow(messages: { role: "user" | "system" | "assistant", content: string }[]) {
+  console.debug(messages)
+  const [lastWorkflowMessage] = messages.filter(({ role, content }) => role === 'assistant' && content.includes('```workflow\n')).slice(-1)
+  const m = /```workflow\n(.+)\n```/gms.exec(lastWorkflowMessage.content)
+  const lastWorkflow = m ? JSON.parse(m[1]) : null
+  const lastProcessNode = krg.getProcessNode(lastWorkflow.workflow[lastWorkflow.workflow.length-1].spec)
+  const workflows = krg.getNextProcess(lastProcessNode.output.spec).map(node => {
+    const workflow = [...lastWorkflow.workflow, { spec: node.spec }]
+    return {
+      workflow,
+      description: workflow.map(
+        ({ spec }, i) =>
+          nodeDesc(krg.getProcessNode(spec), {
+            input: workflow[i].data,
+            output: i > 0 ? workflow[i-1].data : undefined
+          })).join('. ') + '.',
+    }
+  })
+  if (workflows.length === 0) return { success: false, content: '' }
+  const res = await openaiCompletions({
+    messages: [
+      ...messages.slice(0, -1),
+      {
+        role: 'user',
+        content: [
+          'Also considering our previous conversation, consider the following query:',
+          messages[messages.length-1],
+          'Consider the following potential next workflows:',
+          JSON.stringify(workflows.map((workflow, i) => ({ id: i, ...workflow }))),
+          'Response should be a JSON serialization which satisfies the typescript type:',
+          `{ /* most appropriate workflow id satisfying the query */ "workflow": number } | { /* ask the user if no choices are applicable */ "question": string }`,
+        ].join('\n'),
+      },
+    ]
+  })
+  const content = strip(res.choices[0].message.content)
+  try {
+    const m = /\{.+?\}/gms.exec(content)
+    const contentParsed = JSON.parse(m ? m[0] : '')
+    if (typeof contentParsed.workflow === 'number') {
+      const { workflow = undefined } = workflows[contentParsed.workflow] || {}
+      if (workflow) return { success: true, content: '```workflow\n' + JSON.stringify({ step: lastWorkflow.workflow.length, workflow }) + '\n```' }
+    }
+    return { success: false, content: contentParsed.question }
+  } catch (e) {}
+  return { success: false, content }
 }
 
 const BodyType = z.object({
@@ -122,7 +181,24 @@ export default handler(async (req, res) => {
   const body = BodyType.parse(JSON.parse(req.body))
   const lastMessage = body.messages[body.messages.length-1]
   if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
-  const inputs = await identifyInputSpec(lastMessage.content)
-  const { content } = inputs.success ? await identifyWorkflow(lastMessage.content, inputs.content) : inputs
-  res.status(200).json({ role: 'assistant', content })
+  if (body.messages.length === 1) {
+    const inputs = await identifyInputs(lastMessage.content)
+    let step = inputs.success ? await identifyWorkflow(lastMessage.content, inputs.content) : inputs
+    let previousStep: typeof step | undefined
+    // while (step.success) {
+    //   previousStep = step
+    //   body.messages.splice(body.messages.length-1, 0, { role: 'assistant', content: step.content })
+    //   step = await identifyFollowupWorkflow(body.messages)
+    // }
+    res.status(200).json({ role: 'assistant', content: [previousStep?.content, step.content].filter(c => c!==undefined).join('\n') })
+  } else {
+    let step = await identifyFollowupWorkflow(body.messages)
+    let previousStep: typeof step | undefined
+    // while (step.success) {
+    //   previousStep = step
+    //   body.messages.splice(body.messages.length-1, 0, { role: 'assistant', content: step.content })
+    //   step = await identifyFollowupWorkflow(body.messages)
+    // }
+    res.status(200).json({ role: 'assistant', content: [previousStep?.content, step.content].filter(c => c!==undefined).join('\n') })
+  }
 })

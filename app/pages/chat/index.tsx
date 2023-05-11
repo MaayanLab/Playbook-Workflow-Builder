@@ -46,7 +46,7 @@ function Component({ state, setState, component }: {
     dict.items(metanode.inputs).forEach(({ key, value }) => {
       inputs[key] = value.codec.decode(state[component.inputs[key]])
     })
-    const output = typeof state[component.id] !== undefined ? metanode.output.codec.decode(state[component.id]) : component.data
+    const output = typeof state[component.id] !== 'undefined' ? metanode.output.codec.decode(state[component.id]) : component.data
     return <div>
       <h3 className="m-0">{metanode.meta.label}</h3>
       <Prompt

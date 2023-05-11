@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
 import type { Metapath } from '@/app/fragments/metapath'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
-import { StoryProvider } from '@/app/fragments/report/story'
+import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
 import useAsyncEffect from 'use-async-effect'
 

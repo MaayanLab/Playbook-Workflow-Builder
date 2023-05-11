@@ -36,7 +36,6 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
             {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error">{outputError.toString()}</div> : null}
             {!outputNode ? <div>Loading...</div>
             : <>
-                <h2 className="bp4-heading">{outputNode.meta.label || outputNode.spec}</h2>
                 {!View || output === undefined ? <div>Loading...</div>
                 : output === null ? <div>Waiting for input</div>
                 : <View output={output} />}

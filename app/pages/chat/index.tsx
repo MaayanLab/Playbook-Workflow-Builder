@@ -11,84 +11,79 @@ import type { Session } from 'next-auth'
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
 
-function Workflow({ state, setState, workflow }: {
+function Component({ state, setState, component }: {
   state: Record<number, string>, setState: React.Dispatch<React.SetStateAction<Record<number, string>>>,
-  workflow: { step: number, workflow: { spec: string, data?: string }[] },
+  component: { id: number, inputs: Record<string, number>, type: string, description: string, data?: string },
 }) {
+  const metanode = krg.getProcessNode(component.type)
   React.useEffect(() => {
-    const n = Math.max(-1, ...Object.keys(state).map(k => +k))+1
-    if (n === 0 && workflow.step === 0) {
-      setState(() => ({ [0]: workflow.workflow[0].data || '' }))
-    } else if (n >= workflow.step && n < workflow.workflow.length) {
-      const proc = krg.getProcessNode(workflow.workflow[n].spec)
-      if ('resolve' in proc) {
-        const formData = new FormData()
-        dict.items(proc.inputs).forEach(({ key, value }) => {
-          formData.append(key, value.codec.encode(state[n-1]))
-        })
-        const req = fetch(`/api/resolver/${proc.spec}`, {
-          method: 'POST',
-          body: formData,
-        }).then(req => req.json())
-        .then(res => {
-          let result: any
-          try { result = proc.output.codec.decode(res) }
-          catch (e) { console.warn(e); result = '' }
-          setState((state) => ({ ...state, [n]: result }))
-        })
-      }
+    if (component.id in state) return
+    if (component.data !== undefined) {
+      setState({[component.id]: metanode.output.codec.encode(component.data)})
+      return
     }
-  }, [state, workflow])
-  return (
-    <div className='flex flex-col gap-2'>
-      {workflow.workflow.slice(workflow.step).map(({ spec, data }, i) => {
-        const metanode = krg.getProcessNode(spec)
-        if (!metanode) return <span>Invalid metanode {spec}</span>
-        if ('prompt' in metanode) {
-          const Prompt = metanode.prompt
-          return <div key={i+workflow.step}>
-            <h3 className="m-0">{metanode.meta.label}</h3>
-            <Prompt inputs={{}} output={state[i+workflow.step]} submit={(output) => {
-              console.log({ output, workflow })
-              const newState = {} as Record<number, string>
-              for (const k in state) {
-                if (+k >= i+workflow.step) continue
-                newState[k] = state[k]
-              }
-              newState[i+workflow.step] = output as string
-              setState(newState)
-            }} />
-          </div>
-        } else {
-          let viewOutput
-          try {
-            viewOutput = metanode.output.view(state[i+workflow.step])
-          } catch (e) {
-            viewOutput = <div>Error: {(e as any).toString()}</div>
-          }
-          return <div key={i+workflow.step}>
-            <h3 className="m-0">{metanode.meta.label}</h3>
-            {viewOutput}
-          </div>
-        }
-      })}
+    if (!('resolve' in metanode)) return
+    if (dict.keys(metanode.inputs).some(arg => !(component.inputs[arg] in state))) return
+    const formData = new FormData()
+    dict.keys(metanode.inputs).forEach((arg) => {
+      formData.append(arg, state[component.inputs[arg]])
+    })
+    fetch(`/api/resolver/${metanode.spec}`, {
+      method: 'POST',
+      body: formData,
+    }).then(req => req.json())
+    .then(res => {
+      let result: any
+      try { result = res }
+      catch (e) { console.warn(e); result = '' }
+      setState(state => ({ ...state, [component.id]: result }))
+    })
+  }, [state, component])
+    if (!metanode) return <span>Invalid metanode {component.type}</span>
+  if ('prompt' in metanode) {
+    const Prompt = metanode.prompt
+    const inputs: Record<string, unknown> = {}
+    dict.items(metanode.inputs).forEach(({ key, value }) => {
+      inputs[key] = value.codec.decode(state[component.inputs[key]])
+    })
+    const output = typeof state[component.id] !== undefined ? metanode.output.codec.decode(state[component.id]) : component.data
+    return <div>
+      <h3 className="m-0">{metanode.meta.label}</h3>
+      <Prompt
+        inputs={inputs}
+        output={output}
+        submit={(output) => {
+          setState({ [component.id]: metanode.output.codec.encode(output) })
+        }}
+      />
     </div>
-  )
+  }
+  const output = state[component.id]
+  let viewOutput
+  try {
+    viewOutput = output ? metanode.output.view(metanode.output.codec.decode(output)) : <div>Updating...</div>
+  } catch (e) {
+    viewOutput = <div>Error: {(e as any).toString()}</div>
+  }
+  return <div>
+    <h3 className="m-0">{metanode.meta.label}</h3>
+    {viewOutput}
+  </div>
 }
 
 function MessageOutput({ children, state, setState }: React.PropsWithChildren<{
   state: Record<number, string>, setState: React.Dispatch<React.SetStateAction<Record<number, string>>>,
 }>) {
-  const { workflow } = React.useMemo(() => {
+  const { component } = React.useMemo(() => {
     if (typeof children === 'string') {
-      const m = /```workflow\n(.+)\n```/g.exec(children)
+      const m = /```component\n(.+)\n```/g.exec(children)
       if (m) {
-        return { workflow: JSON.parse(m[1]) }
+        return { component: JSON.parse(m[1]) }
       }
     }
     return {}
   }, [children])
-  if (workflow) return <Workflow workflow={workflow} state={state} setState={setState} />
+  if (component) return <Component component={component} state={state} setState={setState} />
   else if (typeof children === 'string') return <ReactMarkdown>{children}</ReactMarkdown>
   else return <>{children}</>
 }

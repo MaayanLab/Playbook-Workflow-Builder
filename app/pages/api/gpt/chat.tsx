@@ -44,27 +44,6 @@ async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', tempe
   return OpenAICompletionsResponse.parse(res)
 }
 
-async function identifyInputs(question: string) {
-  const res = await openaiCompletions({
-    messages: [{
-      role: 'user',
-      content: [
-        'Consider the following user query:',
-        question,
-        'Consider the choices below:',
-        JSON.stringify(krg.getNextProcess('').map((node, i) => ({ id: node.spec, description: node.output.meta.description }))),
-        '*Pluralality implies sets rather than terms.',
-        'Respond with a precise JSON serialized mapping choice id to the applicable information from the query.',
-      ].join('\n'),
-    }]
-  })
-  try {
-    return { success: true, content: JSON.parse(strip(res.choices[0].message.content)) }
-  } catch (e) {
-    return { success: false, content: strip(res.choices[0].message.content) }
-  }
-}
-
 function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, output?: string }) {
   if (node.story && Object.keys(node.inputs).length === 1) {
     try {
@@ -77,90 +56,71 @@ function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, ou
   return node.meta.description
 }
 
-async function identifyWorkflow(question: string, inputs: Record<string, string>) {
-  const workflows = dict.items(inputs).flatMap(({ key, value }) => {
-    const inputNode = krg.getProcessNode(key)
-    if (!inputNode) return []
-    return krg.getNextProcess(inputNode.output.spec).map(node => ({
-      workflow: [
-        { spec: key, data: value },
-        { spec: node.spec },
-      ],
-      description: `${nodeDesc(inputNode, { output: value })}. ${nodeDesc(node, { input: value })}.`,
-    }))
-  })
-  const res = await openaiCompletions({
-    messages: [{
-      role: 'user',
-      content: [
-        'Consider the following user query:',
-        question,
-        'Consider the workflows below:',
-        JSON.stringify(workflows.map((choice, i) => ({ id: i, ...choice }))),
-        'Response should be a JSON serialization which satisfies the typescript type:',
-        `{ /* most appropriate workflow id satisfying the query */ "workflow": number } | { /* ask the user if no choices are applicable */ "question": string }`,
-      ].join('\n'),
-    }]
-  })
-  const content = strip(res.choices[0].message.content)
-  try {
-    const m = /\{.+?\}/gms.exec(content)
-    const contentParsed = JSON.parse(m ? m[0] : '')
-    if (typeof contentParsed.workflow === 'number') {
-      const { workflow = undefined } = workflows[contentParsed.workflow] || {}
-      if (workflow) return { success: true, content: '```workflow\n' + JSON.stringify({ step: 0, workflow }) + '\n```' }
-    }
-    return { success: false, content: contentParsed.question }
-  } catch (e) {}
-  return { success: false, content }
-}
+type Component = { id: number, inputs?: Record<string, string>, data?: string, type: string, description: string }
 
-async function identifyFollowupWorkflow(messages: { role: "user" | "system" | "assistant", content: string }[]) {
-  console.debug(messages)
-  const [lastWorkflowMessage] = messages.filter(({ role, content }) => role === 'assistant' && content.includes('```workflow\n')).slice(-1)
-  const m = /```workflow\n(.+)\n```/gms.exec(lastWorkflowMessage.content)
-  const lastWorkflow = m ? JSON.parse(m[1]) : null
-  const lastProcessNode = krg.getProcessNode(lastWorkflow.workflow[lastWorkflow.workflow.length-1].spec)
-  const workflows = krg.getNextProcess(lastProcessNode.output.spec).map(node => {
-    const workflow = [...lastWorkflow.workflow, { spec: node.spec }]
-    return {
-      workflow,
-      description: workflow.map(
-        ({ spec }, i) =>
-          nodeDesc(krg.getProcessNode(spec), {
-            input: workflow[i].data,
-            output: i > 0 ? workflow[i-1].data : undefined
-          })).join('. ') + '.',
-    }
-  })
-  if (workflows.length === 0) return { success: false, content: '' }
+async function findAnswers(messages: { role: "user" | "system" | "assistant", content: string }[]) {
+  // find all previous components from message history
+  const previousComponents = messages.reduce((components, { role, content }) => {
+    if (role !== 'assistant') return components
+    const m = /```component\n(.+)\n```/gm.exec(content)
+    if (!m) return components
+    return [...components, JSON.parse(m[1])]
+  }, [] as Component[])
+  // construct possible next components
+  let maxId = Math.max(0, ...previousComponents.map(component => component.id))
+  const nextComponents = dict.init([
+    ...krg.getNextProcess('')
+      .map(proc => ({ id: ++maxId, type: proc.spec, description: proc.meta.description, data: '{substitute with info from user query}' })),
+    ...previousComponents.flatMap(component => {
+      const componentProc = krg.getProcessNode(component.type)
+      return krg.getNextProcess(componentProc.output.spec)
+        .map(proc => {
+          // todo use the same approach here as elsewhere to capture multi-inputs properly
+          const inputs = {} as Record<string, unknown>
+          dict.items(proc.inputs).forEach(({ key, value }) => {
+            if (Array.isArray(value)) inputs[key] = [component.id]
+            else inputs[key] = component.id
+          })
+          return { id: ++maxId, inputs, type: proc.spec, description: proc.meta.description }
+        })
+    })
+  ].map(value => ({ key: value.id, value })))
   const res = await openaiCompletions({
     messages: [
-      ...messages.slice(0, -1),
+      ...messages,
       {
         role: 'user',
         content: [
-          'Also considering our previous conversation, consider the following query:',
-          messages[messages.length-1],
-          'Consider the following potential next workflows:',
-          JSON.stringify(workflows.map((workflow, i) => ({ id: i, ...workflow }))),
-          'Response should be a JSON serialization which satisfies the typescript type:',
-          `{ /* most appropriate workflow id satisfying the query */ "workflow": number } | { /* ask the user if no choices are applicable */ "question": string }`,
+          'Considering our conversation up to this point, especially my most recent message and the following potential next workflow components:',
+          '```json',
+          JSON.stringify(Object.values(nextComponents)),
+          '```',
+          'Respond with a JSON serialization which satisfies the typescript type:',
+          '```ts',
+          `const response: {`,
+          ` /* an id corresponding to the component above which best satisfies the user's intent */ "id": number,`,
+          ` /* part of the user's messages relevant to the component */ "term": string } | {`,
+          ` /* if there is ambiguity, ask the user to help narrow down the choices */ "question": string } =`,
         ].join('\n'),
       },
     ]
   })
   const content = strip(res.choices[0].message.content)
   try {
-    const m = /\{.+?\}/gms.exec(content)
+    const m = /\{.+\}/gms.exec(content)
     const contentParsed = JSON.parse(m ? m[0] : '')
-    if (typeof contentParsed.workflow === 'number') {
-      const { workflow = undefined } = workflows[contentParsed.workflow] || {}
-      if (workflow) return { success: true, content: '```workflow\n' + JSON.stringify({ step: lastWorkflow.workflow.length, workflow }) + '\n```' }
+    if (typeof contentParsed.id === 'number') {
+      if (contentParsed.id in nextComponents) {
+        const component = nextComponents[contentParsed.id]
+        if (component.type.includes('Input') && 'term' in contentParsed) Object.assign(component, {data: contentParsed.term})
+        return '```component\n' + JSON.stringify(component) + '\n```'
+      } else {
+        return content
+      }
     }
-    return { success: false, content: contentParsed.question }
+    return contentParsed.question
   } catch (e) {}
-  return { success: false, content }
+  return content
 }
 
 const BodyType = z.object({
@@ -181,24 +141,7 @@ export default handler(async (req, res) => {
   const body = BodyType.parse(JSON.parse(req.body))
   const lastMessage = body.messages[body.messages.length-1]
   if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
-  if (body.messages.length === 1) {
-    const inputs = await identifyInputs(lastMessage.content)
-    let step = inputs.success ? await identifyWorkflow(lastMessage.content, inputs.content) : inputs
-    let previousStep: typeof step | undefined
-    // while (step.success) {
-    //   previousStep = step
-    //   body.messages.splice(body.messages.length-1, 0, { role: 'assistant', content: step.content })
-    //   step = await identifyFollowupWorkflow(body.messages)
-    // }
-    res.status(200).json({ role: 'assistant', content: [previousStep?.content, step.content].filter(c => c!==undefined).join('\n') })
-  } else {
-    let step = await identifyFollowupWorkflow(body.messages)
-    let previousStep: typeof step | undefined
-    // while (step.success) {
-    //   previousStep = step
-    //   body.messages.splice(body.messages.length-1, 0, { role: 'assistant', content: step.content })
-    //   step = await identifyFollowupWorkflow(body.messages)
-    // }
-    res.status(200).json({ role: 'assistant', content: [previousStep?.content, step.content].filter(c => c!==undefined).join('\n') })
-  }
+  const content = await findAnswers(body.messages)
+  console.log(content)
+  res.status(200).json({ role: 'assistant', content })
 })

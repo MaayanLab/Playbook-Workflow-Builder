@@ -70,7 +70,7 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
   let maxId = Math.max(0, ...previousComponents.map(component => component.id))
   const nextComponents = dict.init([
     ...krg.getNextProcess('')
-      .map(proc => ({ id: ++maxId, type: proc.spec, description: proc.meta.description, data: '{substitute with info from user query}' })),
+      .map(proc => ({ id: ++maxId, type: proc.spec, description: proc.meta.description })),
     ...previousComponents.flatMap(component => {
       const componentProc = krg.getProcessNode(component.type)
       return krg.getNextProcess(componentProc.output.spec)
@@ -100,7 +100,7 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
           `const response: {`,
           ` /* an id corresponding to the component above which best satisfies the user's intent */ "id": number,`,
           ` /* part of the user's messages relevant to the component */ "term": string } | {`,
-          ` /* if there is ambiguity, ask the user to help narrow down the choices */ "question": string } =`,
+          ` /* if there are no good choices, ask the user to help narrow down the choices */ "question": string } =`,
         ].join('\n'),
       },
     ]

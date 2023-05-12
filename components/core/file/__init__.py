@@ -37,7 +37,7 @@ def upsert_file(suffix=''):
     yield tmp
     # we upload the file to the main server to get a persistent url
     req = requests.post(
-      f"{os.environ['PUBLIC_URL']}/api/components/core/file/upload",
+      f"{os.environ['PUBLIC_URL']}/api/v1/components/core/file/upload",
       headers={'Authorization': f"Token {os.environ['NEXTAUTH_SECRET']}"},
       files=[('file', open(tmp.file, 'rb'))],
     )

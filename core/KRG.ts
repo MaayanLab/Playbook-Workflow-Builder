@@ -53,7 +53,7 @@ export default class KRG {
         if (this.dataNodes[node.spec] === node) {
           return
         } else {
-          this.rm(node.spec)
+          // this.rm(node.spec)
         }
       }
       this.dataNodes[node.spec] = node
@@ -62,7 +62,7 @@ export default class KRG {
         if (this.processNodes[node.spec] === node) {
           return
         } else {
-          this.rm(node.spec)
+          // this.rm(node.spec)
         }
       }
       if ('prompt' in node) {

@@ -44,7 +44,7 @@ def upsert_file(suffix=''):
     assert req.status_code >= 200 and req.status_code < 300, f"Error ({req.status_code}): {req.json()}"
     res = req.json()
     # we return register url to the file
-    tmp.url = res['file'][0]
+    tmp.url = res['file'][0]['url']
   finally:
     # we remove the temporary file
     tmp.unlink()

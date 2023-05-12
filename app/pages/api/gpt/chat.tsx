@@ -44,16 +44,16 @@ async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', tempe
   return OpenAICompletionsResponse.parse(res)
 }
 
-function nodeDesc(node: ProcessMetaNode, { input, output }: { input?: string, output?: string }) {
-  if (node.story && Object.keys(node.inputs).length === 1) {
+function nodeDesc(node: ProcessMetaNode, { inputs, output }: { inputs?: Record<string, unknown>, output?: string }) {
+  if (inputs !== undefined && node.story !== undefined) {
     try {
-      node.story({
-        inputs: { [Object.keys(node.inputs)[0] as any]: input || `[${Object.keys(node.inputs)[0]}]` },
+      return `${node.meta.label}: ${node.meta.description}. ${node.story({
+        inputs: inputs !== undefined ? inputs : {},
         output,
-      })
+      })}`
     } catch (e) {}
   }
-  return node.meta.description
+  return `${node.meta.label}: ${node.meta.description}`
 }
 
 type Component = { id: number, inputs?: Record<string, string>, data?: string, type: string, description: string }
@@ -67,27 +67,47 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
     return [...components, JSON.parse(m[1])]
   }, [] as Component[])
   // construct possible next components
-  let maxId = Math.max(0, ...previousComponents.map(component => component.id))
+  const ctx = { maxId: Math.max(0, ...previousComponents.map(component => component.id)) }
   const nextComponents = dict.init([
     ...krg.getNextProcess('')
-      .map(proc => ({ id: ++maxId, type: proc.spec, description: proc.meta.description })),
+      .map(proc => ({ id: ++ctx.maxId, type: proc.spec, description: proc.meta.description })),
     ...previousComponents.flatMap(component => {
       const componentProc = krg.getProcessNode(component.type)
       return krg.getNextProcess(componentProc.output.spec)
         .map(proc => {
+          console.log(`${ctx.maxId} ${componentProc.spec} => ${componentProc.output.spec} => ${proc.spec}`)
           // todo use the same approach here as elsewhere to capture multi-inputs properly
           const inputs = {} as Record<string, unknown>
+          const inputValues = {} as Record<string, unknown>
           dict.items(proc.inputs).forEach(({ key, value }) => {
-            if (Array.isArray(value)) inputs[key] = [component.id]
-            else inputs[key] = component.id
+            if (Array.isArray(value)) {
+              inputs[key] = [component.id]
+              inputValues[key] = [component.data]
+            }
+            else {
+              inputs[key] = component.id
+              inputValues[key] = component.data
+            }
           })
-          return { id: ++maxId, inputs, type: proc.spec, description: proc.meta.description }
+          return { id: ++ctx.maxId, inputs, type: proc.spec, description: nodeDesc(proc, { inputs: inputValues }) }
         })
     })
   ].map(value => ({ key: value.id, value })))
   const res = await openaiCompletions({
     messages: [
-      ...messages,
+      ...messages.reduce((M, { role, content }) => {
+        if (role !== 'assistant') {
+          return [...M, { role, content }]
+        }
+        const m = /```component\n(.+)\n```/gm.exec(content)
+        if (!m) return M
+        const component = JSON.parse(m[1])
+        return [
+          ...M,
+          { role: 'assistant', content: JSON.stringify({ id: component.id, term: component.data }) },
+          { role: 'assistant', content },
+        ]
+      }, [] as {role: string, content: string}[]),
       {
         role: 'user',
         content: [
@@ -100,7 +120,7 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
           `const response: {`,
           ` /* an id corresponding to the component above which best satisfies the user's intent */ "id": number,`,
           ` /* part of the user's messages relevant to the component */ "term": string } | {`,
-          ` /* if there are no good choices, ask the user to help narrow down the choices */ "question": string } =`,
+          ` /* only if there are no good choices */ "question": string } =`,
         ].join('\n'),
       },
     ]
@@ -142,6 +162,5 @@ export default handler(async (req, res) => {
   const lastMessage = body.messages[body.messages.length-1]
   if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
   const content = await findAnswers(body.messages)
-  console.log(content)
   res.status(200).json({ role: 'assistant', content })
 })

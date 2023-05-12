@@ -16,7 +16,7 @@ async function submitBcoDraft(endpoint: string): Promise<{ object_id: string }> 
   else return await req.json()
 }
 
-export default function BCOButton({ id, metadata }: { id?: string, metadata: { title: string, description: string | undefined } }) {
+export default function BCOButton({ id, metadata, disabled }: { id?: string, metadata: { title: string, description: string | undefined, disabled: boolean } }) {
   const { trigger, isMutating, error } = useSWRMutation(id ? `/api/bco/${id}/draft` : null, submitBcoDraft)
   const [isError, setIsError] = React.useState(false)
   React.useEffect(() => {
@@ -30,7 +30,8 @@ export default function BCOButton({ id, metadata }: { id?: string, metadata: { t
   return (
     <>
       <Bp4Popover
-        className="cursor-pointer"
+        className={disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+        disabled={disabled}
         content={
           <Bp4Menu>
             <a href={`/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`} download={`${metadata.title.replace(/ /g, '-')}-bco.json`}>
@@ -52,7 +53,7 @@ export default function BCOButton({ id, metadata }: { id?: string, metadata: { t
         }
         placement="bottom"
       >
-        <Icon icon={biocompute_icon} color="black" title="Create BCO" />
+        <Icon icon={biocompute_icon} color={disabled ? 'grey' : 'black'} title="Create BCO" />
       </Bp4Popover>
       <Bp4Alert
         confirmButtonText="Okay"

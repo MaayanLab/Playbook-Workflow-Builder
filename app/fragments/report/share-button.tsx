@@ -6,7 +6,7 @@ import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function ShareButton({ id }: { id: string | undefined }) {
+export default function ShareButton({ id, disabled }: { id: string | undefined, disabled: boolean }) {
   const publicUrl = usePublicUrl({ absolute: true })
   const [share, setShare] = React.useState(false)
   const onClick = React.useCallback(() => {
@@ -18,15 +18,15 @@ export default function ShareButton({ id }: { id: string | undefined }) {
   React.useEffect(() => { if (share) { onClick() } }, [share])
   if (!share) {
     return (
-      <button className="bp4-button bp4-minimal" onClick={() => {setShare(true)}}>
-        <Icon icon={share_icon} color="black" />
+      <button className="bp4-button bp4-minimal" disabled={disabled} onClick={() => {setShare(true)}}>
+        <Icon icon={share_icon} color={disabled ? 'grey' : 'black'} />
       </button>
     )
   } else {
     return (
       <div className={classNames('bp4-control-group inline-block', { 'hidden': !share })}>
         <input id="graph-url" type="text" className="bp4-input" value={`${publicUrl}/report${id ? `/${id}` : ''}`} readOnly />
-        <button className="bp4-button bp4-icon-link" onClick={onClick} />
+        <button className="bp4-button bp4-icon-clipboard" onClick={onClick} />
         <button className="bp4-button bp4-icon-cross" onClick={() => {setShare(false)}} />
       </div>
     )

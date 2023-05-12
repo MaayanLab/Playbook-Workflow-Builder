@@ -1,4 +1,5 @@
 import multiparty from "multiparty"
+import path from 'path'
 import handler from '@/utils/next-rest'
 import * as dict from '@/utils/dict'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
@@ -22,7 +23,7 @@ export const POST = handler(async (req, res) => {
           key,
           value: await Promise.all(files.map(async (file) => {
             return await uploadFile({
-              url: `file://${file.path}`,
+              url: `file://${file.path.split(path.sep).join(path.posix.sep)}`,
               size: file.size,
               filename: file.originalFilename,
             })

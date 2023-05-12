@@ -2,8 +2,8 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Head from 'next/head'
-import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon } from '@/icons'
-import { useStory } from '@/app/fragments/story'
+import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon, save_icon } from '@/icons'
+import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
 import type { ReportMetadata } from './cells'
@@ -14,6 +14,7 @@ const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableT
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
+  const [saved, setSaved] = React.useState(false)
   const [metadata, setMetadata] = React.useState<ReportMetadata>(defaultMetadata)
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
@@ -109,9 +110,16 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
               <Icon icon={fork_icon} color="black" />
             </button>
           </Link>
-          <ShareButton id={id} />
+          <button className="bp4-button bp4-minimal" onClick={() => {setSaved(saved => !saved)}}>
+            <Icon icon={save_icon} color={saved ? 'green' : 'black'} />
+          </button>
+          <ShareButton
+            id={id}
+            disabled={!saved}
+          />
           <BCOButton
             id={id}
+            disabled={!saved}
             metadata={{
               title: metadata.title,
               description: (

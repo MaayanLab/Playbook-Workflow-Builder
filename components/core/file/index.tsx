@@ -33,7 +33,6 @@ export const FileInput = MetaNode('FileInput')
   .meta({
     label: 'Input File',
     description: 'Upload a Data File',
-    default: '',
     icon: [input_icon],
   })
   .inputs()

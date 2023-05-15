@@ -16,6 +16,7 @@ export type ReportMetadata = {
   summary: 'auto' | 'manual' | 'gpt',
   collapsed: Record<number, boolean>,
   public: boolean,
+  saved: 'yes' | 'no' | 'pending',
 }
 
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
@@ -25,6 +26,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
     summary: 'auto',
     collapsed: {},
     public: false,
+    saved: 'no',
   })
   useAsyncEffect(async (isMounted) => {
     setMetadata(({ gpt_summary: _, summary, ...metadata }) => ({
@@ -43,6 +45,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
         description: playbook.description,
         gpt_summary: playbook.gpt_summary,
         public: true,
+        saved: 'yes',
       }))
     })
   }, [id, metapath])
@@ -53,7 +56,8 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
         <Introduction
           id={id}
           error={error}
-          defaultMetadata={metadata}
+          metadata={metadata}
+          setMetadata={setMetadata}
         />
         {(metapath||[]).map((head, index) => (
           <Cell

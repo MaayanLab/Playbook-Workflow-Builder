@@ -15,7 +15,6 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
   const [saved, setSaved] = React.useState(false)
-  const [published, setPublished] = React.useState(false)
   const [metadata, setMetadata] = React.useState<ReportMetadata>(defaultMetadata)
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
@@ -102,8 +101,8 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
           <button className="bp4-button bp4-minimal" onClick={() => {setSaved(saved => !saved)}}>
             <Icon icon={save_icon} color={saved ? 'green' : 'black'} />
           </button>
-          <button className="bp4-button bp4-minimal" disabled={!saved} onClick={() => {setPublished(published => !published)}}>
-            <Icon icon={share_icon} color={saved ? published ? 'green' : 'black' : 'gray'} title="Share Publicly" />
+          <button className="bp4-button bp4-minimal" disabled={!saved} onClick={() => {setMetadata(metadata => ({ ...metadata, public: !metadata.public }))}}>
+            <Icon icon={share_icon} color={saved ? metadata.public ? 'green' : 'black' : 'gray'} title="Share Publicly" />
           </button>
           <BCOButton
             id={id}

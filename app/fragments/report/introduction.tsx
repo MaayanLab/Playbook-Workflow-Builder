@@ -14,13 +14,12 @@ const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableT
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
-  const [saved, setSaved] = React.useState(false)
-  const [metadata, setMetadata] = React.useState<ReportMetadata>(defaultMetadata)
+  const [metadata, setMetadata] = React.useState({...defaultMetadata, saved: 'no' as 'no' | 'pending' | 'yes'})
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   React.useEffect(() => {
-    setMetadata((metadata) => ({ ...metadata, ...defaultMetadata }))
+    setMetadata((metadata) => ({ ...metadata, ...defaultMetadata, saved: defaultMetadata.public ? 'yes' : 'no' }))
   }, [defaultMetadata])
   return (
     <>
@@ -35,31 +34,31 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
               <EditableText
                 placeholder="Playbook title"
                 value={metadata.title}
-                onChange={title => {setMetadata(metadata => ({ ...metadata, title }))}}
+                onChange={title => {setMetadata(metadata => ({ ...metadata, title, saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
               />
             </h2>
           </div>
           <div className="tabs">
             <button
               className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
-              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto' }))}}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto', saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
             >Auto-Generated Summary</button>
             <div className="tooltip" data-tip={!chatGPTAvailable && !metadata.gpt_summary ? errorAugmentingWithChatGPT : undefined}>
               <button
                 disabled={!chatGPTAvailable && !metadata.gpt_summary}
                 className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
                 onClick={async (evt) => {
-                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt' }))
+                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt', saved: metadata.saved === 'yes' ? 'pending' : 'no' }))
                   if (!metadata.gpt_summary) {
                     const gpt_summary = await augmentWithChatGPT(story)
-                    setMetadata((metadata) => ({ ...metadata, gpt_summary }))
+                    setMetadata((metadata) => ({ ...metadata, gpt_summary, saved: metadata.saved === 'yes' ? 'pending' : 'no' }))
                   }
                 }}
               >GPT-Augmented Summary</button>
             </div>
             <button
               className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'manual' })}
-              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual' }))}}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual', saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
             >Manual Summary</button>
           </div>
           <div className="prose">
@@ -74,7 +73,7 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
                   placeholder="Add your manual summary here to be included when publishing."
                   value={metadata.description || ''}
                   multiline
-                  onChange={description => {setMetadata(metadata => ({ ...metadata, description }))}}
+                  onChange={description => {setMetadata(metadata => ({ ...metadata, description, saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
                 />
               </p>
               : metadata.summary === 'gpt' ?
@@ -98,15 +97,15 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
               <Icon icon={fork_icon} color="black" />
             </button>
           </Link>
-          <button className="bp4-button bp4-minimal" onClick={() => {setSaved(saved => !saved)}}>
-            <Icon icon={save_icon} color={saved ? 'green' : 'black'} />
+          <button className="bp4-button bp4-minimal" onClick={() => {setMetadata(metadata => ({ ...metadata, saved: metadata.saved === 'yes' ? 'no' : 'yes' }))}}>
+            <Icon icon={save_icon} color={metadata.saved === 'yes' ? 'green' : metadata.saved === 'pending' ? 'orange': 'black'} />
           </button>
-          <button className="bp4-button bp4-minimal" disabled={!saved} onClick={() => {setMetadata(metadata => ({ ...metadata, public: !metadata.public }))}}>
-            <Icon icon={share_icon} color={saved ? metadata.public ? 'green' : 'black' : 'gray'} title="Share Publicly" />
+          <button className="bp4-button bp4-minimal" disabled={metadata.saved !== 'yes'} onClick={() => {setMetadata(metadata => ({ ...metadata, public: !metadata.public }))}}>
+            <Icon icon={share_icon} color={metadata.saved === 'yes' ? metadata.public ? 'green' : 'black' : 'gray'} title="Share Publicly" />
           </button>
           <BCOButton
             id={id}
-            disabled={!saved}
+            disabled={metadata.saved !== 'yes'}
             metadata={{
               title: metadata.title,
               description: (
@@ -119,7 +118,7 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
           />
           <LinkButton
             id={id}
-            disabled={!saved}
+            disabled={metadata.saved !== 'yes'}
           />
         </div>
       </div>

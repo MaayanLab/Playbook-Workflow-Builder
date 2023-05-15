@@ -42,6 +42,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
         collapsed: playbook.collapsed,
         description: playbook.description,
         gpt_summary: playbook.gpt_summary,
+        public: true,
       }))
     })
   }, [id, metapath])

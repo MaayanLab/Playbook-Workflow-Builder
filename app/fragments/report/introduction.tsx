@@ -13,14 +13,10 @@ const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
-  const [metadata, setMetadata] = React.useState({...defaultMetadata, saved: 'no' as 'no' | 'pending' | 'yes'})
+export default function Introduction({ id, metadata, setMetadata, error }: { id: string, metadata: ReportMetadata, setMetadata: React.Dispatch<React.SetStateAction<ReportMetadata>>, error: any }) {
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
-  React.useEffect(() => {
-    setMetadata((metadata) => ({ ...metadata, ...defaultMetadata, saved: defaultMetadata.public ? 'yes' : 'no' }))
-  }, [defaultMetadata])
   return (
     <>
       <Head>

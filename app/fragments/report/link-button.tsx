@@ -1,12 +1,12 @@
 import React from 'react'
-import { share_icon } from '@/icons'
+import { link_icon } from '@/icons'
 import usePublicUrl from '@/utils/next-public-url'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function ShareButton({ id, disabled }: { id: string | undefined, disabled: boolean }) {
+export default function LinkButton({ id, disabled }: { id: string | undefined, disabled: boolean }) {
   const publicUrl = usePublicUrl({ absolute: true })
   const [share, setShare] = React.useState(false)
   const onClick = React.useCallback(() => {
@@ -19,7 +19,7 @@ export default function ShareButton({ id, disabled }: { id: string | undefined, 
   if (!share) {
     return (
       <button className="bp4-button bp4-minimal" disabled={disabled} onClick={() => {setShare(true)}}>
-        <Icon icon={share_icon} color={disabled ? 'grey' : 'black'} />
+        <Icon icon={link_icon} color={disabled ? 'grey' : 'black'} />
       </button>
     )
   } else {

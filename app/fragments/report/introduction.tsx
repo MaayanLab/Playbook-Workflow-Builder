@@ -2,19 +2,20 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Head from 'next/head'
-import { view_in_graph_icon, fork_icon, start_icon, biocompute_icon, save_icon } from '@/icons'
+import { view_in_graph_icon, fork_icon, start_icon, save_icon, share_icon } from '@/icons'
 import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
 import type { ReportMetadata } from './cells'
 
-const ShareButton = dynamic(() => import('@/app/fragments/report/share-button'))
+const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Introduction({ id, defaultMetadata, error }: { id: string, defaultMetadata: ReportMetadata, error: any }) {
   const [saved, setSaved] = React.useState(false)
+  const [published, setPublished] = React.useState(false)
   const [metadata, setMetadata] = React.useState<ReportMetadata>(defaultMetadata)
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
@@ -85,18 +86,6 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
               </>
               : null}
           </div>
-          {/* {metadata.title || metadata.description !== undefined ? (
-            <div className="flex flex-row gap-2 items-center">
-              <button className="bp4-button bp4-intent-success">Save</button>
-              <label className="bp4-control bp4-switch mb-0">
-                <input
-                  type="checkbox"
-                />
-                <span className="bp4-control-indicator"></span>
-                Make workflow public
-              </label>
-            </div>
-          ) : null} */}
         </div>
         {error ? <div className="alert alert-error">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
@@ -113,10 +102,9 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
           <button className="bp4-button bp4-minimal" onClick={() => {setSaved(saved => !saved)}}>
             <Icon icon={save_icon} color={saved ? 'green' : 'black'} />
           </button>
-          <ShareButton
-            id={id}
-            disabled={!saved}
-          />
+          <button className="bp4-button bp4-minimal" disabled={!saved} onClick={() => {setPublished(published => !published)}}>
+            <Icon icon={share_icon} color={saved ? published ? 'green' : 'black' : 'gray'} title="Share Publicly" />
+          </button>
           <BCOButton
             id={id}
             disabled={!saved}
@@ -129,6 +117,10 @@ export default function Introduction({ id, defaultMetadata, error }: { id: strin
                 : undefined
               ),
             }}
+          />
+          <LinkButton
+            id={id}
+            disabled={!saved}
           />
         </div>
       </div>

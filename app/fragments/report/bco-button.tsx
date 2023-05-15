@@ -16,7 +16,7 @@ async function submitBcoDraft(endpoint: string): Promise<{ object_id: string }> 
   else return await req.json()
 }
 
-export default function BCOButton({ id, metadata, disabled }: { id?: string, metadata: { title: string, description: string | undefined, disabled: boolean } }) {
+export default function BCOButton({ id, metadata, disabled }: { id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
   const { trigger, isMutating, error } = useSWRMutation(id ? `/api/bco/${id}/draft` : null, submitBcoDraft)
   const [isError, setIsError] = React.useState(false)
   React.useEffect(() => {

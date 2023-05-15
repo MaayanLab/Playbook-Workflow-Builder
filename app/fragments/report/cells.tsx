@@ -4,7 +4,6 @@ import type KRG from '@/core/KRG'
 import type { Metapath } from '@/app/fragments/metapath'
 import { useSWRImmutableSticky } from '@/utils/use-sticky'
 import { StoryProvider } from '@/app/fragments/story'
-import * as dict from '@/utils/dict'
 import useAsyncEffect from 'use-async-effect'
 
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
@@ -43,6 +42,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
         collapsed: playbook.collapsed,
         description: playbook.description,
         gpt_summary: playbook.gpt_summary,
+        public: true,
       }))
     })
   }, [id, metapath])

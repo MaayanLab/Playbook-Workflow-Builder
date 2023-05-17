@@ -332,6 +332,4 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
       }
     }   
     return alleleInfoExternalResources;
-  })
-  .build()
-
+  }).build()

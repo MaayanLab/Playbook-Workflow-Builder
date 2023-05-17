@@ -139,14 +139,3 @@ export const FileInput = MetaNode('FileInput')
     `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
   )
   .build()
-
-
-  /*
-            {session === null ? (
-            <div className="alert alert-warning shadow-lg block">
-              You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
-            </div>
-          ) : 
-          (
-          )}
-  */

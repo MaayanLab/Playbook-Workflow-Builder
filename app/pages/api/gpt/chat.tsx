@@ -102,11 +102,7 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
         const m = /```component\n(.+)\n```/gm.exec(content)
         if (!m) return M
         const component = JSON.parse(m[1])
-        return [
-          ...M,
-          { role: 'assistant', content: JSON.stringify({ id: component.id, term: component.data }) },
-          { role: 'assistant', content },
-        ]
+        return [...M, { role: 'assistant', content: JSON.stringify({ id: component.id, term: component.data }) }]
       }, [] as {role: string, content: string}[]),
       {
         role: 'user',
@@ -129,16 +125,18 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
   try {
     const m = /\{.+\}/gms.exec(content)
     const contentParsed = JSON.parse(m ? m[0] : '')
-    if (typeof contentParsed.id === 'number') {
-      if (contentParsed.id in nextComponents) {
-        const component = nextComponents[contentParsed.id]
-        if (component.type.includes('Input') && 'term' in contentParsed) Object.assign(component, {data: contentParsed.term})
-        return { content: '```component\n' + JSON.stringify(component) + '\n```', done: false }
-      } else {
-        return { content, done: true }
+    if (typeof contentParsed.id === 'number' && contentParsed.id in nextComponents) {
+      const component = nextComponents[contentParsed.id]
+      if (component.type.includes('Input') && 'term' in contentParsed) Object.assign(component, {data: contentParsed.term})
+      return {
+        content: '```component\n' + JSON.stringify(component) + '\n```',
+        done: krg.getNextProcess(krg.getProcessNode(component.type).output.kind).length !== 0,
       }
+    } else if ('question' in contentParsed) {
+      return { content: contentParsed.question, done: true }
+    } else {
+      return { content: `I'm not sure, please rephrase your question.`, done: true }
     }
-    return { content: contentParsed.question, done: true }
   } catch (e) {}
   return { content, done: true }
 }
@@ -163,9 +161,14 @@ export default handler(async (req, res) => {
   if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
   const newMessages: typeof body.messages = []
   for (let i = 0; i < 2; i++) {
-    const { content, done } = await findAnswers([...body.messages, ...newMessages])
-    newMessages.push({ role: 'assistant', content })
-    if (done) break
+    try {
+      const { content, done } = await findAnswers([...body.messages, ...newMessages])
+      newMessages.push({ role: 'assistant', content })
+      if (done) break
+    } catch (e) {
+      newMessages.push({ role: 'assistant', content: `Error: ${(e as any).toString()}` })
+      break
+    }
   }
   res.status(200).json(newMessages)
 })

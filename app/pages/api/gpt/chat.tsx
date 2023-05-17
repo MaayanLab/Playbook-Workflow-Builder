@@ -113,14 +113,14 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
         content: [
           'Considering our conversation up to this point, especially my most recent message and the following potential next workflow components:',
           '```json',
-          JSON.stringify(Object.values(nextComponents)),
+          JSON.stringify(Object.values(nextComponents).map(({ type: _, ...component }) => component)),
           '```',
           'Respond with a JSON serialization which satisfies the typescript type:',
           '```ts',
           `const response: {`,
-          ` /* an id corresponding to the component above which best satisfies the user's intent */ "id": number,`,
+          ` /* an id corresponding to the component above which best satisfies the user's intent in any capacity */ "id": number,`,
           ` /* part of the user's messages relevant to the component */ "term": string } | {`,
-          ` /* only if there are no good choices */ "question": string } =`,
+          ` /* only if there are no good choices, a question for the user */ "question": string } =`,
         ].join('\n'),
       },
     ]
@@ -133,14 +133,14 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
       if (contentParsed.id in nextComponents) {
         const component = nextComponents[contentParsed.id]
         if (component.type.includes('Input') && 'term' in contentParsed) Object.assign(component, {data: contentParsed.term})
-        return '```component\n' + JSON.stringify(component) + '\n```'
+        return { content: '```component\n' + JSON.stringify(component) + '\n```', done: false }
       } else {
-        return content
+        return { content, done: true }
       }
     }
-    return contentParsed.question
+    return { content: contentParsed.question, done: true }
   } catch (e) {}
-  return content
+  return { content, done: true }
 }
 
 const BodyType = z.object({
@@ -161,6 +161,11 @@ export default handler(async (req, res) => {
   const body = BodyType.parse(JSON.parse(req.body))
   const lastMessage = body.messages[body.messages.length-1]
   if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
-  const content = await findAnswers(body.messages)
-  res.status(200).json({ role: 'assistant', content })
+  const newMessages: typeof body.messages = []
+  for (let i = 0; i < 2; i++) {
+    const { content, done } = await findAnswers([...body.messages, ...newMessages])
+    newMessages.push({ role: 'assistant', content })
+    if (done) break
+  }
+  res.status(200).json(newMessages)
 })

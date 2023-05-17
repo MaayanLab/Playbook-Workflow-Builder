@@ -5,6 +5,7 @@ import { GeneSet, RegulatoryElementSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
+//import FormData from 'form-data'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -137,7 +138,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   });
   export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
   
-  export async function getCTDFileResponse(formData: FormData): Promise<CTDResponseInfo> {
+  export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
     const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/file`, {
       method: 'POST',
       headers: {
@@ -280,8 +281,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a list of Guilty_By_Association_Genes from the CTD response.`
   ).build()
 
-
-
+  //just for demo, this needs to be presented with a proper graph visualization
   export const CTDGraph = MetaNode('CTDGraph')
   .meta({
     label: 'CTDGraph',
@@ -296,7 +296,6 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
       </div>
     )
   }).build()
-
 
   export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .meta({

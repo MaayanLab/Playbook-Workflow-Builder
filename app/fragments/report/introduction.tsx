@@ -6,21 +6,25 @@ import { view_in_graph_icon, fork_icon, start_icon, save_icon, share_icon } from
 import { useStory } from '@/app/fragments/report/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
-import type { ReportMetadata } from './cells'
+import type { CellMetadata, Playbook } from './cells'
 
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Introduction({ id, metadata, setMetadata, error }: { id: string, metadata: ReportMetadata, setMetadata: React.Dispatch<React.SetStateAction<ReportMetadata>>, error: any }) {
+export default function Introduction({ id, metadata, setMetadata, playbook, setPlaybook, error }: {
+  id: string,
+  metadata: Record<string, CellMetadata>, setMetadata: React.Dispatch<React.SetStateAction<Record<string, CellMetadata>>>,
+  playbook: Playbook, setPlaybook: React.Dispatch<React.SetStateAction<Playbook>>,
+  error: any }) {
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   return (
     <>
       <Head>
-        <title>Playbook Report: {metadata.title}</title>
+        <title>Playbook Report: {metadata[id].label}</title>
       </Head>
       <div className="flex-grow flex-shrink bp4-card p-0">
         <div className="p-3">
@@ -29,54 +33,54 @@ export default function Introduction({ id, metadata, setMetadata, error }: { id:
             <h2 className="bp4-heading">
               <EditableText
                 placeholder="Playbook title"
-                value={metadata.title}
-                onChange={title => {setMetadata(metadata => ({ ...metadata, title, saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
+                value={metadata[id].label}
+                onChange={title => {setMetadata(metadata => ({ ...metadata, [id]: { ...metadata[id], title } }))}}
               />
             </h2>
           </div>
           <div className="tabs">
             <button
-              className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
-              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto', saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
+              className={classNames('tab tab-lifted', { 'tab-active': metadata[id].summary === 'auto' })}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, [id]: { ...metadata[id], summary: 'auto' } }))}}
             >Auto-Generated Summary</button>
-            <div className="tooltip" data-tip={!chatGPTAvailable && !metadata.gpt_summary ? errorAugmentingWithChatGPT : undefined}>
+            <div className="tooltip" data-tip={!chatGPTAvailable && !metadata[id].gpt_summary ? errorAugmentingWithChatGPT : undefined}>
               <button
-                disabled={!chatGPTAvailable && !metadata.gpt_summary}
-                className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
+                disabled={!chatGPTAvailable && !metadata[id].gpt_summary}
+                className={classNames('tab tab-lifted', { 'tab-active': metadata[id].summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata[id].gpt_summary })}
                 onClick={async (evt) => {
-                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt', saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))
-                  if (!metadata.gpt_summary) {
+                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, [id]: { ...metadata[id], summary: 'gpt' } }))
+                  if (!metadata[id].gpt_summary) {
                     const gpt_summary = await augmentWithChatGPT(story)
-                    setMetadata((metadata) => ({ ...metadata, gpt_summary, saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))
+                    setMetadata((metadata) => ({ ...metadata, [id]: { ...metadata[id], gpt_summary } }))
                   }
                 }}
               >GPT-Augmented Summary</button>
             </div>
             <button
-              className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'manual' })}
-              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual', saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
+              className={classNames('tab tab-lifted', { 'tab-active': metadata[id].summary === 'manual' })}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, [id]: { ...metadata[id], summary: 'manual' } }))}}
             >Manual Summary</button>
           </div>
           <div className="prose">
-            {metadata.summary === 'auto' ?
+            {metadata[id].summary === 'auto' ?
               <>
                 <p className="prose-lg mt-1">{storyText}</p>
                 <div className="prose-sm whitespace-pre-line">{storyCitations}</div>
               </>
-            : metadata.summary === 'manual' ?
+            : metadata[id].summary === 'manual' ?
               <p className="prose-lg mt-1">
                 <EditableText
                   placeholder="Add your manual summary here to be included when publishing."
-                  value={metadata.description || ''}
+                  value={metadata[id].description || ''}
                   multiline
-                  onChange={description => {setMetadata(metadata => ({ ...metadata, description, saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
+                  onChange={description => {setMetadata(metadata => ({ ...metadata, [id]: { ...metadata[id], description } }))}}
                 />
               </p>
-              : metadata.summary === 'gpt' ?
+              : metadata[id].summary === 'gpt' ?
               <>
                 {chatGPTAvailable && isAugmentingWithChatGPT ? <progress className="progress" /> : null}
                 {chatGPTAvailable && errorAugmentingWithChatGPT ? <div className="alert alert-error">{errorAugmentingWithChatGPT.toString()}</div> : null}
-                <p className="prose-lg mt-1 whitespace-pre-line">{metadata.gpt_summary}</p>
+                <p className="prose-lg mt-1 whitespace-pre-line">{metadata[id].gpt_summary}</p>
               </>
               : null}
           </div>
@@ -93,28 +97,28 @@ export default function Introduction({ id, metadata, setMetadata, error }: { id:
               <Icon icon={fork_icon} color="black" />
             </button>
           </Link>
-          <button className="bp4-button bp4-minimal" onClick={() => {setMetadata(metadata => ({ ...metadata, saved: metadata.saved === 'yes' ? 'no' : 'yes' }))}}>
-            <Icon icon={save_icon} color={metadata.saved === 'yes' ? 'green' : metadata.saved === 'pending' ? 'orange': 'black'} />
+          <button className="bp4-button bp4-minimal" onClick={() => {setPlaybook(playbook => ({ ...playbook, id, update_required: false }))}}>
+            <Icon icon={save_icon} color={!playbook.id ? 'black' : playbook.update_required ? 'crimson' : 'green'} />
           </button>
-          <button className="bp4-button bp4-minimal" disabled={metadata.saved !== 'yes'} onClick={() => {setMetadata(metadata => ({ ...metadata, public: !metadata.public }))}}>
-            <Icon icon={share_icon} color={metadata.saved === 'yes' ? metadata.public ? 'green' : 'black' : 'gray'} title="Share Publicly" />
+          <button className="bp4-button bp4-minimal" disabled={playbook.id !== id} onClick={() => {setPlaybook(playbook => ({ ...playbook, public: id }))}}>
+            <Icon icon={share_icon} color={playbook.id !== id ? 'gray' : playbook.public === id ? 'green' : 'black'} title="Share Publicly" />
           </button>
           <BCOButton
             id={id}
-            disabled={metadata.saved !== 'yes'}
+            disabled={playbook.id !== id}
             metadata={{
-              title: metadata.title,
+              title: metadata[id].label,
               description: (
-                metadata.summary === 'auto' ? story
-                : metadata.summary === 'gpt' ? metadata.gpt_summary
-                : metadata.summary === 'manual' ? metadata.description
+                metadata[id].summary === 'auto' ? story
+                : metadata[id].summary === 'gpt' ? metadata[id].gpt_summary
+                : metadata[id].summary === 'manual' ? metadata[id].description
                 : undefined
               ),
             }}
           />
           <LinkButton
             id={id}
-            disabled={metadata.saved !== 'yes'}
+            disabled={playbook.id !== id}
           />
         </div>
       </div>

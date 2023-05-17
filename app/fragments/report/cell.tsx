@@ -6,23 +6,12 @@ import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import classNames from 'classnames'
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
+import { CellMetadata } from './cells'
 
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-function defaultMetadata(head: Metapath, defaultCollapse: boolean) {
-  const {
-    id: _,
-    label,
-    description,
-    processVisible = false,
-    dataVisible = !defaultCollapse,
-  } = head.metadata ?? {}
-  return { label, description, processVisible, dataVisible }
-}
-
-export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id: string, head: Metapath, defaultCollapse: boolean }) {
-  const [metadata, setMetadata] = React.useState(defaultMetadata(head, defaultCollapse))
+export default function Cell({ krg, id, head, metadata, setMetadata }: { krg: KRG, id: string, head: Metapath, metadata: Record<string, CellMetadata>, setMetadata: React.Dispatch<React.SetStateAction<Record<string, CellMetadata>>> }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput(krg, head)
   const View = outputNode ? outputNode.view : undefined
@@ -30,11 +19,11 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
     <>
       {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
         <div className="collapse collapse-arrow">
-          <input type="checkbox" checked={metadata.processVisible} onChange={evt => {setMetadata((metadata) => ({ ...metadata, processVisible: evt.target.checked }))}} />
+          <input type="checkbox" checked={metadata[head.id].processVisible} onChange={evt => {setMetadata((metadata) => ({ ...metadata, [head.id]: { ...metadata[head.id], processVisible: evt.target.checked } }))}} />
           <div className="collapse-title flex flex-row gap-2">
             <Icon icon={processNode.meta.icon || func_icon} />
             <h2 className="bp4-heading">
-              {metadata.label ? metadata.label
+              {metadata[head.id].label ? metadata[head.id].label
                 : processNode.meta.label ? processNode.meta.label
                 : processNode.spec}
             </h2>
@@ -42,14 +31,14 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
           <div className="collapse-content">
             <p className="bp4-ui-text">
               <ReactMarkdown>
-                {metadata.description ? metadata.description
+                {metadata[head.id].description ? metadata[head.id].description
                   : processNode.meta.description ? processNode.meta.description
                   : ''}
               </ReactMarkdown>
             </p>
           </div>
         </div>
-        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !metadata.processVisible })}>
+        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !metadata[head.id].processVisible })}>
           <Link href={`/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} />
@@ -67,7 +56,7 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
             output={output}
           />
           : <div className="collapse collapse-arrow">
-          <input type="checkbox" checked={metadata.dataVisible} onChange={evt => {setMetadata((metadata) => ({ ...metadata, dataVisible: evt.target.checked }))}} />
+          <input type="checkbox" checked={metadata[head.id].dataVisible} onChange={evt => {setMetadata((metadata) => ({ ...metadata, [head.id]: { ...metadata[head.id], dataVisible: evt.target.checked } }))}} />
           <div className="collapse-title flex flex-row gap-2">
             <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} />
             <h2 className="bp4-heading">{(outputNode && (outputNode.meta.label || processNode.spec)) || "Loading"}</h2>
@@ -76,7 +65,7 @@ export default function Cell({ krg, id, head, defaultCollapse }: { krg: KRG, id:
             {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
           </div>
         </div>}
-        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !metadata.dataVisible })}>
+        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !metadata[head.id].dataVisible })}>
           <Link href={`/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} />

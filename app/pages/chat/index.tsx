@@ -154,8 +154,8 @@ export default function Chat() {
                   messages: [...chat.messages, { role: 'user', content: message}].filter(({ role }) => role !== 'error'),
                 }),
               })
-              const res = req.ok ? await req.json() : { role: 'error', content: await req.text() }
-              setChat((cc) => ({ waitingForReply: false, messages: [...cc.messages, res] }))
+              const res = req.ok ? await req.json() : [{ role: 'error', content: await req.text() }]
+              setChat((cc) => ({ waitingForReply: false, messages: [...cc.messages, ...res] }))
             }}
           >
             <input

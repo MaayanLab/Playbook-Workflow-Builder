@@ -30,31 +30,31 @@ export default function Introduction({ id, metadata, setMetadata, error }: { id:
               <EditableText
                 placeholder="Playbook title"
                 value={metadata.title}
-                onChange={title => {setMetadata(metadata => ({ ...metadata, title, saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
+                onChange={title => {setMetadata(metadata => ({ ...metadata, title, saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
               />
             </h2>
           </div>
           <div className="tabs">
             <button
               className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'auto' })}
-              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto', saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'auto', saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
             >Auto-Generated Summary</button>
             <div className="tooltip" data-tip={!chatGPTAvailable && !metadata.gpt_summary ? errorAugmentingWithChatGPT : undefined}>
               <button
                 disabled={!chatGPTAvailable && !metadata.gpt_summary}
                 className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'gpt', 'cursor-not-allowed': !chatGPTAvailable && !metadata.gpt_summary })}
                 onClick={async (evt) => {
-                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt', saved: metadata.saved === 'yes' ? 'pending' : 'no' }))
+                  setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'gpt', saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))
                   if (!metadata.gpt_summary) {
                     const gpt_summary = await augmentWithChatGPT(story)
-                    setMetadata((metadata) => ({ ...metadata, gpt_summary, saved: metadata.saved === 'yes' ? 'pending' : 'no' }))
+                    setMetadata((metadata) => ({ ...metadata, gpt_summary, saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))
                   }
                 }}
               >GPT-Augmented Summary</button>
             </div>
             <button
               className={classNames('tab tab-lifted', { 'tab-active': metadata.summary === 'manual' })}
-              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual', saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
+              onClick={evt => {setMetadata(({ summary, ...metadata }) => ({ ...metadata, summary: 'manual', saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
             >Manual Summary</button>
           </div>
           <div className="prose">
@@ -69,7 +69,7 @@ export default function Introduction({ id, metadata, setMetadata, error }: { id:
                   placeholder="Add your manual summary here to be included when publishing."
                   value={metadata.description || ''}
                   multiline
-                  onChange={description => {setMetadata(metadata => ({ ...metadata, description, saved: metadata.saved === 'yes' ? 'pending' : 'no' }))}}
+                  onChange={description => {setMetadata(metadata => ({ ...metadata, description, saved: metadata.saved === 'yes' ? 'pending' : metadata.saved }))}}
                 />
               </p>
               : metadata.summary === 'gpt' ?

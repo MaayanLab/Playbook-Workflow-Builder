@@ -32,7 +32,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
     (cb: (currentValue: Record<string, CellMetadata>) => Record<string, CellMetadata>) => {
       setMetadata_(cb)
       setPlaybook(p => ({ ...p, update_required: p.id !== undefined }))
-  }, [setMetadata_]) as React.Dispatch<React.SetStateAction<Record<string, CellMetadata>>>
+  }, [setPlaybook, setMetadata_]) as React.Dispatch<React.SetStateAction<Record<string, CellMetadata>>>
   React.useEffect(() => {
     if (!metapath) return
     setMetadata(() => dict.init(metapath.map((element, index) => {

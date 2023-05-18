@@ -1,7 +1,17 @@
 import { APIRoute } from "@/spec/api";
 import getRawBody from 'raw-body'
+import * as dict from '@/utils/dict'
 import { NotFoundError, UnsupportedMethodError } from "@/spec/error";
 import type { NextApiRequest, NextApiResponse } from "next";
+
+function tryJsonParse(v: unknown) {
+  try {
+    if (typeof v !== 'string') throw new Error()
+    return JSON.parse(v)
+  } catch (e) {
+    return v
+  }
+}
 
 export default class APIRouter {
   private routes: Record<string, Record<string, APIRoute>> = {}
@@ -57,7 +67,9 @@ export default class APIRouter {
     if (typeof match === 'undefined') throw new NotFoundError()
     if (!req.method || !(req.method in match.routes)) throw new UnsupportedMethodError()
     const route = match.routes[req.method]
-    const query = route.parameters.parse({ ...match.pathParams, ...Object.fromEntries(url.searchParams.entries()) })
+    const query = route.parameters.parse(
+      dict.init(dict.items({ ...match.pathParams, ...Object.fromEntries(url.searchParams.entries()) }).map(({ key, value }) => ({ key, value: tryJsonParse(value) })))
+    )
     if (route.method === 'GET') {
       return res.status(200).json(await route.call({ query }, req, res))
     } else if (route.method === 'POST') {

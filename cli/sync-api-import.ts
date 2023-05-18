@@ -43,7 +43,7 @@ fs.writeFileSync(path.join(base, 'client.ts'), [
         const api = kv.value as APIRoute
         return [
           `import type { ${key} as ${key}_ } from './${apiPath}'`,
-          `export const ${key}: APIRouteInterface = { path: ${JSON.stringify(api.path)}, method: ${JSON.stringify(api.method)} as const, call: z.custom<typeof ${key}_['call']>() }`
+          `export const ${key} = { path: ${JSON.stringify(api.path)}, method: ${JSON.stringify(api.method)} as const, call: z.custom<typeof ${key}_['call']>() }`
         ]
       })
     }),

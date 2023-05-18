@@ -22,8 +22,8 @@ export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, que
   return useSWR(key, fetcherGET<O>)
 }
 
-export function useAPIMutation<Q extends {}, O, B extends z.ZodType | FormData>(route: APIRouteInterface<Q, O, B>, query?: Partial<Q>) {
-  return useSWRMutation(route.path, (_key: RequestInfo | URL, { arg = {} }: { arg?: { query?: Partial<Q>, body?: B } }) => {
+export function useAPIMutation<Q extends {}, O, B extends z.ZodType | FormData>(route: APIRouteInterface<Q, O, B extends z.ZodType<infer T> ? T : B>, query?: Partial<Q>) {
+  return useSWRMutation(route.path, (_key: RequestInfo | URL, { arg = {} }: { arg?: { query?: Partial<Q>, body?: B extends z.ZodType<infer T> ? T : B } }) => {
     let path = route.path
     const searchParams = new URLSearchParams()
     dict.items({ ...query, ...(arg.query??{}) }).forEach(({ key, value }) => {

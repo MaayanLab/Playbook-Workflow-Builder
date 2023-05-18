@@ -97,10 +97,10 @@ export default function Introduction({ id, metadata, setMetadata, playbook, setP
               <Icon icon={fork_icon} color="black" />
             </button>
           </Link>
-          <button className="bp4-button bp4-minimal" onClick={() => {setPlaybook(playbook => ({ ...playbook, id, update_required: false }))}}>
+          <button className="bp4-button bp4-minimal" onClick={() => {setPlaybook(playbook => ({ ...playbook, id: playbook.id !== id ? id : undefined, update_required: false }))}}>
             <Icon icon={save_icon} color={!playbook.id ? 'black' : playbook.update_required ? 'crimson' : 'green'} />
           </button>
-          <button className="bp4-button bp4-minimal" disabled={playbook.id !== id} onClick={() => {setPlaybook(playbook => ({ ...playbook, public: id }))}}>
+          <button className="bp4-button bp4-minimal" disabled={playbook.id !== id} onClick={() => {setPlaybook(playbook => ({ ...playbook, public: playbook.public !== id ? id : undefined }))}}>
             <Icon icon={share_icon} color={playbook.id !== id ? 'gray' : playbook.public === id ? 'green' : 'black'} title="Share Publicly" />
           </button>
           <BCOButton

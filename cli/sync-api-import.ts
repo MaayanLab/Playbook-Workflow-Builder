@@ -33,7 +33,7 @@ fs.writeFileSync(path.join(base, 'client.ts'), [
   ` *  and exports all API routes recursively in this directory.`,
   ` * It is designed to be imported client-side.`,
   ` */`,
-  `import { z } from 'zod'`,
+  `import { APIInterface } from '@/spec/api'`,
   ...apis
     .flatMap(api => {
       const apiPath = path.relative(base, api)
@@ -43,7 +43,7 @@ fs.writeFileSync(path.join(base, 'client.ts'), [
         const api = kv.value as APIRoute
         return [
           `import type { ${key} as ${key}_ } from './${apiPath}'`,
-          `export const ${key} = { path: ${JSON.stringify(api.path)}, method: ${JSON.stringify(api.method)} as const, call: z.custom<typeof ${key}_['call']>() }`
+          `export const ${key} = APIInterface<typeof ${key}_>(${JSON.stringify(api.path)}, ${JSON.stringify(api.method)})`
         ]
       })
     }),

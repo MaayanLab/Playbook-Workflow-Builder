@@ -357,7 +357,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   })
   .build()
 
-  export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExternalRecordsTable')
+export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExternalRecordsTable')
   .meta({
     label: 'AlleleRegistryExternalRecordsTable',
     description: ''
@@ -403,22 +403,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           </Table>
         )
 }).build()
-/*
-            <Column
-              name="Allele Specif. Name"
-              cellRenderer={row => 
-                <Cell key={row+''}>
-                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                    {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>                    
-                        <tr><td>{ sources.name }</td></tr>     
-                    )}   
-                  </table>
-                </Cell>}    
-            />
 
-*/ 
-
-  export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
+export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
     label: 'Resolve Allele Registry External Records for Variant',
     description: 'GetAlleleRegistryExternalRecordsForVariant',

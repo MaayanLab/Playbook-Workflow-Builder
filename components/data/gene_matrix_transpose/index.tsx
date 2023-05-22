@@ -90,7 +90,7 @@ export const GMTIntersection = MetaNode('GMTIntersection')
   .resolve(async (props) => {
     return dict.values(props.inputs.gmt).reduce(({ set: A }, { set: B }) => ({ set: array.intersection(A, B) }))
   })
-  .story(props => 
+  .story(props =>
     `A consensus gene set was created using the set intersection operation.`
   )
   .build()
@@ -116,7 +116,7 @@ export const GMTConsensus = MetaNode('GMTConsensus')
         .map(({ key }) => key as string)
     }
   })
-  .story(props => 
+  .story(props =>
     `A consensus gene set was created by only retaining genes that appear in at least two sets.`
   )
   .build()

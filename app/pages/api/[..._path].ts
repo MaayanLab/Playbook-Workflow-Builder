@@ -1,6 +1,6 @@
 /**
  * Expose APIs from @/app/api/*
- * 
+ *
  * The reason for this redirection is to
  *   1. dispatch GET/POST/... to different handlers
  *   2. allow co-locating server route and client code to access that route

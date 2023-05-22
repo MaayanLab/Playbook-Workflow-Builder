@@ -114,7 +114,7 @@ export const fpl_metadata_trigger = SQL.create()
     drop trigger fpl_metadata_notify on fpl_metadata cascade;
   `)
   .build()
-  
+
 export const fpl = Table.create('fpl')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('process', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())

@@ -11,7 +11,7 @@ def z_score_normalize_gene_count_matrix(m):
 
   # filter out genes with any null variances
   df = df[~np.isnan(df.X).any(axis=1), :]
- 
+
   with upsert_file('.h5ad') as f:
     df.write_h5ad(f.file)
 

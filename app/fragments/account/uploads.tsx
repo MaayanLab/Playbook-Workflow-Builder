@@ -54,13 +54,13 @@ export default function Uploads() {
             <thead>
               <tr>
                 <th>Filename</th>
-                <th>URL</th> 
+                <th>URL</th>
                 <th>sha256</th>
                 <th>Size</th>
                 <th>Timestamp</th>
                 <th>Actions</th>
               </tr>
-            </thead> 
+            </thead>
             <tbody>
               {uploads.length === 0 ? <tr><td colSpan={6} align="center">No uploads</td></tr> : null}
               {uploads.map(upload => (

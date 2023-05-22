@@ -1,6 +1,6 @@
 /**
  * Knowledge Resolution Graph (KRG)
- * 
+ *
  * This is an in-memory graph database for the knowledge resolution graph, it's used by
  *  the UI
  */

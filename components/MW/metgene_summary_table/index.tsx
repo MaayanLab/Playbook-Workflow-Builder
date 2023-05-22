@@ -29,7 +29,7 @@ export const MetGeneSummaryTable = MetaNode('MetGeneSummaryTable')
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
   .codec(MetGeneSummaryObjArrayC)
-  
+
   // react component rendering your data goes here
   .view(data => {
     const heading1 = "Gene"
@@ -49,9 +49,9 @@ export const MetGeneSummaryTable = MetaNode('MetGeneSummaryTable')
             <th>{heading5}</th>
           </tr>
           {data.map((val : MetGeneSummaryObj, key : number) => {
-          
-          
-          
+
+
+
           return (
             <tr key={key}>
               <td><a href = {`https://bdcw.org/MetGENE/geneInfo.php?species=hsa&GeneIDType=SYMBOL&anatomy=NA&disease=NA&phenotype=NA&GeneInfoStr=${val.Genes}`} target = "_blank">{val.Genes}</a></td>

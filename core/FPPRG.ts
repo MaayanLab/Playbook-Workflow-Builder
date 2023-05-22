@@ -1,11 +1,11 @@
 /**
  * Fully Persistent Process Resolution Graph (FPKRG)
- * 
+ *
  * This consists of:
  * - a fully persistent list data structure for deduplicated lists of processes
  * - process nodes with parent links forming a process graph
  * - resolution nodes attached to each process storing the resolution of that process
- * 
+ *
  * Ultimately the Process table here correspond to metanode process types,
  *  while the Resolved table corresponds to metanode data types.
  */
@@ -121,7 +121,7 @@ export class FPL {
   constructor(
     public process: Process,
     public parent: FPL | undefined = undefined,
-    public metadata: FPLMetadata | undefined = undefined, 
+    public metadata: FPLMetadata | undefined = undefined,
     public persisted = false,
   ) {
     this.id = uuid([
@@ -271,7 +271,7 @@ export class Data {
 /**
  * De-coupled metadata for an FPL
  */
- export class FPLMetadata {
+export class FPLMetadata {
   id: string
 
   constructor(

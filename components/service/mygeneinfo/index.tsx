@@ -36,7 +36,7 @@ export type MyGeneInfo = z.infer<typeof MyGeneInfoC>
 export const MyGeneInfoByTermC = z.object({
   data: z.object({
     ld: z.object({
-      RegulatoryElement: z.array(z.object({ 
+      RegulatoryElement: z.array(z.object({
             entId: z.string(),
             ldhId: z.string()
           })
@@ -111,24 +111,24 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
   .resolve(async (props) => {
     const response =  await myGeneInfoByGeneTerm(props.inputs.geneInfo.symbol);
     if(response.data == null || response.data.ld == null){
-      return { 
-        description: 'Regulatory Element set for gene is empty' , 
+      return {
+        description: 'Regulatory Element set for gene is empty' ,
         set: []
       };
     }
     let reNames = response.data.ld.RegulatoryElement.map(({ entId }) => entId );
-    let reSet = { 
-      description: 'Regulatory Element set for gene '+props.inputs.geneInfo.symbol , 
+    let reSet = {
+      description: 'Regulatory Element set for gene '+props.inputs.geneInfo.symbol ,
       set: reNames
     };
     return reSet;
   })
   .build()
 
-const CTDResponseInfoC = z.object({ 
+const CTDResponseInfoC = z.object({
     "highlyConnectedGenes": z.any(),
     "guiltyByAssociationGenes": z.any(),
-    "jsonGraph": z.object({ 
+    "jsonGraph": z.object({
       "nodes": z.array(z.object({
         "name": z.string(),
         "type": z.string()
@@ -196,7 +196,7 @@ export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
   }).story(props =>
     `Get a CTD response for a set of genes for graph type kegg.`
   ).build()
-  
+
 
 export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
@@ -226,7 +226,7 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     const fileReader: any = await fileAsStream(props.inputs.file);
-    
+
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "kegg");
@@ -258,8 +258,8 @@ export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
   .resolve(async (props) => {
-    let geneSet = { 
-      description: 'Highly_Connected_Genes, CTD response', 
+    let geneSet = {
+      description: 'Highly_Connected_Genes, CTD response',
       set:  props.inputs.ctdResponseInfo.highlyConnectedGenes
     };
     return geneSet;
@@ -275,8 +275,8 @@ export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
   .resolve(async (props) => {
-    let geneSet = { 
-      description: 'Guilty_By_Association_Genes, CTD response', 
+    let geneSet = {
+      description: 'Guilty_By_Association_Genes, CTD response',
       set:  props.inputs.ctdResponseInfo.guiltyByAssociationGenes
     };
     return geneSet;

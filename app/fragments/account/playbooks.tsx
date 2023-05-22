@@ -28,11 +28,11 @@ export default function Playbooks() {
               <th>Timestamp</th>
               <th>Actions</th>
             </tr>
-          </thead> 
+          </thead>
           <tbody>
             {[
-              { id: 'cb557965...', title: 'Use Case 4 Playbook', inputs: 'Gene', output: 'Ranked Tissues', created: '2023-02-12', }, 
-              { id: 'b6ed5f65...', title: 'Untitled Playbook', inputs: 'Drug', output: 'Ranked Gene', created: '2023-02-13', }, 
+              { id: 'cb557965...', title: 'Use Case 4 Playbook', inputs: 'Gene', output: 'Ranked Tissues', created: '2023-02-12', },
+              { id: 'b6ed5f65...', title: 'Untitled Playbook', inputs: 'Drug', output: 'Ranked Gene', created: '2023-02-13', },
               { id: 'b29c75ec...', title: 'Drugs targeting disease signatures', inputs: 'Disease', output: 'Ranked Drugs', created: '2023-02-14', },
             ].map(playbook => (
               <tr key={playbook.id}>

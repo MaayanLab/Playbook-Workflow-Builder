@@ -48,13 +48,13 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
     const heading3 = "REFMET_NAME"
     const heading4 = "KEGG_REACTION_ID"
     const heading5 = "METSTAT_LINK"
-    
+
     return (
       <div>
         <h2>MetGENE metabolites</h2>
         {data.map((arrayVal:MetGeneMetObjArray, index:number) => (
           <div key={index}>
-            
+
             <table>
               <thead>
               <tr>
@@ -66,20 +66,20 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
               </tr>
               </thead>
               <tbody>
-              
+
                 {arrayVal.map((val:MetGeneMetObj, j:number) => {
                   const all_rxn_ids = val.KEGG_REACTION_ID
-                  const cpd_id = val.KEGG_COMPOUND_ID 
+                  const cpd_id = val.KEGG_COMPOUND_ID
                   const rxn_id_arr = all_rxn_ids.split(", ")
-                            
-                  
+
+
                     return (
                       <tr key={j}>
                         <td>{val.Gene}</td>
                         <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "__blank">{val.KEGG_COMPOUND_ID}</a></td>
                         <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
                         <td>
-                          {rxn_id_arr.map((rxn_id:string, i:number) => 
+                          {rxn_id_arr.map((rxn_id:string, i:number) =>
                             <>
                             {i > 0 ? <span>, </span> : null}
                             <a key={i} href = {`https://www.genome.jp/entry/rn:${rxn_id}`} target = "_blank">{rxn_id}</a>
@@ -90,7 +90,7 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
                       </tr>
                     )
                 })}
-              
+
               </tbody>
             </table>
           </div>

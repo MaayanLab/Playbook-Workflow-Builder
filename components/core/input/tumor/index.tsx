@@ -23,10 +23,10 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
     },
     icon: [tumor_icon],
   })
-  .codec(z.array(z.object({ TPM_mean : z.number(), 
-                            TPM_sd : z.number(), 
+  .codec(z.array(z.object({ TPM_mean : z.number(),
+                            TPM_sd : z.number(),
                             TPM_median : z.number(),
-                            Disease : z.string(), 
+                            Disease : z.string(),
                             Gene_symbol : z.string(),
                             Gene_Ensembl_ID : z.string(),
                             Dataset : z.string()})))
@@ -38,7 +38,7 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
         numRows={expressionTable.length}
         enableGhostCells
         enableFocusedCell
-      > 
+      >
         <Column
           name="Gene ID"
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_symbol}</Cell>}

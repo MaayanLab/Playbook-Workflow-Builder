@@ -1,7 +1,7 @@
 /**
  * A prefix tree for identification of the correct
  *  split given a list of path prefixes.
- * 
+ *
  * e.g.
  * const t = create_prefix_tree_from_paths([
  *  'a/b/c',

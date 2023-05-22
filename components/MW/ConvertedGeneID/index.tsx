@@ -30,7 +30,7 @@ export type MyGeneIDOutputArray = z.infer<typeof MyGeneIDOutputArrayC>
 
 export function uniqJsonSubset(data:MyGeneIDOutputArray) {
   //let datastr = JSON.stringify(data);  datastr = datastr.replace("^[","");  datastr = datastr.replace("]$","");  const dataobj = JSON.parse(datastr);
-  
+
   //const [dataobj] = data; // did not work
   //const dataobj = data; //const dataobj = [data][0];
 
@@ -40,7 +40,7 @@ export function uniqJsonSubset(data:MyGeneIDOutputArray) {
 
   let uniqdataobj = uniqENTREZID.map((id, idx) => {
    return {
-    ENTREZID : uniqENTREZID[idx], 
+    ENTREZID : uniqENTREZID[idx],
     SYMBOL : uniqSYMBOL[idx],
     GENENAME : uniqGENENAME[idx],
   };
@@ -76,7 +76,7 @@ export const ConvertedGeneID = MetaNode('ConvertedGeneID')
     //let GENENAME : string[] = dataobj.map(a => a.GENENAME);
 
     // const picked = (({ a, c }) => ({ a, c }))(object);
-    //let dataobj1 = Array.from(new Set(dataobj.map(a => ({"ENTREZID": a.ENTREZID, 
+    //let dataobj1 = Array.from(new Set(dataobj.map(a => ({"ENTREZID": a.ENTREZID,
     //                  "SYMBOL" : a.SYMBOL, "GENENAME": a.GENENAME}))) ];
 
     let uniqdataobj = uniqJsonSubset(data);

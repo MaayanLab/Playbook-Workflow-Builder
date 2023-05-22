@@ -51,7 +51,7 @@ export type InternalProcessMetaNode = InternalIdentifiableMetaNode & {
 
 /**
  * All metanodes should have a unique id and some metadata about it.
- * 
+ *
  * Parameters:
  *  spec: A unique string for this type
  *  meta: key-value metadata to elaborate on the datatype including human readable label & description
@@ -66,7 +66,7 @@ export type IdentifiableMetaNode<T = InternalIdentifiableMetaNode> = {
  * A DataMetaNode represents a semantically annotated datatype.
  *  Though a "First Name" and "Last Name" are both strings, they are different things. In the same way
  *   a DataMetaNode represents something like a First Name, providing programatic *and* semantic typing guarantees.
- * 
+ *
  * Parameters:
  *  spec: A unique string for this type
  *  meta: key-value metadata to elaborate on the datatype including human readable label & description

@@ -42,7 +42,7 @@ def gene_signature(url):
     d.iloc[:top], d.iloc[-bottom:]
   ]))
   ellipses = [
-    top if len(index) != d.shape[0] else None, 
+    top if len(index) != d.shape[0] else None,
     None,
   ]
   return dict(

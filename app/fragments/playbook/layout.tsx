@@ -85,7 +85,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
         </div>
       </div>
       <div className="drawer-side">
-        <label htmlFor="my-drawer-3" className="drawer-overlay"></label> 
+        <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
         <ul className="menu p-4 w-80 bg-base-100">
           <li className="menu-title">
             <span>Playbook</span>

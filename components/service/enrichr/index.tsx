@@ -92,7 +92,7 @@ export const EnrichrSetTToSetT = [
       .output(GMT)
       .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
       .build(),
-    
+
   ]
 )
 

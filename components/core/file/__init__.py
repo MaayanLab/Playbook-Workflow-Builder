@@ -17,7 +17,7 @@ class TemporaryFile:
 
   def __repr__(self) -> str:
     return f"TemporaryFile({repr(self)})"
-  
+
   def unlink(self):
     os.unlink(self.file)
 

@@ -124,8 +124,8 @@ export const RegulatoryElement = {
     set: {
       meta: {
         example: { description: 'Example regulatory-element set', set: ['EH38E2924876', 'EH12E1234567']},
-      }    
-    },  
+      }
+    },
   },
 } as Primative
 export const Metabolite = {

@@ -13,7 +13,7 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
   .resolve(async (props) => {
     return await python(
       'components.service.kf.main',
-      { kargs: [props.inputs.gene_info.ensembl?.gene]}, 
+      { kargs: [props.inputs.gene_info.ensembl?.gene]},
     )
   })
   .build()

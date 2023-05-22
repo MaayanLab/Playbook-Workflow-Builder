@@ -4,7 +4,7 @@ import { useRuntimeConfig } from '@/app/fragments/config'
 
 /**
  * Figure out the public url
- * 
+ *
  * Absolute if you need the origin as well, otherwise it'll be the absolute path relative to the page root.
  */
 export default function usePublicUrl({ absolute }: { absolute?: boolean } = {}) {

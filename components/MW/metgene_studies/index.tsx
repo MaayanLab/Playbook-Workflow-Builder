@@ -25,14 +25,14 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
   .resolve(async (props) => {
     const species_id = "hsa"
     const geneID_type = "SYMBOL_OR_ALIAS"
-    
+
     const gene_ID = props.inputs.summary.gene
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/studies/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
-    
 
-    
+
+
     return  res
   })
   .story(props =>
@@ -59,14 +59,14 @@ export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
   .resolve(async (props) => {
     const species_id = "hsa"
     const geneID_type = "SYMBOL_OR_ALIAS"
-    
+
     const gene_ID = props.inputs.geneset.set.join(",");
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/studies/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
-    
 
-    
+
+
     return  res
   })
   .story(props =>

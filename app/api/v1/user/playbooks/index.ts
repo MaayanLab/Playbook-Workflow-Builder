@@ -8,6 +8,36 @@ import fpprg from '@/app/fpprg'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
 
+export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
+  .query(z.object({
+    search: z.string().optional(),
+    inputs: z.string().optional(),
+    outputs: z.string().optional(),
+    skip: z.number().optional(),
+    limit: z.number().optional(),
+  }))
+  .call(async (props, req, res) => {
+    const search = props.query.search
+    const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
+    const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
+    const skip = props.query.skip ?? 0
+    const limit = props.query.limit ?? 10
+    // TODO: filter in DB
+    let playbooks = await db.objects.user_playbook.findMany({
+      where: {
+        public: true,
+      },
+    })
+    if (search) playbooks = playbooks.filter(playbook =>
+      (playbook.title||'').includes(search)
+      || (playbook.description||'').includes(search)
+    )
+    if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
+    if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
+    return playbooks.slice(skip, skip + limit)
+  })
+  .build()
+
 export const UserPlaybooks = API('/api/v1/user/playbooks')
   .query(z.object({
     skip: z.number().optional().transform(v => v ?? 0),

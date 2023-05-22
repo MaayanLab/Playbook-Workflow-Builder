@@ -13,7 +13,9 @@ const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 
 export default function Cells({ krg, id }: { krg: KRG, id: string }) {
   const router = useRouter()
-  const { data, error } = useAPIQuery(UserPlaybook, { id }, undefined)
+  const { data, error } = useAPIQuery(UserPlaybook, { id }, {
+    keepPreviousData: true,
+  })
   const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook)
   const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook)
   const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook)

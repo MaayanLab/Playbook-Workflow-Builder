@@ -19,7 +19,11 @@ export default function LinkButton({ id, disabled }: { id: string | undefined, d
   if (!share) {
     return (
       <button className="bp4-button bp4-minimal" disabled={disabled} onClick={() => {setShare(true)}}>
-        <Icon icon={link_icon} color={disabled ? 'grey' : 'black'} />
+        <Icon
+          icon={link_icon}
+          color={disabled ? 'grey' : 'black'}
+          title={disabled ? 'Save to Share Link' : 'Share Link'}
+        />
       </button>
     )
   } else {

@@ -86,11 +86,48 @@ export const Gene = {
       meta: {
         example: { description: 'Example geneset', set: ['UTP14A', 'S100A6', 'SCAND1', 'RRP12', 'CIAPIN1', 'ADH5', 'MTERF3', 'SPR', 'CHMP4A', 'UFM1', 'VAT1', 'HACD3', 'RFC5', 'COTL1', 'NPRL2', 'TRIB3', 'PCCB', 'TLE1', 'CD58', 'BACE2', 'KDM3A', 'TARBP1', 'RNH1', 'CHAC1', 'MBNL2', 'VDAC1', 'TES', 'OXA1L', 'NOP56', 'HAT1', 'CPNE3', 'DNMT1', 'ARHGAP1', 'VPS28', 'EIF2S2', 'BAG3', 'CDCA4', 'NPDC1', 'RPS6KA1', 'FIS1', 'SYPL1', 'SARS', 'CDC45', 'CANT1', 'HERPUD1', 'SORBS3', 'MRPS2', 'TOR1A', 'TNIP1', 'SLC25A46', 'MAL', 'EPCAM', 'HDAC6', 'CAPN1', 'TNRC6B', 'PKD1', 'RRS1', 'HP', 'ANO10', 'CEP170B', 'IDE', 'DENND2D', 'CAMK2B', 'ZNF358', 'RPP38', 'MRPL19', 'NUCB2', 'GNAI1', 'LSR', 'ADGRE2', 'PKMYT1', 'CDK5R1', 'ABL1', 'PILRB', 'AXIN1', 'FBXL8', 'MCF2L', 'DBNDD1', 'IGHMBP2', 'WIPF2', 'WFS1', 'OGFOD2', 'MAPK1IP1L', 'COL11A1', 'REG3A', 'SERPINA1', 'MYCBP2', 'PIGK', 'TCAP', 'CRADD', 'ELK1', 'DNAJB2', 'ZBTB16', 'DAZAP1', 'MAPKAPK2', 'EDRF1', 'CRIP1', 'UCP3', 'AGR2', 'P4HA2',] },
         pagerank: 6,
+      },
+    },
+  },
+} as Primative
+
+export const Variant = {
+  name: 'Variant',
+  label: 'Variant',
+  //icon: [variant_icon],
+  color: '#768760',
+  extra: {
+    term: {
+      meta: {
+        example: 'CA13203640',
+      },
+    },
+    set: {
+      meta: {
+        example: { description: 'Example variantset', set: ['CA13203640', 'CA321211']},
       }
     },
   },
 } as Primative
 
+export const RegulatoryElement = {
+  name: 'Regulatory_Element',
+  label: 'Regulatory Element',
+  //icon: [regElement_icon],
+  color: '#0080FF',
+  extra: {
+    term: {
+      meta: {
+        example: 'EH38E2924876',
+      },
+    },
+    set: {
+      meta: {
+        example: { description: 'Example regulatory-element set', set: ['EH38E2924876', 'EH12E1234567']},
+      }    
+    },  
+  },
+} as Primative
 export const Metabolite = {
   name: 'Metabolite',
   label: 'Metabolite',

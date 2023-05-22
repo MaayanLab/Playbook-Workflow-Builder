@@ -69,14 +69,18 @@ export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/hyposet"
 components.push("service/hyposet")
-export * from "./service/kf"
-components.push("service/kf")
 export * from "./service/idg"
 components.push("service/idg")
+export * from "./service/kf"
+components.push("service/kf")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./service/regulatoryElementInfo"
+components.push("service/regulatoryElementInfo")
 export * from "./service/targetranger"
 components.push("service/targetranger")
+export * from "./service/variantinfo"
+components.push("service/variantinfo")
 export * from "./viz/barplot"
 components.push("viz/barplot")
 export * from "./viz/bokeh"

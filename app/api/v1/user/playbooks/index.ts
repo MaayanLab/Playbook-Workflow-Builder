@@ -63,6 +63,23 @@ export const UserPlaybook = API('/api/v1/user/playbooks/[id]')
     const fpl = await fpprg.getFPL(inputs.query.id)
     if (fpl === undefined) throw new NotFoundError()
     const metapath = fpl.resolve().map(fpl => fpl.toJSON())
+    // TODO: move this logic into a db trigger
+    const publicUserPlaybook = await db.objects.user_playbook.findUnique({
+      where: {
+        playbook: inputs.query.id,
+        public: true,
+      },
+    })
+    if (publicUserPlaybook) {
+      await db.objects.user_playbook.update({
+        where: {
+          id: publicUserPlaybook.id,
+        },
+        data: {
+          clicks: publicUserPlaybook.clicks+1,
+        }
+      })
+    }
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) return { metapath }
     const userPlaybook = await db.objects.user_playbook.findUnique({

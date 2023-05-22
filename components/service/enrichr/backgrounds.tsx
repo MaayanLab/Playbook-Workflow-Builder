@@ -1,12 +1,5 @@
 import * as dict from '@/utils/dict'
 import { archs4_icon, gtex_icon, lincs_icon } from '@/icons'
-import archs4_logo from '@/app/public/logos/datasources/ARCHS4.png'
-import chea3_logo from '@/app/public/logos/datasources/ChEA3.png'
-import encode_logo from '@/app/public/logos/datasources/ENCODE.png'
-import lincs_logo from '@/app/public/logos/datasources/LINCS.gif'
-import gtex_logo from '@/app/public/logos/datasources/GTEx.png'
-import gwas_logo from '@/app/public/logos/datasources/GWAS.jpeg'
-import komp_logo from '@/app/public/logos/datasources/KOMP.png'
 
 export const Disease_backgrounds = [
   {
@@ -38,7 +31,6 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/ng.265}`,
     icon: [gtex_icon],
-    logo: [gtex_logo],
   },
   {
     name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
@@ -49,7 +41,6 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif}`,
     icon: [],
-    logo: [archs4_logo],
   },
   {
     name: 'Rare_Diseases_GeneRIF_Gene_Lists',
@@ -73,7 +64,6 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
-    logo: [lincs_logo],
   },
   {
     name: 'LINCS_L1000_Chem_Pert_up',
@@ -84,7 +74,6 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
-    logo: [lincs_logo],
   },
   {
     name: 'LINCS_L1000_Chem_Pert_down',
@@ -95,7 +84,6 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
-    logo: [lincs_logo],
   },
 ]
 
@@ -213,7 +201,6 @@ export const Phenotype_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkac1010}`,
     icon: [],
-    logo: [gwas_logo],
   },
   {
     name: 'UK_Biobank_GWAS_v1',
@@ -266,7 +253,6 @@ export const Phenotype_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
     icon: [],
-    logo: [komp_logo],
   },
 ]
 
@@ -283,7 +269,6 @@ export const Tissue_backgrounds = [
     },
     ref: `\\ref{doi:10.1038/ng.2653}`,
     icon: [gtex_icon],
-    logo: [gtex_logo],
   },
   {
     name: 'ARCHS4_Tissues',
@@ -294,7 +279,6 @@ export const Tissue_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
-    logo: [archs4_logo],
   },
 ]
 
@@ -308,7 +292,6 @@ export const Gene_backgrounds = [
     termAssociation: 'Targeting',
     ref: `\\ref{doi:10.1093/nar/gkz446}`,
     icon: [],
-    logo: [chea3_logo],
   },
   {
     name: 'ENCODE_TF_ChIP-seq_2015',
@@ -319,7 +302,6 @@ export const Gene_backgrounds = [
     termAssociation: 'Targeting',
     ref: `\\ref{doi:10.1038/nature11247}`,
     icon: [],
-    logo: [encode_logo],
   },
   {
     name: 'ARCHS4_TFs_Coexp',
@@ -330,7 +312,6 @@ export const Gene_backgrounds = [
     termAssociation: 'Correlated with',
     ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
-    logo: [archs4_logo],
   },
   {
     name: 'LINCS_L1000_CRISPR_KO_Consensus_Sigs',
@@ -341,7 +322,6 @@ export const Gene_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
-    logo: [lincs_logo],
   },
 ]
 

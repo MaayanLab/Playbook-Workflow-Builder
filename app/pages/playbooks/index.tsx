@@ -366,7 +366,7 @@ export default function Playbooks() {
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
             </>
           )
-          : <div className="col-span-2 row-span-2 md:row-span-6 md:col-span-1">
+          : <div className="col-span-7">
             <div className="alert">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}

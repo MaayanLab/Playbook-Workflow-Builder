@@ -8,6 +8,7 @@ import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
 import { Metapath } from '../metapath'
 
+const SaveButton = dynamic(() => import('@/app/fragments/report/save-button'))
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
@@ -20,14 +21,15 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
   updateRequired: boolean,
   toggleSave: () => void,
   togglePublic: () => void,
-  error: any }) {
+  error: any
+}) {
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
   const story = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   return (
     <>
       <Head>
-        <title>Playbook Report: {playbookMetadata.title}</title>
+        <title>Playbook Report{playbookMetadata.title ? `: ${playbookMetadata.title}` : null}</title>
       </Head>
       <div className="flex-grow flex-shrink bp4-card p-0">
         <div className="p-3">
@@ -100,11 +102,17 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
               <Icon icon={fork_icon} color="black" />
             </button>
           </Link>
-          <button className="bp4-button bp4-minimal" onClick={() => {toggleSave()}}>
-            <Icon icon={save_icon} color={!userPlaybook ? 'black' : updateRequired ? 'crimson' : 'green'} />
-          </button>
+          <SaveButton
+            toggleSave={toggleSave}
+            userPlaybook={userPlaybook}
+            updateRequired={updateRequired}
+          />
           <button className="bp4-button bp4-minimal" disabled={!userPlaybook} onClick={() => {togglePublic()}}>
-            <Icon icon={share_icon} color={!userPlaybook ? 'gray' : userPlaybook.public ? 'green' : 'black'} title="Share Publicly" />
+            <Icon
+              icon={share_icon}
+              color={!userPlaybook ? 'gray' : userPlaybook.public ? 'green' : 'black'}
+              title={!userPlaybook ? 'Save to Share Publicly' : 'Share Publicly'}
+            />
           </button>
           <BCOButton
             id={id}

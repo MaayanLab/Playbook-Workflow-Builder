@@ -53,7 +53,11 @@ export default function BCOButton({ id, metadata, disabled }: { id?: string, met
         }
         placement="bottom"
       >
-        <Icon icon={biocompute_icon} color={disabled ? 'grey' : 'black'} title="Create BCO" />
+        <Icon
+          icon={biocompute_icon}
+          color={disabled ? 'grey' : 'black'}
+          title={disabled ? 'Save to Create BCO' : 'Create BCO'}
+        />
       </Bp4Popover>
       <Bp4Alert
         confirmButtonText="Okay"

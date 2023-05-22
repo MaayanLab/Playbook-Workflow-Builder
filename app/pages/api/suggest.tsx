@@ -2,9 +2,11 @@ import krg from '@/app/krg'
 import db from '@/app/db'
 import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import dynamic from 'next/dynamic'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
-import { UserIdentity } from '@/app/fragments/graph/useridentity'
+
+const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const BodyType = z.object({
   name: z.string(),

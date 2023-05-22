@@ -316,11 +316,11 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
         />
         <Column
           name="Normalized Effect Size (nes)"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.nes}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.nes ?? null}</Cell>}
         />
         <Column
           name="p-value"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.sig}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.sig ?? null}</Cell>}
         />
         <Column
           name="Tissue site"

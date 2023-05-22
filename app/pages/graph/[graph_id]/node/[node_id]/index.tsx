@@ -10,11 +10,11 @@ import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import { MetaNode } from '@/spec/metanode'
-import { UserIdentity } from '@/app/fragments/graph/useridentity'
 import fetcher from '@/utils/next-rest-fetcher'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
+const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const ParamType = z.union([
   z.object({ graph_id: z.string(), node_id: z.string() }),

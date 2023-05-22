@@ -270,7 +270,7 @@ export default function App() {
                 }))
               }}
             >
-              <option disabled selected></option>
+              <option disabled value=""></option>
               {krg.getDataNodes().map(dataNode =>
                 <option key={dataNode.spec} value={dataNode.spec}>{dataNode.meta.label}</option>
               )}

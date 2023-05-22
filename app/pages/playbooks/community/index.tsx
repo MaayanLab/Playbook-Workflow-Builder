@@ -129,8 +129,8 @@ export default function CommunityPlaybooks() {
           <div className="bg-secondary font-bold p-3 text-center md:block hidden rounded-tr-lg">Actions</div>
           {playbooks ?
             playbooks.length > 0 ?
-              playbooks.map((playbook, i) =>
-              <>
+              playbooks.map(playbook =>
+              <React.Fragment key={playbook.id}>
                 <div className="col-span-1 row-span-1 p-3 hidden md:block">
                   <div className="tooltip z-50" data-tip="Click to view details">
                     <button
@@ -229,7 +229,7 @@ export default function CommunityPlaybooks() {
                 </div>
               </div>
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
-            </>
+            </React.Fragment>
           )
           : <div className="col-span-2 row-span-1 md:row-span-1 md:col-span-6">
             <div className="alert">No playbooks currently registered matching this criteria.</div>

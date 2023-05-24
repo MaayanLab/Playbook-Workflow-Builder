@@ -30,6 +30,7 @@ export default handler(async (req, res) => {
   // @ts-ignore
   const userOrcidAccount = await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } })
   if (!userOrcidAccount) throw new Error('ORCID Required')
+  if (Date.now()/1000 > userOrcidAccount.expires_at) throw new Error('ORCID Expired')
   if (req.method === 'HEAD') {
     res.status(200).end()
     return

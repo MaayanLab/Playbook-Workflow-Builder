@@ -16,24 +16,24 @@ export default function Playbooks() {
         <table className="table table-compact w-full">
           <thead>
             <tr>
-              <th>Playbook</th>
               <th>Title</th>
               <th>Inputs</th>
               <th>Outputs</th>
-              <th>Timestamp</th>
+              <th>Created</th>
               <th>Public</th>
+              <th>Clicks</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {(playbooks ?? []).map(playbook => (
               <tr key={playbook.id}>
-                <td>{playbook.playbook}</td>
                 <td>{playbook.title}</td>
                 <td>{playbook.inputs}</td>
                 <td>{playbook.outputs}</td>
                 <td>{playbook.created.toString()}</td>
                 <td>{playbook.public ? 'Yes' : 'No'}</td>
+                <td>{playbook.clicks}</td>
                 <td className="flex flex-row gap-2">
                   <Link href={`/report/${playbook.playbook}`}>
                     <button>

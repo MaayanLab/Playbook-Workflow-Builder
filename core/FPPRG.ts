@@ -121,12 +121,14 @@ export class FPL {
   constructor(
     public process: Process,
     public parent: FPL | undefined = undefined,
-    public metadata: FPLMetadata | undefined = undefined,
+    public cell_metadata: CellMetadata | undefined = undefined,
+    public playbook_metadata: PlaybookMetadata | undefined = undefined,
     public persisted = false,
   ) {
     this.id = uuid([
       process.id,
-      metadata,
+      cell_metadata,
+      playbook_metadata,
       parent ? parent.id : null,
     ])
   }
@@ -134,7 +136,8 @@ export class FPL {
   toJSONWithOutput = async () => {
     return {
       id: this.id,
-      metadata: this.metadata ? this.metadata.toJSON() : null,
+      cell_metadata: this.cell_metadata ? this.cell_metadata.toJSON() : null,
+      playbook_metadata: this.playbook_metadata ? this.playbook_metadata.toJSON() : null,
       process: await this.process.toJSONWithOutput(),
     }
   }
@@ -142,7 +145,8 @@ export class FPL {
   toJSON = () => {
     return {
       id: this.id,
-      metadata: this.metadata ? this.metadata.toJSON() : null,
+      cell_metadata: this.cell_metadata ? this.cell_metadata.toJSON() : null,
+      playbook_metadata: this.playbook_metadata ? this.playbook_metadata.toJSON() : null,
       process: this.process.toJSON(),
     }
   }
@@ -185,7 +189,7 @@ export class FPL {
   /**
    * Rebase an LPL's metadata (preserving processes)
    */
-  rebaseMetadata = (old_fpl: FPL, metadata: FPLMetadata) => {
+  rebasePlaybookMetadata = (old_fpl: FPL, playbook_metadata: PlaybookMetadata) => {
     const fpl: FPL[] = [this]
     let head: FPL | undefined = this
     while (head.parent !== undefined) {
@@ -198,14 +202,31 @@ export class FPL {
       throw new Error(`${old_fpl.id} not found in FPL`)
     }
     // Walk forward updating processes, replacing any dependencies with the updated one
-    head = new FPL(head.process, head.parent, metadata)
+    head = new FPL(head.process, head.parent, head.cell_metadata, playbook_metadata)
     const rebased = head
     fpl.pop()
     fpl.reverse()
     for (const el of fpl) {
-      head = new FPL(el.process, head, el.metadata)
+      head = new FPL(el.process, head, el.cell_metadata, el.playbook_metadata)
     }
     return { rebased, head }
+  }
+
+  /**
+   * Rebase an LPL's cell metadata (preserving processes)
+   */
+  rebaseCellMetadata = (updates: Record<string, CellMetadata>) => {
+    const fplArray = this.resolve()
+    let head = undefined
+    for (let i = 0; i < fplArray.length; i++) {
+      const cur = fplArray[i]
+      if (cur.id in updates) {
+        head = new FPL(cur.process, head, updates[cur.id], cur.playbook_metadata)
+      } else {
+        head = new FPL(cur.process, head, cur.cell_metadata, cur.playbook_metadata)
+      }
+    }
+    return head
   }
 
   /**
@@ -227,7 +248,7 @@ export class FPL {
     // Replace old_process with new process
     const update = { [head.process.id]: new_process }
     // Walk forward updating processes, replacing any dependencies with the updated one
-    head = new FPL(new_process, head.parent, head.metadata)
+    head = new FPL(new_process, head.parent, head.cell_metadata, head.playbook_metadata)
     const rebased = head
     fpl.pop()
     fpl.reverse()
@@ -242,7 +263,7 @@ export class FPL {
         ),
         el.process.db,
       )
-      head = new FPL(new_proc, head, el.metadata)
+      head = new FPL(new_proc, head, el.cell_metadata, el.playbook_metadata)
       update[el.process.id] = new_proc
     }
     return { rebased, head }
@@ -271,21 +292,21 @@ export class Data {
 /**
  * De-coupled metadata for an FPL
  */
-export class FPLMetadata {
+export class CellMetadata {
   id: string
 
   constructor(
     public label?: string,
     public description?: string,
-    public processVisible: boolean = false,
-    public dataVisible: boolean = false,
+    public process_visible = true,
+    public data_visible = true,
     public persisted = false,
   ) {
     this.id = uuid([
       label,
       description,
-      processVisible,
-      dataVisible,
+      process_visible,
+      data_visible,
     ])
   }
 
@@ -294,8 +315,40 @@ export class FPLMetadata {
       'id': this.id,
       'label': this.label,
       'description': this.description,
-      'processVisible': this.processVisible,
-      'dataVisible': this.dataVisible,
+      'process_visible': this.process_visible,
+      'data_visible': this.data_visible,
+    }
+  }
+}
+
+/**
+ * De-coupled metadata for an FPL
+ */
+export class PlaybookMetadata {
+  id: string
+
+  constructor(
+    public title?: string,
+    public description?: string,
+    public summary = 'auto' as 'auto' | 'gpt' | 'manual',
+    public gpt_summary = '',
+    public persisted = false,
+  ) {
+    this.id = uuid([
+      title,
+      description,
+      summary,
+      gpt_summary,
+    ])
+  }
+
+  toJSON = () => {
+    return {
+      'id': this.id,
+      'title': this.title,
+      'description': this.description,
+      'summary': this.summary,
+      'gpt_summary': this.gpt_summary,
     }
   }
 }
@@ -306,16 +359,27 @@ export const IdOrDataC = z.union([
 ])
 export type IdOrData = z.infer<typeof IdOrDataC>
 
-export const IdOrFPLMetadataC = z.union([
+export const IdOrCellMetadataC = z.union([
   z.object({ id: z.string() }),
   z.object({
     label: z.string().optional(),
     description: z.string().optional(),
-    dataVisible: z.boolean().optional(),
-    processVisible: z.boolean().optional(),
+    process_visible: z.boolean(),
+    data_visible: z.boolean(),
   }),
 ])
-export type IdOrFPLMetadata = z.infer<typeof IdOrFPLMetadataC>
+export type IdOrCellMetadata = z.infer<typeof IdOrCellMetadataC>
+
+export const IdOrPlaybookMetadataC = z.union([
+  z.object({ id: z.string() }),
+  z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    summary: z.enum(['auto', 'gpt', 'manual']),
+    gpt_summary: z.string(),
+  }),
+])
+export type IdOrPlaybookMetadata = z.infer<typeof IdOrPlaybookMetadataC>
 
 export type IdOrProcess = { id: string }
 | { type: string, inputs: Record<string, IdOrProcess> }
@@ -339,7 +403,7 @@ export const IdOrProcessC: z.ZodType<IdOrProcess> = z.lazy(() => z.union([
 export type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
 export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
 
-type Schema = Pick<typeof fpprgSchema, 'data' | 'process' | 'process_input' | 'resolved' | 'process_complete' | 'fpl' | 'fpl_metadata'>
+type Schema = Pick<typeof fpprgSchema, 'data' | 'process' | 'process_input' | 'resolved' | 'process_complete' | 'fpl' | 'cell_metadata' | 'playbook_metadata'>
 type TofSchema<T> = T extends TypedSchema<infer T_> ? T_ : never
 type DbSchemaT = { [K in keyof Schema]: TofSchema<Schema[K]> }
 
@@ -351,7 +415,8 @@ export default class FPPRG {
   private fplTable: Record<string, FPL> = {}
   private resolvedTable: Record<string, Resolved> = {}
   private dataTable: Record<string, Data> = {}
-  private fplMetadataTable: Record<string, FPLMetadata> = {}
+  private cellMetadataTable: Record<string, CellMetadata> = {}
+  private playbookMetadataTable: Record<string, PlaybookMetadata> = {}
 
   constructor(public db: Db<DbSchemaT>) {}
 
@@ -453,46 +518,99 @@ export default class FPPRG {
     return this.processTable[process.id] as Process
   }
 
-  resolveFPLMetadata = async (metadata: IdOrFPLMetadata) => {
+  resolveCellMetadata = async (metadata: IdOrCellMetadata) => {
     if ('id' in metadata) {
-      return await this.getFPLMetadata(metadata.id) as FPLMetadata
+      return await this.getCellMetadata(metadata.id) as CellMetadata
     } else {
-      return await this.upsertFPLMetadata(new FPLMetadata(metadata.label, metadata.description, metadata.processVisible, metadata.dataVisible))
+      return await this.upsertCellMetadata(new CellMetadata(
+        metadata.label,
+        metadata.description,
+        metadata.process_visible,
+        metadata.data_visible,
+      ))
     }
   }
-  getFPLMetadata = async (id: string) => {
-    if (!(id in this.fplMetadataTable)) {
-      const result = await this.db.objects.fpl_metadata.findUnique({ where: { id } })
+  getCellMetadata = async (id: string) => {
+    if (!(id in this.cellMetadataTable)) {
+      const result = await this.db.objects.cell_metadata.findUnique({ where: { id } })
       if (result !== null) {
-        this.fplMetadataTable[id] = new FPLMetadata(
+        this.cellMetadataTable[id] = new CellMetadata(
           result.label,
           result.description,
-          result.processVisible,
-          result.dataVisible,
+          result.process_visible,
+          result.data_visible,
           true,
         )
       }
     }
-    return this.fplMetadataTable[id] as FPLMetadata | undefined
+    return this.cellMetadataTable[id] as CellMetadata | undefined
   }
-  upsertFPLMetadata = async (metadata: FPLMetadata) => {
-    if (!metadata.persisted) {
-      if (!(metadata.id in this.fplMetadataTable)) {
-        metadata.persisted = true
-        this.fplMetadataTable[metadata.id] = metadata
-        await this.db.objects.fpl_metadata.upsert({
-          where: { id: metadata.id },
+  upsertCellMetadata = async (cell_metadata: CellMetadata) => {
+    if (!cell_metadata.persisted) {
+      if (!(cell_metadata.id in this.cellMetadataTable)) {
+        cell_metadata.persisted = true
+        this.cellMetadataTable[cell_metadata.id] = cell_metadata
+        await this.db.objects.cell_metadata.upsert({
+          where: { id: cell_metadata.id },
           create: {
-            id: metadata.id,
-            label: metadata.label,
-            description: metadata.description,
-            processVisible: metadata.processVisible,
-            dataVisible: metadata.dataVisible,
+            id: cell_metadata.id,
+            label: cell_metadata.label,
+            description: cell_metadata.description,
+            process_visible: cell_metadata.process_visible,
+            data_visible: cell_metadata.data_visible,
           }
         })
       }
     }
-    return this.fplMetadataTable[metadata.id] as FPLMetadata
+    return this.cellMetadataTable[cell_metadata.id] as CellMetadata
+  }
+
+  resolvePlaybookMetadata = async (playbook_metadata: IdOrPlaybookMetadata) => {
+    if ('id' in playbook_metadata) {
+      return await this.getPlaybookMetadata(playbook_metadata.id) as PlaybookMetadata
+    } else {
+      return await this.upsertPlaybookMetadata(
+        new PlaybookMetadata(
+          playbook_metadata.title,
+          playbook_metadata.description,
+          playbook_metadata.summary,
+          playbook_metadata.gpt_summary,
+        ))
+    }
+  }
+  getPlaybookMetadata = async (id: string) => {
+    if (!(id in this.playbookMetadataTable)) {
+      const result = await this.db.objects.playbook_metadata.findUnique({ where: { id } })
+      if (result !== null) {
+        this.playbookMetadataTable[id] = new PlaybookMetadata(
+          result.title,
+          result.description,
+          result.summary,
+          result.gpt_summary,
+          true,
+        )
+      }
+    }
+    return this.playbookMetadataTable[id] as PlaybookMetadata | undefined
+  }
+  upsertPlaybookMetadata = async (playbook_metadata: PlaybookMetadata) => {
+    if (!playbook_metadata.persisted) {
+      if (!(playbook_metadata.id in this.playbookMetadataTable)) {
+        playbook_metadata.persisted = true
+        this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
+        await this.db.objects.playbook_metadata.upsert({
+          where: { id: playbook_metadata.id },
+          create: {
+            id: playbook_metadata.id,
+            title: playbook_metadata.title,
+            description: playbook_metadata.description,
+            summary: playbook_metadata.summary,
+            gpt_summary: playbook_metadata.gpt_summary,
+          }
+        })
+      }
+    }
+    return this.playbookMetadataTable[playbook_metadata.id] as PlaybookMetadata
   }
 
   resolveData = async (data: IdOrData) => {
@@ -622,7 +740,8 @@ export default class FPPRG {
         this.fplTable[result.id] = new FPL(
           (await this.getProcess(result.process)) as Process,
           result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
-          result.metadata ? await this.getFPLMetadata(result.metadata) : undefined,
+          result.cell_metadata ? await this.getCellMetadata(result.cell_metadata) : undefined,
+          result.playbook_metadata ? await this.getPlaybookMetadata(result.playbook_metadata) : undefined,
           true,
         )
       }
@@ -636,8 +755,11 @@ export default class FPPRG {
         if (fpl.parent !== undefined) {
           fpl.parent = await this.upsertFPL(fpl.parent)
         }
-        if (fpl.metadata !== undefined) {
-          fpl.metadata = await this.upsertFPLMetadata(fpl.metadata)
+        if (fpl.cell_metadata !== undefined) {
+          fpl.cell_metadata = await this.upsertCellMetadata(fpl.cell_metadata)
+        }
+        if (fpl.playbook_metadata !== undefined) {
+          fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
         }
         fpl.persisted = true
         this.fplTable[fpl.id] = fpl
@@ -646,7 +768,8 @@ export default class FPPRG {
           create: {
             id: fpl.id,
             process: fpl.process.id,
-            metadata: fpl.metadata !== undefined ? fpl.metadata.id : null,
+            cell_metadata: fpl.cell_metadata !== undefined ? fpl.cell_metadata.id : null,
+            playbook_metadata: fpl.playbook_metadata !== undefined ? fpl.playbook_metadata.id : null,
             parent: fpl.parent !== undefined ? fpl.parent.id : null,
           }
         })
@@ -661,7 +784,8 @@ export default class FPPRG {
       processTable: this.processTable,
       resolvedTable: this.resolvedTable,
       fplTable: this.fplTable,
-      fplMetadataTable: this.fplMetadataTable,
+      cellMetadataTable: this.playbookMetadataTable,
+      playbookMetadataTable: this.cellMetadataTable,
     }
   }
 }

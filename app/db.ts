@@ -16,9 +16,11 @@ export default cache('db', () => create_database({
     resolved: schema.resolved,
     process_complete: schema.process_complete,
     fpl: schema.fpl,
-    fpl_metadata: schema.fpl_metadata,
+    cell_metadata: schema.cell_metadata,
+    playbook_metadata: schema.playbook_metadata,
     upload: schema.upload,
     user_upload: schema.user_upload,
     user_upload_complete: schema.user_upload_complete,
+    user_playbook: schema.user_playbook,
   },
 }))

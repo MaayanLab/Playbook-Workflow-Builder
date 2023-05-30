@@ -96,22 +96,41 @@ export const process_complete = View.create('process_complete')
     })))
     .build()
 
-export const fpl_metadata = Table.create('fpl_metadata')
+export const cell_metadata = Table.create('cell_metadata')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('label', 'varchar', '', z.string())
   .field('description', 'varchar', '', z.string())
-  .field('processVisible', 'boolean', '', z.boolean())
-  .field('dataVisible', 'boolean', '', z.boolean())
+  .field('process_visible', 'boolean', '', z.boolean())
+  .field('data_visible', 'boolean', '', z.boolean())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 
-export const fpl_metadata_trigger = SQL.create()
+export const cell_metadata_trigger = SQL.create()
   .up(`
-    create trigger fpl_metadata_notify after insert on fpl_metadata
-    for each row execute procedure notify_trigger('fpl_metadata');
+    create trigger cell_metadata_notify after insert on cell_metadata
+    for each row execute procedure notify_trigger('cell_metadata');
   `)
   .down(`
-    drop trigger fpl_metadata_notify on fpl_metadata cascade;
+    drop trigger cell_metadata_notify on cell_metadata cascade;
+  `)
+  .build()
+
+export const playbook_metadata = Table.create('playbook_metadata')
+  .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
+  .field('title', 'varchar', '', z.string())
+  .field('description', 'varchar', '', z.string())
+  .field('summary', 'varchar', '', z.enum(['auto', 'gpt', 'manual']))
+  .field('gpt_summary', 'varchar', '', z.string())
+  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .build()
+
+export const playbook_metadata_trigger = SQL.create()
+  .up(`
+    create trigger playbook_metadata_notify after insert on playbook_metadata
+    for each row execute procedure notify_trigger('playbook_metadata');
+  `)
+  .down(`
+    drop trigger playbook_metadata_notify on playbook_metadata cascade;
   `)
   .build()
 
@@ -119,7 +138,8 @@ export const fpl = Table.create('fpl')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('process', 'uuid', 'not null references process ("id") on delete cascade', z_uuid())
   .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().nullable())
-  .field('metadata', 'uuid', 'references fpl_metadata ("id") on delete cascade', z_uuid().nullable())
+  .field('playbook_metadata', 'uuid', 'references playbook_metadata ("id") on delete cascade', z_uuid().nullable())
+  .field('cell_metadata', 'uuid', 'references cell_metadata ("id") on delete cascade', z_uuid().nullable())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 

@@ -8,7 +8,6 @@ import * as dict from '@/utils/dict'
 import type KRG from '@/core/KRG'
 import { z_uuid } from '@/utils/zod'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
-import { UserIdentity } from '@/app/fragments/graph/useridentity'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -17,6 +16,7 @@ const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup 
 const TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
+const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const Suggestion = MetaNode('Suggestion')
   .meta({

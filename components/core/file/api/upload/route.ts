@@ -26,7 +26,7 @@ export const POST = handler(async (req, res) => {
               url: `file://${file.path.split(path.sep).join(path.posix.sep)}`,
               size: file.size,
               filename: file.originalFilename,
-            })
+            }, session)
           })),
         }
       })

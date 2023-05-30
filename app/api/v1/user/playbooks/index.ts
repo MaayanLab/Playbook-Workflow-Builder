@@ -64,7 +64,8 @@ export const UserPlaybook = API('/api/v1/user/playbooks/[id]')
     if (fpl === undefined) throw new NotFoundError()
     const metapath = fpl.resolve().map(fpl => fpl.toJSON())
     // TODO: move this logic into a db trigger
-    const publicUserPlaybook = await db.objects.user_playbook.findUnique({
+    // TODO: address playbook republishing
+    const [publicUserPlaybook, ..._] = await db.objects.user_playbook.findMany({
       where: {
         playbook: inputs.query.id,
         public: true,

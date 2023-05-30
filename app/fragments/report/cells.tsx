@@ -85,6 +85,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
                 },
               }).then(id => {
                 setUserPlaybook({ public: userPlaybook?.public || false })
+                setPlaybookMetadata(metadata => ({ ...metadata, id: data.metapath[data.metapath.length-1].playbook_metadata?.id || '' }))
                 setUpdateRequired(false)
                 router.push(`/report/${id}`, undefined, { shallow: true, scroll: false })
               })

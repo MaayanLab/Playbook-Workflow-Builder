@@ -2,6 +2,7 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet, RegulatoryElementSet } from '@/components/core/input/set'
+import { GraphPlot } from '@/components/viz/graph'
 import { z } from 'zod'
 import { gene_icon, linkeddatahub_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
@@ -134,13 +135,15 @@ const CTDResponseInfoC = z.object({
     "guiltyByAssociationGenes": z.any(),
     "jsonGraph": z.object({
       "nodes": z.array(z.object({
-        "name": z.string(),
+        "id": z.string().optional(),
+        "name": z.string().optional(),
         "type": z.string()
       })),
+      "edges": z.any().optional(),
       "interactions": z.array(z.object({
         "source": z.string(),
         "target": z.string()
-      })),
+      })).optional(),
     })
 });
 export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
@@ -310,9 +313,20 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     description: "CTD_Graph_Nodes."
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
-  .output(CTDGraph)
+  .output(GraphPlot)
   .resolve(async (props) => {
-    return props.inputs.ctdResponseInfo.jsonGraph;
+    let jsonGraphObj = props.inputs.ctdResponseInfo.jsonGraph;
+
+    jsonGraphObj.edges = jsonGraphObj.interactions;
+    delete jsonGraphObj.interactions;
+
+    for(let n in jsonGraphObj.nodes){
+      let node = jsonGraphObj.nodes[n];
+      node.id = node.name;
+      delete node.name;
+    }
+    
+    return jsonGraphObj;
   }).story(props =>
     `CTD_Graph_Nodes.`
   ).build()

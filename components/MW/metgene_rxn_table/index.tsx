@@ -39,24 +39,24 @@ export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
   .codec(MetGeneRxnObjArray2C)
-  
+
   // react component rendering your data goes here
-  
+
   .view(data => {
-    
+
     const heading1 = "Gene"
     const heading2 = "KEGG Rxn Id"
     const heading3 = "KEGG Rxn Name"
     const heading4 = "KEGG Rxn Equation"
-    
+
     return (
-      
+
       <div>
         <h2>MetGENE Reactions</h2>
         {data.map((arrayVal:MetGeneRxnObjArray, index:number) => (
           <div key={index}>
           <table>
-            
+
             <thead>
             <tr>
               <th>{heading1}</th>
@@ -65,10 +65,10 @@ export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
               <th>{heading4}</th>
             </tr>
             </thead>
-             
-            <tbody>    
+
+            <tbody>
             {arrayVal.map((val:MetGeneRxnObj, i:number) => {
-            
+
               return (
                 <tr key={i}>
                   <td>{val.Gene}</td>
@@ -81,11 +81,11 @@ export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
             </tbody>
           </table>
           </div>
-          
+
         ))}
-        
+
       </div>
    )
   })
-  
+
   .build()

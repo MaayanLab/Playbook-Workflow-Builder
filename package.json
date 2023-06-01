@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "npx --workspace=app next build",
+    "codegen:apis": "ts-node -r esm -r tsconfig-paths/register cli/sync-api-import.ts",
     "codegen:components": "ts-node cli/sync-component-import.ts",
     "codegen:cite": "ts-node -r tsconfig-paths/register cli/add-citation.ts",
     "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",

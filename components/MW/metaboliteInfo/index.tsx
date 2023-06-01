@@ -36,7 +36,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   )
   .build()
 
-  export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
+export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'Metabolite set information',
@@ -59,9 +59,9 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
       //console.log(res)
       jsonArrayObject.push(res)
     }
-    
+
     //await console.log(jsonArrayObject)
-    
+
     return jsonArrayObject
     //return props.inputs.input
   })

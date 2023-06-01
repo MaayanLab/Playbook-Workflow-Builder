@@ -58,7 +58,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   )
   .build()
 
-  export const Transpose = MetaNode('Transpose')
+export const Transpose = MetaNode('Transpose')
   .meta({
     label: 'Transpose',
     description: 'Re-orient the matrix',

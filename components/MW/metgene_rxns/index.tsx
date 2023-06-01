@@ -23,23 +23,23 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
   .resolve(async (props) => {
     const species_id = "hsa"
     const geneID_type = "SYMBOL_OR_ALIAS"
-    
+
     const gene_ID = props.inputs.summary.gene
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/reactions/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
-    
+
 
     //return props.inputs.input
     return  res
-    
+
   })
   .story(props =>
     `${props.inputs.summary.gene} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
   )
   .build()
 
-  export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
+export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
   // Human readble descriptors about this node should go here
   .meta({
     label: 'MetGENE Reactions with GeneSet',
@@ -55,16 +55,16 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
   .resolve(async (props) => {
     const species_id = "hsa"
     const geneID_type = "SYMBOL_OR_ALIAS"
-    
+
     const gene_ID = props.inputs.geneset.set.join(",");
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/reactions/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
-    
+
 
     //return props.inputs.input
     return  res
-    
+
   })
   .story(props =>
     `The geneset was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`

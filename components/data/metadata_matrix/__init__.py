@@ -38,11 +38,11 @@ def metadata_matrix(url):
     top = d.shape[0] - 1
     bottom = 1
 
-  if d.shape[1] != 1: 
+  if d.shape[1] != 1:
     raise Exception("Metadata file should contain exactly one column \
                     indicating the class to which each sample belongs.")
   col = d.columns[0]
-  if len(d[col].unique()) != 2: 
+  if len(d[col].unique()) != 2:
     raise Exception("Sample class column should only have two unique values, \
                     identifying the control group and perturbation group.")
 
@@ -52,7 +52,7 @@ def metadata_matrix(url):
     d.iloc[:top], d.iloc[-bottom:]
   ]))
   ellipses = [
-    top if len(index) != d.shape[0] else None, 
+    top if len(index) != d.shape[0] else None,
     None,
   ]
   return dict(

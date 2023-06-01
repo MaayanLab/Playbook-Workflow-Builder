@@ -4,7 +4,7 @@ import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
-//import { varinat_icon, variantinfo_icon } from '@/icons'
+import { linkeddatahub_icon } from '@/icons'
 
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),
@@ -14,9 +14,9 @@ const AlleleRegistryVariantInfoC = z.object({
 export type AlleleRegistryVariantInfo = z.infer<typeof AlleleRegistryVariantInfoC>
 
 const AlleleRegistryExternalSourcesInfoC = z.array(
-  z.object({ 
+  z.object({
     name: z.string(),
-    sources: z.array(z.object({ 
+    sources: z.array(z.object({
       '@id':z.string(),
       id: z.string()
     }))
@@ -24,15 +24,15 @@ const AlleleRegistryExternalSourcesInfoC = z.array(
 );
 
 const AlleleSpecificEvidenceInfoC = z.array(
-  z.object({ 
+  z.object({
     ldhId: z.string(),
-    ldhIri: z.string(), 
-    sourceDescription: z.string(), 
-    alleleSpecificityList: z.array(z.object({ 
+    ldhIri: z.string(),
+    sourceDescription: z.string(),
+    alleleSpecificityList: z.array(z.object({
       name: z.string(),
       altAlleleQuant: z.any(),
       refAlleleQuant: z.any(),
-      sig: z.any()  
+      sig: z.any()
     }))
   })
 );
@@ -43,9 +43,9 @@ export const GitHubVariantInfoC =  z.object({
     entType: z.string(),
     ld: z.object({
       AlleleSpecificEvidence: z.array(
-        z.object({ 
-          ldhId: z.string(), 
-          ldhIri: z.string(), 
+        z.object({
+          ldhId: z.string(),
+          ldhIri: z.string(),
           entContent: z.object({
             sourceDescription: z.string(),
             AlleleSpecificity:z.any().optional()
@@ -53,9 +53,9 @@ export const GitHubVariantInfoC =  z.object({
         })
       ),
       xqtlEvidence: z.array(
-        z.object({   
-          entId: z.string(), 
-          ldhId: z.string(), 
+        z.object({
+          entId: z.string(),
+          ldhId: z.string(),
           ldhIri: z.string(),
           entContent: z.object({
             GTExIri: z.string(),
@@ -89,33 +89,33 @@ export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
 
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
-    label: 'Variant Iformation',
+    label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
-    //icon: [varinat_icon]
+    icon: [linkeddatahub_icon],
   })
   .codec(AlleleRegistryVariantInfoC)
-  .view(varinatinfo => (
+  .view(variantinfo => (
     <div>
-      <a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${varinatinfo.entId}`}>{varinatinfo.entId}</a> (variant)
-    </div>  
+      <a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${variantinfo.entId}`}>{variantinfo.entId}</a> (variant)
+    </div>
   ))
   .build()
 
 async function getGitDataHubVariantInfo(variantId: string): Promise<GitHubVariantInfo> {
-    const res = await fetch(`https://genboree.org/cfde-gene-dev/Variant/id/${encodeURIComponent(variantId)}`)
-    return await res.json()
-  }
-
-export async function getAlleleRegistryVariantInfo(variantId: string): Promise<AlleleRegistryVariantInfo> {
-    const res = await fetch(`https://reg.genome.network/allele/${encodeURIComponent(variantId)}`);
-    return await res.json()
+  const res = await fetch(`https://genboree.org/cfde-gene-dev/Variant/id/${encodeURIComponent(variantId)}`)
+  return await res.json()
 }
 
-export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
+export async function getAlleleRegistryVariantInfo(variantId: string): Promise<AlleleRegistryVariantInfo> {
+  const res = await fetch(`https://reg.genome.network/allele/${encodeURIComponent(variantId)}`);
+  return await res.json()
+}
+
+export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
-    description: 'Resolve variant info (Allele registry API) from variant term with MyVarinatInfo',
-    //icon: [variantinfo_icon],
+    description: 'Resolve variant info (Allele registry API) from variant term with MyVariantInfo',
+    icon: [linkeddatahub_icon],
   })
   .inputs({ variant: VariantTerm })
   .output(VariantInfo)
@@ -128,29 +128,29 @@ export const VarinatInfoFromVariantTerm = MetaNode('VarinatInfoFromVariantTerm')
 
 
 export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
-.meta({
-  label: 'Resolve Reg. Element from Var. Info',
-  description: 'GetRegulatoryElementsForThisVariant',
-})
-.inputs({ variantInfo: VariantInfo  })
-.output(RegulatoryElementTerm)
-.resolve(async (props) => {
-  const reponse = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
-  if(reponse.data.ldFor.RegulatoryElement != null && reponse.data.ldFor.RegulatoryElement.length == 1){
-    return reponse.data.ldFor.RegulatoryElement[0].entId;
-  }
-  return "N/A";
-})
-.build()
+  .meta({
+    label: 'Resolve Reg. Element from Var. Info',
+    description: 'GetRegulatoryElementsForThisVariant',
+  })
+  .inputs({ variantInfo: VariantInfo  })
+  .output(RegulatoryElementTerm)
+  .resolve(async (props) => {
+    const reponse = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
+    if(reponse.data.ldFor.RegulatoryElement != null && reponse.data.ldFor.RegulatoryElement.length == 1){
+      return reponse.data.ldFor.RegulatoryElement[0].entId;
+    }
+    return "N/A";
+  })
+  .build()
 
 export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTable')
-.meta({
-  label: 'AlleleSpecificEvidencesTable',
-  description: ''
-})
-.codec(AlleleSpecificEvidenceInfoC)
-.view(alleleSpecificEvidence => {
-      return (   
+  .meta({
+    label: 'AlleleSpecificEvidencesTable',
+    description: ''
+  })
+  .codec(AlleleSpecificEvidenceInfoC)
+  .view(alleleSpecificEvidence => {
+      return (
           <Table
             height={500}
             cellRendererDependencies={[alleleSpecificEvidence]}
@@ -161,7 +161,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             <Column
               name="ldhId"
               cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidence[row].ldhId}</Cell>}
-            />           
+            />
             <Column
               name="Tissue Site od Cell Type"
               cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidence[row].sourceDescription.replace(/_/g, " ")}</Cell>}
@@ -172,23 +172,23 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             />
             <Column
               name="Allele Specif. Name"
-              cellRenderer={row => 
+              cellRenderer={row =>
                 <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                    {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>                    
-                        <tr><td>{ sources.name }</td></tr>     
-                    )}   
+                    {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
+                        <tr><td>{ sources.name }</td></tr>
+                    )}
                   </table>
-                </Cell>}    
+                </Cell>}
             />
             <Column
               name="Allele Specif. Ref. Quant"
-              cellRenderer={row => 
+              cellRenderer={row =>
               <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>                    
-                    <tr><td>{ sources.refAlleleQuant }</td></tr>     
-                  )}   
+                {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
+                    <tr><td>{ sources.refAlleleQuant }</td></tr>
+                  )}
                 </table>
               }</Cell>}
             />
@@ -196,9 +196,9 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               name="Allele Specif. Alt. Quant"
               cellRenderer={row => <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>                    
-                    <tr><td>{ sources.altAlleleQuant }</td></tr>     
-                  )}   
+                {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
+                    <tr><td>{ sources.altAlleleQuant }</td></tr>
+                  )}
                 </table>
               }</Cell>}
             />
@@ -206,85 +206,86 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               name="Allele Specif. sig"
               cellRenderer={row => <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>                    
-                    <tr><td>{ sources.sig }</td></tr>     
-                  )}   
+                {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
+                    <tr><td>{ sources.sig }</td></tr>
+                  )}
                 </table>
               }</Cell>}
             />
           </Table>
       )
-}).build()
+  })
+  .build()
 
 export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpecificEvidencesForThisVariant')
-.meta({
-  label: 'Resolve Allele Specific Evidences from Var. Info',
-  description: 'GetAlleleSpecificEvidencesForThisVariant',
-})
-.inputs({ variantInfo: VariantInfo  })
-.output(AlleleSpecificEvidencesTable)
-.resolve(async (props) => {
-  let response = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
-  
-  var alleleSpecificEvidence: any = [];
+  .meta({
+    label: 'Resolve Allele Specific Evidences from Var. Info',
+    description: 'GetAlleleSpecificEvidencesForThisVariant',
+  })
+  .inputs({ variantInfo: VariantInfo })
+  .output(AlleleSpecificEvidencesTable)
+  .resolve(async (props) => {
+    let response = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
 
-  let alleleSpecificEvidencesList = response.data.ld.AlleleSpecificEvidence;
-  for(let a in alleleSpecificEvidencesList){
-      let specificities = alleleSpecificEvidencesList[a].entContent.AlleleSpecificity;
-      if(specificities == null){
-        continue;
-      }
-      let specificitieNamesList = Object.getOwnPropertyNames(specificities);
-      if(specificitieNamesList.length == 0){
-        continue;
-      }
-      let alleleSpecificityList: any = []
+    var alleleSpecificEvidence: any = [];
 
-      for(let s in specificitieNamesList){
-          let specificitieName = specificitieNamesList[s];
-          let specificity = specificities[specificitieName.toString()];
+    let alleleSpecificEvidencesList = response.data.ld.AlleleSpecificEvidence;
+    for(let a in alleleSpecificEvidencesList){
+        let specificities = alleleSpecificEvidencesList[a].entContent.AlleleSpecificity;
+        if(specificities == null){
+          continue;
+        }
+        let specificitieNamesList = Object.getOwnPropertyNames(specificities);
+        if(specificitieNamesList.length == 0){
+          continue;
+        }
+        let alleleSpecificityList: any = []
 
-          var specificityObject: any = null;
+        for(let s in specificitieNamesList){
+            let specificitieName = specificitieNamesList[s];
+            let specificity = specificities[specificitieName.toString()];
 
-          if(specificitieName != "HM" && specificitieName != "TF"){
-            specificityObject = {
-              "name": specificitieName,
-              "altAlleleQuant": specificity.altAlleleQuant,
-              "refAlleleQuant": specificity.refAlleleQuant,
-              "sig": specificity.sig
-            }
-            alleleSpecificityList.push(specificityObject);
-            continue;
-          }else{
-            let specificitySubName = Object.getOwnPropertyNames(specificity);
-            for(let ssN in specificitySubName){
-              let s = specificity[specificitySubName[ssN]];
+            var specificityObject: any = null;
+
+            if(specificitieName != "HM" && specificitieName != "TF"){
               specificityObject = {
-                "name": specificitieName+": "+specificitySubName[ssN],
-                "altAlleleQuant": s.altAlleleQuant,
-                "refAlleleQuant": s.refAlleleQuant,
-                "sig": s.sig
+                "name": specificitieName,
+                "altAlleleQuant": specificity.altAlleleQuant,
+                "refAlleleQuant": specificity.refAlleleQuant,
+                "sig": specificity.sig
               }
               alleleSpecificityList.push(specificityObject);
               continue;
+            }else{
+              let specificitySubName = Object.getOwnPropertyNames(specificity);
+              for(let ssN in specificitySubName){
+                let s = specificity[specificitySubName[ssN]];
+                specificityObject = {
+                  "name": specificitieName+": "+specificitySubName[ssN],
+                  "altAlleleQuant": s.altAlleleQuant,
+                  "refAlleleQuant": s.refAlleleQuant,
+                  "sig": s.sig
+                }
+                alleleSpecificityList.push(specificityObject);
+                continue;
+              }
             }
-          }  
-      }
+        }
 
-      let specificEvidence = {
-        "ldhId": alleleSpecificEvidencesList[a].ldhId,
-        "ldhIri": alleleSpecificEvidencesList[a].ldhIri,
-        "sourceDescription": alleleSpecificEvidencesList[a].entContent.sourceDescription,
-        "alleleSpecificityList": alleleSpecificityList
-      }
-      alleleSpecificEvidence.push(specificEvidence)
-  }
+        let specificEvidence = {
+          "ldhId": alleleSpecificEvidencesList[a].ldhId,
+          "ldhIri": alleleSpecificEvidencesList[a].ldhIri,
+          "sourceDescription": alleleSpecificEvidencesList[a].entContent.sourceDescription,
+          "alleleSpecificityList": alleleSpecificityList
+        }
+        alleleSpecificEvidence.push(specificEvidence)
+    }
 
-  console.log(JSON.stringify(alleleSpecificEvidence));
+    console.log(JSON.stringify(alleleSpecificEvidence));
 
-  return alleleSpecificEvidence;
-})
-.build()
+    return alleleSpecificEvidence;
+  })
+  .build()
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
@@ -292,8 +293,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     description: ''
   })
   .codec(GitHubVariantInfoC)
-  .view(varinatinfo => {
-    let xqtlEvidences = varinatinfo.data.ld.xqtlEvidence;
+  .view(variantinfo => {
+    let xqtlEvidences = variantinfo.data.ld.xqtlEvidence;
     return (
       <Table
         height={500}
@@ -316,11 +317,11 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
         />
         <Column
           name="Normalized Effect Size (nes)"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.nes}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.nes ?? null}</Cell>}
         />
         <Column
           name="p-value"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL.sig}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.sig ?? null}</Cell>}
         />
         <Column
           name="Tissue site"
@@ -331,7 +332,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   })
   .build()
 
-  export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
+export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
   .meta({
     label: 'Resolve xQTL Evidence Data for Variant Info',
     description: 'Resolve xQTL Evidence Data for Variant Info Data',
@@ -346,7 +347,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
         if(xqtlE_entContent.hasOwnProperty('eQTL')){
           xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
           xqtlE_entContent.type = "eQTL";
-          delete xqtlE_entContent.eQTL;         
+          delete xqtlE_entContent.eQTL;
         }else if(xqtlE_entContent.hasOwnProperty('sQTL')){
           xqtlE_entContent.esQTL = xqtlE_entContent.sQTL;
           delete xqtlE_entContent.sQTL;
@@ -364,45 +365,46 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .codec(AlleleRegistryExternalSourcesInfoC)
   .view(AlleleRegistryExternalSourcesList => {
-        let sourcesList = AlleleRegistryExternalSourcesList;
+    let sourcesList = AlleleRegistryExternalSourcesList;
 
-        return (
-          <Table
-            height={500}
-            cellRendererDependencies={[AlleleRegistryExternalSourcesList]}
-            numRows={AlleleRegistryExternalSourcesList.length}
-            enableGhostCells
-            enableFocusedCell
-          >
-            <Column
-              name="External Source Name"
-              cellRenderer={row => <Cell key={row+''}>{AlleleRegistryExternalSourcesList[row].name}</Cell>}
-            />
-            <Column 
-              name="Source Id"            
-              cellRenderer={row => 
-              <Cell  key={row+''}>
-                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                      {AlleleRegistryExternalSourcesList[row].sources.map(sources =>                    
-                          <tr><td>{ sources.id }</td></tr>     
-                      )}   
-                  </table>
-              </Cell>}
-            />
-            <Column 
-              name="Source Link"            
-              cellRenderer={row => 
-              <Cell  key={row+''}>
-                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {AlleleRegistryExternalSourcesList[row].sources.map(sources =>                    
-                            <tr><td><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td></tr>     
-                        )}   
-                  </table>
-              </Cell>}
-            />
-          </Table>
-        )
-}).build()
+    return (
+      <Table
+        height={500}
+        cellRendererDependencies={[AlleleRegistryExternalSourcesList]}
+        numRows={AlleleRegistryExternalSourcesList.length}
+        enableGhostCells
+        enableFocusedCell
+      >
+        <Column
+          name="External Source Name"
+          cellRenderer={row => <Cell key={row+''}>{AlleleRegistryExternalSourcesList[row].name}</Cell>}
+        />
+        <Column
+          name="Source Id"
+          cellRenderer={row =>
+          <Cell  key={row+''}>
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {AlleleRegistryExternalSourcesList[row].sources.map(sources =>
+                      <tr><td>{ sources.id }</td></tr>
+                  )}
+              </table>
+          </Cell>}
+        />
+        <Column
+          name="Source Link"
+          cellRenderer={row =>
+          <Cell  key={row+''}>
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {AlleleRegistryExternalSourcesList[row].sources.map(sources =>
+                        <tr><td><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td></tr>
+                    )}
+              </table>
+          </Cell>}
+        />
+      </Table>
+    )
+  })
+  .build()
 
 export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
@@ -415,7 +417,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
     let alleleInfoExternalResources = [];
     let variantInfoObj: any = props.inputs.variantInfo;
 
-    if(variantInfoObj['externalRecords'] != null){      
+    if(variantInfoObj['externalRecords'] != null){
       let externalSources = variantInfoObj['externalRecords'];
       for(let er in externalSources){
         if(externalSources[er] != null){
@@ -424,7 +426,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           for(let indxEs in extSources){
             var es = extSources[indxEs];
             if(es.id == null && es.rs != null){
-              es.id = es.rs.toString();   
+              es.id = es.rs.toString();
             }else if(es.id == null && es.preferredName != null){
               //for ClinVarAlleles
               es.id = es.preferredName.toString();
@@ -434,13 +436,13 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
             }
           }
 
-          let  externalResourcesTemp = { 
-            name: er.toString(), 
-            sources: extSources 
+          let  externalResourcesTemp = {
+            name: er.toString(),
+            sources: extSources
           };
           alleleInfoExternalResources.push(externalResourcesTemp);
         }
       }
-    }   
+    }
     return alleleInfoExternalResources;
   }).build()

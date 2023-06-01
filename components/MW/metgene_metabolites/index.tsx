@@ -28,7 +28,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/metabolites/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
-    
+
 
     //return props.inputs.input
     return  res
@@ -58,7 +58,7 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     const vtf = "json"
     const req = await fetch(`https://bdcw.org/MetGENE/rest/metabolites/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
     const res = await req.json()
-    
+
 
     //return props.inputs.input
     return  res

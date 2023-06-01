@@ -64,7 +64,7 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
   .output(GMT)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gmt_from_sig',
-    { kargs: [props.inputs.sig] } 
+    { kargs: [props.inputs.sig] }
   ))
   .build()
 

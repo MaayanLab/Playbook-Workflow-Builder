@@ -51,7 +51,7 @@ export const MetaboliteSummary = MetaNode('MetaboliteSummary')
           <th> Sub class </th>
           <th> InChI</th>
         {data.map((val: MetSummaryObj, i: number) => {
-          
+
             return (
               <tr key={i}>
                 <td>{val.name}</td>
@@ -65,9 +65,9 @@ export const MetaboliteSummary = MetaNode('MetaboliteSummary')
               </tr>
             )
         })}
-        
-        
-        
+
+
+
         </table>
       </div>
     )

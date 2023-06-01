@@ -31,7 +31,7 @@ export async function fileFromStream(reader_: Readable | ReadableStream<Uint8Arr
   const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ppwb-')), filename)
   const writer = fs.createWriteStream(tmp)
   const { sha256, size } = await statsFromStream(reader, writer)
-  return { url: `file://${tmp}`, sha256, size, filename }
+  return { url: `file://${tmp.split(path.sep).join(path.posix.sep)}`, sha256, size, filename }
 }
 
 export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>

@@ -72,7 +72,7 @@ export class PgDatabase implements DbDatabase {
     const { statement, vars } = prepare(statement_builder)
     return await this.pool.query(statement, vars)
   }
-  
+
   listen = (cb: (evt: string, data: unknown) => void) => {
     const id = this.id++
     this.listeners[id] = cb

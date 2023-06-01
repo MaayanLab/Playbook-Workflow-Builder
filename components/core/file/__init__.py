@@ -17,7 +17,7 @@ class TemporaryFile:
 
   def __repr__(self) -> str:
     return f"TemporaryFile({repr(self)})"
-  
+
   def unlink(self):
     os.unlink(self.file)
 
@@ -37,14 +37,14 @@ def upsert_file(suffix=''):
     yield tmp
     # we upload the file to the main server to get a persistent url
     req = requests.post(
-      f"{os.environ['PUBLIC_URL']}/api/components/core/file/upload",
+      f"{os.environ['PUBLIC_URL']}/api/v1/components/core/file/upload",
       headers={'Authorization': f"Token {os.environ['NEXTAUTH_SECRET']}"},
       files=[('file', open(tmp.file, 'rb'))],
     )
     assert req.status_code >= 200 and req.status_code < 300, f"Error ({req.status_code}): {req.json()}"
     res = req.json()
     # we return register url to the file
-    tmp.url = res['file'][0]
+    tmp.url = res['file'][0]['url']
   finally:
     # we remove the temporary file
     tmp.unlink()

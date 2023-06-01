@@ -35,7 +35,7 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
     const heading1 = "Kegg Compound Id"
     const heading2 = "Refmet Name"
     const heading3 = "Study Ids"
-    
+
     const studyID_url = "https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID="
     return (
       <div>
@@ -48,17 +48,17 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
           </tr>
           {data.map((val : MetGeneStudyObj, key : number) => {
           var all_study_ids = val.STUDY_ID
-                
+
           var study_id_arr = all_study_ids.split(", ")
-          
-          
+
+
           return (
             <tr key={key}>
-              
+
               <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "_blank">{val.KEGG_COMPOUND_ID}</a></td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
-                {study_id_arr.map((study_id: string, i: number) => 
+                {study_id_arr.map((study_id: string, i: number) =>
                   <>
                   {i > 0 ? <span>, </span> : null}
                   <a key={i} href = {`https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=${study_id}`} target = "_blank">{study_id}</a>

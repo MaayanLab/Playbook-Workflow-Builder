@@ -3,7 +3,7 @@ import { PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
 import { barchart_icon } from '@/icons'
-  
+
 export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues].map(ScoredT =>
   MetaNode(`BarplotFrom[${ScoredT.spec}]`)
     .meta({

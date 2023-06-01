@@ -13,7 +13,7 @@ function convertDOI(text: string) {
 
 /**
  * This lets you add citations inline and pulls them out and puts them at the end.
- * 
+ *
  * Usage:
  * ```
  * Using some thing [\\ref{Some Citation},\\ref{Some Other Citation}]... And also [\\ref{Some Citation}].
@@ -21,7 +21,7 @@ function convertDOI(text: string) {
  * Output:
  * ```
  * Using some thing [1,2]... And also [1].
- * 
+ *
  * 1. Some Citation
  * 2. Some Other Citation
  * ```

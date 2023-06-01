@@ -16,6 +16,7 @@ import codecFrom from '@/utils/zod-codec'
 import type { Codec } from '@/spec/codec'
 import type { MaybeArray, ExtractKey, Ensure } from '@/utils/types'
 import type { Icon } from '@/icons'
+import type { StaticImageData } from 'next/image'
 
 /**
  * The broadest type parameter for an IdentifiableMetaNode
@@ -23,13 +24,21 @@ import type { Icon } from '@/icons'
 export type InternalIdentifiableMetaNode = {
   spec: string
   meta: {
+    // a human readable label
     label: string,
+    // a human readable description
     description: string,
+    // an icon representing the data type/action
     icon?: Icon,
+    // a logo for the data source
+    logo?: StaticImageData[],
+    // a color to distinguish it
     color?: string,
-    default?: any,
+    // an example value for a data metanode
     example?: any,
-    pagerank?: number
+    // an integer for metanode order tweaking
+    pagerank?: number,
+    // categorized tags for metanode filtering
     tags?: Record<string, Record<string, number>>,
   }
 }
@@ -51,7 +60,7 @@ export type InternalProcessMetaNode = InternalIdentifiableMetaNode & {
 
 /**
  * All metanodes should have a unique id and some metadata about it.
- * 
+ *
  * Parameters:
  *  spec: A unique string for this type
  *  meta: key-value metadata to elaborate on the datatype including human readable label & description
@@ -66,7 +75,7 @@ export type IdentifiableMetaNode<T = InternalIdentifiableMetaNode> = {
  * A DataMetaNode represents a semantically annotated datatype.
  *  Though a "First Name" and "Last Name" are both strings, they are different things. In the same way
  *   a DataMetaNode represents something like a First Name, providing programatic *and* semantic typing guarantees.
- * 
+ *
  * Parameters:
  *  spec: A unique string for this type
  *  meta: key-value metadata to elaborate on the datatype including human readable label & description

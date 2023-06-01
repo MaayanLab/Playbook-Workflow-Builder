@@ -11,8 +11,8 @@ export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
     description: `From a given counts matrix and metadata, return a Charateristic
                   Direction differential gene expression signature`
   })
-  .inputs({ 
-    data: GeneCountMatrix, 
+  .inputs({
+    data: GeneCountMatrix,
     metadata: MetadataMatrix
   })
   .output(GeneSignature)

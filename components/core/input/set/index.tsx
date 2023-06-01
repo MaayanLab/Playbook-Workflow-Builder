@@ -1,7 +1,18 @@
 import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Variant, RegulatoryElement, Drug, Primative, Pathway, Phenotype, Tissue, Disease, Metabolite } from '@/components/core/input/primitives'
+import {
+  Disease,
+  Drug,
+  Gene,
+  Metabolite,
+  Pathway,
+  Phenotype,
+  Primative,
+  RegulatoryElement,
+  Tissue,
+  Variant,
+} from '@/components/core/input/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'

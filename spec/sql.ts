@@ -42,7 +42,7 @@ export type TableSchema<T = {}> = {
  * Usage:
  * const table_name = Table.createTable('table_name')
  *   // fieldname, pg schema, and a codec to determine how it should be treated in and out of the db
- *   .field('fieldname', 'varchar', { encode: z.string().transform(s => s|0).parse, decode: z.int().transform(i => i+'').parse }) 
+ *   .field('fieldname', 'varchar', { encode: z.string().transform(s => s|0).parse, decode: z.int().transform(i => i+'').parse })
  *   // in the case of storing it equally both ways, a zod schema can be used
  *   .field('fieldname', 'varchar', z.string())
  *   .extra('') // any extra sql in the table definition like primary key/constraints
@@ -94,7 +94,7 @@ export class Table<T = {}> {
       ].join(',\n'),
       `);`,
     ].join('\n')
-    
+
     const schema_down = `drop table ${JSON.stringify(this.t.name)};`
     return { codec, name, field_sql, field_pk, field_default, field_codecs, schema_up, schema_down } as TypedSchema<T>
   }

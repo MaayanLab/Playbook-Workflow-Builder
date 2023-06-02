@@ -11,6 +11,7 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '@/(.*)': '<rootDir>/../$1',
+    '@blueprintjs/icons': '<rootDir>/tests/mock/@blueprintjs/icons/index.js',
   },
 }
 

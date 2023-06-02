@@ -24,6 +24,7 @@ export const FileURL = MetaNode('FileURL')
     label: 'File URL',
     description: 'URL to a File',
     icon: [file_icon],
+    example: 'file://components/core/file/api/example_matrix.tsv/example_matrix.tsv',
   })
   .codec(FileC)
   .view(({ url }) => (

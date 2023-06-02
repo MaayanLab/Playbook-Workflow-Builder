@@ -8,6 +8,7 @@ export const Error = MetaNode('Error')
     label: 'Error',
     description: 'An error has occurred',
     icon: [error_icon],
+    example: 'An unknown error occurred',
   })
   .codec(z.string())
   .view(error => (

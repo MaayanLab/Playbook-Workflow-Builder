@@ -37,7 +37,12 @@ const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
         Set: 1,
       },
     },
-    ...(T.extra?.set?.meta || {}),
+    meta: {
+      ...(T.extra?.set?.meta || {}),
+      example: T.extra?.set?.meta?.example ? T.extra?.set?.meta?.example
+        : T.extra?.term?.meta?.example ? [T.extra?.term?.meta?.example]
+        : undefined,
+    }
   })
   .codec(z.object({ description: z.string().optional(), set: z.array(z.string()) }))
   .view(({ set }) => {

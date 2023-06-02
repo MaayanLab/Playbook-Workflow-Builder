@@ -27,6 +27,13 @@ const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
         Scored: 1,
       },
     },
+    meta: {
+      ...(T.extra?.scored?.meta || {}),
+      example: T.extra?.scored?.meta?.example ? T.extra?.scored?.meta?.example
+        : T.extra?.set?.meta?.example ? (T.extra?.set?.meta?.example as string[]).map(term => ({ term, zscore: 0. }))
+        : T.extra?.term?.meta?.example ? [{ term: T.extra?.term?.meta?.example, zscore: 0. }]
+        : undefined,
+    }
   })
   .codec(z.array(z.object({ term: z.string(), zscore: z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]) })))
   .view(scored => {

@@ -37,8 +37,6 @@ export * from "./core/input/set"
 components.push("core/input/set")
 export * from "./core/input/term"
 components.push("core/input/term")
-export * from "./core/input/tumor"
-components.push("core/input/tumor")
 export * from "./data/anndata"
 components.push("data/anndata")
 export * from "./data/barchart"

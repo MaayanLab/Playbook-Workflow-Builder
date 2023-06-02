@@ -1,20 +1,18 @@
-import python from '@/utils/python'
-
 import { PlotlyJson, PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
 import { barchart_icon } from '@/icons'
-import { GeneExpressionInTumor } from '@/components/core/input/tumor'
+import { TumorGeneExpression } from '@/components/service/kf'
 import { ScoredTissues } from '@/components/core/input/scored'
 
 
 export const BarplotFromKfExpression = 
-  MetaNode(`BarplotFrom[${GeneExpressionInTumor.spec}]`)
+  MetaNode(`BarplotFrom[${TumorGeneExpression.spec}]`)
     .meta({
-      label: `Barplot from ${GeneExpressionInTumor.meta.label}`,
-      description: `Construct Barplot with ${GeneExpressionInTumor.meta.label}`,
+      label: `Barplot from ${TumorGeneExpression.meta.label}`,
+      description: `Construct Barplot with ${TumorGeneExpression.meta.label}`,
       icon: [barchart_icon],
     })
-    .inputs({ terms: GeneExpressionInTumor, other_terms: ScoredTissues})
+    .inputs({ terms: TumorGeneExpression, other_terms: ScoredTissues})
     .output(PlotlyPlot)
     .resolve(async (props) => {
         const tumor_data = await props.inputs.terms;
@@ -57,6 +55,6 @@ export const BarplotFromKfExpression =
         return {data, layout};
     })
     .story(props =>
-      `To visualize the level of expression across ${GeneExpressionInTumor.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
+      `To visualize the level of expression across ${TumorGeneExpression.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
     )
     .build()

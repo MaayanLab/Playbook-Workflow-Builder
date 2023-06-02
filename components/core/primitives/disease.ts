@@ -12,5 +12,10 @@ export const Disease = {
         example: 'Diabetic Nephropathy',
       },
     },
+    set: {
+      meta: {
+        example: { description: 'Example disease set', set: ['Diabetic Nephropathy'] },
+      },
+    },
   },
 } as Primative

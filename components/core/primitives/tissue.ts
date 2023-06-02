@@ -12,5 +12,10 @@ export const Tissue = {
         example: 'Brain',
       },
     },
+    set: {
+      meta: {
+        example: { description: 'Example tissue set', set: ['Brain']},
+      }
+    },
   },
 } as Primative

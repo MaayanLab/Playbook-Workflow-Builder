@@ -12,5 +12,10 @@ export const Metabolite = {
         example: 'Glucose',
       },
     },
+    set: {
+      meta: {
+        example: { description: 'Example metabolite set', set: ['Glucose']},
+      }
+    },
   },
 } as Primative

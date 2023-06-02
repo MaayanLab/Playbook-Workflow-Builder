@@ -27,9 +27,9 @@ export class ProcessError extends Error {
  * @param args: The kwargs to provide to the file
  */
 export default function python<T>(pathspec: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }): Promise<T> {
-  if (typeof window !== 'undefined') throw new Error("python is server side only")
-  const spawn = typeof window === 'undefined' ? (require('child_process') as typeof child_process_type).spawn : undefined
-  const path = typeof window === 'undefined' ? require('path') as typeof path_type : undefined
+  if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'test') throw new Error("python is server side only")
+  const spawn = typeof window === 'undefined' || process.env.NODE_ENV === 'test' ? (require('child_process') as typeof child_process_type).spawn : undefined
+  const path = typeof window === 'undefined' || process.env.NODE_ENV === 'test' ? require('path') as typeof path_type : undefined
   return new Promise((resolve, reject) => {
     let stdin: string
     try {

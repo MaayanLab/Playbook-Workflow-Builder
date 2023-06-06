@@ -75,6 +75,8 @@ export * from "./service/idg"
 components.push("service/idg")
 export * from "./service/kf"
 components.push("service/kf")
+export * from "./service/ldh"
+components.push("service/ldh")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/regulatoryElementInfo"

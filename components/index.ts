@@ -63,6 +63,8 @@ export * from "./gly_gen"
 components.push("gly_gen")
 export * from "./lincs/l1000-reverse-search"
 components.push("lincs/l1000-reverse-search")
+export * from "./service/ctd"
+components.push("service/ctd")
 export * from "./service/enrichr"
 components.push("service/enrichr")
 export * from "./service/gtex"

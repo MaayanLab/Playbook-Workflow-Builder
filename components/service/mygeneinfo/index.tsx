@@ -169,8 +169,8 @@ export async function getCTDGenSetResponse(strValue: string): Promise<CTDRespons
 
 export const CTDResponseInfo = MetaNode('CTDResponseInfo')
   .meta({
-    label: 'CTDResponseInfo',
-    description: '',
+    label: 'CTD Results',
+    description: 'The results of CTD',
     icon: [datafile_icon]
   })
   .codec(CTDResponseInfoC)
@@ -186,8 +186,8 @@ export const CTDResponseInfo = MetaNode('CTDResponseInfo')
 
 export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
   .meta({
-    label: `GeneSet_CTD_Kegg`,
-    description: "Get a CTD response for a set of genes for graph type kegg."
+    label: `Perform CTD with Gene Set using KEGG`,
+    description: "Get a CTD response for a set of genes using KEGG"
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
@@ -198,14 +198,14 @@ export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
     }
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
-    `Get a CTD response for a set of genes for graph type kegg.`
+    `CTD was performed with the gene set using KEGG.`
   ).build()
 
 
 export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
-    label: `GeneSet_CTD_String`,
-    description: "Get a CTD response for a set of genes for graph type string."
+    label: `Perform CTD with Gene Set using STRING`,
+    description: "Get a CTD response for a set of genes using STRING"
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
@@ -216,14 +216,15 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     }
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
-    `Get a CTD response for a set of genes for graph type string.`
+    `CTD was performed with the gene set using STRING.`
   ).build()
 
 
+// TODO: maybe a Gene Set From File can replace this?
 export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .meta({
-    label: `GenesFile_CTD_Kegg`,
-    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
+    label: `Perform CTD with File using KEGG`,
+    description: 'File should contain a single column gene set in csv format',
     icon: [file_transfer_icon]
   })
   .inputs({ file: FileURL })
@@ -235,12 +236,14 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "kegg");
     return await getCTDFileResponse(formData);
-  }).build()
+  }).story(props =>
+    `CTD was performed with the gene set using KEGG.`
+  ).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
-    label: `GenesFile_CTD_String`,
-    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
+    label: `Perform CTD with File using STRING`,
+    description: 'File should contain a single column gene set in csv format.',
     icon: [file_transfer_icon]
   })
   .inputs({ file: FileURL })
@@ -252,12 +255,14 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
     return await getCTDFileResponse(formData);
-  }).build()
+  }).story(props =>
+    `CTD was performed with the gene set using STRING.`
+  ).build()
 
 export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
   .meta({
-    label: `Highly_Connected_Genes`,
-    description: "Get a list of Highly_Connected_Genes from the CTD response."
+    label: `Extract Highly Connected Genes`,
+    description: "Get a list of Highly Connected Genes from the CTD output"
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
@@ -268,13 +273,13 @@ export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
     };
     return geneSet;
   }).story(props =>
-    `Get a list of Highly_Connected_Genes from the CTD response.`
+    `A list of Highly Connected Genes was obtained from the CTD output.`
   ).build()
 
 export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
   .meta({
-    label: `Guilty_By_Association_Genes`,
-    description: "Get a list of Guilty_By_Association_Genes from the CTD response."
+    label: `Extract Guilty By Association Genes`,
+    description: "Get a list of Guilty By Association Genes from the CTD output"
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
@@ -285,14 +290,14 @@ export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes
     };
     return geneSet;
   }).story(props =>
-    `Get a list of Guilty_By_Association_Genes from the CTD response.`
+    `A list of Guilty By Association Genes was obtained from the CTD output.`
   ).build()
 
 //just for demo, this needs to be presented with a proper graph visualization
 export const CTDGraph = MetaNode('CTDGraph')
   .meta({
-    label: 'CTDGraph',
-    description: '',
+    label: 'CTD Graph',
+    description: 'A graph showing the CTD output.',
     icon: [datafile_icon]
   })
   .codec()
@@ -306,15 +311,15 @@ export const CTDGraph = MetaNode('CTDGraph')
 
 export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .meta({
-    label: `CTD_Graph_Nodes`,
-    description: "CTD_Graph_Nodes."
+    label: `Extract the CTD Graph Nodes`,
+    description: "CTD Graph Nodes"
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(CTDGraph)
   .resolve(async (props) => {
     return props.inputs.ctdResponseInfo.jsonGraph;
   }).story(props =>
-    `CTD_Graph_Nodes.`
+    `Graph Nodes were extracted from the CTD output.`
   ).build()
 
 export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryElementsForGeneInfoFromGene')

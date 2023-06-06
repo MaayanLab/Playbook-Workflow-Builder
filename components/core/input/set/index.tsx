@@ -12,7 +12,7 @@ import {
   RegulatoryElement,
   Tissue,
   Variant,
-} from '@/components/core/input/primitives'
+} from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { input_icon, set_icon } from '@/icons'
 import * as array from '@/utils/array'

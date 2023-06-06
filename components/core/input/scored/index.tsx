@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
+import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { weighted_icon } from '@/icons'
 import * as array from '@/utils/array'

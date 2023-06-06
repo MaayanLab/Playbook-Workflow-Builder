@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { Primative, TumorGeneExpression} from '@/components/core/input/primitives'
+import { Primative, TumorGeneExpression} from '@/components/core/primitives'
 import { z } from 'zod'
 import { Table, Cell, Column } from '@/app/components/Table'
 import * as array from '@/utils/array'

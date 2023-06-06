@@ -37,7 +37,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
     # install them
     pip install -r requirements.txt
     ```
-5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run codegen:components` which adds it to the full graph.
+5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run codegen:components` which adds it to the full graph. **Avoid adding your components to existing files created by someone else, opt instead for a new directory**.
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.
 

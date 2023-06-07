@@ -6,7 +6,8 @@ import type { Readable } from 'stream'
 
 export async function fileAsStream(file: { url: string }): Promise<Readable> {
   if (file.url.startsWith('file://')) {
-    if (process.env.NODE_ENV !== 'development') throw new UnauthorizedError()
+    // TODO: this should be enabled when we have DRS support in prod
+    // if (process.env.NODE_ENV !== 'development') throw new UnauthorizedError()
     return fs.createReadStream(file.url.slice('file://'.length).split(path.posix.sep).join(path.sep))
   } else {
     const req = await fetch(file.url)

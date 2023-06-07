@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { DrugSet, GeneSet } from '@/components/core/input/set'
-import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
+import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
 import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import { ScoredDrugs, ScoredGenes, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
 import { Table, Cell, Column } from '@/app/components/Table'

@@ -289,7 +289,7 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
-    label: 'xQTL_EvidenceDataTable',
+    label: 'xQTL Evidence Data Table',
     description: ''
   })
   .codec(GitHubVariantInfoC)

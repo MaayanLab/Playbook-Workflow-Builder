@@ -19,6 +19,7 @@
     "dev": "npx --workspace=app next dev",
     "dev:ssl": "concurrently \"npm run dev -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start:worker": "ts-node -r tsconfig-paths/register cli/resolve-process-worker.ts",
+    "start:ssl": "concurrently \"npm run start -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start": "npx --workspace=app next start"
   },
   "dependencies": {

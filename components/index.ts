@@ -63,6 +63,8 @@ export * from "./gly_gen"
 components.push("gly_gen")
 export * from "./lincs/l1000-reverse-search"
 components.push("lincs/l1000-reverse-search")
+export * from "./service/ctd"
+components.push("service/ctd")
 export * from "./service/enrichr"
 components.push("service/enrichr")
 export * from "./service/gtex"
@@ -73,6 +75,8 @@ export * from "./service/idg"
 components.push("service/idg")
 export * from "./service/kf"
 components.push("service/kf")
+export * from "./service/ldh"
+components.push("service/ldh")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/regulatoryElementInfo"

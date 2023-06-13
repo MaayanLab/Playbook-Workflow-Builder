@@ -4,18 +4,22 @@
 import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
+import path from 'path'
 import { io } from 'socket.io-client'
+import conf from '@/app/next.config'
 
+const dir = path.join(path.dirname(__dirname), 'app')
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
-const port = 3000
+const port = 3001
 // when using middleware `hostname` and `port` must be provided below
-const app = next({ dev, hostname, port })
+const app = next({ dev, hostname, port, dir, conf })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   /* BEGIN client proxy */
-  const socket = io(process.argv[1])
+  console.log('starting')
+  const socket = io(process.argv[2])
   
   socket.on('http:send', ({ id, path, method, body }: { id: string, path: string, method: string, body: string }) => {
     fetch(path, { method, body })
@@ -44,4 +48,4 @@ app.prepare().then(() => {
     .listen(port, () => {
       console.log(`> Ready on http://${hostname}:${port}`)
     })
-})
+}).catch((e) => console.error(e))

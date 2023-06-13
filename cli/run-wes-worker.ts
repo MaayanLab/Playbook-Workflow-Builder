@@ -1,12 +1,12 @@
 import uuid5 from "@/utils/uuid"
 
-const docker_tag = 'maayanlab/pwb-worker'
+const docker_tag = 'maayanlab/playbook-partnership'
 const version = '0.0.0'
 const cwl = {
   "cwlVersion": "v1.2",
   "class": "CommandLineTool",
   "id": "pwb-worker",
-  "baseCommand": ["npm","run","wes-worker"],
+  "baseCommand": ["npm","run","start:run-wes-worker"],
   "hints": [
     {
       "class": "DockerRequirement",
@@ -18,7 +18,7 @@ const cwl = {
   "s:version": version,
   "s:author": "Daniel J. B. Clarke",
   "s:license": "CC-BY-NC-SA-4.0",
-  "s:codeRepository": "https://github.com/MaayanLab/appyter-catalog",
+  "s:codeRepository": "https://github.com/nih-cfde/playbook-partnership",
   "s:keywords": ["pwb"],
   "inputs": [
     {

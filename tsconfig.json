@@ -33,7 +33,6 @@
   ],
   "ts-node": {
     "require": [
-      "esm",
       "tsconfig-paths/register"
     ]
   },

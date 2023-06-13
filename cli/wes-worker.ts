@@ -5,29 +5,42 @@ import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
 import path from 'path'
-import { io } from 'socket.io-client'
 import conf from '@/app/next.config'
+import { io } from 'socket.io-client'
 
 const dir = path.join(path.dirname(__dirname), 'app')
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
 const port = 3001
+
+console.log(`Connecting to ${process.argv[2]}...`)
+fetch(`${process.argv[2]}/api/socket`).then(() => {
+  const socket = io(process.argv[2]) // e.g. ws://localhost:3000
+  socket.on('connect', () => {
+    console.log(`Connected, joining ${process.argv[3]}...`)
+    socket.emit('join', process.argv[3])
+  })
+  socket.on('http:send', async ({ id, path, method, body }: { id: string, path: string, method: string, body?: any }) => {
+    console.log(JSON.stringify({ handle: { id, path, method, body } }))
+    try {
+      const req = await fetch(`http://${hostname}:${port}${path}`, { method, body: body ? body : undefined })
+      const res = await req.text()
+      const status = req.status
+      socket.emit(`http:recv`, { id, status, body: res, headers: {} })
+    } catch (err) {
+      const status = 500
+      console.warn(err)
+      const res = JSON.stringify(err)
+      socket.emit(`http:recv`, { id, status, body: res, headers: {} })
+    }
+  })
+})
+
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port, dir, conf })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
-  /* BEGIN client proxy */
-  console.log('starting')
-  const socket = io(process.argv[2])
-  
-  socket.on('http:send', ({ id, path, method, body }: { id: string, path: string, method: string, body: string }) => {
-    fetch(path, { method, body })
-      .then(res => socket.emit(`http:recv:${id}`, { status: res.status, body: res.body }))
-      .catch(err => socket.emit(`http:recv:${id}`, { status: 500, body: err }))
-  })
-  /* END client proxy */
-  
   createServer(async (req, res) => {
     try {
       // Be sure to pass `true` as the second argument to `url.parse`.

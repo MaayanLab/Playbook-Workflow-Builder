@@ -4,21 +4,22 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
+const root = path.dirname(__dirname)
 
 // create .env from .env.example if not present
-if (!fs.existsSync('../.env')) {
-  const envExample = fs.readFileSync(path.join('..', '.env.example')).toString()
+if (!fs.existsSync(path.join(root, '.env'))) {
+  const envExample = fs.readFileSync(path.join(root, '.env.example')).toString()
   // Auto-generate NEXTAUTH_SECRET
   const crypto = require('crypto')
-  fs.writeFileSync(path.join('..', '.env'), envExample.replace(
+  fs.writeFileSync(path.join(root, '.env'), envExample.replace(
     /(\n)?#(NEXTAUTH_SECRET=)(\r?\n)/,
     `$1$2${crypto.randomBytes(20).toString('hex')}$3`
   ))
 }
 
 // update environment with .env
-const env = dotenv.parse(fs.readFileSync('../.env'))
-env.PYTHON_ROOT = env.PYTHON_ROOT || '../'
+const env = dotenv.parse(fs.readFileSync(path.join(root, '.env')))
+env.PYTHON_ROOT = env.PYTHON_ROOT || root
 for (const key in env) {
   if (!(key in process.env)) {
     process.env[key] = env[key]

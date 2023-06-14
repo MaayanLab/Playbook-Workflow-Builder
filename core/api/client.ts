@@ -7,7 +7,7 @@ import type { APIRouteInterface } from "@/spec/api"
 
 type FParamO<F> = F extends (param0: infer _P0, param1: infer _P1, opts: infer O) => infer _R ? O : never
 
-export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, query: Q, { base = '', ...opts }: { base: string } & FParamO<typeof useSWR<O>>) {
+export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, query: Q, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWR<O>> = {} as { base?: string } & FParamO<typeof useSWR<O>>) {
   const key = React.useMemo(() => {
     let path = route.path
     const searchParams = new URLSearchParams()
@@ -23,7 +23,7 @@ export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, que
   return useSWR(`${base ?? ''}${key}`, fetcherGET<O>, opts)
 }
 
-export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O, B>, query: Partial<Q> = {}, { base = '', ...opts }: { base: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>>) {
+export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O, B>, query: Partial<Q> = {}, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>> = {} as { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>>) {
   return useSWRMutation(route.path, (_key: string, { arg = {} }: { arg?: { query?: Partial<Q>, body?: B } }) => {
     let path = route.path
     const searchParams = new URLSearchParams()

@@ -41,5 +41,6 @@ RUN echo "Installing python..." && apt-get -y update && apt-get -y install pytho
 COPY --from=prepare_requirements_txt_complete /app /app
 RUN echo "Installing python dependencies..." && pip install --break-system-packages -r /app/requirements.txt && rm /app/requirements.txt
 COPY --from=prepare_build /app /app
+RUN chmod +x /app/cli/wes-worker.sh
 EXPOSE 3000
 CMD ["npm", "run", "start"]

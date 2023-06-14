@@ -1,1 +1,1 @@
-export { getServerSideProps, default } from '@/app/pages/report/[id]'
+export { getServerSideProps, default } from '@/app/fragments/report'

@@ -11,8 +11,8 @@ export type Metapath = ReturnType<FPL['toJSON']>
 /**
  * Retreive output from the API, decode and return
  */
-export function useMetapathOutput(krg: KRG, head: Metapath) {
-  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutable(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
+export function useMetapathOutput({ session_id, krg, head }: { session_id?: string, krg: KRG, head: Metapath }) {
+  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutable(() => head ? `${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.id}/output` : undefined)
   const processNode = krg.getProcessNode(head.process.type)
   const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
   const { output, decodeError } = React.useMemo(() => {
@@ -30,9 +30,9 @@ export function useMetapathOutput(krg: KRG, head: Metapath) {
  * Retreive inputs to this process from outputs of its inputs
  *  We rely on SWR to help us de-duplicate these requests
  */
-export function useMetapathInputs(krg: KRG, head: Metapath) {
+export function useMetapathInputs({ session_id, krg, head }: { session_id?: string, krg: KRG, head: Metapath }) {
   const { data: rawInputs, error, isLoading } = useSWRMap<{ type: string, value: any }>(
-    dict.values(head.process.inputs).map(({ id }) => `/api/db/process/${id}/output`),
+    dict.values(head.process.inputs).map(({ id }) => `${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${id}/output`),
     fetcher
   )
   const processNode = krg.getProcessNode(head.process.type)
@@ -47,12 +47,12 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
                 key,
                 value: dict.items(head.process.inputs)
                   .filter(({ key: k }) => k.toString().startsWith(`${key}:`))
-                  .map(({ value: { id } }) => value[0].codec.decode(rawInputs[`/api/db/process/${id}/output`].value))
+                  .map(({ value: { id } }) => value[0].codec.decode(rawInputs[`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${id}/output`].value))
               }
             } else {
               return {
                 key,
-                value: value.codec.decode(rawInputs[`/api/db/process/${head.process.inputs[key].id}/output`].value)
+                value: value.codec.decode(rawInputs[`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.inputs[key].id}/output`].value)
               }
             }
           })

@@ -14,11 +14,12 @@ const Cells = dynamic(() => import('@/app/fragments/report/cells'))
 
 const QueryType = z.object({
   id: z.string().optional(),
+  session_id: z.string().optional(),
 })
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const params = QueryType.parse(ctx.params || {})
-  if (!params.id) {
+  if (!params.id || params.session_id !== undefined) {
     return {
       props: {
         fallback: {}

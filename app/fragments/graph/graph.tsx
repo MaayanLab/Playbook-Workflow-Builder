@@ -90,11 +90,11 @@ function buildBreadcrumbGraph({
   return graph
 }
 
-function ReportButton({ graph_id }: { graph_id: string }) {
+function ReportButton({ session_id, graph_id }: { session_id?: string, graph_id: string }) {
   const router = useRouter()
-  const disabled = router.asPath === '/graph/start' || router.asPath === '/graph/extend' || router.asPath === '/graph/start/extend'
+  const disabled = router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
   return (
-    <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
+    <Link href={`${session_id ? `/session/${session_id}` : ''}/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
       <button className='bp4-button bp4-minimal' disabled={disabled}>
         <Icon icon={view_report_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
       </button>
@@ -120,10 +120,10 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
   return metapath.filter(({ id }) => relevant[id] === true)
 }
 
-export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
+export default function Graph({ session_id, graph_id, node_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
-  const krg = useKRG()
-  const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(() => graph_id !== 'start' ? `/api/db/fpl/${graph_id}` : undefined)
+  const krg = useKRG({ session_id })
+  const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(() => graph_id !== 'start' ? `${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${graph_id}` : undefined)
   const metapath = metapath_ || []
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
@@ -133,27 +133,27 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
           graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}
           onclick={(_evt, id) => {
             if (id === 'extend') {
-              router.push(`/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
+              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
             } else {
               const focus_node_id = id.split(':')[0]
-              router.push(`/graph/${graph_id}${graph_id !== focus_node_id ? `/node/${focus_node_id}` : ''}`, undefined, { shallow: true })
+              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== focus_node_id ? `/node/${focus_node_id}` : ''}`, undefined, { shallow: true })
             }
           }}
         />
-        <RestartButton />
-        <ReportButton graph_id={graph_id} />
+        <RestartButton session_id={session_id} />
+        <ReportButton session_id={session_id} graph_id={graph_id} />
       </div>
       <main className="flex-grow flex flex-col">
         {error ? <div>{error}</div> : null}
         {suggest ?
-          <Suggest krg={krg} id={graph_id} head={head} />
+          <Suggest session_id={session_id} krg={krg} id={graph_id} head={head} />
           : extend ?
-            <Extend krg={krg} id={graph_id} head={head} metapath={metapath} />
+            <Extend session_id={session_id} krg={krg} id={graph_id} head={head} metapath={metapath} />
             : node_id === 'start' ?
               <Home />
               : head ?
-                <StoryProvider krg={krg} metapath={metapathToHead(metapath, head)}>
-                  <Cell krg={krg} id={graph_id} head={head} autoextend />
+                <StoryProvider session_id={session_id} krg={krg} metapath={metapathToHead(metapath, head)}>
+                  <Cell session_id={session_id} krg={krg} id={graph_id} head={head} autoextend />
                 </StoryProvider>
                 : null}
       </main>

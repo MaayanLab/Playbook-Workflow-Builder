@@ -11,14 +11,15 @@ import { useRouter } from 'next/router'
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 
-export default function Cells({ krg, id }: { krg: KRG, id: string }) {
+export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
   const router = useRouter()
   const { data, error } = useAPIQuery(UserPlaybook, { id }, {
     keepPreviousData: true,
+    base: session_id ? `/api/socket/${session_id}` : '',
   })
-  const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook)
-  const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook)
-  const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook)
+  const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '' })
+  const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '' })
+  const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '' })
   const [cellMetadata, setCellMetadata] = React.useState({} as Record<string, Exclude<Metapath['cell_metadata'], null>>)
   const [playbookMetadata, setPlaybookMetadata] = React.useState({
     id: '',
@@ -61,8 +62,9 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
   if (!data || !playbookMetadata) return null
   return (
     <div className="flex flex-col py-4 gap-2">
-      <StoryProvider krg={krg} metapath={data.metapath}>
+      <StoryProvider session_id={session_id} krg={krg} metapath={data.metapath}>
         <Introduction
+          session_id={session_id}
           id={id}
           error={error}
           playbookMetadata={playbookMetadata}
@@ -87,7 +89,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
                 setUserPlaybook({ public: userPlaybook?.public || false })
                 setPlaybookMetadata(metadata => ({ ...metadata, id: data.metapath[data.metapath.length-1].playbook_metadata?.id || '' }))
                 setUpdateRequired(false)
-                router.push(`/report/${id}`, undefined, { shallow: true, scroll: false })
+                router.push(`${session_id ? `/session/${session_id}` : ''}/report/${id}`, undefined, { shallow: true, scroll: false })
               })
             } else {
               deleteUserPlaybook({
@@ -115,6 +117,7 @@ export default function Cells({ krg, id }: { krg: KRG, id: string }) {
         {(data.metapath||[]).filter(head => head.id in cellMetadata).map(head => (
           <Cell
             key={`${head.id}-${cellMetadata[head.id]?.process_visible}-${cellMetadata[head.id]?.data_visible}`}
+            session_id={session_id}
             krg={krg}
             id={id}
             head={head}

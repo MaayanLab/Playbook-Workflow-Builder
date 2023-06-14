@@ -17,9 +17,9 @@ const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const ParamType = z.union([
-  z.object({ graph_id: z.string(), node_id: z.string() }),
-  z.object({ graph_id: z.string() }),
-  z.object({}),
+  z.object({ session_id: z.string().optional(), graph_id: z.string(), node_id: z.string() }),
+  z.object({ session_id: z.string().optional(), graph_id: z.string() }),
+  z.object({ session_id: z.string().optional() }),
   z.undefined(),
 ])
 
@@ -28,7 +28,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const params = ParamType.parse(ctx.params)
   const extend = ctx.resolvedUrl.endsWith('extend')
   const suggest = ctx.resolvedUrl.endsWith('suggest')
-  if (params === undefined || !('graph_id' in params) || params.graph_id === 'start') {
+  if (params === undefined || !('graph_id' in params) || params.graph_id === 'start' || params.session_id !== undefined) {
     return {
       props: { fallback: {}, extend, suggest }
     }
@@ -109,6 +109,7 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
           <Graph
+            session_id={params?.session_id}
             graph_id={graph_id}
             node_id={node_id}
             extend={extend}

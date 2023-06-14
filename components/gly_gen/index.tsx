@@ -6,11 +6,11 @@ import { glygen_icon } from '@/icons'
 import { GeneTerm } from '@/components/core/input/term'
 
 export const GlyGenResponse = z.object({
-    results: z.array(z.object({
-        gene_name: z.string(),
-        protein_name: z.string(),
-        uniprot_canonical_ac: z.string()
-    }))
+  results: z.array(z.object({
+    gene_name: z.string(),
+    protein_name: z.string(),
+    uniprot_canonical_ac: z.string()
+  }))
 })
 
 export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
@@ -19,6 +19,7 @@ export const GlyGenResponseNode = MetaNode('GlyGenResponse')
   .meta({
     label: 'GlyGen Protein Products',
     description: 'Protein product records in GlyGen',
+    icon: [glygen_icon],
   })
   .codec(GlyGenResponse)
   .view(data => (
@@ -69,6 +70,7 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
     `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs.gene.symbol}.`
   )
   .build()
+
 export const ProteinProductInformationFromGene = MetaNode('ProteinProductInformationFromGene')
   .meta({
     label: 'Search Glygen for Protein Products',

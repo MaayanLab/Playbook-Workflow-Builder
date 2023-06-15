@@ -28,6 +28,8 @@ def main(ensembl_id: str) -> dict:
                                      'Disease','Gene_symbol','Gene_Ensembl_ID',
                                      'Dataset']].copy(True)
 
-    gene_expression_df.sort_values(by='TPM_sd',ascending=False,inplace=True)
+    gene_expression_df['zscore'] = (gene_expression_df['TPM_median'] - gene_expression_df['TPM_median'].mean()) / gene_expression_df['TPM_median'].std()
+
+    gene_expression_df.sort_values(by='zscore',ascending=False,inplace=True)
 
     return gene_expression_df.to_dict(orient='records')

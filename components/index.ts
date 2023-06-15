@@ -91,3 +91,5 @@ export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/plotly"
 components.push("viz/plotly")
+export * from "./viz/kf_barplot"
+components.push("viz/kf_barplot")

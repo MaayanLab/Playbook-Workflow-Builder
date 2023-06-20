@@ -50,7 +50,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {
-          return <div>This was suggested by <UserIdentity user={suggestion.user} />.</div>
+          return <div>
+            <p>{suggestion.description}</p>
+            <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
+          </div>
         })
         .build()
       krg.add(ProcessNode)

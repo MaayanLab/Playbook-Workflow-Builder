@@ -3,6 +3,7 @@ import * as Auth from 'next-auth/react'
 import type { Session } from 'next-auth'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 function UserAvatar({ session }: { session: Session | null }) {
   if (typeof session?.user?.image === 'string') {
@@ -81,6 +82,11 @@ export default function Layout({ children }: React.PropsWithChildren) {
               <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
               <span className="flex-grow text-black dark:text-white">Submit an issue</span>
             </a>
+            <div className="flex self-center gap-2 items-center">
+              <span className="prose">Light</span>
+              <ThemeToggle />
+              <span className="prose">Dark</span>
+            </div>
           </div>
         </div>
       </div>

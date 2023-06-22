@@ -34,7 +34,7 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
       <div className="flex-grow flex-shrink bp4-card p-0">
         <div className="p-3">
           <div className="flex flex-row gap-2">
-            <Icon icon={start_icon} />
+            <Icon icon={start_icon} className="fill-black dark:fill-white" />
             <h2 className="bp4-heading">
               <EditableText
                 placeholder="Playbook title"

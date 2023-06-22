@@ -134,7 +134,7 @@ export default function CommunityPlaybooks() {
                 <div className="col-span-1 row-span-1 p-3 hidden md:block">
                   <div className="tooltip z-50" data-tip="Click to view details">
                     <button
-                      className="btn btn-ghost text-4xl"
+                      className="btn btn-ghost text-4xl text-black dark:text-white"
                       onClick={evt => {
                         setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                       }}
@@ -214,7 +214,7 @@ export default function CommunityPlaybooks() {
               {/* </div> */}
               <div className={classNames('bg-secondary font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
                 <button
-                  className="btn btn-ghost text-4xl"
+                  className="btn btn-ghost text-4xl text-black dark:text-white"
                   onClick={evt => {
                     setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                   }}

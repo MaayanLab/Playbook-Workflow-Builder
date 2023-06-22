@@ -22,7 +22,7 @@ export default function Prompt({ krg, processNode, output, id, head }: { krg: KR
         <Icon icon={processNode.meta.icon || func_icon} />
         <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
       </div>
-      {error ? <div className="alert alert-error">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component

@@ -84,22 +84,22 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
               : playbookMetadata.summary === 'gpt' ?
               <>
                 {chatGPTAvailable && isAugmentingWithChatGPT ? <progress className="progress" /> : null}
-                {chatGPTAvailable && errorAugmentingWithChatGPT ? <div className="alert alert-error">{errorAugmentingWithChatGPT.toString()}</div> : null}
+                {chatGPTAvailable && errorAugmentingWithChatGPT ? <div className="alert alert-error prose">{errorAugmentingWithChatGPT.toString()}</div> : null}
                 <p className="prose-lg mt-1 whitespace-pre-line">{playbookMetadata.gpt_summary}</p>
               </>
               : null}
           </div>
         </div>
-        {error ? <div className="alert alert-error">{error}</div> : null}
+        {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
           <Link href={`/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp4-button bp4-minimal">
-              <Icon icon={view_in_graph_icon} />
+              <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <Link href={`/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
             <button className="bp4-button bp4-minimal">
-              <Icon icon={fork_icon} color="black" />
+              <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <SaveButton
@@ -110,7 +110,7 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
           <button className="bp4-button bp4-minimal" disabled={!userPlaybook} onClick={() => {togglePublic()}}>
             <Icon
               icon={share_icon}
-              color={!userPlaybook ? 'gray' : userPlaybook.public ? 'green' : 'black'}
+              className={!userPlaybook ? 'fill-gray-400' : userPlaybook.public ? 'fill-green-500' : 'fill-black dark:fill-white'}
               title={!userPlaybook ? 'Save to Share Publicly' : 'Share Publicly'}
             />
           </button>

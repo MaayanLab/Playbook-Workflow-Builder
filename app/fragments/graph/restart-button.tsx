@@ -27,7 +27,7 @@ export default function RestartButton() {
           }
         }}
       >
-        <Icon icon={restart_icon} color={disabled ? '#999' : '#000'} />
+        <Icon icon={restart_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
       </button>
       <Bp4Alert
         cancelButtonText="Cancel"

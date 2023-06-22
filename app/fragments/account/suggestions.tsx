@@ -27,7 +27,7 @@ export default function Suggestions() {
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {suggestions ? (
         <div className="overflow-x-auto">
-          <table className="table table-compact w-full">
+          <table className="table table-compact w-full text-black dark:text-white">
             <thead>
               <tr>
                 <th>Title</th>
@@ -57,12 +57,12 @@ export default function Suggestions() {
                       const res = z.string().parse(await req.json())
                       router.push(`/graph/${res}/extend`)
                     }}>
-                      <Icon icon={fork_icon} color="black" />
+                      <Icon icon={fork_icon} className="fill-black dark:fill-white" />
                     </button>
                     <button onClick={() => {
                       setSuggestionToDelete(suggest)
                     }}>
-                      <Icon icon={delete_icon} color="black" />
+                      <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                     </button>
                   </td>
                 </tr>

@@ -104,8 +104,8 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
               <Icon title={null} icon={rightarrow_icon} />
               <Icon title={item.output.meta.label} icon={item.output.meta.icon || variable_icon} />
             </div>
-            <h5 className="bp4-heading">{item.meta.label || ''}</h5>
-            <p className="bp4-text-small">{item.meta.description || ''}</p>
+            <h5 className="text-lg font-bold">{item.meta.label || ''}</h5>
+            <p className="text-sm">{item.meta.description || ''}</p>
           </Card>
         )
       }}</Catalog>

@@ -48,7 +48,7 @@ export const FileInput = MetaNode('FileInput')
     return (
       <div>
         {!session || !session.user ? (
-          <div className="alert alert-warning shadow-lg block">
+          <div className="alert alert-warning shadow-lg block prose">
             You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
           </div>
         ) : (

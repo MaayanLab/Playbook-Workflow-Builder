@@ -55,7 +55,7 @@ export default function BCOButton({ id, metadata, disabled }: { id?: string, met
       >
         <Icon
           icon={biocompute_icon}
-          color={disabled ? 'grey' : 'black'}
+          className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
           title={disabled ? 'Save to Create BCO' : 'Create BCO'}
         />
       </Bp4Popover>

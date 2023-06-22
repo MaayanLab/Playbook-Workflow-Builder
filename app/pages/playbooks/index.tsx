@@ -148,7 +148,7 @@ export default function Playbooks() {
       }}
       className="flex flex-col place-items-center underline"
     >
-      <span className={classNames({ 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span>
+      <span className={classNames('prose prose-sm', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span>
       {dataSource in dataSourceIcons ?
         <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} />
         : null}
@@ -338,7 +338,7 @@ export default function Playbooks() {
                       // TODO: register click
                       router.push(playbook.url)
                     }}>
-                      <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
+                      <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
                     </button>
                   </div>
                 </div>
@@ -367,7 +367,7 @@ export default function Playbooks() {
             </React.Fragment>
           )
           : <div className="col-span-7">
-            <div className="alert">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

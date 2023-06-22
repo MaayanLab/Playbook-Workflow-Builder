@@ -207,7 +207,7 @@ export default function CommunityPlaybooks() {
                       // TODO: register click
                       router.push(`/report/${playbook.playbook}`)
                     }}>
-                      <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
+                      <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
                     </button>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function CommunityPlaybooks() {
             </React.Fragment>
           )
           : <div className="col-span-2 row-span-1 md:row-span-1 md:col-span-6">
-            <div className="alert">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

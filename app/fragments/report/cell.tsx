@@ -65,24 +65,24 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
         <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !cellMetadata[head.id].data_visible })}>
           <Link href={`/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
-              <Icon icon={view_in_graph_icon} />
+              <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <Link href={`/graph/${id}/node/${head.id}/extend`}>
             <button className="bp4-button bp4-minimal">
-              <Icon icon={fork_icon} color="black" />
+              <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <button className="bp4-button bp4-minimal" disabled>
             {isLoading ?
-              <Icon icon={status_waiting_icon} color="#DAA520" />
+              <Icon icon={status_waiting_icon} className="fill-yellow-500" />
               : (outputNode ?
                   (output ?
                     (outputNode.spec === 'Error' ?
-                      <Icon icon={status_alert_icon} color="#DC143C" />
-                      : <Icon icon={status_complete_icon} color="#008000" />)
-                    : <Icon icon={status_awaiting_input_icon} color="#B8860B" />)
-                  : <Icon icon={status_waiting_icon} color="#DAA520" />)}
+                      <Icon icon={status_alert_icon} className="fill-red-500" />
+                      : <Icon icon={status_complete_icon} className="fill-green-500" />)
+                    : <Icon icon={status_awaiting_input_icon} className="fill-yellow-600" />)
+                  : <Icon icon={status_waiting_icon} className="fill-yellow-300" />)}
           </button>
         </div>
       </div>

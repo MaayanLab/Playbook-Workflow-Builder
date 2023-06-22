@@ -42,7 +42,7 @@ export default function Uploads() {
       <div className="hero">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <h1 className="text-5xl font-bold">Work In Progress</h1>
+            <h1 className="text-5xl font-bold prose">Work In Progress</h1>
             <p className="py-6 prose">This feature is still in development. Uploads may not be persistent.</p>
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function Uploads() {
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">
-          <table className="table table-compact w-full">
+          <table className="table table-compact w-full text-black dark:text-white">
             <thead>
               <tr>
                 <th>Filename</th>
@@ -86,12 +86,12 @@ export default function Uploads() {
                       const res = z.string().parse(await req.json())
                       router.push(`/graph/${res}/extend`)
                     }}>
-                      <Icon icon={fork_icon} color="black" />
+                      <Icon icon={fork_icon} className="fill-black dark:fill-white" />
                     </button>
                     <button onClick={() => {
                       setUploadToDelete(upload)
                     }}>
-                      <Icon icon={delete_icon} color="black" />
+                      <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                     </button>
                   </td>
                 </tr>

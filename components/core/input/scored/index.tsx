@@ -30,7 +30,7 @@ const Scored_T = (T: Primative) => MetaNode(`Scored[${T.name}]`)
     meta: {
       ...(T.extra?.scored?.meta || {}),
       example: T.extra?.scored?.meta?.example ? T.extra?.scored?.meta?.example
-        : T.extra?.set?.meta?.example ? (T.extra?.set?.meta?.example as string[]).map(term => ({ term, zscore: 0. }))
+        : T.extra?.set?.meta?.example ? (T.extra?.set?.meta?.example.set as string[]).map(term => ({ term, zscore: 0. }))
         : T.extra?.term?.meta?.example ? [{ term: T.extra?.term?.meta?.example, zscore: 0. }]
         : undefined,
     }

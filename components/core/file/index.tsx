@@ -106,7 +106,7 @@ export const FileInput = MetaNode('FileInput')
             </div>
             <div className="inline-flex flex-row">
               <a
-                href="/api/components/core/file/example_matrix.tsv"
+                href="/api/v1/components/core/file/example_matrix.tsv"
                 download="example_matrix.tsv"
               >
                 <Bp4Button

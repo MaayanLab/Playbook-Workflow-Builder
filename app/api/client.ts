@@ -4,6 +4,10 @@
  * It is designed to be imported client-side.
  */
 import { APIInterface } from '@/spec/api'
+import type { UserIntegrationsCAVATICA as UserIntegrationsCAVATICA_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICA = APIInterface<typeof UserIntegrationsCAVATICA_>("/api/v1/user/integrations/cavatica", "GET")
+import type { UserIntegrationsCAVATICAUpdate as UserIntegrationsCAVATICAUpdate_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICAUpdate = APIInterface<typeof UserIntegrationsCAVATICAUpdate_>("/api/v1/user/integrations/cavatica/update", "POST")
 import type { PublicUserPlaybooks as PublicUserPlaybooks_ } from './v1/user/playbooks'
 export const PublicUserPlaybooks = APIInterface<typeof PublicUserPlaybooks_>("/api/v1/public/user/playbooks", "GET")
 import type { UserPlaybooks as UserPlaybooks_ } from './v1/user/playbooks'

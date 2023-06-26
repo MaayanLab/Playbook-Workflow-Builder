@@ -24,6 +24,8 @@
     "start:wes-worker": "NODE_ENV=production ts-node cli/wes-worker.ts",
     "start:ssl": "concurrently \"npm run start -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start": "npx --workspace=app next start",
+    "test:ci": "npx --workspace=app jest --ci",
+    "test": "npx --workspace=app jest --watch",
     "version": "docker build -t maayanlab/playbook-partnership:${npm_package_version} .",
     "postversion": "docker push maayanlab/playbook-partnership:${npm_package_version}"
   },
@@ -39,6 +41,7 @@
     "form-data": "^4.0.0",
     "glob": "^8.1.0",
     "json-canonicalize": "^1.0.6",
+    "isomorphic-fetch": "^3.0.0",
     "pg": "^8.11.3",
     "pg-boss": "^9.0.3",
     "pg-listen": "^1.7.0",

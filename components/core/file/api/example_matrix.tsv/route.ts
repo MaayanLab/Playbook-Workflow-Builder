@@ -4,8 +4,7 @@ import path from 'path'
 export const GET = handler(async (req, res) => {
   fs.createReadStream(
     path.resolve(
-      process.cwd(),
-      '..',
+      process.env.APP_ROOT as string,
       'components',
       'core',
       'file',

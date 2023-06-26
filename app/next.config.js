@@ -4,7 +4,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
-const root = path.dirname(__dirname)
+const root = process.env.APP_ROOT = path.dirname(__dirname)
 
 // create .env from .env.example if not present
 if (!fs.existsSync(path.join(root, '.env'))) {

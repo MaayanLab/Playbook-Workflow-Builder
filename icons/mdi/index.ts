@@ -3,6 +3,7 @@ import { mdiBiohazard } from '@mdi/js'; export const tumor_icon = { path: mdiBio
 import { mdiCameraMeteringMatrix } from '@mdi/js'; export const tissue_icon = { path: mdiCameraMeteringMatrix, title: 'Tissue', size: 24 }
 import { mdiChartBar } from '@mdi/js'; export const barchart_icon = { path: mdiChartBar, title: 'Bar Chart', size: 24 }
 import { mdiChartBoxOutline } from '@mdi/js'; export const plot_icon = { path: mdiChartBoxOutline, title: 'Plot', size: 24 }
+import { mdiConnection } from '@mdi/js'; export const connection_icon = { path: mdiConnection, title: 'Connect', size: 24 }
 import { mdiDna } from '@mdi/js'; export const gene_icon = { path: mdiDna, title: 'Gene', size: 24 }
 import { mdiEmoticonCryOutline } from '@mdi/js'; export const disease_icon = { path: mdiEmoticonCryOutline, title: 'Disease', size: 24 }
 import { mdiFile } from '@mdi/js'; export const file_icon = { path: mdiFile, title: 'File', size: 24 }

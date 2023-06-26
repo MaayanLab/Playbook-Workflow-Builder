@@ -10,8 +10,13 @@ export default function SocketHandler(req: any, res: any) {
     res.socket.server.io = io
     io.on('connection', (client) => {
       console.log(`${client} connected`)
-      client.on('join', (room) => {
-        client.join(room)
+      client.on('join', (id) => {
+        client.join(id)
+        emitter.on(`close:${id}`, () => {
+          console.log(`${client} disconnected from closing room ${id}`)
+          client.leave(id)
+          client.send('close')
+        })
       })
       client.on('http:recv', ({ id, ...rest}) => {
         emitter.emit(`http:recv:${id}`, rest)

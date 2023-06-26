@@ -79,7 +79,7 @@ export const UserIntegrationsCAVATICADisconnect = API('/api/v1/user/integrations
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) throw new UnauthorizedError()
-    // TODO: close
+    emitter.emit(`close:${inputs.query.session_id}`)
     return null
   })
   .build()

@@ -34,6 +34,10 @@ fetch(`${process.argv[2]}/api/socket`).then(() => {
       socket.emit(`http:recv`, { id, status, body: res, headers: {} })
     }
   })
+  socket.on('close', () => {
+    console.log(`Room has closed, exiting...`)
+    process.exit(0)
+  })
 })
 
 // when using middleware `hostname` and `port` must be provided below

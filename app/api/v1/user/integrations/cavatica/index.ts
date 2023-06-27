@@ -74,15 +74,22 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
           data: { state: 'CONNECTED' },
         })
       })
-      for await (const status of run_wes_worker({
-        auth_token: integrations.cavatica_api_key,
-        project: integrations.cavatica_default_project,
-        socket: process.env.PUBLIC_URL as string,
-        session_id: proxy_session.id,
-      })) {
+      try {
+        for await (const status of run_wes_worker({
+          auth_token: integrations.cavatica_api_key,
+          project: integrations.cavatica_default_project,
+          socket: process.env.PUBLIC_URL as string,
+          session_id: proxy_session.id,
+        })) {
+          await db.objects.proxy_session.update({
+            where: { id: proxy_session.id },
+            data: status,
+          })
+        }
+      } catch (e) {
         await db.objects.proxy_session.update({
           where: { id: proxy_session.id },
-          data: status,
+          data: { state: 'ERROR' },
         })
       }
       await db.objects.proxy_session.delete({ where: { id: proxy_session.id } })

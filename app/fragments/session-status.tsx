@@ -3,9 +3,13 @@ import { useAPIQuery } from '@/core/api/client'
 import { UserIntegrationsCAVATICAStatus } from '../api/client'
 
 export default function SessionStatus({ session_id }: { session_id: string }) {
-  const { data: status } = useAPIQuery(UserIntegrationsCAVATICAStatus, { session_id }, { refreshInterval: 5 })
-  if (!status) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Waiting for status..</div>
+  const { data: status, error } = useAPIQuery(UserIntegrationsCAVATICAStatus, { session_id }, { refreshInterval: 5 })
+  if (!status) {
+    if (!error) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Waiting for status..</div>
+    else return <div className="alert alert-error prose prose-lg max-w-none justify-center">{error.toString()}</div>
+  }
   if (!status.state) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Sending job to CAVATICA..</div>
+  if (status.state === 'ERROR') return <div className="alert alert-error prose prose-lg max-w-none justify-center">An error occurred while submitting the task.</div>
   if (status.state === 'QUEUED') return <div className="alert alert-info prose prose-lg max-w-none justify-center">Task is queued..</div>
   if (status.state === 'INITIALIZING') return <div className="alert alert-info prose prose-lg max-w-none justify-center">CAVATICA is initializing the task.</div>
   if (status.state === 'RUNNING') return <div className="alert alert-info prose prose-lg max-w-none justify-center">CAVATICA has started the task, waiting to connect.</div>

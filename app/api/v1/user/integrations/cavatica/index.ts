@@ -5,6 +5,7 @@ import { UnauthorizedError, ResponseCodedError } from '@/spec/error'
 import { v4 as uuidv4 } from 'uuid'
 import db from '@/app/db'
 import emitter from '@/app/emitter'
+import run_wes_worker from '@/app/extensions/cavatica'
 
 export const UserIntegrationsCAVATICA = API('/api/v1/user/integrations/cavatica')
   .query(z.object({}))
@@ -64,9 +65,23 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
     const integrations = await db.objects.user_integrations.findUnique({
       where: { id: session.user.id }
     })
-    if (!integrations?.cavatica_api_key) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
+    if (!integrations?.cavatica_api_key || !integrations?.cavatica_default_project) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
     const session_id = uuidv4()
-    // TODO: launch worker
+    // TODO: spawn with pg-boss
+    ;(async () => {
+      for await (const status of run_wes_worker({
+        auth_token: integrations.cavatica_api_key,
+        project: integrations.cavatica_default_project,
+        socket: process.env.PUBLIC_URL as string,
+        session_id,
+      })) {
+        if (status.state === null) {
+          console.debug(`Started task for user ${session.user.id} with run_id=${status.run_id}`)
+        } else {
+          console.debug(`Task for user ${session.user.id} entered state: ${status.state}`)
+        }
+      }
+    })()
     return session_id
   })
   .build()

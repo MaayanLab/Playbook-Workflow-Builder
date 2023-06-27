@@ -1,4 +1,4 @@
-import run_wes_worker from '@/app/extensions/cavatica'
+import { run_wes_worker } from '@/app/extensions/cavatica'
 
 async function main() {
   for await (const status of run_wes_worker({

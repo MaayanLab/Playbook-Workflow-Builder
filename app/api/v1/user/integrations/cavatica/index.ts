@@ -5,7 +5,7 @@ import { UnauthorizedError, ResponseCodedError } from '@/spec/error'
 import { v4 as uuidv4 } from 'uuid'
 import db from '@/app/db'
 import emitter from '@/app/emitter'
-import run_wes_worker from '@/app/extensions/cavatica'
+import { run_wes_worker } from '@/app/extensions/cavatica'
 
 export const UserIntegrationsCAVATICA = API('/api/v1/user/integrations/cavatica')
   .query(z.object({}))

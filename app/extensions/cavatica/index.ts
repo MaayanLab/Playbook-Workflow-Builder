@@ -55,7 +55,7 @@ async function sleep(s: number) {
   return await new Promise<void>((resolve, reject) => {setTimeout(() => resolve(), s*1000)})
 }
 
-export default async function *run_wes_worker({
+export async function *run_wes_worker({
   socket,
   session_id,
   auth_token,
@@ -121,4 +121,15 @@ export default async function *run_wes_worker({
       break
     }
   }
+}
+
+export async function abort_wes_worker({
+  run_id,
+  auth_token,
+  wes_endpoint = 'wes://cavatica-ga4gh-api.sbgenomics.com',
+}: { run_id: string, auth_token: string, wes_endpoint?: string }) {
+  const wes_url = wes_endpoint.replace(/^wes:\/\/(.+)$/, 'https://$1/ga4gh/wes')
+  const headers = { 'Accept': 'application/json', 'X-SBG-Auth-Token': auth_token }
+  const req = await fetch(`${wes_url}/v1/runs/${run_id}/cancel`, { headers, method: 'POST' })
+  return await req.json()
 }

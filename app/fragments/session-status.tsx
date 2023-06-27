@@ -3,7 +3,7 @@ import { useAPIQuery } from '@/core/api/client'
 import { UserIntegrationsCAVATICAStatus } from '../api/client'
 
 export default function SessionStatus({ session_id }: { session_id: string }) {
-  const { data: status } = useAPIQuery(UserIntegrationsCAVATICAStatus, { session_id })
+  const { data: status } = useAPIQuery(UserIntegrationsCAVATICAStatus, { session_id }, { refreshInterval: 5 })
   if (!status) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Waiting for status..</div>
   if (!status.state) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Sending job to CAVATICA..</div>
   if (status.state === 'QUEUED') return <div className="alert alert-info prose prose-lg max-w-none justify-center">Task is queued..</div>

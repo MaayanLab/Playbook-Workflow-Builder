@@ -1,11 +1,10 @@
 import { z } from 'zod'
 import { API } from '@/spec/api'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
-import { UnauthorizedError, ResponseCodedError } from '@/spec/error'
-import { v4 as uuidv4 } from 'uuid'
+import { UnauthorizedError, ResponseCodedError, NotFoundError } from '@/spec/error'
 import db from '@/app/db'
 import emitter from '@/app/emitter'
-import { run_wes_worker } from '@/app/extensions/cavatica'
+import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
 
 export const UserIntegrationsCAVATICA = API('/api/v1/user/integrations/cavatica')
   .query(z.object({}))
@@ -66,23 +65,36 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
       where: { id: session.user.id }
     })
     if (!integrations?.cavatica_api_key || !integrations?.cavatica_default_project) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
-    const session_id = uuidv4()
     // TODO: spawn with pg-boss
+    const proxy_session = await db.objects.proxy_session.create({ data: {} })
     ;(async () => {
       for await (const status of run_wes_worker({
         auth_token: integrations.cavatica_api_key,
         project: integrations.cavatica_default_project,
         socket: process.env.PUBLIC_URL as string,
-        session_id,
+        session_id: proxy_session.id,
       })) {
-        if (status.state === null) {
-          console.debug(`Started task for user ${session.user.id} with run_id=${status.run_id}`)
-        } else {
-          console.debug(`Task for user ${session.user.id} entered state: ${status.state}`)
-        }
+        await db.objects.proxy_session.update({
+          where: { id: proxy_session.id },
+          data: status,
+        })
       }
+      await db.objects.proxy_session.delete({ where: { id: proxy_session.id } })
     })()
-    return session_id
+    return proxy_session.id
+  })
+  .build()
+
+export const UserIntegrationsCAVATICAStatus = API('/api/v1/user/integrations/cavatica/[session_id]/status')
+  .query(z.object({
+    session_id: z.string(),
+  }))
+  .call(async (inputs, req, res) => {
+    const session = await getServerSessionWithId(req, res)
+    if (!session || !session.user) throw new UnauthorizedError()
+    const proxy_session = await db.objects.proxy_session.findUnique({ where: { id: inputs.query.session_id } })
+    if (proxy_session === null) throw new NotFoundError()
+    return proxy_session
   })
   .build()
 
@@ -94,7 +106,23 @@ export const UserIntegrationsCAVATICADisconnect = API('/api/v1/user/integrations
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) throw new UnauthorizedError()
-    emitter.emit(`close:${inputs.query.session_id}`)
+    const proxy_session = await db.objects.proxy_session.findUnique({ where: { id: inputs.query.session_id } })
+    if (proxy_session === null) throw new NotFoundError()
+    if (!proxy_session.run_id) throw new ResponseCodedError(402, 'Not launched yet!')
+    if (proxy_session.state === 'RUNNING') {
+      emitter.emit(`close:${inputs.query.session_id}`)
+    } else {
+      const integrations = await db.objects.user_integrations.findUnique({
+        where: {
+          id: session.user.id
+        }
+      })
+      if (!integrations?.cavatica_api_key) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
+      await abort_wes_worker({
+        run_id: proxy_session.run_id,
+        auth_token: integrations.cavatica_api_key,
+      })
+    }
     return null
   })
   .build()

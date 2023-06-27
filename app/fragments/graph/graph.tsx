@@ -130,7 +130,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
-      <SessionStatus session_id={session_id} />
+      {session_id ? <SessionStatus session_id={session_id} /> : null}
       <div className="flex w-auto items-center justify-center">
         <Breadcrumbs
           graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}

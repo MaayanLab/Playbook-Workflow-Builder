@@ -63,7 +63,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
   if (!data || !playbookMetadata) return null
   return (
     <div className="flex flex-col py-4 gap-2">
-      <SessionStatus session_id={session_id} />
+      {session_id ? <SessionStatus session_id={session_id} /> : null}
       <StoryProvider session_id={session_id} krg={krg} metapath={data.metapath}>
         <Introduction
           session_id={session_id}

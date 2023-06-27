@@ -10,6 +10,8 @@ import type { UserIntegrationsCAVATICAUpdate as UserIntegrationsCAVATICAUpdate_ 
 export const UserIntegrationsCAVATICAUpdate = APIInterface<typeof UserIntegrationsCAVATICAUpdate_>("/api/v1/user/integrations/cavatica/update", "POST")
 import type { UserIntegrationsCAVATICALaunch as UserIntegrationsCAVATICALaunch_ } from './v1/user/integrations/cavatica'
 export const UserIntegrationsCAVATICALaunch = APIInterface<typeof UserIntegrationsCAVATICALaunch_>("/api/v1/user/integrations/cavatica/launch", "POST")
+import type { UserIntegrationsCAVATICAStatus as UserIntegrationsCAVATICAStatus_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICAStatus = APIInterface<typeof UserIntegrationsCAVATICAStatus_>("/api/v1/user/integrations/cavatica/[session_id]/status", "GET")
 import type { UserIntegrationsCAVATICADisconnect as UserIntegrationsCAVATICADisconnect_ } from './v1/user/integrations/cavatica'
 export const UserIntegrationsCAVATICADisconnect = APIInterface<typeof UserIntegrationsCAVATICADisconnect_>("/api/v1/user/integrations/cavatica/[session_id]/disconnect", "POST")
 import type { PublicUserPlaybooks as PublicUserPlaybooks_ } from './v1/user/playbooks'

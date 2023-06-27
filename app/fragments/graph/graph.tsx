@@ -15,6 +15,7 @@ const Home = dynamic(() => import('@/app/fragments/playbook/home'))
 const Extend = dynamic(() => import('@/app/fragments/graph/extend'))
 const Suggest = dynamic(() => import('@/app/fragments/graph/suggest'))
 const Cell = dynamic(() => import('@/app/fragments/graph/cell'))
+const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -129,7 +130,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
-      {session_id ? <div className="alert alert-success prose prose-lg max-w-none justify-center">All executions are being sent to CAVATICA worker.</div> : null}
+      <SessionStatus session_id={session_id} />
       <div className="flex w-auto items-center justify-center">
         <Breadcrumbs
           graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}

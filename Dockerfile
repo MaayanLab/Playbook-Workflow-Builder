@@ -39,7 +39,7 @@ RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install 
 ENV PYTHON_BIN="python3"
 RUN echo "Installing python..." && apt-get -y update && apt-get -y install python3-dev python3-pip && rm -rf /var/lib/apt/lists/*
 COPY --from=prepare_requirements_txt_complete /app /app
-RUN echo "Installing python dependencies..." && pip install -r /app/requirements.txt && rm /app/requirements.txt
+RUN echo "Installing python dependencies..." && pip install --break-system-packages -r /app/requirements.txt && rm /app/requirements.txt
 COPY --from=prepare_build /app /app
 RUN chmod +x /app/cli/wes-worker.sh
 EXPOSE 3000

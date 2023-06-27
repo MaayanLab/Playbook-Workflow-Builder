@@ -117,18 +117,17 @@ export const UserIntegrationsCAVATICADisconnect = API('/api/v1/user/integrations
     if (!proxy_session.run_id) throw new ResponseCodedError(402, 'Not launched yet!')
     if (proxy_session.state === 'RUNNING') {
       emitter.emit(`close:${inputs.query.session_id}`)
-    } else {
-      const integrations = await db.objects.user_integrations.findUnique({
-        where: {
-          id: session.user.id
-        }
-      })
-      if (!integrations?.cavatica_api_key) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
-      await abort_wes_worker({
-        run_id: proxy_session.run_id,
-        auth_token: integrations.cavatica_api_key,
-      })
     }
+    const integrations = await db.objects.user_integrations.findUnique({
+      where: {
+        id: session.user.id
+      }
+    })
+    if (!integrations?.cavatica_api_key) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
+    await abort_wes_worker({
+      run_id: proxy_session.run_id,
+      auth_token: integrations.cavatica_api_key,
+    })
     return null
   })
   .build()

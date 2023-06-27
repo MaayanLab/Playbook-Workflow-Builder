@@ -68,6 +68,12 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
     // TODO: spawn with pg-boss
     const proxy_session = await db.objects.proxy_session.create({ data: {} })
     ;(async () => {
+      emitter.on(`join:${proxy_session.id}`, async () => {
+        await db.objects.proxy_session.update({
+          where: { id: proxy_session.id },
+          data: { state: 'CONNECTED' },
+        })
+      })
       for await (const status of run_wes_worker({
         auth_token: integrations.cavatica_api_key,
         project: integrations.cavatica_default_project,

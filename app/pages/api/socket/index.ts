@@ -12,6 +12,7 @@ export default function SocketHandler(req: any, res: any) {
       console.log(`${client} connected`)
       client.on('join', (id) => {
         client.join(id)
+        emitter.emit(`join:${id}`)
         emitter.on(`close:${id}`, () => {
           console.log(`${client} disconnected from closing room ${id}`)
           client.leave(id)

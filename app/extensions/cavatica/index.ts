@@ -55,14 +55,23 @@ async function sleep(s: number) {
   return await new Promise<void>((resolve, reject) => {setTimeout(() => resolve(), s*1000)})
 }
 
-async function main({
+export default async function *run_wes_worker({
   socket,
   session_id,
   auth_token,
   project,
   api_endpoint = 'https://cavatica-api.sbgenomics.com',
   wes_endpoint = 'wes://cavatica-ga4gh-api.sbgenomics.com',
-}: { socket: string, session_id: string, auth_token: string, project: string, api_endpoint?: string, wes_endpoint?: string }) {
+  polling_interval = 5,
+}: {
+  socket: string,
+  session_id: string,
+  auth_token: string,
+  project: string,
+  api_endpoint?: string,
+  wes_endpoint?: string,
+  polling_interval?: number,
+}) {
   const wes_url = wes_endpoint.replace(/^wes:\/\/(.+)$/, 'https://$1/ga4gh/wes')
   const headers = { 'Accept': 'application/json', 'X-SBG-Auth-Token': auth_token }
   // Step 1: Get the right CWL id revision
@@ -96,28 +105,20 @@ async function main({
   })
   const res1 = await req1.json()
   const run_id = res1['run_id']
-  console.log(`Started task with run_id=${run_id}`)
+  yield { run_id, state: null }
   // Step 3: Monitor progress
   let current_state = null
   while (true) {
-    await sleep(5 * (0.5 + Math.random()))
-    process.stdout.write('.')
+    await sleep(polling_interval * (0.5 + Math.random()))
     const req2 = await fetch(`${wes_url}/v1/runs/${run_id}/status`, { headers, method: 'GET' })
     const res2 = await req2.json()
-    const state = res2['state']
+    const state = res2['state'] as string
     if (current_state != state) {
       current_state = state
-      process.stdout.write('\n')
-      console.log(current_state)
+      yield { run_id, state }
     }
     if (['COMPLETE', 'CANCELED', 'EXECUTOR_ERROR'].includes(current_state)) {
       break
     }
   }
 }
-main({
-  auth_token: process.env.CAVATICA_API_KEY as string,
-  project: process.env.CAVATICA_PROJECT as string,
-  socket: process.argv[2],
-  session_id: process.argv[3],
-})

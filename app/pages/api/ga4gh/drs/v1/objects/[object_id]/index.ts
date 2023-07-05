@@ -9,7 +9,7 @@ const QueryType = z.object({
 })
 const BodyType = z.object({
   expand: z.boolean().optional(),
-  pasports: z.array(z.string()).optional(),
+  passports: z.array(z.string()).optional(),
 })
 
 export default handler(async (req, res) => {

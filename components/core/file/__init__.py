@@ -62,14 +62,23 @@ def upsert_file(suffix=''):
     # we remove the temporary file
     tmp.unlink()
 
+def insecure_drs(url):
+  if os.environ['PUBLIC_URL'].startswith('http://') and url.startswith('drs://'):
+    return '#?scheme=http'
+  return url
+
 @contextlib.contextmanager
 def file_as_stream(file: File, *args, **kwargs) -> str:
-  import fsspec
-  with fsspec.open(file['url'], *args, **kwargs) as fr:
+  from ufs.access.url import open_from_url
+  with open_from_url(insecure_drs(file['url']), *args, **kwargs) as fr:
     yield fr
 
 @contextlib.contextmanager
-def file_as_path(file: File, *args, **kwargs) -> str:
-  m = re.match(r'^file://(.+)$', file['url'])
-  assert m, 'protocol not yet supported'
-  yield m.group(1)
+def file_as_path(file, *args, **kwargs) -> str:
+  from ufs.impl.tempdir import TemporaryDirectory
+  from ufs.access.url import ufs_from_url_file
+  from ufs.access.shutil import copyfile
+  with ufs_from_url_file(file['url']) as (ufs, name):
+    with TemporaryDirectory() as tmp:
+      copyfile(ufs, name, tmp, name)
+      yield tmp._tmpdir

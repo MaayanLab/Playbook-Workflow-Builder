@@ -49,6 +49,14 @@ module.exports = withBundleAnalyzer({
       },
     ]
   },
+  async rewrites() {
+    return [
+      {
+        source: '/ga4gh/:path*',
+        destination: '/api/ga4gh/:path*', // The :path parameter isn't used here so will be automatically passed in the query
+      },
+    ]
+  },
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       config.resolve.fallback = {

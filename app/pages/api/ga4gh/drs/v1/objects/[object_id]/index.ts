@@ -20,25 +20,24 @@ export default handler(async (req, res) => {
   }
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
-  const drs_object = await db.objects.drs.findUnique({ where: { id: object_id } })
-  if (drs_object === null) throw new NotFoundError()
+  const upload = await db.objects.user_upload_complete.findUnique({ where: { id: object_id } })
+  if (upload === null) throw new NotFoundError()
   if (req.method === 'OPTIONS') {
     res.status(200)
     return
   }
   res.json({
-    "id": drs_object.drs_id,
-    "name": drs_object.name,
-    "self_uri": `${(process.env.PUBLIC_URL||'').replace(/^https/, 'drs').replace(/\/$/, '')}/${drs_object.drs_id}`,
-    "size": drs_object.size,
-    "created_time": drs_object.created_time,
-    "checksums": drs_object.checksums,
-    // optional
-    "updated_time": drs_object.updated_time,
-    "version": drs_object.version,
-    "mime_type": drs_object.mime_type,
-    "access_methods": drs_object.access_methods,
-    "description": drs_object.description,
-    "aliases": drs_object.aliases,
+    "id": upload.id,
+    "name": upload.filename,
+    "self_uri": `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:').replace(/\/$/, '')}/${upload.id}`,
+    "size": upload.size,
+    "created_time": upload.created,
+    "checksums": [
+      {"type": "sha-256", "checksum": upload.sha256},
+    ],
+    "access_methods": [
+      {'type': 'https', 'access_id': 'https'},
+      {'type': 'https', 'access_url': `${process.env.PUBLIC_URL||''}/ga4gh/drs/v1/objects/${object_id}/access/https/data`},
+    ],
   })
 })

@@ -3,6 +3,7 @@ import db from '@/app/db'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import { NotFoundError, UnauthorizedError } from '@/spec/error'
 import { z } from 'zod'
+import { fileAsStream } from "@/components/core/file/api/download"
 
 const QueryType = z.object({
   object_id: z.string(),
@@ -23,7 +24,6 @@ export default handler(async (req, res) => {
   if (access_id !== 'https') throw new NotFoundError()
   const upload = await db.objects.user_upload_complete.findUnique({ where: { id: object_id } })
   if (upload === null) throw new NotFoundError()
-  res.json({
-    "url": `${process.env.PUBLIC_URL||''}/ga4gh/drs/v1/objects/${object_id}/access/https/data`,
-  })
+  const fileStream = await fileAsStream(upload)
+  fileStream.pipe(res)
 })

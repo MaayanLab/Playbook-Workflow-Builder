@@ -34,7 +34,7 @@ export const AnnData = MetaNode('AnnData')
           ellipses={props.ellipses}
           shape={props.shape}
           downloads={{
-            'URL': () => downloadUrl(props.url)
+            'URL': () => downloadUrl(props.url, props.filename)
           }}
         />
       </div>

@@ -6,7 +6,7 @@ import type { Readable } from 'stream'
 
 export async function fileAsStream(file: { url: string }): Promise<Readable> {
   let url = file.url
-  if (url.startsWith((process.env.PUBLIC_URL||'').replace('https?:/', 'drs:/'))) {
+  if (url.startsWith((process.env.PUBLIC_URL||'').replace(/^https?:\//, 'drs:/'))) {
     url = url.replace(
       /^drs:\/\/([^\/]+)\/([^\/]+)$/, 
       'https://$1/ga4gh/drs/v1/objects/$2/access/https'

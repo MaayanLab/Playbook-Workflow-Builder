@@ -10,8 +10,8 @@ export const GET = handler(async (req, res) => {
       'core',
       'file',
       'api',
-      'example_matrix.tsv',
-      'example_matrix.tsv'
+      'example.h5ad',
+      'example.h5ad'
     )
   ).pipe(res)
 })

@@ -35,6 +35,8 @@ export * from "./core/input/term"
 components.push("core/input/term")
 export * from "./core/input/tumor"
 components.push("core/input/tumor")
+export * from "./data/anndata"
+components.push("data/anndata")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
 export * from "./data/gene_count_matrix"

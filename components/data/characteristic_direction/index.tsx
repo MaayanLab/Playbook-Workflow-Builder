@@ -1,9 +1,8 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import python from '@/utils/python'
-import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
-import { MetadataMatrix } from '@/components/data/metadata_matrix'
 import { GeneSignature } from '@/components/data/gene_signature'
+import { AnnData } from '@/components/data/anndata'
 
 export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
   .meta({
@@ -12,12 +11,11 @@ export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
                   Direction differential gene expression signature`
   })
   .inputs({
-    data: GeneCountMatrix,
-    metadata: MetadataMatrix
+    anndata: AnnData,
   })
   .output(GeneSignature)
   .resolve(async (props) => await python(
     'components.data.characteristic_direction.cd_from_matrix',
-    { kargs: [props.inputs.data, props.inputs.metadata]}
+    { kargs: [props.inputs.anndata]}
   ))
   .build()

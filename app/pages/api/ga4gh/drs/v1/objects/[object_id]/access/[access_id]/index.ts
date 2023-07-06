@@ -1,7 +1,6 @@
 import handler from '@/utils/next-rest'
 import db from '@/app/db'
-import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
-import { NotFoundError, UnauthorizedError } from '@/spec/error'
+import { NotFoundError } from '@/spec/error'
 import { z } from 'zod'
 
 const QueryType = z.object({
@@ -18,8 +17,6 @@ export default handler(async (req, res) => {
     const body = BodyType.parse(req.body)
     // TODO: potentially authorize with passports
   }
-  const session = await getServerSessionWithId(req, res)
-  if (!session || !session.user) throw new UnauthorizedError()
   if (access_id !== 'https') throw new NotFoundError()
   const upload = await db.objects.user_upload_complete.findUnique({ where: { id: object_id } })
   if (upload === null) throw new NotFoundError()

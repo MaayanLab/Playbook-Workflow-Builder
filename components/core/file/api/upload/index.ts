@@ -69,7 +69,7 @@ export async function uploadFile(file: { url: string, size: number, sha256?: str
         filename: file.filename,
       },
     })
-    return { url: `${(process.env.PUBLIC_URL||'').replace(/https?:/, 'drs:/')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
+    return { url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
   }
   return { url: file.url, filename: file.filename, sha256: file.sha256, size: file.size }
 }

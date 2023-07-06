@@ -123,7 +123,7 @@ export const DMTConsensus = MetaNode('DMTConsensus')
 
 export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
   .meta({
-    label: `Assemble DMT from DrugSets`,
+    label: `Assemble DMT from Drug Sets`,
     description: 'Group multiple independently generated drug sets into a single DMT'
   })
   .inputs({ sets: [DrugSet] })
@@ -171,7 +171,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
             />}
           />
           <Column
-            name="DrugSet"
+            name="Drug Set"
             cellRenderer={row => <Cell key={row+''}>{props.inputs.sets[row].set.join('\t')}</Cell>}
           />
         </Table>

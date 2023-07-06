@@ -15,7 +15,7 @@ To avoid storing large files in the database or in memory we pass around pointer
 #  when reading sequentially, you can read it as a stream directly from
 #  wherever it is. it behaves like a file object
 from components.core.file import file_as_stream
-with file_as_stream(file['url']) as fh: # you get something like a file handle here
+with file_as_stream(file) as fh: # you get something like a file handle here
   for line in fh:
     print(line)
 
@@ -32,7 +32,7 @@ with upsert_file('.ext') as f:
   # f.file is a python file handler
   f.file.write('test')
 # after the context manager, f.url contains the uploaded file url
-return {'url': f.url}
+return f
 ```
 
 ### Access files from NodeJS-Implemented Resolvers

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL } from '@/components/core/file'
+import { FileURL, FileC } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
 import Matrix from '@/app/components/Matrix'
@@ -15,14 +15,13 @@ export const GeneSignature = MetaNode('GeneSignature')
     description: 'A gene expression signature',
     icon: [differential_expression_icon],
   })
-  .codec(z.object({
-    url: z.string(),
+  .codec(FileC.merge(z.object({
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()),
     index: z.array(z.string()),
     values: z.array(z.array(z.union([z.number(), z.literal('inf'), z.literal('-inf')]))),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
-  }))
+  })))
   .view(props => {
     return (
       <div>
@@ -51,7 +50,7 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
   .output(GeneSignature)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gene_signature',
-    { kargs: [props.inputs.file.url] },
+    { kargs: [props.inputs.file] },
   ))
   .build()
 

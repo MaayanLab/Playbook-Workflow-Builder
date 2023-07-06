@@ -148,7 +148,7 @@ export default function Playbooks() {
       }}
       className="flex flex-col place-items-center underline"
     >
-      <span className={classNames({ 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span>
+      <span className={classNames('prose prose-sm', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span>
       {dataSource in dataSourceIcons ?
         <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} />
         : null}
@@ -253,7 +253,7 @@ export default function Playbooks() {
                 <div className="col-span-1 row-span-1 p-3 hidden md:block">
                   <div className="tooltip z-50" data-tip="Click to view details">
                     <button
-                      className="btn btn-ghost text-4xl"
+                      className="btn btn-ghost text-4xl text-black dark:text-white"
                       onClick={evt => {
                         setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                       }}
@@ -338,14 +338,14 @@ export default function Playbooks() {
                       // TODO: register click
                       router.push(playbook.url)
                     }}>
-                      <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
+                      <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
                     </button>
                   </div>
                 </div>
               {/* </div> */}
               <div className={classNames('bg-secondary font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
                 <button
-                  className="btn btn-ghost text-4xl"
+                  className="btn btn-ghost text-4xl text-black dark:text-white"
                   onClick={evt => {
                     setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                   }}
@@ -355,7 +355,7 @@ export default function Playbooks() {
                 <div className={classNames('mx-auto prose whitespace-normal px-4', { hidden: !details[playbook.id] })}>
                   <div className="flex flex-row gap-2 flex-wrap">
                     <div className="badge badge-primary">v{playbook.version}</div>
-                    <div className="badge bg-gray-300 border-none"><a className="no-underline text-blue-700" href={playbook.licenseUrl} target="blank">{playbook.license}</a></div>
+                    <div className="badge bg-gray-300 dark:bg-gray-600 border-none"><a className="no-underline text-blue-700" href={playbook.licenseUrl} target="blank">{playbook.license}</a></div>
                   </div>
                   <p><b>Published</b>: {playbook.published}</p>
                   <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
@@ -367,7 +367,7 @@ export default function Playbooks() {
             </React.Fragment>
           )
           : <div className="col-span-7">
-            <div className="alert">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

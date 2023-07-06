@@ -5,7 +5,7 @@ export default function Contributors() {
 
   return (
     <div className="flex-grow flex flex-col justify-center">
-      <h2 className="text-2xl font-bold mb-2">Contributors</h2>
+      <h2 className="text-2xl font-bold mb-2 prose">Contributors</h2>
       <br />
       <div className="max-w-4xl flex flex-row flex-wrap self-center justify-evenly align-middle gap-4">
         <a href="https://exrna.org/" target="__blank">

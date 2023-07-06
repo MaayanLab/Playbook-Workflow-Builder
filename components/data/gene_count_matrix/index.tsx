@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL } from '@/components/core/file'
+import { FileURL, FileC } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
 import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
@@ -15,14 +15,13 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
     description: 'A gene count matrix file',
     icon: [datafile_icon],
   })
-  .codec(z.object({
-    url: z.string(),
+  .codec(FileC.merge(z.object({
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()),
     index: z.array(z.string()),
     values: z.array(z.array(z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]))),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
-  }))
+  })))
   .view(props => {
     return (
       <div>
@@ -51,7 +50,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(
     'components.data.gene_count_matrix.gene_count_matrix',
-    { kargs: [props.inputs.file.url] },
+    { kargs: [props.inputs.file] },
   ))
   .story(props =>
     `The file was parsed as an input gene count matrix.`

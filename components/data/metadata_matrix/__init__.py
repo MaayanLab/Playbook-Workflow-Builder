@@ -1,21 +1,29 @@
+import typing
 import numpy as np
 import pandas as pd
-from components.core.file import file_as_path, file_as_stream
+from components.core.file import File, file_as_path, file_as_stream
 
-def metadata_from_path(path):
+class MetadataMatrix(File, typing.TypedDict):
+  shape: typing.Tuple[int, int]
+  index: typing.List[str]
+  columns: typing.List[str]
+  values: typing.List[typing.List[typing.Union[int, typing.Literal['nan'], typing.Literal['inf'], typing.Literal['-inf']]]]
+  ellipses: typing.Tuple[typing.Union[int, None], typing.Union[int, None]]
+
+def metadata_from_file(file: File):
   ''' Read from a bunch of different formats, get a metadata table
   '''
-  if path.endswith('.csv'):
-    with file_as_stream(path, 'r') as fr:
+  if file['filename'].endswith('.csv'):
+    with file_as_stream(file, 'r') as fr:
       return pd.read_csv(fr, index_col=0)
-  elif path.endswith('.tsv'):
-    with file_as_stream(path, 'r') as fr:
+  elif file['filename'].endswith('.tsv'):
+    with file_as_stream(file, 'r') as fr:
       return pd.read_csv(fr, sep='\t', index_col=0)
-  elif path.endswith('.txt') or path.endswith('.tab') or path.endswith('.data'):
-    with file_as_stream(path, 'r') as fr:
+  elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
+    with file_as_stream(file, 'r') as fr:
       return pd.read_csv(fr, sep=None, index_col=0, engine='python')
-  elif path.endswith('.xlsx'):
-    with file_as_path(path, 'r') as fr:
+  elif file['filename'].endswith('.xlsx'):
+    with file_as_path(file, 'r') as fr:
       return pd.read_excel(fr, index_col=0)
   else:
     raise NotImplementedError
@@ -24,10 +32,10 @@ def np_jsonifyable(x):
   x_ = x.astype('object')
   return x_.tolist()
 
-def metadata_matrix(url):
+def metadata_matrix(file: File) -> MetadataMatrix:
   ''' Read the metadata file
   '''
-  d = metadata_from_path(url)
+  d = metadata_from_file(file)
   if d.shape[0] >= 10:
     top = 5
     bottom = 5
@@ -56,7 +64,7 @@ def metadata_matrix(url):
     None,
   ]
   return dict(
-    url=url,
+    file,
     shape=d.shape,
     index=index,
     columns=columns,

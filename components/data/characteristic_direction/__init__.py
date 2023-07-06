@@ -1,5 +1,5 @@
-from components.data.gene_count_matrix import anndata_from_path
-from components.data.metadata_matrix import metadata_from_path
+from components.data.gene_count_matrix import anndata_from_file
+from components.data.metadata_matrix import metadata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
 from maayanlab_bioinformatics.dge import characteristic_direction
@@ -36,8 +36,8 @@ def cd_signature(data_mat, meta_mat):
   return signature
 
 def cd_from_matrix(data, meta):
-  data_df = anndata_from_path(data['url'])
-  meta_df = metadata_from_path(meta['url'])
+  data_df = anndata_from_file(data)
+  meta_df = metadata_from_file(meta)
 
   # cd
   gene_sig = cd_signature(data_df, meta_df)
@@ -45,4 +45,4 @@ def cd_from_matrix(data, meta):
   with upsert_file('.tsv') as f:
     gene_sig.to_csv(f.file, sep='\t')
 
-  return gene_signature(f.url)
+  return gene_signature(f)

@@ -1,0 +1,4 @@
+numpy
+leidenalg
+pandas
+scanpy

@@ -37,24 +37,32 @@ export * from "./core/input/tumor"
 components.push("core/input/tumor")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
+export * from "./data/differentialexpression"
+components.push("data/differentialexpression")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
 export * from "./data/gene_matrix_transpose"
 components.push("data/gene_matrix_transpose")
 export * from "./data/gene_signature"
 components.push("data/gene_signature")
+export * from "./data/librarysize"
+components.push("data/librarysize")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
 export * from "./data/metadata_matrix"
 components.push("data/metadata_matrix")
 export * from "./data/pca_transformation"
 components.push("data/pca_transformation")
+export * from "./data/pcagraph"
+components.push("data/pcagraph")
 export * from "./data/quantile_normalization"
 components.push("data/quantile_normalization")
 export * from "./data/tsne_transformation"
 components.push("data/tsne_transformation")
 export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
+export * from "./data/volcanoplot"
+components.push("data/volcanoplot")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
 export * from "./filters"

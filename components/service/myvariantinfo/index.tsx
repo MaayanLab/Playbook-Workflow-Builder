@@ -7,7 +7,6 @@ const z_maybe_array = (inner: z.ZodType) => z.union([inner, z.array(inner)])
 
 export const MyVariantInfoC = z.object({
   _id: z.string(),
-  id: z.string(),
   dbsnp: z.object({
     gene: z.object({
       geneid: z.number().optional(),
@@ -33,7 +32,7 @@ export const MyVariantInfoC = z.object({
 export type MyVariantInfo = z.infer<typeof MyVariantInfoC>
 
 async function myvariantinfo(variantId: string): Promise<MyVariantInfo> {
-  const req = await fetch(`https://variant.info/v1/variant/${encodeURIComponent(variantId)}`)
+  const req = await fetch(`https://myvariant.info/v1/variant/${encodeURIComponent(variantId)}`)
   return await req.json()
 }
 

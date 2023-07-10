@@ -102,16 +102,23 @@ export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
     description: 'A gene set submitted to [Enrichr](https://maayanlab.cloud/Enrichr/)',
     icon: [enrichr_icon, gene_icon],
   })
-  .codec(z.object({
-    shortId: z.string(),
-    userListId: z.number(),
-  }))
+  .codec(z.union([
+    z.object({
+      empty: z.literal(true),
+    }),
+    z.object({
+      shortId: z.string(),
+      userListId: z.number(),
+    })
+  ]))
   .view(userlist => (
     <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
-      <iframe
-        className="flex-grow border-0"
-        src={`${enrichr_url}/enrich?dataset=${userlist.shortId}`}
-      />
+      {'empty' in userlist ? 
+        <div className="prose">Enrichment Analysis Cannot be Performed on Empty Set</div>
+        : <iframe
+          className="flex-grow border-0"
+          src={`${enrichr_url}/enrich?dataset=${userlist.shortId}`}
+        />}
     </div>
   ))
   .build()
@@ -143,6 +150,9 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .inputs({ geneset: GeneSet })
   .output(EnrichrEnrichmentAnalysis)
   .resolve(async (props) => {
+    if (props.inputs.geneset.set.length === 0) {
+      return { empty: true }
+    }
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
     formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
@@ -194,7 +204,7 @@ backgrounds.map(bg => ({ bg, output }))
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
     .resolve(async (props) => {
-      return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
+      return 'empty' in props.inputs.searchResults ? [] : await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
     .story(props =>
       `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`

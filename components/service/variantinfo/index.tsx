@@ -90,7 +90,7 @@ export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
     label: 'Variant Information',
-    description: 'A Variant resolved with MyVariantInfo',
+    description: 'A Variant resolved with reg.clinicalgenome.org',
     icon: [linkeddatahub_icon],
   })
   .codec(AlleleRegistryVariantInfoC)

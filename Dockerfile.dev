@@ -31,6 +31,6 @@ FROM archlinux:base-devel
 WORKDIR /app
 RUN pacman -Sy --noconfirm python python-pip npm imagemagick librsvg potrace dbmate sudo git && pacman -Scc
 COPY --from=prepare_requirements_txt_complete /app /app
-RUN pip install -r /app/requirements.txt && rm /app/requirements.txt
+RUN pip install --break-system-packages -r /app/requirements.txt && rm /app/requirements.txt
 ENV npm_config_cache=/app/.npm
 CMD ["/bin/bash"]

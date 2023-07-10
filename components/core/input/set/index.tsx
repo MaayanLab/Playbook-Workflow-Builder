@@ -149,3 +149,31 @@ export const InputVariantSet = Input_Set_T(Variant, VariantSet)
 export const InputRegulatoryElementSet = Input_Set_T(RegulatoryElement, RegulatoryElementSet)
 export const InputDrugSet = Input_Set_T(Drug, DrugSet)
 export const InputMetaboliteSet = Input_Set_T(Metabolite, MetaboliteSet)
+
+import {
+  DrugTerm,
+  GeneTerm,
+  MetaboliteTerm,
+  VariantTerm,
+} from '@/components/core/input/term'
+export const TermToSetT = [
+  { SetT: GeneSet, TermT: GeneTerm },
+  { SetT: VariantSet, TermT: VariantTerm },
+  { SetT: DrugSet, TermT: DrugTerm },
+  { SetT: MetaboliteSet, TermT: MetaboliteTerm },
+].map(({ SetT, TermT }) =>
+  MetaNode(`TermToSet[${TermT.spec}]`)
+    .meta({
+      label: `Create Set from ${pluralize(TermT.meta.label)}`,
+      description: 'Join several terms into a set'
+    })
+    .inputs({ terms: [TermT] })
+    .output(SetT)
+    .resolve(async (props) => {
+      return { set: props.inputs.terms }
+    })
+    .story(props =>
+      `The specified genes were combined into one gene set.`
+    )
+    .build()
+)

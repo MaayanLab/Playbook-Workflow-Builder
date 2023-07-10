@@ -39,6 +39,8 @@ export * from "./data/anndata"
 components.push("data/anndata")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
+export * from "./data/drug_matrix_transpose"
+components.push("data/drug_matrix_transpose")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
 export * from "./data/gene_matrix_transpose"
@@ -81,6 +83,8 @@ export * from "./service/ldh"
 components.push("service/ldh")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./service/myvariantinfo"
+components.push("service/myvariantinfo")
 export * from "./service/regulatoryElementInfo"
 components.push("service/regulatoryElementInfo")
 export * from "./service/targetranger"

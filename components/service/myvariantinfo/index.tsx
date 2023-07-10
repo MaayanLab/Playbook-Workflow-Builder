@@ -27,6 +27,12 @@ export const MyVariantInfoC = z.object({
       }).optional(),
     })).optional(),
   }).optional(),
+  snpeff: z.object({
+    ann: z.object({
+      gene_id: z.string().optional(),
+      genename: z.string().optional(),
+    }).optional(),
+  }).optional(),
 })
 
 export type MyVariantInfo = z.infer<typeof MyVariantInfoC>
@@ -78,6 +84,7 @@ export const GeneTermFromMyVariantInfo = MetaNode('GeneTermFromMyVariantInfo')
     let gene: string | undefined
     if (gene === undefined) gene = props.inputs.info.dbsnp?.gene?.symbol
     if (gene === undefined) gene = props.inputs.info.clinvar?.gene?.symbol
+    if (gene === undefined) gene = props.inputs.info.snpeff?.ann?.genename
     if (gene === undefined) throw new Error('Gene not identified in MyVariantInfo')
     return gene
   })

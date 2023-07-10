@@ -51,7 +51,7 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   .codec(MyVariantInfoC)
   .view(variantinfo => (
     <div>
-      {variantinfo.id}
+      {variantinfo._id}
     </div>
   ))
   .build()

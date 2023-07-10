@@ -162,7 +162,7 @@ export const TermToSetT = [
   { SetT: DrugSet, TermT: DrugTerm },
   { SetT: MetaboliteSet, TermT: MetaboliteTerm },
 ].map(({ SetT, TermT }) =>
-  MetaNode(`TermToSet[${TermT}]`)
+  MetaNode(`TermToSet[${TermT.spec}]`)
     .meta({
       label: `Create Set from ${pluralize(TermT.meta.label)}`,
       description: 'Join several terms into a set'

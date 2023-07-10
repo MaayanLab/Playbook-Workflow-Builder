@@ -6,14 +6,27 @@ access it.
 '''
 import re
 import os
+import typing
 import tempfile
 import requests
 import contextlib
 
-class TemporaryFile:
-  def __init__(self, suffix='') -> None:
+class File(typing.TypedDict):
+  url: str
+  filename: str
+  description: typing.Optional[str]
+  size: int
+
+class TemporaryFile(dict):
+  def __init__(self, suffix=''):
+    super().__init__(
+      url='',
+      filename='',
+      description=None,
+      size=0,
+    )
     self.file = tempfile.mktemp(suffix=suffix)
-    self.url = None
+    self['filename'] = self.file
 
   def __repr__(self) -> str:
     return f"TemporaryFile({repr(self)})"
@@ -44,19 +57,19 @@ def upsert_file(suffix=''):
     assert req.status_code >= 200 and req.status_code < 300, f"Error ({req.status_code}): {req.json()}"
     res = req.json()
     # we return register url to the file
-    tmp.url = res['file'][0]['url']
+    tmp.update(res['file'][0])
   finally:
     # we remove the temporary file
     tmp.unlink()
 
 @contextlib.contextmanager
-def file_as_stream(url, *args, **kwargs) -> str:
+def file_as_stream(file: File, *args, **kwargs) -> str:
   import fsspec
-  with fsspec.open(url, *args, **kwargs) as fr:
+  with fsspec.open(file['url'], *args, **kwargs) as fr:
     yield fr
 
 @contextlib.contextmanager
-def file_as_path(url, *args, **kwargs) -> str:
-  m = re.match(r'^file://(.+)$', url)
+def file_as_path(file: File, *args, **kwargs) -> str:
+  m = re.match(r'^file://(.+)$', file['url'])
   assert m, 'protocol not yet supported'
   yield m.group(1)

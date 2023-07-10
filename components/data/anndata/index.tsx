@@ -6,13 +6,15 @@ import { z } from 'zod'
 import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
+import { GeneCountMatrix } from '../gene_count_matrix'
+import { MetadataMatrix } from '../metadata_matrix'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
-export const GeneCountMatrix = MetaNode('GeneCountMatrix')
+export const AnnData = MetaNode('AnnData')
   .meta({
-    label: 'Gene Count Matrix',
-    description: 'A gene count matrix file',
+    label: 'Annotated data',
+    description: 'A gene count matrix paired with sample annotations',
     icon: [datafile_icon],
   })
   .codec(FileC.merge(z.object({
@@ -40,36 +42,36 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
   })
   .build()
 
-export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
+export const AnnDataFromFile = MetaNode('AnnDataFromFile')
   .meta({
-    label: 'Resolve a Gene Count Matrix from a File',
-    description: 'Ensure a file contains a gene count matrix, load it into a standard format',
+    label: 'Resolve an AnnData Matrix from a File',
+    description: 'Ensure a file contains an AnnData matrix',
     icon: [file_transfer_icon],
   })
   .inputs({ file: FileURL })
-  .output(GeneCountMatrix)
+  .output(AnnData)
   .resolve(async (props) => await python(
-    'components.data.gene_count_matrix.gene_count_matrix',
+    'components.data.anndata.anndata',
     { kargs: [props.inputs.file] },
   ))
   .story(props =>
-    `The file was parsed as an input gene count matrix.`
+    `The file was parsed as an anndata matrix.`
   )
   .build()
 
-export const Transpose = MetaNode('Transpose')
+export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFromGeneCountMatrixAndMetadataMatrix')
   .meta({
-    label: 'Transpose',
-    description: 'Re-orient the matrix',
-    icon: [transpose_icon],
+    label: 'Resolve an AnnData Matrix',
+    description: 'Collapse a Gene Count Matrix & MetadataMatrix into a single AnnData',
+    icon: [file_transfer_icon],
   })
-  .inputs({ file: GeneCountMatrix })
-  .output(GeneCountMatrix)
+  .inputs({ gene_count_matrix: GeneCountMatrix, metadata_matrix: MetadataMatrix })
+  .output(AnnData)
   .resolve(async (props) => await python(
-    'components.data.gene_count_matrix.transpose',
-    { kargs: [props.inputs.file] },
+    'components.data.anndata.anndata_from_gene_count_matrix_and_metadata_matrix',
+    { kargs: [props.inputs.gene_count_matrix, props.inputs.metadata_matrix] },
   ))
   .story(props =>
-    `The gene count matrix was then transposed`
+    `An AnnData file was prepared from the input data and metadata.`
   )
   .build()

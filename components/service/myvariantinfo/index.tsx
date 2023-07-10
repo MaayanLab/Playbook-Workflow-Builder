@@ -37,7 +37,7 @@ async function myvariantinfo(variantId: string): Promise<MyVariantInfo> {
   return await req.json()
 }
 
-export const VariantInfo = MetaNode('VariantInfo')
+export const MyVariantInfo = MetaNode('MyVariantInfo')
   .meta({
     label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
@@ -51,14 +51,14 @@ export const VariantInfo = MetaNode('VariantInfo')
   ))
   .build()
 
-export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
+export const MyVariantInfoFromVariantTerm = MetaNode('MyVariantInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
     description: 'Resolve variant info from variant term with MyVariantInfo',
     icon: [mygeneinfo_icon],
   })
   .inputs({ variant: VariantTerm })
-  .output(VariantInfo)
+  .output(MyVariantInfo)
   .resolve(async (props) => {
       return MyVariantInfoC.parse(await myvariantinfo(props.inputs.variant))
   })
@@ -67,13 +67,13 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   )
   .build()
 
-export const GeneTermFromVariantInfo = MetaNode('GeneTermFromVariantInfo')
+export const GeneTermFromMyVariantInfo = MetaNode('GeneTermFromMyVariantInfo')
   .meta({
     label: 'Identify Closest Gene to Variant',
     description: 'Identify the closest gene to this variant',
     icon: [mygeneinfo_icon],
   })
-  .inputs({ info: VariantInfo })
+  .inputs({ info: MyVariantInfo })
   .output(GeneTerm)
   .resolve(async (props) => {
     let gene: string | undefined

@@ -1,0 +1,878 @@
+{
+  "cache_info": {
+    "query": {
+      "gene_name": "ACE2"
+    },
+    "ts": "2023-06-28 10:33:43 EDT-0400",
+    "record_type": "protein",
+    "search_type": "search"
+  },
+  "filters": {
+    "applied": [],
+    "available": [
+      {
+        "id": "by_mass",
+        "label": "By Mass",
+        "order": 4,
+        "tooltip": "",
+        "options": [
+          {
+            "id": "0k_100k",
+            "label": "< 100K",
+            "count": 8,
+            "order": 1
+          }
+        ]
+      },
+      {
+        "id": "by_organism",
+        "label": "By Organism",
+        "order": 2,
+        "tooltip": "",
+        "options": [
+          {
+            "id": "Homo sapiens",
+            "label": "Human",
+            "count": 3,
+            "order": 1
+          },
+          {
+            "id": "Mus musculus",
+            "label": "Mouse",
+            "count": 3,
+            "order": 2
+          },
+          {
+            "id": "Rattus norvegicus",
+            "label": "Rat",
+            "count": 2,
+            "order": 3
+          }
+        ]
+      },
+      {
+        "id": "by_ptm",
+        "label": "By PTM",
+        "order": 1,
+        "tooltip": "",
+        "options": [
+          {
+            "id": "N-Glycosylation reported",
+            "label": "N-Glycosylation reported",
+            "count": 1,
+            "order": 1
+          },
+          {
+            "id": "O-Glycosylation reported",
+            "label": "O-Glycosylation reported",
+            "count": 2,
+            "order": 2
+          },
+          {
+            "id": "N-Glycosylation predicted",
+            "label": "N-Glycosylation predicted",
+            "count": 5,
+            "order": 3
+          },
+          {
+            "id": "Phosphorylation reported",
+            "label": "Phosphorylation reported",
+            "count": 4,
+            "order": 5
+          }
+        ]
+      },
+      {
+        "id": "by_data",
+        "label": "By Data",
+        "order": 3,
+        "tooltip": "",
+        "options": [
+          {
+            "id": "Mutagenesis",
+            "label": "Mutagenesis",
+            "count": 2,
+            "order": 1
+          },
+          {
+            "id": "SNV",
+            "label": "SNV",
+            "count": 5,
+            "order": 2
+          },
+          {
+            "id": "Pathway",
+            "label": "Pathway",
+            "count": 8,
+            "order": 3
+          },
+          {
+            "id": "Disease",
+            "label": "Disease",
+            "count": 4,
+            "order": 4
+          },
+          {
+            "id": "Publication",
+            "label": "Publication",
+            "count": 8,
+            "order": 7
+          }
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "uniprot_canonical_ac": "Q9BYF1-1",
+      "mass": 92463,
+      "protein_name": "Angiotensin-converting enzyme 2",
+      "gene_name": "ACE2",
+      "organism": "Homo sapiens",
+      "refseq_name": "angiotensin-converting enzyme 2 isoform 1 precursor",
+      "refseq_ac": "NP_068576",
+      "gene_names_uniprotkb": "ACE2; PRO1885",
+      "gene_names_refseq": "",
+      "protein_names_uniprotkb": "Angiotensin-converting enzyme 2; 3.4.17.-; 3.4.17.23; ACE-related carboxypeptidase; ACEH; Angiotensin-converting enzyme homolog; Angiotensin-converting enzyme-related carboxypeptidase; Metalloprotease MPROT15",
+      "protein_names_refseq": "ACE-related carboxypeptidase; metalloprotease MPROT15; angiotensin-converting enzyme homolog; angiotensin I converting enzyme (peptidyl-dipeptidase A) 2; angiotensin-converting enzyme-related carboxypeptidase; angiotensin I converting enzyme 2; angiotensin-converting enzyme 2 isoform 1 precursor",
+      "tax_id": 9606,
+      "disease": "",
+      "pathway": " (hsa:59272); Metabolism of Angiotensinogen to Angiotensins (R-HSA-2022377); Attachment and Entry (R-HSA-9678110); Potential therapeutics for SARS (R-HSA-9679191); Attachment and Entry (R-HSA-9694614); Induction of Cell-Cell Fusion (R-HSA-9733458)",
+      "publication_count": 193,
+      "function": "(Microbial infection) Acts as a receptor for human coronaviruses SARS-CoV and SARS-CoV-2, as well as human coronavirus NL63/HCoV-NL63., [UniProtKB, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed]; (Microbial infection) Non-functional as a receptor for human coronavirus SARS-CoV-2., [UniProtKB, PubMed, PubMed]; An ACE2-dependent Sarbecovirus in Russian bats is resistant to SARS-CoV-2 vaccines. Publication Status: Online-Only, [RefSeq, PubMed]; Characterization of ACE2 naturally occurring missense variants: impact on subcellular localization and trafficking. Publication Status: Online-Only, [RefSeq, PubMed]; Essential counter-regulatory carboxypeptidase of the renin-angiotensin hormone system that is a critical regulator of blood volume, systemic vascular resistance, and thus cardiovascular homeostasis (PubMed:27217402). Converts angiotensin I to angiotensin 1-9, a nine-amino acid peptide with anti-hypertrophic effects in cardiomyocytes, and angiotensin II to angiotensin 1-7, which then acts as a beneficial vasodilator and anti-proliferation agent, counterbalancing the actions of the vasoconstrictor angiotensin II (PubMed:10969042, PubMed:10924499, PubMed:11815627, PubMed:19021774, PubMed:14504186). Also removes the C-terminal residue from three other vasoactive peptides, neurotensin, kinetensin, and des-Arg bradykinin, but is not active on bradykinin (PubMed:10969042, PubMed:11815627). Also cleaves other biological peptides, such as apelins (apelin-13, [Pyr1]apelin-13, apelin-17, apelin-36), casomorphins (beta-casomorphin-7, neocasomorphin) and dynorphin A with high efficiency (PubMed:11815627, PubMed:27217402, PubMed:28293165). In addition, ACE2 C-terminus is homologous to collectrin and is responsible for the trafficking of the neutral amino acid transporter SL6A19 to the plasma membrane of gut epithelial cells via direct interaction, regulating its expression on the cell surface and its catalytic activity (PubMed:18424768, PubMed:19185582)., [UniProtKB, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed]; Flap structure within receptor binding domain of SARS-CoV-2 spike periodically obstructs hACE2 Binding subdomain bearing similarities to HIV-1 protease flap. Publication Status: Online-Only, [RefSeq, PubMed]; Interferons and viruses induce a novel truncated ACE2 isoform and not the full-length SARS-CoV-2 receptor., [RefSeq, PubMed]; Molecular dynamics simulations highlight the altered binding landscape at the spike-ACE2 interface between the Delta and Omicron variants compared to the SARS-CoV-2 original strain., [RefSeq, PubMed]; Non-functional as a carboxypeptidase., [UniProtKB, PubMed]; Role in hydrolyzing biological peptides, [RefSeq, PubMed]; The protein encoded by this gene belongs to the angiotensin-converting enzyme family of dipeptidyl carboxydipeptidases and has considerable homology to human angiotensin 1 converting enzyme. This secreted protein catalyzes the cleavage of angiotensin I into angiotensin 1-9, and angiotensin II into the vasodilator angiotensin 1-7. ACE2 is known to be expressed in various human organs, and its organ- and cell-specific expression suggests that it may play a role in the regulation of cardiovascular and renal function, as well as fertility. In addition, the encoded protein is a functional receptor for the spike glycoprotein of the human coronavirus HCoV-NL63 and the human severe acute respiratory syndrome coronaviruses, SARS-CoV and SARS-CoV-2, the latter is the causative agent of coronavirus disease-2019 (COVID-19). Multiple splice variants have been found for this gene and the dACE2 (or MIRb-ACE2) splice variant has been found to be interferon inducible. [provided by RefSeq, Nov 2020]., [RefSeq]; Tissue-specific and interferon-inducible expression of nonfunctional ACE2 through endogenous retroelement co-option., [RefSeq, PubMed]",
+      "predicted_glycosites": 0,
+      "predicted_n_glycosites": 0,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 7,
+      "reported_o_glycosites": 10,
+      "reported_n_glycosites_with_glycan": 364,
+      "reported_o_glycosites_with_glycan": 38,
+      "total_reported_n_glycosites": 371,
+      "total_reported_o_glycosites": 48,
+      "total_n_glycosites": 371,
+      "total_o_glycosites": 48,
+      "reported_fully_resolved_glycans": 52,
+      "reported_phosphosites": 2,
+      "reported_mutagensis": 69,
+      "reported_glycation": 0,
+      "reported_snv": 30,
+      "reported_interactions": 0,
+      "missing_score": 0,
+      "record_type": "protein",
+      "hit_score": 91.75,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 50,
+            "f": 1
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 1,
+            "f": 400
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 10,
+            "f": 52
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 5,
+            "f": 364
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 5,
+            "f": 38
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 4,
+            "f": 7
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 4,
+            "f": 10
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 193
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "Q8R0I0-1",
+      "mass": 92368,
+      "protein_name": "Angiotensin-converting enzyme 2",
+      "gene_name": "Ace2",
+      "organism": "Mus musculus",
+      "refseq_name": "angiotensin-converting enzyme 2 precursor",
+      "refseq_ac": "NP_001123985",
+      "gene_names_uniprotkb": "Ace2",
+      "gene_names_refseq": "2010305L05Rik; Ace2",
+      "protein_names_uniprotkb": "Angiotensin-converting enzyme 2; 3.4.17.-; 3.4.17.23; ACE-related carboxypeptidase",
+      "protein_names_refseq": "angiotensin-converting enzyme 2 precursor; angiotensin-converting enzyme 2; angiotensin I converting enzyme 2; ACE-related carboxypeptidase",
+      "tax_id": 10090,
+      "disease": "thrombosis (Disease Ontology:DOID:0060903); COVID-19 (Disease Ontology:DOID:0080600); hypertension (Disease Ontology:DOID:10763); primary biliary cholangitis (Disease Ontology:DOID:12236); respiratory syncytial virus infectious disease (Disease Ontology:DOID:1273); glaucoma (Disease Ontology:DOID:1686); severe acute respiratory syndrome (Disease Ontology:DOID:2945); middle cerebral artery infarction (Disease Ontology:DOID:3525); pancreatic ductal carcinoma (Disease Ontology:DOID:3587); avian influenza (Disease Ontology:DOID:4492); myocardial infarction (Disease Ontology:DOID:5844); congestive heart failure (Disease Ontology:DOID:6000); lung disease (Disease Ontology:DOID:850); diabetic retinopathy (Disease Ontology:DOID:8947)",
+      "pathway": " (mmu:70008); Metabolism of Angiotensinogen to Angiotensins (R-MMU-2022377)",
+      "publication_count": 16,
+      "function": "ACE2 gene is expressed mainly in the kidney and the lungs., [RefSeq, PubMed]; Angiotensin-converting enzyme 2 is an essential regulator of heart function., [RefSeq, PubMed]; Antigenic Cross-Reactivity Between SARS-CoV-2 S1-RBD and Its Receptor ACE2. Publication Status: Online-Only, [RefSeq, PubMed]; Characterization of Entry Pathways, Species-Specific Angiotensin-Converting Enzyme 2 Residues Determining Entry, and Antibody Neutralization Evasion of Omicron BA.1, BA.1.1, BA.2, and BA.3 Variants., [RefSeq, PubMed]; Essential counter-regulatory carboxypeptidase of the renin-angiotensin hormone system that is a critical regulator of blood volume, systemic vascular resistance, and thus cardiovascular homeostasis. Converts angiotensin I to angiotensin 1-9, a nine-amino acid peptide with anti-hypertrophic effects in cardiomyocytes, and angiotensin II to angiotensin 1-7, which then acts as a beneficial vasodilator and anti-proliferation agent, counterbalancing the actions of the vasoconstrictor angiotensin II. Also removes the C-terminal residue from three other vasoactive peptides, neurotensin, kinetensin, and des-Arg bradykinin, but is not active on bradykinin. Also cleaves other biological peptides, such as apelins, casomorphins and dynorphin A (By similarity). By cleavage of angiotensin II, may be an important regulator of heart function (PubMed:12075344, PubMed:12967627). By cleavage of angiotensin II, may also have a protective role in acute lung injury (PubMed:16001071). Plays an important role in amino acid transport by acting as binding partner of amino acid transporter SLC6A19, regulating its trafficking on the cell surface and its activity (PubMed:19185582, PubMed:18424768, PubMed:22677001)., [UniProtKB, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed]; Mitochondrial dysfunction is associated with lipid metabolism disorder and upregulation of angiotensin-converting enzyme 2. Publication Status: Online-Only, [RefSeq, PubMed]; Molecular imaging on ACE2-dependent transocular infection of coronavirus., [RefSeq, PubMed]; Murine ACE2 less efficiently bound the S1 domain of SARS-CoV and supported less-efficient S protein-mediated infection., [RefSeq, PubMed]; Protein Scaffold-Based Multimerization of Soluble ACE2 Efficiently Blocks SARS-CoV-2 Infection In Vitro and In Vivo., [RefSeq, PubMed]",
+      "predicted_glycosites": 5,
+      "predicted_n_glycosites": 5,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 0,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 0,
+      "total_n_glycosites": 5,
+      "total_o_glycosites": 0,
+      "reported_fully_resolved_glycans": 0,
+      "reported_phosphosites": 3,
+      "reported_mutagensis": 0,
+      "reported_glycation": 0,
+      "reported_snv": 1,
+      "reported_interactions": 0,
+      "missing_score": 10000,
+      "record_type": "protein",
+      "hit_score": 55.32,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 50,
+            "f": 1
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 3,
+            "f": 5
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 16
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "Q5EGZ1-1",
+      "mass": 92491,
+      "protein_name": "Angiotensin-converting enzyme 2",
+      "gene_name": "Ace2",
+      "organism": "Rattus norvegicus",
+      "refseq_name": "angiotensin-converting enzyme 2 precursor",
+      "refseq_ac": "NP_001012006",
+      "gene_names_uniprotkb": "Ace2",
+      "gene_names_refseq": "Ace2",
+      "protein_names_uniprotkb": "Angiotensin-converting enzyme 2; 3.4.17.-; 3.4.17.23; ACE-related carboxypeptidase",
+      "protein_names_refseq": "angiotensin-converting enzyme 2 precursor; renal angiotensin-converting enzyme 2; anigotensin-converting enzyme-related carboxypeptidase; ACE-related carboxypeptidase; angiotensin I converting enzyme (peptidyl-dipeptidase A) 2",
+      "tax_id": 10116,
+      "disease": "thrombosis (Disease Ontology:DOID:0060903); COVID-19 (Disease Ontology:DOID:0080600); hypertension (Disease Ontology:DOID:10763); primary biliary cholangitis (Disease Ontology:DOID:12236); respiratory syncytial virus infectious disease (Disease Ontology:DOID:1273); glaucoma (Disease Ontology:DOID:1686); severe acute respiratory syndrome (Disease Ontology:DOID:2945); middle cerebral artery infarction (Disease Ontology:DOID:3525); pancreatic ductal carcinoma (Disease Ontology:DOID:3587); avian influenza (Disease Ontology:DOID:4492); myocardial infarction (Disease Ontology:DOID:5844); congestive heart failure (Disease Ontology:DOID:6000); lung disease (Disease Ontology:DOID:850); diabetic retinopathy (Disease Ontology:DOID:8947)",
+      "pathway": " (rno:302668); Metabolism of Angiotensinogen to Angiotensins (R-RNO-2022377)",
+      "publication_count": 8,
+      "function": "ACE2 gene combined with exercise training attenuates central AngII/AT1 axis function and oxidative stress in a prehypertensive rat model., [RefSeq, PubMed]; Angiotensin-converting enzyme 2 (Ace2)is an essential regulator of heart function., [RefSeq, PubMed]; Essential counter-regulatory carboxypeptidase of the renin-angiotensin hormone system that is a critical regulator of blood volume, systemic vascular resistance, and thus cardiovascular homeostasis. Converts angiotensin I to angiotensin 1-9, a nine-amino acid peptide with anti-hypertrophic effects in cardiomyocytes, and angiotensin II to angiotensin 1-7, which then acts as a beneficial vasodilator and anti-proliferation agent, counterbalancing the actions of the vasoconstrictor angiotensin II. Also removes the C-terminal residue from three other vasoactive peptides, neurotensin, kinetensin, and des-Arg bradykinin, but is not active on bradykinin. Also cleaves other biological peptides, such as apelins, casomorphins and dynorphin A. Plays an important role in amino acid transport by acting as binding partner of amino acid transporter SLC6A19 in intestine, regulating trafficking, expression on the cell surface, and its catalytic activity., [UniProtKB, PubMed]; Mechano-inflammatory sensitivity of ACE2: Implications for the regional distribution of SARS-CoV-2 injury in the lung., [RefSeq, PubMed]; Obesogenic and Ketogenic Diets Distinctly Regulate the SARS-CoV-2 Entry Proteins ACE2 and TMPRSS2 and the Renin-Angiotensin System in Rat Lung and Heart Tissues. Publication Status: Online-Only, [RefSeq, PubMed]",
+      "predicted_glycosites": 9,
+      "predicted_n_glycosites": 9,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 0,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 0,
+      "total_n_glycosites": 9,
+      "total_o_glycosites": 0,
+      "reported_fully_resolved_glycans": 0,
+      "reported_phosphosites": 2,
+      "reported_mutagensis": 0,
+      "reported_glycation": 0,
+      "reported_snv": 1,
+      "reported_interactions": 0,
+      "missing_score": 10000,
+      "record_type": "protein",
+      "hit_score": 55.28,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 50,
+            "f": 1
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 3,
+            "f": 9
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 8
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "Q9Y5Z0-1",
+      "mass": 56180,
+      "protein_name": "Beta-secretase 2",
+      "gene_name": "BACE2",
+      "organism": "Homo sapiens",
+      "refseq_name": "beta-secretase 2 isoform A preproprotein",
+      "refseq_ac": "NP_036237",
+      "gene_names_uniprotkb": "BACE2; AEPLC; ALP56; ASP21; CDA13; PRO852",
+      "gene_names_refseq": "AEPLC; ALP56; ASP1; ASP21; BAE2; CDA13; CEAP1; DRAP; BACE2",
+      "protein_names_uniprotkb": "Beta-secretase 2; 3.4.23.45; ASP1; Asp 1; Aspartic-like protease 56 kDa; Aspartyl protease 1; Beta-site APP cleaving enzyme 2; Beta-site amyloid precursor protein cleaving enzyme 2; DRAP; Down region aspartic protease; Memapsin-1; Membrane-associated aspartic protease 1; Theta-secretase",
+      "protein_names_refseq": "aspartyl protease 1; membrane-associated aspartic protease 1; memapsin-1; Down syndrome region aspartic protease; 56 kDa aspartic-like protease; beta-site amyloid beta A4 precursor protein-cleaving enzyme 2; transmembrane aspartic proteinase Asp1; theta-secretase; beta-site APP-cleaving enzyme 2; SLCO3A1/BACE2 fusion; beta-secretase 2 isoform A preproprotein",
+      "tax_id": 9606,
+      "disease": "",
+      "pathway": " (hsa:25825)",
+      "publication_count": 22,
+      "function": "Data characterize the human beta-secretase 2 (BACE2) 5'-flanking region., [RefSeq, PubMed]; Data indicate that despite being homologous in amino acid sequence, beta-site beta amyloid precursor protein cleaving enzyme 2(BACE2) and BACE1 have distinct functions and transcriptional regulation, [RefSeq, PubMed]; Responsible for the proteolytic processing of the amyloid precursor protein (APP). Cleaves APP, between residues 690 and 691, leading to the generation and extracellular release of beta-cleaved soluble APP, and a corresponding cell-associated C-terminal fragment which is later released by gamma-secretase. It has also been shown that it can cleave APP between residues 671 and 672 (PubMed:10591213, PubMed:11083922, PubMed:11423558, PubMed:15857888, PubMed:16816112). Involved in the proteolytic shedding of PMEL at early stages of melanosome biogenesis. Cleaves PMEL within the M-beta fragment to release the amyloidogenic PMEL luminal fragment containing M-alpha and a small portion of M-beta N-terminus. This is a prerequisite step for subsequent processing and assembly of PMEL fibrils into amyloid sheets (PubMed:23754390). Responsible also for the proteolytic processing of CLTRN in pancreatic beta cells (PubMed:21907142)., [UniProtKB, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed, PubMed]; This gene encodes an integral membrane glycoprotein that functions as an aspartic protease. The encoded protein cleaves amyloid precursor protein into amyloid beta peptide, which is a critical step in the etiology of Alzheimer's disease and Down syndrome. The protein precursor is further processed into an active mature peptide. Alternative splicing results in multiple transcript variants. [provided by RefSeq, Jul 2013]., [RefSeq]",
+      "predicted_glycosites": 2,
+      "predicted_n_glycosites": 2,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 3,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 3,
+      "total_n_glycosites": 2,
+      "total_o_glycosites": 3,
+      "reported_fully_resolved_glycans": 1,
+      "reported_phosphosites": 1,
+      "reported_mutagensis": 3,
+      "reported_glycation": 0,
+      "reported_snv": 9,
+      "reported_interactions": 0,
+      "missing_score": 0,
+      "record_type": "protein",
+      "hit_score": 25.38,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 1,
+            "f": 400
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 10,
+            "f": 1
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 5,
+            "f": 3
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 3,
+            "f": 2
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 22
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "Q9JL18-1",
+      "mass": 55800,
+      "protein_name": "Beta-secretase 2",
+      "gene_name": "Bace2",
+      "organism": "Mus musculus",
+      "refseq_name": "beta-secretase 2 preproprotein",
+      "refseq_ac": "NP_062390",
+      "gene_names_uniprotkb": "Bace2",
+      "gene_names_refseq": "1110059C24Rik; AEPLC; ALP56; ARP1; ASP1; ASP21; BAE2; CDA13; CEAP1; DRAP; Bace2",
+      "protein_names_uniprotkb": "Beta-secretase 2; 3.4.23.45; ASP1; Asp 1; Aspartyl protease 1; Beta-site APP cleaving enzyme 2; Beta-site amyloid precursor protein cleaving enzyme 2; Memapsin-1; Membrane-associated aspartic protease 1; Theta-secretase",
+      "protein_names_refseq": "beta-secretase 2 preproprotein; beta-secretase 2; aspartyl protease 1; memapsin-1; theta-secretase; membrane-associated aspartic protease 1; beta-site amyloid precursor protein cleaving enzyme 2",
+      "tax_id": 10090,
+      "disease": "Alzheimer's disease (Disease Ontology:DOID:10652); frontotemporal dementia (Disease Ontology:DOID:9255)",
+      "pathway": " (mmu:56175)",
+      "publication_count": 7,
+      "function": "BACE1 and BACE2 may act as alternative alpha-secretase-like proteases in proteolytic processing of IL-1R2 and APP, [RefSeq, PubMed]; BACE2 suppression in mice aggravates the adverse metabolic consequences of an obesogenic diet., [RefSeq, PubMed]; Data show that BACE1 knockout mice display a complex phenotype, and a combined deficiency of BACE2 and BACE1 enhanced the bace1-/- lethality., [RefSeq, PubMed]; Responsible for the proteolytic processing of the amyloid precursor protein (APP). Cleaves APP, between residues 690 and 691, leading to the generation and extracellular release of beta-cleaved soluble APP, and a corresponding cell-associated C-terminal fragment which is later released by gamma-secretase. It has also been shown that it can cleave APP between residues 671 and 672. Involved in the proteolytic shedding of PMEL at early stages of melanosome biogenesis. Cleaves PMEL within the M-beta fragment to release the amyloidogenic PMEL luminal fragment containing M-alpha and a small portion of M-beta N-terminus. This is a prerequisite step for subsequent processing and assembly of PMEL fibrils into amyloid sheets. Responsible also for the proteolytic processing of CLTRN in pancreatic beta cells., [UniProtKB, PubMed]; The absence of BACE2 ameliorates glucose tolerance defects induced by IAPP overexpression in the beta-cell and promotes beta-cell survival., [RefSeq, PubMed]; This gene encodes a member of the peptidase A1 family of aspartic proteases. The encoded preproprotein undergoes proteolytic processing to generate an active endopeptidase enzyme. This transmembrane protease catalyzes the proteolysis of amyloid precursor protein to produce amyloid beta peptide. Mice lacking the encoded product exhibit increased pancreatic beta cell mass and improved glucose tolerance due to increased insulin secretion. [provided by RefSeq, Jul 2016]., [RefSeq]",
+      "predicted_glycosites": 2,
+      "predicted_n_glycosites": 2,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 0,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 0,
+      "total_n_glycosites": 2,
+      "total_o_glycosites": 0,
+      "reported_fully_resolved_glycans": 0,
+      "reported_phosphosites": 0,
+      "reported_mutagensis": 0,
+      "reported_glycation": 0,
+      "reported_snv": 0,
+      "reported_interactions": 0,
+      "missing_score": 10000,
+      "record_type": "protein",
+      "hit_score": 5.19,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 3,
+            "f": 2
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 7
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "Q6IE75-1",
+      "mass": 55858,
+      "protein_name": "Beta-secretase 2",
+      "gene_name": "Bace2",
+      "organism": "Rattus norvegicus",
+      "refseq_name": "beta-secretase 2 precursor",
+      "refseq_ac": "NP_001002802",
+      "gene_names_uniprotkb": "Bace2",
+      "gene_names_refseq": "Bace2",
+      "protein_names_uniprotkb": "Beta-secretase 2; 3.4.23.45; Beta-site APP cleaving enzyme 2; Beta-site amyloid precursor protein cleaving enzyme 2; Memapsin-1; Membrane-associated aspartic protease 1; Theta-secretase",
+      "protein_names_refseq": "beta-secretase 2 precursor; memapsin-1; theta-secretase; membrane-associated aspartic protease 1; beta-site amyloid precursor protein cleaving enzyme 2; beta-site APP-cleaving enzyme 2",
+      "tax_id": 10116,
+      "disease": "Alzheimer's disease (Disease Ontology:DOID:10652); frontotemporal dementia (Disease Ontology:DOID:9255)",
+      "pathway": " (rno:288227)",
+      "publication_count": 3,
+      "function": "Data show that astrocytes possess beta-secretase activity and produce amyloid-beta because of the activity of BACE2, but not BACE1, the expression of which is blocked at the translational level., [RefSeq, PubMed]; Found by global gene expression profiling that BACE2 was up-regulated in the rat pancreatic beta-cell line INS1E stably transfected with human IAPP gene, [RefSeq, PubMed]; Responsible for the proteolytic processing of the amyloid precursor protein (APP). Cleaves APP, between residues 690 and 691, leading to the generation and extracellular release of beta-cleaved soluble APP, and a corresponding cell-associated C-terminal fragment which is later released by gamma-secretase. It has also been shown that it can cleave APP between residues 671 and 672. Involved in the proteolytic shedding of PMEL at early stages of melanosome biogenesis. Cleaves PMEL within the M-beta fragment to release the amyloidogenic PMEL luminal fragment containing M-alpha and a small portion of M-beta N-terminus. This is a prerequisite step for subsequent processing and assembly of PMEL fibrils into amyloid sheets. Responsible also for the proteolytic processing of CLTRN in pancreatic beta cells., [UniProtKB, PubMed]",
+      "predicted_glycosites": 2,
+      "predicted_n_glycosites": 2,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 0,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 0,
+      "total_n_glycosites": 2,
+      "total_o_glycosites": 0,
+      "reported_fully_resolved_glycans": 0,
+      "reported_phosphosites": 0,
+      "reported_mutagensis": 0,
+      "reported_glycation": 0,
+      "reported_snv": 0,
+      "reported_interactions": 0,
+      "missing_score": 10000,
+      "record_type": "protein",
+      "hit_score": 5.15,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 3,
+            "f": 2
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 3
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "Q9Y256-1",
+      "mass": 35833,
+      "protein_name": "CAAX prenyl protease 2",
+      "gene_name": "RCE1",
+      "organism": "Homo sapiens",
+      "refseq_name": "CAAX prenyl protease 2 isoform 2",
+      "refseq_ac": "NP_001027450",
+      "gene_names_uniprotkb": "RCE1; FACE2; RCE1A; RCE1B",
+      "gene_names_refseq": "FACE2; RCE1A; RCE1B; RCE1",
+      "protein_names_uniprotkb": "CAAX prenyl protease 2; 3.4.-.-; FACE-2; Farnesylated proteins-converting enzyme 2; Prenyl protein-specific endoprotease 2; RCE1 homolog; hRCE1",
+      "protein_names_refseq": "CAAX prenyl protease 2 isoform 2; farnesylated protein-converting enzyme 2; prenyl protein-specific endoprotease 2; CAAX prenyl protease 2; farnesylated proteins-converting enzyme 2; RCE1 homolog, prenyl protein peptidase",
+      "tax_id": 9606,
+      "disease": "",
+      "pathway": " (hsa:9986); Ub-specific processing proteases (R-HSA-5689880); RAS processing (R-HSA-9648002)",
+      "publication_count": 136,
+      "function": "A novel RCE1 isoform is required for H-Ras plasma membrane localization regulated by ubiquitin specific peptidase (USP)17., [RefSeq, PubMed]; CAAX endoprotease Rce1 is required for lamin B1 endoproteolysis, [RefSeq, PubMed]; High expression of Rce1 is associated with renal cell carcinoma., [RefSeq, PubMed]; Proteolytically removes the C-terminal three residues of farnesylated and geranylated proteins. Seems to be able to process K-Ras, N-Ras, H-Ras, RAP1B and G-gamma-1 (PubMed:10085068)., [UniProtKB, PubMed, PubMed, PubMed]; RCE1 acts as a tumor suppressor in CRC, as its reduced expression may increase CRC cell invasion and independently predict an unsatisfactory prognosis in CRC patients. Publication Status: Online-Only, [RefSeq, PubMed]; Rce1 suppresses invasion and metastasis of hepatocellular carcinoma via epithelial-mesenchymal transition induced by the TGF-beta1/H-Ras signaling pathway., [RefSeq, PubMed]; Suggests that expression of Rce1 can serve as an independent biomarker for the prognosis of prostate carcinoma patients., [RefSeq, PubMed]; This gene encodes an integral membrane protein which is classified as a member of the metalloproteinase family.  This enzyme is thought to function in the maintenance and processing of CAAX-type prenylated proteins. [provided by RefSeq, Jul 2008]., [RefSeq]; We found that an 8-aa K-Ras-derived 'CAA' peptide, KSKTKC(farnesyl)VI, was a better substrate for hRCE1 than a KSKTKC(f)VIM 'CAAX' peptide, hRCE1 has important interaction with the P2' and P3' substrate positions in addition to the farnesylated cysteine, [RefSeq, PubMed]",
+      "predicted_glycosites": 0,
+      "predicted_n_glycosites": 0,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 0,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 0,
+      "total_n_glycosites": 0,
+      "total_o_glycosites": 0,
+      "reported_fully_resolved_glycans": 0,
+      "reported_phosphosites": 0,
+      "reported_mutagensis": 0,
+      "reported_glycation": 0,
+      "reported_snv": 1,
+      "reported_interactions": 0,
+      "missing_score": 10000,
+      "record_type": "protein",
+      "hit_score": 3.46,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 136
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    },
+    {
+      "uniprot_canonical_ac": "P57791-1",
+      "mass": 35867,
+      "protein_name": "CAAX prenyl protease 2",
+      "gene_name": "Rce1",
+      "organism": "Mus musculus",
+      "refseq_name": "CAAX prenyl protease 2 isoform b",
+      "refseq_ac": "NP_075620",
+      "gene_names_uniprotkb": "Rce1; Face2; Rce1a",
+      "gene_names_refseq": "",
+      "protein_names_uniprotkb": "CAAX prenyl protease 2; 3.4.-.-; FACE-2; Farnesylated proteins-converting enzyme 2; Prenyl protein-specific endoprotease 2; RCE1 homolog",
+      "protein_names_refseq": "CAAX prenyl protease 2 isoform b; CAAX prenyl protease 2; FACE-2; prenyl protein-specific endoprotease 2; farnesylated proteins-converting enzyme 2; RCE1 homolog, prenyl protein peptidase; Ras and a-factor-converting enzyme 1 homolog",
+      "tax_id": 10090,
+      "disease": "",
+      "pathway": " (mmu:19671); Ub-specific processing proteases (R-MMU-5689880); RAS processing (R-MMU-9648002)",
+      "publication_count": 3,
+      "function": "Knockout of the RAS endoprotease RCE1 accelerates myeloid leukemia by downregulating GADD45b., [RefSeq, PubMed]; Proteolytically removes the C-terminal three residues of farnesylated and geranylated proteins. Seems to be able to process K-Ras, N-Ras, H-Ras, RAP1B and G-gamma-1 (By similarity)., [UniProtKB, PubMed, PubMed]; RCE1 is essential for the intracellular trafficking of PDE6 and survival of photoreceptor cells., [RefSeq, PubMed]",
+      "predicted_glycosites": 0,
+      "predicted_n_glycosites": 0,
+      "predicted_o_glycosites": 0,
+      "reported_n_glycosites": 0,
+      "reported_o_glycosites": 0,
+      "reported_n_glycosites_with_glycan": 0,
+      "reported_o_glycosites_with_glycan": 0,
+      "total_reported_n_glycosites": 0,
+      "total_reported_o_glycosites": 0,
+      "total_n_glycosites": 0,
+      "total_o_glycosites": 0,
+      "reported_fully_resolved_glycans": 0,
+      "reported_phosphosites": 0,
+      "reported_mutagensis": 0,
+      "reported_glycation": 0,
+      "reported_snv": 0,
+      "reported_interactions": 0,
+      "missing_score": 10000,
+      "record_type": "protein",
+      "hit_score": 2.13,
+      "score_info": {
+        "contributions": [
+          {
+            "c": "protein_exact_match",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_top_glycan_definition_score",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_fully_resolved_glycans",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites_with_glycan",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_n_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_reported_o_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_predicted_glycosites",
+            "w": 0,
+            "f": 0
+          },
+          {
+            "c": "protein_publication_count",
+            "w": 2,
+            "f": 3
+          }
+        ],
+        "formula": "sum(w + 0.01*f)",
+        "variables": {
+          "c": "condition name",
+          "w": "condition weight",
+          "f": "condition match frequency"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "offset": 1,
+    "limit": 20,
+    "total_length": 8,
+    "sort": "hit_score",
+    "order": "desc"
+  }
+}

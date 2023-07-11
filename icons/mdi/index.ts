@@ -4,6 +4,7 @@ import { mdiCameraMeteringMatrix } from '@mdi/js'; export const tissue_icon = { 
 import { mdiChartBar } from '@mdi/js'; export const barchart_icon = { path: mdiChartBar, title: 'Bar Chart', size: 24 }
 import { mdiChartBoxOutline } from '@mdi/js'; export const plot_icon = { path: mdiChartBoxOutline, title: 'Plot', size: 24 }
 import { mdiDna } from '@mdi/js'; export const gene_icon = { path: mdiDna, title: 'Gene', size: 24 }
+import { mdiDolphin } from '@mdi/js'; export const protein_icon = { path: mdiDolphin, title: 'Protein', size: 24 }
 import { mdiEmoticonCryOutline } from '@mdi/js'; export const disease_icon = { path: mdiEmoticonCryOutline, title: 'Disease', size: 24 }
 import { mdiFile } from '@mdi/js'; export const file_icon = { path: mdiFile, title: 'File', size: 24 }
 import { mdiFileLink } from '@mdi/js'; export const metadata_file_icon = { path: mdiFileLink, title: 'Metadata Matrix', size: 24 }

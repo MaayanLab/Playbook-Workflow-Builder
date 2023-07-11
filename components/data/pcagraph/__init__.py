@@ -9,7 +9,7 @@ import pandas as pd
 from IPython.display import display, Markdown
 import chart_studio.plotly as py
 import json
-from components.data.gene_count_matrix import anndata_from_path
+from components.data.gene_count_matrix import anndata_from_file
 import numpy as np
 
 from sklearn.decomposition import PCA
@@ -74,7 +74,7 @@ def plot(pca):
 	return fig
 
 def createpca(gene_count_matrix):
-	dataset = anndata_from_path(gene_count_matrix['url'])
+	dataset = anndata_from_file(gene_count_matrix)
 	dataset = dataset.to_df()
 	dataset = pd.DataFrame(dataset.values)
 	data = run(dataset)

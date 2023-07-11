@@ -1,8 +1,8 @@
 {
-  "name": "differentialexpression",
+  "name": "limma_voom",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
-  "author": "Alex Agris <aagris@stanford.edu>",
+  "author": "Zhuorui (Sherry) Xie <zhuorui.xie@mssm.edu>",
   "private": true,
   "main": "index.ts",
   "dependencies": {

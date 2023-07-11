@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import python from '@/utils/python'
-import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
+import { GeneSignature } from '@/components/data/gene_signature'
 import { norm_icon } from '@/icons'
 import { PlotlyPlot } from '@/components/viz/plotly'
 
@@ -13,11 +13,11 @@ export const volcanoplot = MetaNode('volcanoplot')
     description: 'volcanoplot',
     icon: [norm_icon],
   })
-  .inputs({ matrix: GeneCountMatrix })
+  .inputs({ sig: GeneSignature })
   .output(PlotlyPlot)
   .resolve(async (props) => await python(
     'components.data.volcanoplot.createvolcano',
-    { kargs: [props.inputs.matrix]  },
+    { kargs: [props.inputs.sig]  },
   ))
   .story(props =>
     `The gene count matrix was then analyzed by volcano plot.`

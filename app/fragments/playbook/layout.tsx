@@ -70,7 +70,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
           </div>
           <div className="grid-cols-1">
             <a href="https://www.nih-cfde.org/" target="_blank">
-              <img className="rounded h-20" src={`${publicUrl}/logos/CFDE.png`} />
+              <img className="rounded h-20 dark:bg-white" src={`${publicUrl}/logos/CFDE.png`} />
             </a>
           </div>
           <div className="flex flex-col grid-cols-1 gap-1">

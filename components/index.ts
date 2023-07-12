@@ -1,6 +1,8 @@
 export const components: string[] = []
 export * from "./MW/ConvertedGeneID"
 components.push("MW/ConvertedGeneID")
+export * from "./MW/PPI_StringDB"
+components.push("MW/PPI_StringDB")
 export * from "./MW/geneidconv"
 components.push("MW/geneidconv")
 export * from "./MW/metaboliteInfo"

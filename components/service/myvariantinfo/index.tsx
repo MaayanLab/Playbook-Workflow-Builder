@@ -68,7 +68,7 @@ export const MyVariantInfoFromVariantTerm = MetaNode('MyVariantInfoFromVariantTe
       return MyVariantInfoC.parse(await myvariantinfo(props.inputs.variant))
   })
   .story(props =>
-    `More information about the variant was then obtained with the MyVariant.info API.`
+    `More information about the variant was then obtained with the MyVariant.info API [\\ref{10.1093/bioinformatics/btac017}].`
   )
   .build()
 
@@ -88,6 +88,7 @@ export const GeneTermFromMyVariantInfo = MetaNode('GeneTermFromMyVariantInfo')
     if (gene === undefined) throw new Error('Gene not identified in MyVariantInfo')
     return gene
   })
+  .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{10.1093/bioinformatics/btac017}].`)
   .build()
 
 export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
@@ -102,4 +103,5 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
     const info = await MyVariantInfoFromVariantTerm.resolve(props)
     return await GeneTermFromMyVariantInfo.resolve({ inputs: { info }})
   })
+  .story(props => `The closest gene to the variant was found using MyVariant.info [\\ref{10.1093/bioinformatics/btac017}].`)
   .build()

@@ -63,6 +63,7 @@ export const GMTFromFile = MetaNode('GMTFromFile')
     'components.data.gene_matrix_transpose.load_gene_matrix_transpose',
     { kargs: [props.inputs.file] },
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene matrix transpose.`)
   .build()
 
 export const GMTUnion = MetaNode('GMTUnion')

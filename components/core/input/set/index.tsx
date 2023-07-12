@@ -173,7 +173,7 @@ export const TermToSetT = [
       return { set: props.inputs.terms }
     })
     .story(props =>
-      `The specified genes were combined into one gene set.`
+      `The specified genes were combined into a gene set.`
     )
     .build()
 )

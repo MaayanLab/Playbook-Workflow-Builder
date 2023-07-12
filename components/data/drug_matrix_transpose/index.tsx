@@ -63,6 +63,7 @@ export const DMTFromFile = MetaNode('DMTFromFile')
     'components.data.drug_matrix_transpose.load_drug_matrix_transpose',
     { kargs: [props.inputs.file] },
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a drug matrix transpose.`)
   .build()
 
 export const DMTUnion = MetaNode('DMTUnion')

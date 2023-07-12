@@ -81,6 +81,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
       .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
+      .story(props => `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.`)
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
@@ -91,6 +92,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
       .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
+      .story(props => `A GMT was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.`)
       .build(),
 
   ]
@@ -165,6 +167,9 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     }
     return await response.json()
   })
+  .story(props =>
+    `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr [\\ref{10.1002/cpz1.90}].`
+  )
   .build()
 
 const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: { shortId: string, userListId: number }) => {
@@ -240,6 +245,9 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .inputs({ gene: GeneTerm })
   .output(EnrichrGeneSearchResults)
   .resolve(async (props) => props.inputs.gene)
+  .story(props =>
+    `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{10.1002/cpz1.90}].`
+  )
   .build()
 
 const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
@@ -324,6 +332,9 @@ export const EnrichrTermTSearch = [
     .inputs({ term: TermT })
     .output(EnrichrTermSearchResults)
     .resolve(async (props) => props.inputs.term)
+    .story(props =>
+      `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{10.1002/cpz1.90}].`
+    )
     .build()
 )
 

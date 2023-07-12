@@ -20,6 +20,6 @@ export const PCAgraph = MetaNode('PCAgraph')
     { kargs: [props.inputs.matrix]  },
   ))
   .story(props =>
-    `The gene count matrix was then analyzed by PCA.`
+    `The gene count matrix was then analyzed by PCA. The PCA plug-in embeds an interactive, three-dimensional scatter plot of the first three Principal Components (PCs) of the data. Each point represents an RNA-seq sample. Samples with similar gene expression profiles are closer in the three-dimensional space.`
   )
   .build()

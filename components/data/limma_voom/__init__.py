@@ -1,8 +1,7 @@
 from components.data.gene_count_matrix import anndata_from_file
-from components.data.metadata_matrix import metadata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
-from maayanlab_bioinformatics.dge import characteristic_direction , limma_voom_differential_expression
+from maayanlab_bioinformatics.dge import limma_voom_differential_expression
 import pandas as pd
 
 # Function for computing signatures with characteristic direction

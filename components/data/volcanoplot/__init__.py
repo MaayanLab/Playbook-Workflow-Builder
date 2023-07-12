@@ -1,18 +1,7 @@
-import numpy as np
-import pandas as pd
-import plotly.graph_objs as go
-from plotly.offline import iplot
-from IPython.display import display, Markdown
-import sys, os
-import json
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import plotly.graph_objs as go
-from plotly.offline import iplot
 import json
 from components.data.gene_signature import signature_from_file
-from components.core.file import File
 
 def run(signature, signature_label='', pvalue_threshold=0.05, logfc_threshold=1.5, plot_type='interactive'):
     # Loop through signature

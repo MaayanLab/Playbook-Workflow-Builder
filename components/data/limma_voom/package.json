@@ -2,7 +2,7 @@
   "name": "limma_voom",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
-  "author": "Zhuorui (Sherry) Xie <zhuorui.xie@mssm.edu>",
+  "author": "Alex Agris <aagris@stanford.edu>",
   "private": true,
   "main": "index.ts",
   "dependencies": {

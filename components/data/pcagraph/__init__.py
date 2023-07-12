@@ -1,27 +1,12 @@
 #loadlibraries
-from scipy import datasets
 from sklearn.decomposition import PCA
 import plotly.graph_objs as go
-from plotly.offline import iplot, plot_mpl
-import scipy.stats as ss
-import warnings, sys, os
+import sys, os
 import pandas as pd
-from IPython.display import display, Markdown
-import chart_studio.plotly as py
 import json
 from components.data.gene_count_matrix import anndata_from_file
 import numpy as np
-
-from sklearn.decomposition import PCA
 from sklearn.preprocessing import FunctionTransformer
-import numpy as np
-
-import pandas as pd
-
-# loadotherlibraries
-
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'core_scripts', 'shared', 'shared.py'))
-import shared as s
 
 def run(dataset):
 

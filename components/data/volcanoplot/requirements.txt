@@ -1,4 +1,3 @@
+json
+matplotlib
 numpy
-leidenalg
-pandas
-scanpy

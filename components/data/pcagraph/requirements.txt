@@ -1,2 +1,4 @@
-maayanlab-bioinformatics @ git+https://github.com/Maayanlab/maayanlab-bioinformatics
+numpy
 pandas
+plotly
+scikit-learn

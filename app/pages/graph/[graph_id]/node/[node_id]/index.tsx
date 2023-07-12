@@ -85,6 +85,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
             <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
           </div>
         })
+        .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)
         .build()
       krg.add(ProcessNode)
     }

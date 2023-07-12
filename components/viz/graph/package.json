@@ -1,0 +1,19 @@
+{
+  "name": "@playbook-partnership/components-viz-graph",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
+  "private": true,
+  "main": "index.tsx",
+  "dependencies": {
+    "cytoscape": "^3.25.0",
+    "cytoscape-cola": "^2.5.1",
+    "react": "^18.2.0",
+    "react-cytoscapejs": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.19.9",
+    "@types/react": "^18.0.21",
+    "@types/react-cytoscapejs": "^1.2.2"
+  }
+}

@@ -116,9 +116,9 @@ export const TopKScoredT = [
 ])
 
 export const SetFromScoredT = [
-  { ScoredT: ScoredDrugs, SetT: DrugSet, },
-  { ScoredT: ScoredGenes, SetT: GeneSet, },
-].map(({ ScoredT, SetT }) =>
+  { ScoredT: ScoredDrugs, SetT: DrugSet, TermT: DrugTerm, T: Drug, },
+  { ScoredT: ScoredGenes, SetT: GeneSet, TermT: GeneTerm, T: Gene, },
+].flatMap(({ ScoredT, SetT, TermT, T }) => [
   MetaNode(`SetFromScored[${ScoredT.spec}]`)
     .meta({
       label: `Set from ${ScoredT.meta.label}`,
@@ -130,5 +130,57 @@ export const SetFromScoredT = [
     .story(props =>
       `A set was constructed using the ${ScoredT.meta.label.toLocaleLowerCase()}.`
     )
+    .build(),
+  MetaNode(`OneSetT[${SetT.spec}]`)
+    .meta({
+      label: `Select One ${TermT.meta.label}`,
+      description: `Select one ${TermT.meta.label}`,
+    })
+    .inputs({ set: SetT })
+    .output(TermT)
+    .prompt(props => {
+      const set = props.inputs.set.set
+      const [selected, setSelected] = React.useState<number | undefined>()
+      React.useEffect(() => {
+        if (props.output !== undefined) {
+          const index = set.findIndex((term) => term === props.output)
+          if (index >= 0) {
+            setSelected(index)
+            return
+          }
+        }
+        if (set.length > 0) {
+          setSelected(0)
+        }
+      }, [props.output, set])
+      return (
+        <div>
+          <Table
+            height={500}
+            cellRendererDependencies={[set]}
+            rowHeaderCellRenderer={(row) =>
+              <div
+                className="text-center block"
+                onClick={evt => {
+                  setSelected(row)
+                  props.submit(set[row])
+                }}
+              >
+                <input type="radio" checked={selected === row} />
+              </div>
+            }
+            numRows={set.length}
+            enableGhostCells
+            enableFocusedCell
+          >
+            <Column
+              name={T.label}
+              cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
+            />
+          </Table>
+        </div>
+      )
+    })
+    .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
     .build()
-)
+])

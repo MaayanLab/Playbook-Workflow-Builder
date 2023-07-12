@@ -18,6 +18,7 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
       { kargs: [props.inputs.gene_info.ensembl?.gene]},
     )
   })
+  .story(props => `Gene expression in tumors for ${props.inputs ? props.inputs.gene_info.symbol : 'the gene'} were queried from the Open Pediatric Cancer Atlas API [\\ref{10.1016/j.xgen.2023.100340}].`)
   .build()
 
 export const KFTumorExpressionFromGene = MetaNode('KFTumorExpressionFromGene')
@@ -28,4 +29,5 @@ export const KFTumorExpressionFromGene = MetaNode('KFTumorExpressionFromGene')
     const gene_info = await GeneInfoFromGeneTerm.resolve(props)
     return await KFTumorExpression.resolve({ inputs: { gene_info } })
   })
+  .story(props => `Gene expression in tumors for ${props.inputs ? props.inputs.gene : 'the gene'} were queried from the Open Pediatric Cancer Atlas API [\\ref{10.1016/j.xgen.2023.100340}].`)
   .build()

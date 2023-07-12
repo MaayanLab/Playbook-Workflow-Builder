@@ -90,7 +90,7 @@ export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
     label: 'Variant Information',
-    description: 'A Variant resolved with MyVariantInfo',
+    description: 'A Variant resolved with reg.clinicalgenome.org',
     icon: [linkeddatahub_icon],
   })
   .codec(AlleleRegistryVariantInfoC)
@@ -114,7 +114,7 @@ export async function getAlleleRegistryVariantInfo(variantId: string): Promise<A
 export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   .meta({
     label: 'Resolve Variant Info from Term',
-    description: 'Resolve variant info (Allele registry API) from variant term with MyVariantInfo',
+    description: 'Resolve variant info (Allele registry API) from variant term',
     icon: [linkeddatahub_icon],
   })
   .inputs({ variant: VariantTerm })
@@ -124,13 +124,14 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
     response.entId = props.inputs.variant;
     return response;
   })
+  .story(props => `Additional information about the variant${props.inputs ? ` ${props.inputs.variant}` : ''} was resolved.`)
   .build()
 
 
 export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
   .meta({
-    label: 'Resolve Reg. Element from Var. Info',
-    description: 'GetRegulatoryElementsForThisVariant',
+    label: 'Resolve Regulatory Elements',
+    description: 'Get Regulatory Elements for this variant',
   })
   .inputs({ variantInfo: VariantInfo  })
   .output(RegulatoryElementTerm)
@@ -141,12 +142,13 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
     }
     return "N/A";
   })
+  .story(props => `Regulatory elements for the variant${props.inputs ? ` ${props.inputs.variantInfo.entId}` : ''} was resolved.`)
   .build()
 
 export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTable')
   .meta({
-    label: 'AlleleSpecificEvidencesTable',
-    description: ''
+    label: 'Allele Specific Evidences Table',
+    description: 'A table of allele specific evidences',
   })
   .codec(AlleleSpecificEvidenceInfoC)
   .view(alleleSpecificEvidence => {
@@ -219,8 +221,8 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
 
 export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpecificEvidencesForThisVariant')
   .meta({
-    label: 'Resolve Allele Specific Evidences from Var. Info',
-    description: 'GetAlleleSpecificEvidencesForThisVariant',
+    label: 'Resolve Allele Specific Evidences',
+    description: 'Get allele specific evidences for this variant',
   })
   .inputs({ variantInfo: VariantInfo })
   .output(AlleleSpecificEvidencesTable)
@@ -281,10 +283,9 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
         alleleSpecificEvidence.push(specificEvidence)
     }
 
-    console.log(JSON.stringify(alleleSpecificEvidence));
-
     return alleleSpecificEvidence;
   })
+  .story(props => `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variantInfo.entId}` : ''} were resolved.`)
   .build()
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
@@ -334,8 +335,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
 
 export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
   .meta({
-    label: 'Resolve xQTL Evidence Data for Variant Info',
-    description: 'Resolve xQTL Evidence Data for Variant Info Data',
+    label: 'Resolve xQTL Evidence Data',
+    description: 'Resolve xQTL evidence data',
   })
   .inputs({ variantInfo: VariantInfo  })
   .output(xQTL_EvidenceDataTable)
@@ -356,6 +357,7 @@ export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDa
       }
     return reponse;
   })
+  .story(props => `xQTL evidence data for the variant${props.inputs ? ` ${props.inputs.variantInfo.entId}` : ''} was resolved.`)
   .build()
 
 export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExternalRecordsTable')
@@ -408,8 +410,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
 export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
-    label: 'Resolve Allele Registry External Records for Variant',
-    description: 'GetAlleleRegistryExternalRecordsForVariant',
+    label: 'Resolve Allele Registry External Records',
+    description: 'Get allele registry external records',
   })
   .inputs({ variantInfo: VariantInfo  })
   .output(AlleleRegistryExternalRecordsTable)
@@ -445,4 +447,6 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       }
     }
     return alleleInfoExternalResources;
-  }).build()
+  })
+  .story(props => `External records for the variant${props.inputs ? ` ${props.inputs.variantInfo.entId}` : ''} were resolved.`)
+  .build()

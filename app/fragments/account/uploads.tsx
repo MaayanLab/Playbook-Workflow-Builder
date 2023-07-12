@@ -53,18 +53,21 @@ export default function Uploads() {
           <table className="table table-compact w-full text-black dark:text-white">
             <thead>
               <tr>
+                <th></th>
                 <th>Filename</th>
                 <th>URL</th>
                 <th>sha256</th>
                 <th>Size</th>
                 <th>Timestamp</th>
                 <th>Actions</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {uploads.length === 0 ? <tr><td colSpan={6} align="center">No uploads</td></tr> : null}
+              {uploads.length === 0 ? <tr><td colSpan={8} align="center">No uploads</td></tr> : null}
               {uploads.map(upload => (
                 <tr key={upload.id}>
+                  <td></td>
                   <td>{upload.filename}</td>
                   <td>{upload.url}</td>
                   <td>{upload.sha256.slice(0, 5)}...{upload.sha256.slice(-5)}</td>
@@ -94,9 +97,10 @@ export default function Uploads() {
                       <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                     </button>
                   </td>
+                  <td></td>
                 </tr>
               ))}
-              <tr><td colSpan={6} align="center">
+              <tr><td colSpan={8} align="center">
                 <button className="btn btn-primary btn-sm" onClick={async () => {
                   const req = await fetch(`/api/db/fpl/start/extend`, {
                     method: 'POST',

@@ -168,7 +168,7 @@ export const ResolverName = MetaNode('ResolverName')
     return props.inputs.gene
   })
   // here you describe the step as a sentence in a methods section, ideally with an applicable citation
-  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{somedoi}].`)
+  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)
   .build()
 ```
 
@@ -199,7 +199,7 @@ export const ResolverName = MetaNode('ResolverName')
       { kargs: [props.inputs.input], kwargs: {} },
     )
   })
-  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{somedoi}].`)
+  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)
   .build()
 
 ```

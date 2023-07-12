@@ -107,7 +107,7 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
   output: ExtractKey<T, 'output'>
   story?(props: {
-    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
   }): string
 }

@@ -21,7 +21,7 @@ export const GTExTissueExpression = MetaNode('GTExTissueExpression')
     )
   })
   .story(props =>
-    `Median expression of ${props.inputs.gene_info.symbol} was obtained from the GTEx Portal [\\ref{doi:10.1038/ng.2653}] using the portal's API.`
+    `Median expression of ${props.inputs ? props.inputs.gene_info.symbol : 'the gene'} was obtained from the GTEx Portal [\\ref{doi:10.1038/ng.2653}] using the portal's API.`
   )
   .build()
 
@@ -34,6 +34,6 @@ export const GTExTissueExpressionFromGene = MetaNode('GTExTissueExpressionFromGe
     return await GTExTissueExpression.resolve({ inputs: { gene_info } })
   })
   .story(props =>
-    `Median expression of ${props.inputs.gene} was obtained from the GTEx Portal [\\ref{doi:10.1038/ng.2653}] using the portal's API.`
+    `Median expression of ${props.inputs ? props.inputs.gene : 'the gene'} was obtained from the GTEx Portal [\\ref{doi:10.1038/ng.2653}] using the portal's API.`
   )
   .build()

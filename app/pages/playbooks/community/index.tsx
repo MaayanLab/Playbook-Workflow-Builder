@@ -143,7 +143,7 @@ export default function CommunityPlaybooks() {
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
                 <div className="col-span-1 row-span-1 p-3">
-                  <div className="prose md:h-12">{playbook.title}</div>
+                  <div className="prose">{playbook.title}</div>
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
                 <div className="col-span-1 row-span-1 p-3">

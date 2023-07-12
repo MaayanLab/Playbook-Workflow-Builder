@@ -4,10 +4,10 @@ import python from '@/utils/python'
 import { GeneSignature } from '@/components/data/gene_signature'
 import { AnnData } from '@/components/data/anndata'
 
-export const limmavoom = MetaNode('limmavoom')
+export const LimmaVoom = MetaNode('Limma-Voom')
   .meta({
-    label: 'limmavoom',
-    description: `limmavoom`
+    label: 'Limma-Voom Analysis from Anndata File',
+    description: `Construct a table which contains the results of differential gene expression (DGE) analysis between two groups of samples in a dataset. Every row of the table represents a gene; the columns display the results of the differential gene expression analysis.`
   })
   .inputs({
     anndata: AnnData,
@@ -18,7 +18,7 @@ export const limmavoom = MetaNode('limmavoom')
     { kargs: [props.inputs.anndata]}
   ))
   .story(props =>
-    `The limmavoom plug-in embeds a table which contains the results of differential gene expression (DGE) analysis between two groups of samples in a dataset. Every row of the table represents a gene; the columns display the results of the differential gene expression analysis.`
+    `The anndata file was then analyzed using differential expression Limma-Voom function.`
   )
   .build()
  

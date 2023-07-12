@@ -7,10 +7,10 @@ import { PlotlyPlot } from '@/components/viz/plotly'
 
 
 
-export const PCAgraph = MetaNode('PCAgraph')
+export const PCAGraph = MetaNode('PCAGraph')
   .meta({
-    label: 'PCA graph of RNAseq data',
-    description: 'analyze gene count matrix of RNAseq data and return PCA graph',
+    label: 'PCA Graph of RNAseq Data from Gene Count Matrix',
+    description: 'Construct an interactive, three-dimensional scatter plot of the first three Principal Components (PCs) of data from a Gene Count Matrix. Each point represents an RNA-seq sample. Samples with similar gene expression profiles are closer in the three-dimensional space.',
     icon: [norm_icon],
   })
   .inputs({ matrix: GeneCountMatrix })
@@ -20,6 +20,8 @@ export const PCAgraph = MetaNode('PCAgraph')
     { kargs: [props.inputs.matrix]  },
   ))
   .story(props =>
-    `The gene count matrix was then analyzed by PCA. The PCA plug-in embeds an interactive, three-dimensional scatter plot of the first three Principal Components (PCs) of the data. Each point represents an RNA-seq sample. Samples with similar gene expression profiles are closer in the three-dimensional space.`
+    `The gene count matrix was then visualized as a PCA graph.`
   )
   .build()
+
+  

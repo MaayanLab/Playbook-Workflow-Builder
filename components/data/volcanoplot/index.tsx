@@ -7,10 +7,10 @@ import { PlotlyPlot } from '@/components/viz/plotly'
 
 
 
-export const volcanoplot = MetaNode('volcanoplot')
+export const VolcanoPlot = MetaNode('VolcanoPlot')
   .meta({
-    label: 'volcanoplot',
-    description: 'volcanoplot',
+    label: 'Volcano Plot from Differential Expression Table',
+    description: 'Construct a scatter plot which displays the log2-fold changes and statistical significance of each gene calculated by performing differential gene expression analysis comparing samples in the Control group to samples in the Perturbation group. Every point in the plot represents a gene.',
     icon: [norm_icon],
   })
   .inputs({ sig: GeneSignature })
@@ -20,7 +20,7 @@ export const volcanoplot = MetaNode('volcanoplot')
     { kargs: [props.inputs.sig]  },
   ))
   .story(props =>
-    `The gene count matrix was then analyzed by volcano plot. The volcano plot plug-in embeds a scatter plot which displays the log2-fold changes and statistical significance of each gene calculated by performing differential gene expression analysis comparing samples in the Control group to samples in the Perturbation group. Every point in the plot represents a gene.`
+    `The data in the differential expression table was then visualized as a volcano plot.`
   )
   .build()
 

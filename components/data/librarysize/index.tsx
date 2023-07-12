@@ -7,10 +7,10 @@ import { PlotlyPlot } from '@/components/viz/plotly'
 
 
 
-export const VisualizeLibrarySize = MetaNode('VisualizeLibrarySize')
+export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
   .meta({
-    label: 'VisualizeLibrarySize',
-    description: 'VisualizeLibrarySize',
+    label: 'Library Size Bar Plot from Gene Count Matrix',
+    description: 'Construct a bar plot which displays the total number of reads mapped to each RNA-seq sample in the dataset',
     icon: [norm_icon],
   })
   .inputs({ matrix: GeneCountMatrix })
@@ -20,7 +20,7 @@ export const VisualizeLibrarySize = MetaNode('VisualizeLibrarySize')
     { kargs: [props.inputs.matrix]  },
   ))
   .story(props =>
-    `This library size plug-in embeds an interactive bar chart which displays the total number of reads mapped to each RNA-seq sample in the dataset.`
+    `The gene count matrix was then visualized as a bar plot representing library sizes.`
   )
   .build()
 

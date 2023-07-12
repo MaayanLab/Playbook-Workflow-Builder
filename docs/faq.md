@@ -63,6 +63,7 @@ export const SomeFileOp = MetaNode('SomeFileOp')
     const file = await fileFromStream(res.body, `derived.${props.inputs.file.filename}`)
     return file
   })
+  .story(props => `The performed some operation on the file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''}.`)
   .build()
 ```
 
@@ -88,6 +89,7 @@ MetaNode('MyProcess')
       },
     })
   })
+  //...
 ```
 
 ## How can I add new icons to include in my components?

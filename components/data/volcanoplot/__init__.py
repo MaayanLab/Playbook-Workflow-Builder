@@ -26,7 +26,7 @@ def run(signature, signature_label='', pvalue_threshold=0.05, logfc_threshold=1.
 
 def plot(volcano_plot_results):
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
+    fig.add_trace(go.Scattergl(
         x=volcano_plot_results['x'],
         y=volcano_plot_results['y'],
         mode='markers',

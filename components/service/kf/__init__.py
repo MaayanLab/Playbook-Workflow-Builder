@@ -14,7 +14,7 @@ def main(ensembl_id: str) -> dict:
             The dictionary is sorted by TPM_sd in descending order.
     """
 
-    api_url = 'https://openpedcan-api.d3b.io/tpm/gene-all-cancer/json'
+    api_url = 'https://moleculartargets.ccdi.cancer.gov/tpm/gene-all-cancer/json'
     query_params = {'ensemblId':ensembl_id,'includeTumorDesc':'primaryOnly'}
 
     with requests.Session() as session:

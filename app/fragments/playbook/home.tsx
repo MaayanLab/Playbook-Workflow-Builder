@@ -10,7 +10,7 @@ export default function Home() {
         <title>Playbook: Start</title>
       </Head>
 
-      <div className="bp4-running-text">
+      <div className="bp4-running-text prose max-w-none">
         <h2 className="bp4-heading">Construct a Playbook</h2>
         <p className="bp4-text-large bp4-text-muted">This interactive tool enables dynamic exploration and construction of user-driven workflows leveraging curated APIs.</p>
         <hr />

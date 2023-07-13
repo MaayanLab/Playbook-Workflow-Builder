@@ -3,6 +3,7 @@ import * as Auth from 'next-auth/react'
 import type { Session } from 'next-auth'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 function UserAvatar({ session }: { session: Session | null }) {
   if (typeof session?.user?.image === 'string') {
@@ -31,18 +32,18 @@ export default function Layout({ children }: React.PropsWithChildren) {
           <div className="flex-grow flex-none">
             <div className="flex-none lg:hidden">
               <label htmlFor="my-drawer-3" className="btn btn-square btn-ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-black dark:stroke-white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               </label>
             </div>
             <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE}>
-              <h1 className="text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
+              <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
             </Link>
           </div>
           <div className="navbar-end hidden md:flex">
             <div className="hidden lg:flex">
-              <Link href="/playbooks"><button className="btn btn-ghost">Published Playbooks</button></Link>
-              <Link href="/explore"><button className="btn btn-ghost">Explore Components</button></Link>
-              <a href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank"><button className="btn btn-ghost">Contribute</button></a>
+              <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
+              <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Explore Components</button></Link>
+              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank"><button className="btn btn-ghost">Contribute</button></a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -56,7 +57,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
                   <li><Link href="/api/auth/signout">Sign Out</Link></li>
                 </ul>
               </div>
-              : <Link href="/api/auth/signin"><button className="btn btn-ghost">Sign in</button></Link>}
+              : <Link href="/api/auth/signin"><button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white">Sign in</button></Link>}
           </div>
         </div>
 
@@ -64,23 +65,28 @@ export default function Layout({ children }: React.PropsWithChildren) {
 
         <div className="grid grid-flow-row md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 justify-items-center items-center text-center mb-2">
           <div className="flex flex-col grid-cols-1">
-            <a className="text-gray-600" href="mailto:avi.maayan@mssm.edu">Contact Us</a>
-            <a className="text-gray-600" href="https://github.com/nih-cfde/playbook-partnership/blob/master/LICENSE" target="_blank">Usage License</a>
+            <a className="prose prose-sm" href="mailto:avi.maayan@mssm.edu">Contact Us</a>
+            <a className="prose prose-sm" href="https://github.com/nih-cfde/playbook-partnership/blob/master/LICENSE" target="_blank">Usage License</a>
           </div>
           <div className="grid-cols-1">
             <a href="https://www.nih-cfde.org/" target="_blank">
-              <img className="rounded h-20" src={`${publicUrl}/logos/CFDE.png`} />
+              <img className="rounded h-20 dark:bg-white" src={`${publicUrl}/logos/CFDE.png`} />
             </a>
           </div>
           <div className="flex flex-col grid-cols-1 gap-1">
             <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/nih-cfde/playbook-partnership" target="_blank">
               <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
-              <span className="flex-grow">View source code</span>
+              <span className="flex-grow text-black dark:text-white">View source code</span>
             </a>
             <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/nih-cfde/playbook-partnership/issues/new" target="_blank">
               <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
-              <span className="flex-grow">Submit an issue</span>
+              <span className="flex-grow text-black dark:text-white">Submit an issue</span>
             </a>
+            <div className="flex self-center gap-2 items-center">
+              <span className="prose">Light</span>
+              <ThemeToggle />
+              <span className="prose">Dark</span>
+            </div>
           </div>
         </div>
       </div>

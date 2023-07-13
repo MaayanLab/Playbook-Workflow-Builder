@@ -20,7 +20,7 @@ export default function SaveButton({ userPlaybook, toggleSave, updateRequired }:
       >
         <Icon
           icon={save_icon}
-          color={disabled ? 'grey' : !userPlaybook ? 'black' : updateRequired ? 'crimson' : 'green'}
+          className={disabled ? 'fill-gray-400' : !userPlaybook ? 'fill-black dark:fill-white' : updateRequired ? 'fill-red-600' : 'fill-green-600'}
           title={disabled ? 'Sign In to Save' : 'Save'}
         />
       </button>

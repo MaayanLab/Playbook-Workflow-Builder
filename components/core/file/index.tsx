@@ -10,18 +10,20 @@ import { clientUploadFile } from  '@/components/core/file/api/upload/client'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
+export const FileC = z.object({
+  description: z.string().optional().nullable(),
+  url: z.string(),
+  filename: z.string(),
+  size: z.number(),
+})
+
 export const FileURL = MetaNode('FileURL')
   .meta({
     label: 'File URL',
     description: 'URL to a File',
     icon: [file_icon],
   })
-  .codec(z.object({
-    description: z.string().optional(),
-    url: z.string(),
-    filename: z.string(),
-    size: z.number(),
-  }))
+  .codec(FileC)
   .view(({ url }) => (
     <div>
       <h2>File: {url}</h2>
@@ -38,7 +40,7 @@ export const FileInput = MetaNode('FileInput')
   .inputs()
   .output(FileURL)
   .prompt(props => {
-    const [currentFile, setCurrentFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+    const [currentFile, setCurrentFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
     const fileInputRef = React.useRef<HTMLInputElement>(null)
     const { data: session } = useSessionWithId()
     const output = React.useMemo(() => props.output || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.output])
@@ -48,7 +50,7 @@ export const FileInput = MetaNode('FileInput')
     return (
       <div>
         {!session || !session.user ? (
-          <div className="alert alert-warning shadow-lg block">
+          <div className="alert alert-warning shadow-lg block prose">
             You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
           </div>
         ) : (
@@ -106,7 +108,7 @@ export const FileInput = MetaNode('FileInput')
             </div>
             <div className="inline-flex flex-row">
               <a
-                href="/api/components/core/file/example_matrix.tsv"
+                href="/api/v1/components/core/file/example_matrix.tsv"
                 download="example_matrix.tsv"
               >
                 <Bp4Button

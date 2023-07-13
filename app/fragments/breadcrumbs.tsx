@@ -99,9 +99,8 @@ export default function Breadcrumbs(
           return (
             <line
               key={id}
-              stroke="black"
+              className="stroke-black dark:stroke-white"
               strokeWidth={0.05}
-              fill="none"
               x1={B[src].x*1.25}
               y1={B[src].y*1.25}
               x2={B[dst].x*1.25}
@@ -122,8 +121,6 @@ export default function Breadcrumbs(
               {kind === 'data' ? (
                 <circle
                   fill={color}
-                  stroke="black"
-                  strokeWidth={0.001}
                   r={0.5}
                   cx={0}
                   cy={0}

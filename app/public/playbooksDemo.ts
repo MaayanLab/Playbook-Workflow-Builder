@@ -10,7 +10,7 @@ const playbooks = [
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CB-BY-NC-SA-4.0',
+    license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/1d66906d-980b-b690-111e-c341145aa080',
     dataSources: [
       'KidsFirst',
@@ -55,7 +55,7 @@ const playbooks = [
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CB-BY-NC-SA-4.0',
+    license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/0db222e1-9958-b01d-4e22-fef5599ce1f5',
     dataSources: [
       'ENCODE',
@@ -81,7 +81,7 @@ const playbooks = [
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CB-BY-NC-SA-4.0',
+    license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/0c0e357d-79b7-47d0-ec94-7915a88bf493',
     dataSources: [
       'GWAS Catalog',

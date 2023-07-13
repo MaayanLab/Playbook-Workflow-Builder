@@ -16,13 +16,13 @@ export default function Prompt({ krg, processNode, output, id, head }: { krg: KR
   const { data: inputs, error } = useMetapathInputs(krg, head)
   const Component = processNode.prompt
   return (
-    <div className="collapse collapse-arrow">
+    <div className="collapse collapse-arrow text-black dark:text-white">
       <input type="checkbox" defaultChecked={true} />
       <div className="collapse-title flex flex-row gap-2">
-        <Icon icon={processNode.meta.icon || func_icon} />
+        <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
         <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
       </div>
-      {error ? <div className="alert alert-error">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component

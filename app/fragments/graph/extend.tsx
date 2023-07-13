@@ -1,3 +1,4 @@
+import React from 'react'
 import dynamic from 'next/dynamic'
 import { NextRouter, useRouter } from 'next/router'
 import type KRG from '@/core/KRG'
@@ -18,7 +19,20 @@ const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  const selections = dict.init(metapath.map(item => ({ key: item.process.id, value: { process: item.process, processNode: krg.getProcessNode(item.process.type) } })))
+  const selections = React.useMemo(() => {
+    // we'll use leaf nodes of the metapath + the current selected node as the selections
+    const selections: Record<string, { process: Metapath["process"], processNode: ProcessMetaNode }> = {}
+    ;[...metapath, head].forEach(item => {
+      if (item === undefined) return
+      // add this to the selections
+      selections[item.process.id] = { process: item.process, processNode: krg.getProcessNode(item.process.type) }
+      // if a selection previously registered is a parent of this selection, remove it from selections
+      dict.values(item.process.inputs).forEach(k => {
+        if (k.id in selections) delete selections[k.id]
+      })
+    })
+    return selections
+  }, [metapath, head])
   return (
     <>
       <Head>
@@ -104,8 +118,8 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
               <Icon title={null} icon={rightarrow_icon} />
               <Icon title={item.output.meta.label} icon={item.output.meta.icon || variable_icon} />
             </div>
-            <h5 className="bp4-heading">{item.meta.label || ''}</h5>
-            <p className="bp4-text-small">{item.meta.description || ''}</p>
+            <h5 className="text-lg font-bold">{item.meta.label || ''}</h5>
+            <p className="text-sm">{item.meta.description || ''}</p>
           </Card>
         )
       }}</Catalog>

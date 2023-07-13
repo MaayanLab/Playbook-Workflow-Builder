@@ -63,7 +63,8 @@ export function SuggestionEdges(input?: DataMetaNode) {
         })
         .inputs()
         .output(Suggestion)
-        .prompt((props) => <></>)
+        .prompt(props => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
   }
@@ -78,6 +79,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
     suggestion_edges.push(
@@ -90,6 +92,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
   }
@@ -248,8 +251,12 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
             ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
             .output(OutputNode)
             .prompt((props) => {
-              return <div>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</div>
+              return <div>
+                <p>{suggestion.description}</p>
+                <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
+              </div>
             })
+            .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)
             .build()
           krg.add(ProcessNode)
           // extend using those nodes

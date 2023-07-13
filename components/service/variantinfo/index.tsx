@@ -95,6 +95,25 @@ export const GitHubVariantInfoC =  z.object({
 })
 export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
 
+const HG38GeneAssociationsC = z.object({
+  snpeff: z.object({
+    ann: z.array(
+      z.object({
+        distance_to_feature : z.string().optional(),
+				effect : z.string().optional(),
+				feature_id : z.string().optional(),
+				feature_type : z.string().optional(),
+				gene_id : z.string().optional(),
+				genename : z.string().optional(),
+				hgvs_c : z.string().optional(),
+				putative_impact : z.string().optional(),
+				transcript_biotype: z.string().optional()
+      })
+    )
+  })  
+});
+
+
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
     label: 'Variant Information',
@@ -502,3 +521,85 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
     }
     return alleleInfoExternalResources;
   }).build()
+
+
+  export const GeneAssociations = MetaNode('GeneAssociations')
+  .meta({
+    label: 'GeneAssociations',
+    description: ''
+  })
+  .codec(HG38GeneAssociationsC)
+  .view(GeneAssociationsList => {
+    var associatedGeens = GeneAssociationsList.snpeff.ann;
+
+    return (
+      <Table
+        height={500}
+        cellRendererDependencies={[associatedGeens]}
+        numRows={associatedGeens.length}
+        enableGhostCells
+        enableFocusedCell
+      >
+        <Column
+          name="Gene ID"
+          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].gene_id}</Cell>}
+        />
+        <Column
+          name="Gene Name"
+          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].genename}</Cell>}
+        />
+        <Column
+          name="Effect"
+          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].effect}</Cell>}
+        />
+        <Column
+          name="Feature ID"
+          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].feature_id}</Cell>}
+        />
+        <Column
+          name="Distance To Feature"
+          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].distance_to_feature}</Cell>}
+        />
+      </Table>
+    )
+  })
+  .build()
+
+  export const VarinatToGeneAssociation = MetaNode('VarinatToGeneAssociation')
+  .meta({
+    label: `VarinatToGeneAssociation`,
+    description: "Get Associated Gene info for a given Variant."
+  })
+  .inputs({ variantInfo: VariantInfo })
+  .output(GeneAssociations)
+  .resolve(async (props) => {
+    let variantInfoObj: any = props.inputs.variantInfo;
+    let hg38ExtSourceLink = null;
+    let response = null;
+
+    if(variantInfoObj['externalRecords'] != null){
+      let externalSources = variantInfoObj['externalRecords'];
+      for(let er in externalSources){
+        if(er == 'MyVariantInfo_hg38' && externalSources[er] != null){
+          let hg38ExtSource = externalSources[er];
+          hg38ExtSourceLink = hg38ExtSource[0]['@id'];
+          break;
+        }
+      }
+    }
+
+    if(hg38ExtSourceLink != null){
+      const req = await fetch(hg38ExtSourceLink, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/plain',
+        },
+      })
+      response = await req.json();
+      //console.log("hg38 source data: "+JSON.stringify(response));
+    }
+
+    return response;
+  }).story(props =>
+    `Get Associated Gene info for a given Variant.`
+  ).build()

@@ -2,6 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
+import { VariantSet } from '@/components/core/input/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
@@ -12,6 +13,13 @@ const AlleleRegistryVariantInfoC = z.object({
   externalRecords: z.any({}).optional()
 })
 export type AlleleRegistryVariantInfo = z.infer<typeof AlleleRegistryVariantInfoC>
+
+const AlleleRegistryVariantSetInfoC = z.array(
+  z.object({
+    '@id': z.string(),
+    entId: z.string()
+  })
+);
 
 const AlleleRegistryExternalSourcesInfoC = z.array(
   z.object({
@@ -125,7 +133,55 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
     return response;
   })
   .build()
+  
+  export const VariantSetInfo = MetaNode('VariantSetInfo')
+  .meta({
+    label: 'VariantSetInfo',
+    description: ''
+  })
+  .codec(AlleleRegistryVariantSetInfoC)
+  .view(variantInfoSet => {
+    return (
+      <Table
+        height={500}
+        cellRendererDependencies={[variantInfoSet]}
+        numRows={variantInfoSet.length}
+        enableGhostCells
+        enableFocusedCell
+      >
+        <Column
+          name="Varinat id"
+          cellRenderer={row => <Cell key={row+''}>{variantInfoSet[row].entId}</Cell>}
+        />
+        <Column
+          name="Variant link"
+          cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${variantInfoSet[row].entId}`}>{variantInfoSet[row].entId}</a></Cell>}
+        />
+      </Table>
+    )
+  }).build()
 
+  export const VariantInfoFromVariantSet = MetaNode('VariantInfoFromVariantSet')
+  .meta({
+    label: `VariantInfoFromVariantSet`,
+    description: "Get Variant Info from Allele Registry for a set of Varinat CId's."
+  })
+  .inputs({ variantset: VariantSet })
+  .output(VariantSetInfo)
+  .resolve(async (props) => {
+    var varinatSetInpt = props.inputs.variantset.set;
+    
+    var varInfoSet = [];
+    var varAlleleRegResponse = null;
+    for(let indx in varinatSetInpt){
+      varAlleleRegResponse = await getAlleleRegistryVariantInfo(varinatSetInpt[indx].trim());
+      varAlleleRegResponse.entId = varinatSetInpt[indx].trim();
+      varInfoSet.push(varAlleleRegResponse);
+    }
+    return varInfoSet;
+  }).story(props =>
+    `Get Allele Registry data for Varinat Set.`
+  ).build()
 
 export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
   .meta({

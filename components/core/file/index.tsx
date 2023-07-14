@@ -7,6 +7,7 @@ import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
+import { clientLoadExample } from  '@/components/core/file/api/example/client'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -107,16 +108,14 @@ export const FileInput = MetaNode('FileInput')
               />
             </div>
             <div className="inline-flex flex-row">
-              <a
-                href="/api/v1/components/core/file/example_matrix.tsv"
-                download="example_matrix.tsv"
-              >
-                <Bp4Button
-                  large
-                  text="Example"
-                  rightIcon="bring-data"
-                />
-              </a>
+              <Bp4Button
+                large
+                text="Example"
+                rightIcon="bring-data"
+                onClick={async () => {
+                  props.submit(await clientLoadExample())
+                }}
+              />
               <Bp4Button
                 large
                 disabled={

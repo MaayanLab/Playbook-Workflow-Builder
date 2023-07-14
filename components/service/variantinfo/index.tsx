@@ -15,10 +15,7 @@ const AlleleRegistryVariantInfoC = z.object({
 export type AlleleRegistryVariantInfo = z.infer<typeof AlleleRegistryVariantInfoC>
 
 const AlleleRegistryVariantSetInfoC = z.array(
-  z.object({
-    '@id': z.string(),
-    entId: z.string()
-  })
+  AlleleRegistryVariantInfoC
 );
 
 const AlleleRegistryExternalSourcesInfoC = z.array(
@@ -28,6 +25,13 @@ const AlleleRegistryExternalSourcesInfoC = z.array(
       '@id':z.string(),
       id: z.string()
     }))
+  })
+);
+
+const AlleleRegistryExternalSourcesSetInfoC = z.array(
+  z.object({
+    variantCId: z.string(),
+    externalRecords: AlleleRegistryExternalSourcesInfoC
   })
 );
 
@@ -112,7 +116,14 @@ const HG38GeneAssociationsC = z.object({
     )
   })  
 });
+type HG38GeneAssociations = z.infer<typeof HG38GeneAssociationsC>
 
+const HG38GeneAssociationsSetC = z.array(
+  z.object({
+    variantCId: z.string(),
+    geneAssociationsHg38: HG38GeneAssociationsC
+  })
+)
 
 export const VariantInfo = MetaNode('VariantInfo')
   .meta({
@@ -481,6 +492,36 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .build()
 
+  function processExternalRecords(variantInfoObj: AlleleRegistryVariantInfo){
+    let alleleInfoExternalResources = [];
+    let externalSources = variantInfoObj['externalRecords'];
+    for(let er in externalSources){
+      if(externalSources[er] != null){
+
+        let extSources = externalSources[er];
+        for(let indxEs in extSources){
+          var es = extSources[indxEs];
+          if(es.id == null && es.rs != null){
+            es.id = es.rs.toString();
+          }else if(es.id == null && es.preferredName != null){
+            //for ClinVarAlleles
+            es.id = es.preferredName.toString();
+          }else if(es.id == null && es.variationId != null){
+            //ClinVarVariations
+            es.id = es.variationId.toString();
+          }
+        }
+
+        let  externalResourcesTemp = {
+          name: er.toString(),
+          sources: extSources
+        };
+        alleleInfoExternalResources.push(externalResourcesTemp);
+      }
+    }
+    return alleleInfoExternalResources;
+  }
+
 export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
     label: 'Resolve Allele Registry External Records for Variant',
@@ -489,43 +530,16 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   .inputs({ variantInfo: VariantInfo  })
   .output(AlleleRegistryExternalRecordsTable)
   .resolve(async (props) => {
-    let alleleInfoExternalResources = [];
     let variantInfoObj: any = props.inputs.variantInfo;
-
     if(variantInfoObj['externalRecords'] != null){
-      let externalSources = variantInfoObj['externalRecords'];
-      for(let er in externalSources){
-        if(externalSources[er] != null){
-
-          let extSources = externalSources[er];
-          for(let indxEs in extSources){
-            var es = extSources[indxEs];
-            if(es.id == null && es.rs != null){
-              es.id = es.rs.toString();
-            }else if(es.id == null && es.preferredName != null){
-              //for ClinVarAlleles
-              es.id = es.preferredName.toString();
-            }else if(es.id == null && es.variationId != null){
-              //ClinVarVariations
-              es.id = es.variationId.toString();
-            }
-          }
-
-          let  externalResourcesTemp = {
-            name: er.toString(),
-            sources: extSources
-          };
-          alleleInfoExternalResources.push(externalResourcesTemp);
-        }
-      }
+      return processExternalRecords(variantInfoObj);
     }
-    return alleleInfoExternalResources;
+    return null;
   }).build()
 
-
-  export const GeneAssociations = MetaNode('GeneAssociations')
+  export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .meta({
-    label: 'GeneAssociations',
+    label: 'GeneAssociations_HG38',
     description: ''
   })
   .codec(HG38GeneAssociationsC)
@@ -541,12 +555,8 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
         enableFocusedCell
       >
         <Column
-          name="Gene ID"
+          name="Gene ID/Name"
           cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].gene_id}</Cell>}
-        />
-        <Column
-          name="Gene Name"
-          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].genename}</Cell>}
         />
         <Column
           name="Effect"
@@ -565,41 +575,232 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   })
   .build()
 
-  export const VarinatToGeneAssociation = MetaNode('VarinatToGeneAssociation')
+  function processHG38externalRecords(externalRecord: any){
+    let sourceLinks = externalRecord.sources;
+    for(let sl in sourceLinks){
+      return sourceLinks[sl]['@id'];
+    }
+  }
+
+  async function  getHG38externalRecordsDataAPI(hg38ExtSourceLink: string): Promise<HG38GeneAssociations>{
+    const req = await fetch(hg38ExtSourceLink, {
+      method: 'GET',
+      headers: {
+        Accept: 'text/plain',
+      },
+    })
+    return await req.json();
+  }
+
+  export const GetVarinatToGeneAssociation_HG38 = MetaNode('GetVarinatToGeneAssociation_HG38')
   .meta({
-    label: `VarinatToGeneAssociation`,
+    label: `GetVarinatToGeneAssociation_HG38`,
     description: "Get Associated Gene info for a given Variant."
   })
-  .inputs({ variantInfo: VariantInfo })
-  .output(GeneAssociations)
+  .inputs({ externalRecords: AlleleRegistryExternalRecordsTable })
+  .output(GeneAssociations_HG38)
   .resolve(async (props) => {
-    let variantInfoObj: any = props.inputs.variantInfo;
+    let externalRecords = props.inputs.externalRecords;
+
     let hg38ExtSourceLink = null;
     let response = null;
 
-    if(variantInfoObj['externalRecords'] != null){
-      let externalSources = variantInfoObj['externalRecords'];
-      for(let er in externalSources){
-        if(er == 'MyVariantInfo_hg38' && externalSources[er] != null){
-          let hg38ExtSource = externalSources[er];
-          hg38ExtSourceLink = hg38ExtSource[0]['@id'];
-          break;
-        }
+    for(let er in externalRecords){
+      if(externalRecords[er] != null && externalRecords[er].name == "MyVariantInfo_hg38"){
+        hg38ExtSourceLink = processHG38externalRecords(externalRecords[er]);
+        break;
       }
     }
 
     if(hg38ExtSourceLink != null){
-      const req = await fetch(hg38ExtSourceLink, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/plain',
-        },
-      })
-      response = await req.json();
-      //console.log("hg38 source data: "+JSON.stringify(response));
+      response = await getHG38externalRecordsDataAPI(hg38ExtSourceLink);
     }
 
     return response;
   }).story(props =>
     `Get Associated Gene info for a given Variant.`
   ).build()
+
+  export const VarinatSetExternalRecordsInfo = MetaNode('VarinatSetExternalRecordsInfo')
+  .meta({
+    label: 'VarinatSetExternalRecordsInfo',
+    description: ''
+  })
+  .codec(AlleleRegistryExternalSourcesSetInfoC)
+  .view( externalRecordsSet => {
+    //let externalRecords = externalRecordsSet;
+    return ( 
+      <Table
+      height={500}
+      cellRendererDependencies={[externalRecordsSet]}
+      numRows={externalRecordsSet.length}
+      enableGhostCells
+      enableFocusedCell
+      >
+        <Column
+          name="Varinat CId"
+          cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCId}</Cell>}
+        />
+        <Column
+          name="External Source Name"
+          cellRenderer={row =>
+            <Cell key={row+''}>
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {externalRecordsSet[row].externalRecords.map(externalRecord =>
+                    <tr><td>{ externalRecord.name}</td></tr>
+                )}
+              </table>
+            </Cell>}
+        />
+        <Column
+          name="Resource link"
+          cellRenderer={row =>
+            <Cell key={row+''}>
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {externalRecordsSet[row].externalRecords.map(externalRecord =>
+                    <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Resource link</a></td></tr>
+                )}
+              </table>
+            </Cell>}
+          />
+      </Table>
+    )  
+  })
+  .build()
+
+  export const GetVarinatSetExternalRecords = MetaNode('GetVarinatSetExternalRecords')
+  .meta({
+    label: `GetVarinatSetExternalRecords`,
+    description: "Get External Records for a given Variant Set."
+  })
+  .inputs({ variantSetInfo: VariantSetInfo })
+  .output(VarinatSetExternalRecordsInfo)
+  .resolve(async (props) => {
+    let variantSetInfo = props.inputs.variantSetInfo;
+    let externalRecordsSet = [];
+
+    for(let indx in variantSetInfo){
+      let variantInfoObj = variantSetInfo[indx];
+      if(variantInfoObj['externalRecords'] != null){
+        let exteralRecordsData = processExternalRecords(variantInfoObj);
+        let variantExternalRecords = {
+          "variantCId" : variantInfoObj.entId,
+          "externalRecords" : exteralRecordsData
+        };
+
+        externalRecordsSet.push(variantExternalRecords);
+      }
+    }
+    return externalRecordsSet;
+  }).story(props =>
+    `Get External Records for a given Variant Set.`
+  ).build()
+
+
+  export const GeneAssociationsSet_HG38 = MetaNode('GeneAssociationsSet_HG38')
+  .meta({
+    label: 'GeneAssociationsSet_HG38',
+    description: ''
+  })
+  .codec(HG38GeneAssociationsSetC)
+  .view( geneAssociationsSet => {
+    return ( 
+        <Table
+        height={500}
+        cellRendererDependencies={[geneAssociationsSet]}
+        numRows={geneAssociationsSet.length}
+        enableGhostCells
+        enableFocusedCell
+        >
+          <Column
+            name="Variant CId"
+            cellRenderer={row => <Cell key={row+''}>{geneAssociationsSet[row].variantCId}</Cell>}
+          />
+          <Column
+            name="Gene ID/Name"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
+                      <tr><td>{ associations.gene_id }</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Effect"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
+                      <tr><td>{ associations.effect }</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Feature ID"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
+                      <tr><td>{ associations.feature_id }</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Distance to Feature"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
+                      <tr><td>{ associations.distance_to_feature }</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+        </Table>
+    )  
+  })
+  .build()
+
+  export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
+  .meta({
+    label: `GetVarinatSetToGeneAssociation_HG38`,
+    description: "Get Associated Gene info for a given set of Variant External records."
+  })
+  .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })
+  .output(GeneAssociationsSet_HG38)
+  .resolve(async (props) => {
+    let variantExternalRecordsSetInfo = props.inputs.variantSetExternalRecordsInfo;
+    let varinatGeneAssociationsSet = [];
+
+    for(let vERIdx in variantExternalRecordsSetInfo){
+      let variantExternalRecords = variantExternalRecordsSetInfo[vERIdx];
+      let externalRecords = variantExternalRecords.externalRecords;
+      for(let erIdx in externalRecords){
+        if(externalRecords[erIdx] != null && externalRecords[erIdx].name == "MyVariantInfo_hg38"){
+          let hg38ExtSourceLink = processHG38externalRecords(externalRecords[erIdx]);
+          let response = await getHG38externalRecordsDataAPI(hg38ExtSourceLink);
+          let associations = response.snpeff.ann;
+          for(let aIndx in associations){
+            let a = associations[aIndx];
+            if(a.distance_to_feature == null){
+              a['distance_to_feature'] = "/";
+            }
+          }
+          let varinatGeneAssociation = {
+            "variantCId": variantExternalRecords.variantCId,
+            "geneAssociationsHg38": response
+          }
+          varinatGeneAssociationsSet.push(varinatGeneAssociation);
+        }
+      }   
+    }
+
+    return varinatGeneAssociationsSet;
+  }).story(props =>
+    `Get Associated Gene info for a given set of Variant External records.`
+  ).build()
+

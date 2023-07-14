@@ -137,7 +137,7 @@ export default function Playbooks() {
     if (!isMounted()) return
     setPlaybooks(demoPlaybooks as Array<Playbook>)
   }, [])
-  const DataSourceButton = React.useCallback(({ dataSource, size }: { dataSource: string, size: number }) => (
+  const DataSourceButton = React.useCallback(({ dataSource, size, showTitle = false }: { dataSource: string, size: number, showTitle?: boolean }) => (
     <button
       key={dataSource}
       onClick={() => {
@@ -148,7 +148,7 @@ export default function Playbooks() {
       }}
       className="flex flex-col place-items-center underline"
     >
-      <span className={classNames('prose prose-sm', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span>
+      {showTitle ? <span className={classNames('prose prose-sm', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span> : null}
       {dataSource in dataSourceIcons ?
         <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} />
         : null}
@@ -170,6 +170,7 @@ export default function Playbooks() {
                   key={dataSource}
                   dataSource={dataSource}
                   size={80}
+                  showTitle
                 />
               ))}
             </div>

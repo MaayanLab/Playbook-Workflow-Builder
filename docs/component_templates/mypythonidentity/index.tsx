@@ -26,4 +26,5 @@ export const MyPythonIdentity = MetaNode('MyPythonIdentity')
     //  i.e. identity(*kargs, **kwargs)
     { kargs: [props.inputs.input], kwargs: {} },
   ))
+  .story(props => `The identity function is applied to${props.inputs ? ` ${props.inputs.input}` : ''}.`)
   .build()

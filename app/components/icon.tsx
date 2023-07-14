@@ -8,6 +8,7 @@ const tooltip_offset_top = 5
 
 export default function Icon({
   icon,
+  className,
   color: color_,
   size: size_,
   title,
@@ -16,6 +17,7 @@ export default function Icon({
   container_color,
 }: {
   icon?: Icon,
+  className?: string,
   color?: string,
   size?: number,
   title?: string | null,
@@ -125,8 +127,8 @@ export default function Icon({
               transformer(ind),
               size && size !== base_size && `scale(${base_size/size})`,
             ].filter((v) => !!v).join(' ')}>
-              {transform ? <g transform={transform}><path d={path} style={{ fill: color || 'currentcolor' }} /></g>
-                : <path d={path} style={{ fill: color || 'currentcolor' }} />}
+              {transform ? <g transform={transform}><path d={path} className={className} /></g>
+                : <path d={path} className={className} />}
             </g>
           )
         }))}

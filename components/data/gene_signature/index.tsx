@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL } from '@/components/core/file'
+import { FileURL, FileC } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
 import Matrix from '@/app/components/Matrix'
@@ -15,14 +15,13 @@ export const GeneSignature = MetaNode('GeneSignature')
     description: 'A gene expression signature',
     icon: [differential_expression_icon],
   })
-  .codec(z.object({
-    url: z.string(),
+  .codec(FileC.merge(z.object({
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()),
     index: z.array(z.string()),
     values: z.array(z.array(z.union([z.number(), z.literal('inf'), z.literal('-inf')]))),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
-  }))
+  })))
   .view(props => {
     return (
       <div>
@@ -51,8 +50,9 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
   .output(GeneSignature)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gene_signature',
-    { kargs: [props.inputs.file.url] },
+    { kargs: [props.inputs.file] },
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature vector.`)
   .build()
 
 export const GMTFromSignature = MetaNode('GMTFromSignature')
@@ -66,6 +66,7 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
     'components.data.gene_signature.gmt_from_sig',
     { kargs: [props.inputs.sig] }
   ))
+  .story(props => `The gene signature vector${props.inputs && props.inputs.sig.description ? ` containing ${props.inputs.sig.description}` : ''} was reformatted into gene matrix transpose format.`)
   .build()
 
 export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
@@ -80,6 +81,7 @@ export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
     'components.data.gene_signature.geneset_from_sig',
     { kargs: [props.inputs.sig, 'up'] }
   ))
+  .story(props => `The up-regulated genes were extracted from the signature vector${props.inputs && props.inputs.sig.description ? ` containing ${props.inputs.sig.description}` : ''}.`)
   .build()
 
 export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
@@ -94,4 +96,5 @@ export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
     'components.data.gene_signature.geneset_from_sig',
     { kargs: [props.inputs.sig, 'down'] }
   ))
+  .story(props => `The down-regulated genes were extracted from the signature vector${props.inputs && props.inputs.sig.description ? ` containing ${props.inputs.sig.description}` : ''}.`)
   .build()

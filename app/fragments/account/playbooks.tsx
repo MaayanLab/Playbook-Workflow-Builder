@@ -13,9 +13,10 @@ export default function Playbooks() {
     <>
       <h3 className="bp4-heading">Playbooks</h3>
       <div className="overflow-x-auto">
-        <table className="table table-compact w-full">
+        <table className="table table-compact w-full text-black dark:text-white">
           <thead>
             <tr>
+              <th></th>
               <th>Title</th>
               <th>Inputs</th>
               <th>Outputs</th>
@@ -23,11 +24,14 @@ export default function Playbooks() {
               <th>Public</th>
               <th>Clicks</th>
               <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
+            {(playbooks ?? []).length === 0 ? <tr><td colSpan={9} align="center">No playbooks saved</td></tr> : null}
             {(playbooks ?? []).map(playbook => (
               <tr key={playbook.id}>
+                <td></td>
                 <td>{playbook.title}</td>
                 <td>{playbook.inputs}</td>
                 <td>{playbook.outputs}</td>
@@ -37,12 +41,12 @@ export default function Playbooks() {
                 <td className="flex flex-row gap-2">
                   <Link href={`/report/${playbook.playbook}`}>
                     <button>
-                      <Icon icon={view_report_icon} color="black" />
+                      <Icon icon={view_report_icon} className="fill-black dark:fill-white" />
                     </button>
                   </Link>
                   <Link href={`/graph/${playbook.playbook}`}>
                     <button>
-                      <Icon icon={view_in_graph_icon} color="black" />
+                      <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
                     </button>
                   </Link>
                   <button onClick={() => {
@@ -51,9 +55,10 @@ export default function Playbooks() {
                         mutatePlaybooks(data => data ? data.filter(({ id }) => id !== playbook.id) : data)
                       })
                   }}>
-                    <Icon icon={delete_icon} color="black" />
+                    <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                   </button>
                 </td>
+                <td></td>
               </tr>
             ))}
           </tbody>

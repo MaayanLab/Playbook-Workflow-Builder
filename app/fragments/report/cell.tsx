@@ -17,10 +17,10 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
   return (
     <>
       {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
-        <div className="collapse collapse-arrow">
+        <div className="collapse collapse-arrow text-black dark:text-white">
           <input type="checkbox" checked={cellMetadata[head.id].process_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], process_visible: evt.target.checked, id: '' } }))}} />
           <div className="collapse-title flex flex-row gap-2">
-            <Icon icon={processNode.meta.icon || func_icon} />
+            <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
             <h2 className="bp4-heading">
               {cellMetadata[head.id].label ? cellMetadata[head.id].label
                 : processNode.meta.label ? processNode.meta.label
@@ -52,10 +52,10 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
             processNode={processNode}
             output={output}
           />
-          : <div className="collapse collapse-arrow">
+          : <div className="collapse collapse-arrow text-black dark:text-white">
           <input type="checkbox" checked={cellMetadata[head.id].data_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], data_visible: evt.target.checked, id: '' } }))}} />
           <div className="collapse-title flex flex-row gap-2">
-            <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} />
+            <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} className="fill-black dark:fill-white" />
             <h2 className="bp4-heading">{(outputNode && (outputNode.meta.label || processNode.spec)) || "Loading"}</h2>
           </div>
           <div className="collapse-content">
@@ -65,24 +65,24 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
         <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !cellMetadata[head.id].data_visible })}>
           <Link href={`/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
-              <Icon icon={view_in_graph_icon} />
+              <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <Link href={`/graph/${id}/node/${head.id}/extend`}>
             <button className="bp4-button bp4-minimal">
-              <Icon icon={fork_icon} color="black" />
+              <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <button className="bp4-button bp4-minimal" disabled>
             {isLoading ?
-              <Icon icon={status_waiting_icon} color="#DAA520" />
+              <Icon icon={status_waiting_icon} className="fill-yellow-500" />
               : (outputNode ?
                   (output ?
                     (outputNode.spec === 'Error' ?
-                      <Icon icon={status_alert_icon} color="#DC143C" />
-                      : <Icon icon={status_complete_icon} color="#008000" />)
-                    : <Icon icon={status_awaiting_input_icon} color="#B8860B" />)
-                  : <Icon icon={status_waiting_icon} color="#DAA520" />)}
+                      <Icon icon={status_alert_icon} className="fill-red-500" />
+                      : <Icon icon={status_complete_icon} className="fill-green-500" />)
+                    : <Icon icon={status_awaiting_input_icon} className="fill-yellow-600" />)
+                  : <Icon icon={status_waiting_icon} className="fill-yellow-300" />)}
           </button>
         </div>
       </div>

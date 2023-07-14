@@ -36,7 +36,7 @@ export default function Cell({ krg, id, head, autoextend }: { krg: KRG, id: stri
             <p className="prose text-sm">{storyCitations}</p>
           </div>
           <div className="flex-grow flex flex-col py-4">
-            {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error">{outputError.toString()}</div> : null}
+            {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error prose">{outputError.toString()}</div> : null}
             {!outputNode ? <div>Loading...</div>
             : <>
                 {!View || output === undefined ? <div>Loading...</div>

@@ -35,15 +35,15 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
 
   })
   .story(props =>
-    `${props.inputs.summary.gene} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+    `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
   )
   .build()
 
 export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'MetGENE Reactions with GeneSet',
-    description: 'Compute the MetGENE Reactions for a GeneSet',
+    label: 'MetGENE Reactions with Gene Set',
+    description: 'Compute the MetGENE Reactions for a Gene Set',
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
@@ -67,6 +67,6 @@ export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
 
   })
   .story(props =>
-    `The geneset was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+    `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
   )
   .build()

@@ -134,7 +134,7 @@ export default function CommunityPlaybooks() {
                 <div className="col-span-1 row-span-1 p-3 hidden md:block">
                   <div className="tooltip z-50" data-tip="Click to view details">
                     <button
-                      className="btn btn-ghost text-4xl"
+                      className="btn btn-ghost text-4xl text-black dark:text-white"
                       onClick={evt => {
                         setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                       }}
@@ -143,7 +143,7 @@ export default function CommunityPlaybooks() {
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
                 <div className="col-span-1 row-span-1 p-3">
-                  <div className="prose md:h-12">{playbook.title}</div>
+                  <div className="prose">{playbook.title}</div>
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
                 <div className="col-span-1 row-span-1 p-3">
@@ -207,14 +207,14 @@ export default function CommunityPlaybooks() {
                       // TODO: register click
                       router.push(`/report/${playbook.playbook}`)
                     }}>
-                      <Icon icon={view_report_icon} color="black" title="Launch Playbook" />
+                      <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
                     </button>
                   </div>
                 </div>
               {/* </div> */}
               <div className={classNames('bg-secondary font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
                 <button
-                  className="btn btn-ghost text-4xl"
+                  className="btn btn-ghost text-4xl text-black dark:text-white"
                   onClick={evt => {
                     setDetails(({ [playbook.id]: cur, ...details }) => cur ? details : ({ ...details, [playbook.id]: true }))
                   }}
@@ -232,7 +232,7 @@ export default function CommunityPlaybooks() {
             </React.Fragment>
           )
           : <div className="col-span-2 row-span-1 md:row-span-1 md:col-span-6">
-            <div className="alert">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

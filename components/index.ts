@@ -1,6 +1,8 @@
 export const components: string[] = []
 export * from "./MW/ConvertedGeneID"
 components.push("MW/ConvertedGeneID")
+export * from "./MW/PPI_StringDB"
+components.push("MW/PPI_StringDB")
 export * from "./MW/geneidconv"
 components.push("MW/geneidconv")
 export * from "./MW/metaboliteInfo"
@@ -35,8 +37,12 @@ export * from "./core/input/term"
 components.push("core/input/term")
 export * from "./core/input/tumor"
 components.push("core/input/tumor")
+export * from "./data/anndata"
+components.push("data/anndata")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
+export * from "./data/drug_matrix_transpose"
+components.push("data/drug_matrix_transpose")
 export * from "./data/gene_count_matrix"
 components.push("data/gene_count_matrix")
 export * from "./data/gene_matrix_transpose"
@@ -79,6 +85,8 @@ export * from "./service/ldh"
 components.push("service/ldh")
 export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
+export * from "./service/myvariantinfo"
+components.push("service/myvariantinfo")
 export * from "./service/regulatoryElementInfo"
 components.push("service/regulatoryElementInfo")
 export * from "./service/targetranger"
@@ -89,6 +97,8 @@ export * from "./viz/barplot"
 components.push("viz/barplot")
 export * from "./viz/bokeh"
 components.push("viz/bokeh")
+export * from "./viz/graph"
+components.push("viz/graph")
 export * from "./viz/plotly"
 components.push("viz/plotly")
 export * from "./viz/kf_barplot"

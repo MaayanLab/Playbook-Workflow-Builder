@@ -96,7 +96,7 @@ function ReportButton({ graph_id }: { graph_id: string }) {
   return (
     <Link href={`/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
       <button className='bp4-button bp4-minimal' disabled={disabled}>
-        <Icon icon={view_report_icon}  color={disabled ? '#999' : '#000'} />
+        <Icon icon={view_report_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
       </button>
     </Link>
   )

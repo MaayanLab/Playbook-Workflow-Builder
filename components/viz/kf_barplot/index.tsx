@@ -50,7 +50,8 @@ export const BarplotFromKfExpression =
             title: 'Gene Expression in Tumors and Tissues',
             barmode: 'group',
             xaxis: {title: 'Diseases'},
-            yaxis: {title: 'zscores'}
+            yaxis: {title: 'zscores'},
+            margin: { b: 200 },
         }
 
         return {data, layout};

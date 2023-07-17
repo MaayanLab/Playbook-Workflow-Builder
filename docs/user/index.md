@@ -34,3 +34,26 @@ The title and the *story* (Fig 7. B) will continue to evolve as the workflow is 
 
 ![A screenshot showing the GTEx Median Tissue Expression output](./figures/07-gtex-results.png)
 **Figure 7.** A screenshot showing the GTEx Median Tissue Expression output along with several points of interest.
+
+The buttons on the top right (Fig 7. E) correspond to starting over with a blank workflow and finalizing the workflow into a report respectively. Clicking on the report mode button (Fig 8) will take the current workflow and arrange it as a linear report (Fig 9).
+
+![A screenshot of the view report mode button](./figures/08-report-mode-button.png)
+**Figure 8.** A screenshot of the view report mode button.
+
+In Report Mode, all steps are visible on one page. Cells can be collapsed or expanded by clicking the cell's label, the report can be titled, and manually annotated at the top. With a user account a report can also be saved, published, and shared.
+
+![A screenshot of the report mode](./figures/09-report-mode.png)
+**Figure 9.** A screenshot of the report mode.
+
+Modifications made to earlier steps of a workflow, whether in graph mode or report mode will cause the remaining steps to be recomputed to reflecting this change (Fig 10, 11).
+
+![A screenshot illustrating a report modification](./figures/10-report-mode-modification.png)
+**Figure 10.** A screenshot illustrating a report modification.
+
+![A screenshot showing the modified report](./figures/11-report-mode-modified.png)
+**Figure 11.** A screenshot showing the modified report.
+
+It is possible to returning to the previous mode for expansion of the workflow by clicking the `View in Graph` or `Expand From this Step` buttons, the former brings you to the item in graph mode, and the later brings you to the expand page from that item.
+
+![A screnshot showing the expand from this step button in report mode](./figures/12-report-mode-expand.png)
+**Figure 12.** A screnshot showing the expand from this step button in report mode.

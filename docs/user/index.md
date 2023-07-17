@@ -28,11 +28,9 @@ Once we've clicked submit, the playbook is extended to reveal a slew of new opti
 
 Upon clicking this card, we are presented with a table of tissues paired with a significance Z-score representing how significantly the gene we chose at the beginning is expressed in that particular tissue based on the result of GTEx's API (Fig 7. C). These results were computed on-demand when the card was clicked and will be cached for a period of time, if there was a temporary error or if you'd like to confirm the results are up to date the Recompute button can be pressed (Fig 7. D).
 
+Besides the story evolving, a trail of *breadcrumbs* (Fig 7. A) show each step we've taken in the workflow, hovering over each element gives a tooltip showing what it is when the icons aren't obvious and clicking them allows us to see and potentially even modify the workflow at a previous step, including continuing this workflow further by clicking the `+` at the end or going back to the start. It is possible to extend from earlier parts of the workflow creating branches to the same workflow.
+
 The title and the *story* (Fig 7. B) will continue to evolve as the workflow is expanded. Because we've used GTEx Portal's API, it is stated as such and a reference to the GTEx project was added.
-
-Besides the story evolving, a trail of *breadcrumbs* (Fig 7. A) show each step we've taken in the workflow, hovering over each element gives a tooltip showing what it is when the icons aren't obvious and clicking them allows us to see and potentially even modify the workflow at a previous step, including going back to the start to put multiple inputs to the same workflow.
-
-The buttons on the top right (Fig 7. E) correspond to starting over with a blank workflow and constructing a report respectively.
 
 ![A screenshot showing the GTEx Median Tissue Expression output](./figures/06-gtex-results.png)
 **Figure 7.** A screenshot showing the GTEx Median Tissue Expression output along with several points of interest.

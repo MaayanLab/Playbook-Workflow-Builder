@@ -5,6 +5,8 @@ import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/co
 import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
 import { ScoredDrugs, ScoredGenes, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
 import { Table, Cell, Column } from '@/app/components/Table'
+import * as dict from '@/utils/dict'
+import * as math from '@/utils/math'
 import classNames from 'classnames'
 
 function withPrecision(value: number | string, precision: number) {
@@ -183,4 +185,54 @@ export const SetFromScoredT = [
     })
     .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
     .build()
+])
+
+export const ReduceMultiScoredT = [
+  { ScoredT: ScoredDiseases, T: Disease, },
+  { ScoredT: ScoredDrugs, T: Drug, },
+  { ScoredT: ScoredGenes, T: Gene, },
+  { ScoredT: ScoredPathways, T: Pathway, },
+  { ScoredT: ScoredPhenotypes, T: Phenotype, },
+  { ScoredT: ScoredTissues, T: Tissue, },
+].flatMap(({ ScoredT, T }) => [
+    MetaNode(`MeanScoredT[${T.label}]`)
+      .meta({
+        label: 'Mean Scored Values',
+        description: 'Take the mean value across multiple scores',
+      })
+      .inputs({ scored: [ScoredT] })
+      .output(ScoredT)
+      .resolve(async (props) => {
+        const values: Record<string, number[]> = {}
+        props.inputs.scored.forEach(scored =>
+          scored.forEach(({ term, zscore }) => {
+            if (typeof zscore === 'number') {
+              if (!(term in values)) values[term] = []
+              values[term].push(zscore)
+            }
+          }))
+        return dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.mean(value) }))
+      })
+      .story(props => `Mean scores were computed.`)
+      .build(),
+    MetaNode(`AbsMaxScoredT[${T.label}]`)
+      .meta({
+        label: 'Absolute Max Scored Values',
+        description: 'Take the absolute max value across multiple scores',
+      })
+      .inputs({ scored: [ScoredT] })
+      .output(ScoredT)
+      .resolve(async (props) => {
+        const values: Record<string, number[]> = {}
+        props.inputs.scored.forEach(scored =>
+          scored.forEach(({ term, zscore }) => {
+          if (typeof zscore === 'number') {
+            if (!(term in values)) values[term] = []
+            values[term].push(zscore)
+          }
+        }))
+        return dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.absmax(value) }))
+      })
+      .story(props => `Max scores were computed.`)
+      .build(),
 ])

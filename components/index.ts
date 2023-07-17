@@ -89,6 +89,8 @@ export * from "./service/myvariantinfo"
 components.push("service/myvariantinfo")
 export * from "./service/regulatoryElementInfo"
 components.push("service/regulatoryElementInfo")
+export * from "./service/sigcom-lincs"
+components.push("service/sigcom-lincs")
 export * from "./service/targetranger"
 components.push("service/targetranger")
 export * from "./service/variantinfo"
@@ -99,7 +101,7 @@ export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/graph"
 components.push("viz/graph")
-export * from "./viz/plotly"
-components.push("viz/plotly")
 export * from "./viz/kf_barplot"
 components.push("viz/kf_barplot")
+export * from "./viz/plotly"
+components.push("viz/plotly")

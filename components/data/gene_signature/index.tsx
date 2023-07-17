@@ -8,6 +8,7 @@ import { datafile_icon, filter_icon, differential_expression_icon, file_transfer
 import { downloadUrl } from '@/utils/download'
 import { GMT } from '../gene_matrix_transpose'
 import { GeneSet } from '@/components/core/input/set'
+import { ScoredGenes } from '@/components/core/input/scored'
 
 export const GeneSignature = MetaNode('GeneSignature')
   .meta({
@@ -97,4 +98,18 @@ export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
     { kargs: [props.inputs.sig, 'down'] }
   ))
   .story(props => `The down-regulated genes were extracted from the signature vector${props.inputs && props.inputs.sig.description ? ` containing ${props.inputs.sig.description}` : ''}.`)
+  .build()
+
+export const ScoredGenesFromSignature = MetaNode('ScoredGenesFromSignature')
+  .meta({
+    label: 'Scored Genes from Signature',
+    description: 'Treat signature as a weighted set of genes',
+  })
+  .inputs({ sig: GeneSignature })
+  .output(ScoredGenes)
+  .resolve(async (props) => await python(
+    'components.data.gene_signature.scored_genes_from_sig',
+    { kargs: [props.inputs.sig] },
+  ))
+  .story(props => `Significant genes were extracted from the gene signature vector${props.inputs && props.inputs.sig.description ? ` containing ${props.inputs.sig.description}` : ''}.`)
   .build()

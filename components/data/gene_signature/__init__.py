@@ -91,3 +91,14 @@ def geneset_from_sig(sig: Signature, direction):
     'description': f'{direction.capitalize()} Genes {comparison}',
     'set': top_250
   }
+
+def scored_genes_from_sig(sig: Signature):
+  from scipy.stats import zscore
+  d = signature_from_file(sig)
+  col = d.columns[0]
+  scores = pd.Series(zscore(d[col]), index=d.index)
+  return [
+    dict(term=term, zscore=zscore)
+    for term, zscore in scores.to_dict().items()
+    if zscore > 3 or zscore < -3
+  ]

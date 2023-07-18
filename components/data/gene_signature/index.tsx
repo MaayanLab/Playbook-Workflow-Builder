@@ -18,7 +18,10 @@ export const GeneSignature = MetaNode('GeneSignature')
   })
   .codec(FileC.merge(z.object({
     shape: z.tuple([z.number(), z.number()]),
-    columns: z.array(z.string()),
+    columns: z.array(z.string()).refine(
+      value => value.includes('Pval') && value.includes('LogFC'),
+      'Expect columns "Pval" & "LogFC"'
+    ),
     index: z.array(z.string()),
     values: z.array(z.array(z.union([z.number(), z.literal('inf'), z.literal('-inf')]))),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),

@@ -50,8 +50,6 @@ services:
     - NEXT_PUBLIC_MATOMO_URL
     - NEXT_PUBLIC_MATOMO_SITE_ID
     - N_WORKERS=0
-    ports:
-    - 3000:3000
     labels:
     - "traefik.enable=true"
     - "traefik.http.routers.app.rule=Host(`${SERVER_NAME}`)"
@@ -89,6 +87,36 @@ services:
     - 5432:5432
     volumes:
     - ./data/pg:/var/lib/postgresql/data
+    logging: *default-logging
+  # app-dev serves a dev version of the app
+  app-dev:
+    image: maayanlab/playbook-partnership
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    deploy:
+      # this can be safely replicated if necessary but an ingress will be required
+      replicas: 0
+    environment:
+    - PUBLIC_URL
+    - LANDING_PAGE
+    - NEXTAUTH_SECRET
+    - NEXTAUTH_GOOGLE
+    - NEXTAUTH_ORCID
+    - EMAIL_SERVER
+    - EMAIL_FROM
+    - DATABASE_URL
+    - NEXT_PUBLIC_MATOMO_URL
+    - NEXT_PUBLIC_MATOMO_SITE_ID
+    - N_WORKERS
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.app-dev.rule=Host(`dev.${SERVER_NAME}`)"
+    - "traefik.http.services.app-dev.loadbalancer.server.port=3000"
+    - "traefik.http.routers.app-dev.tls=true"
+    - "traefik.http.routers.app-dev.tls.certresolver=letsencrypt-prod"
+    - "traefik.http.routers.app-dev.tls.domains[0].main=dev.${SERVER_NAME}"
     logging: *default-logging
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience

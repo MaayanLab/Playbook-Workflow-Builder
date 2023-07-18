@@ -2,11 +2,11 @@ import scanpy as sc
 import pandas as pd
 from bokeh.embed import json_item
 
-from components.data.gene_count_matrix import anndata_from_path
+from components.data.gene_count_matrix import GeneCountMatrix, anndata_from_file
 from components.viz.bokeh import interactive_circle_plot
 
-def umap_transformation(gene_count_matrix):
-  df = anndata_from_path(gene_count_matrix['url'])
+def umap_transformation(gene_count_matrix: GeneCountMatrix):
+  df = anndata_from_file(gene_count_matrix)
   df = df.transpose()
 
   # leiden coloring

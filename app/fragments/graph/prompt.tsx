@@ -21,7 +21,7 @@ export default function Prompt({ krg, processNode, output, id, head, autoextend 
         <p className="prose">{storyText}</p>
         <p className="prose text-sm">{storyCitations}</p>
       </div>
-      {error ? <div className="alert alert-error">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
           inputs={inputs}

@@ -18,4 +18,5 @@ export const MyIdentity = MetaNode('MyIdentity')
   .resolve(async (props) => {
     return props.inputs.input
   })
+  .story(props => `The identity function is applied to${props.inputs ? ` ${props.inputs.input}` : ''}.`)
   .build()

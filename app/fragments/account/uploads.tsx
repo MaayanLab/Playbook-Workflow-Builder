@@ -42,7 +42,7 @@ export default function Uploads() {
       <div className="hero">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <h1 className="text-5xl font-bold">Work In Progress</h1>
+            <h1 className="text-5xl font-bold prose">Work In Progress</h1>
             <p className="py-6 prose">This feature is still in development. Uploads may not be persistent.</p>
           </div>
         </div>
@@ -50,21 +50,24 @@ export default function Uploads() {
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">
-          <table className="table table-compact w-full">
+          <table className="table table-compact w-full text-black dark:text-white">
             <thead>
               <tr>
+                <th></th>
                 <th>Filename</th>
                 <th>URL</th>
                 <th>sha256</th>
                 <th>Size</th>
                 <th>Timestamp</th>
                 <th>Actions</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {uploads.length === 0 ? <tr><td colSpan={6} align="center">No uploads</td></tr> : null}
+              {uploads.length === 0 ? <tr><td colSpan={8} align="center">No uploads</td></tr> : null}
               {uploads.map(upload => (
                 <tr key={upload.id}>
+                  <td></td>
                   <td>{upload.filename}</td>
                   <td>{upload.url}</td>
                   <td>{upload.sha256.slice(0, 5)}...{upload.sha256.slice(-5)}</td>
@@ -86,17 +89,18 @@ export default function Uploads() {
                       const res = z.string().parse(await req.json())
                       router.push(`/graph/${res}/extend`)
                     }}>
-                      <Icon icon={fork_icon} color="black" />
+                      <Icon icon={fork_icon} className="fill-black dark:fill-white" />
                     </button>
                     <button onClick={() => {
                       setUploadToDelete(upload)
                     }}>
-                      <Icon icon={delete_icon} color="black" />
+                      <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                     </button>
                   </td>
+                  <td></td>
                 </tr>
               ))}
-              <tr><td colSpan={6} align="center">
+              <tr><td colSpan={8} align="center">
                 <button className="btn btn-primary btn-sm" onClick={async () => {
                   const req = await fetch(`/api/db/fpl/start/extend`, {
                     method: 'POST',

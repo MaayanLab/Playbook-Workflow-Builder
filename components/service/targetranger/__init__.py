@@ -2,15 +2,15 @@ import requests
 import numpy as np
 import pandas as pd
 import scipy.stats as st
-from components.data.gene_count_matrix import anndata_from_path
+from components.data.gene_count_matrix import GeneCountMatrix, anndata_from_file
 
 targetranger_url = 'https://targetranger.maayanlab.cloud'
 
-def targetscreener(url, *, bg):
+def targetscreener(m: GeneCountMatrix, *, bg):
   ''' We prepare the incoming data for target screener by producing summary stats
   and translate the output into Scored[Gene]
   '''
-  d = anndata_from_path(url)
+  d = anndata_from_file(m)
   # compute statistics which targetranger uses for the query
   n = d.X.shape[1]
   mean = d.X.mean(axis=1)

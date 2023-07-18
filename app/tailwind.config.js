@@ -2,6 +2,7 @@ const colors = require('tailwindcss/colors')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -21,7 +22,7 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        playbook: {
+        'light': {
           ...require("daisyui/src/colors/themes")["[data-theme=corporate]"],
           'primary': '#B3CFFF',
           'primary-content': '#2B273A',
@@ -29,11 +30,19 @@ module.exports = {
           'primary-content': '#2B273A',
           '--border-btn': '0px',
           '--btn-text-case': '',
+          '--animation-btn': '0',
+          '--animation-input': '0',
         },
       },
-      'corporate',
-      'business'
+      {
+        'dark': {
+          ...require("daisyui/src/colors/themes")["[data-theme=business]"],
+          '--border-btn': '0px',
+          '--btn-text-case': '',
+          '--animation-btn': '0',
+          '--animation-input': '0',
+        },
+      },
     ],
-    darkMode: 'business',
   },
 }

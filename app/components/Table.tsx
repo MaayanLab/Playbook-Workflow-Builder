@@ -26,7 +26,7 @@ export function Table({ children, height, shape: shape_, downloads, ...props }: 
         <Bp4Table {...props}>{children}</Bp4Table>
       </div>
       <div className="bp4-navbar-group">
-        <span>Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
+        <span className="prose">Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
         <Bp4MenuDivider />
         {downloads ?
           dict.keys(downloads).length === 1 ?

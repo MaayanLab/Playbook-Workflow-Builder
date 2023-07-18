@@ -21,7 +21,7 @@ export default function LinkButton({ id, disabled }: { id: string | undefined, d
       <button className="bp4-button bp4-minimal" disabled={disabled} onClick={() => {setShare(true)}}>
         <Icon
           icon={link_icon}
-          color={disabled ? 'grey' : 'black'}
+          className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
           title={disabled ? 'Save to Share Link' : 'Share Link'}
         />
       </button>

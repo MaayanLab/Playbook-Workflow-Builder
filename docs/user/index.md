@@ -53,7 +53,22 @@ Modifications made to earlier steps of a workflow, whether in graph mode or repo
 ![A screenshot showing the modified report](./figures/11-report-mode-modified.png)
 **Figure 11.** A screenshot showing the modified report.
 
-It is possible to returning to the previous mode for expansion of the workflow by clicking the `View in Graph` or `Expand From this Step` buttons, the former brings you to the item in graph mode, and the later brings you to the expand page from that item.
+It is possible to return to the previous mode for expansion of the workflow by clicking the `View in Graph` or `Expand From this Step` buttons, the former brings you to the item in graph mode, and the later brings you to the expand page from that item.
 
-![A screnshot showing the expand from this step button in report mode](./figures/12-report-mode-expand.png)
-**Figure 12.** A screnshot showing the expand from this step button in report mode.
+![A screenshot showing the expand from this step button in report mode](./figures/12-report-mode-expand.png)
+**Figure 12.** A screenshot showing the expand from this step button in report mode.
+
+Some playbook functionality can only be accessed with an account, the best way to make an account is to Sign in using [ORCID](https://orcid.org/), this will be used for capturing your identity when publishing.
+
+![A screenshot showing the sign-in flow](./figures/13-orcid-signin.png)
+**Figure 13.** A screenshot showing the sign-in flow.
+
+Once signed in, you can save, share, and publish workflow reports you've constructed.
+
+![A screenshot showing where save share and publish are](./figures/14-save-share-publish.png)
+**Figure 14.** A screenshot showing where save share and publish are.
+
+An account is also necessary to upload and manage files.
+
+![A screenshot illustrating file inputs before and after sign-in](./figures/15-file-upload.png)
+**Figure 15.** A screenshot illustrating file inputs before and after sign-in.

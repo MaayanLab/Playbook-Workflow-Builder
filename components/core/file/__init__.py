@@ -18,11 +18,11 @@ class File(typing.TypedDict):
   size: int
 
 class TemporaryFile(dict):
-  def __init__(self, suffix=''):
+  def __init__(self, suffix='', description=None):
     super().__init__(
       url='',
       filename='',
-      description=None,
+      description=description,
       size=0,
     )
     self.file = tempfile.mktemp(suffix=suffix)
@@ -35,7 +35,7 @@ class TemporaryFile(dict):
     os.unlink(self.file)
 
 @contextlib.contextmanager
-def upsert_file(suffix=''):
+def upsert_file(suffix='', description=None):
   ''' Usage:
   from components.core.file import upsert_file
   with upsert_file('.csv') as f:
@@ -44,7 +44,7 @@ def upsert_file(suffix=''):
   print(f.url)
   '''
   # NOTE: this context manager will remove the temporary file when done
-  tmp = TemporaryFile(suffix)
+  tmp = TemporaryFile(suffix, description=description)
   try:
     # we give you a temporary file to write to
     yield tmp

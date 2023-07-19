@@ -86,7 +86,7 @@ def geneset_from_sig(sig: Signature, direction):
   else:
     top_250 = d[d['LogFC'] < 0].index[:250].tolist()
   return {
-    'description': f"{direction.capitalize()} Genes {sig['description']}",
+    'description': f"{direction.capitalize()} Genes of {sig['description']}",
     'set': top_250
   }
 

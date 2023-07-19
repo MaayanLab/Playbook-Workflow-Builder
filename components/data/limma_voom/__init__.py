@@ -43,7 +43,7 @@ def limma_voom_from_matrix(file):
   # cd
   gene_sig = limma_voom(anndata)
 
-  with upsert_file('.tsv', description=f"Limma-Voom of {file['description']}" if file.get('description') else 'Limma-Voom of File') as f:
+  with upsert_file('.tsv', description=f"Limma-Voom of {file.get('description') or 'File'}") as f:
     gene_sig.to_csv(f.file, sep='\t')
 
   return gene_signature(f)

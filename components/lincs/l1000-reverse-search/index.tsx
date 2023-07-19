@@ -134,7 +134,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
   )
   .build()
 
-export const LINCSL1000ReverseSearchExtracGeneDown = MetaNode('LINCSL1000ReverseSearchExtract[Gene, Down]')
+export const LINCSL1000ReverseSearchExtractGeneDown = MetaNode('LINCSL1000ReverseSearchExtract[Gene, Down]')
   .meta({
     label: `Extract Down Regulating CRISPR KOs`,
     description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene.',

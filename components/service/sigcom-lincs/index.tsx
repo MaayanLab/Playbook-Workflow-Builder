@@ -137,7 +137,7 @@ export const SigComLINCSSignatureSearch = MetaNode(`SigComLINCSSignatureSearch`)
     const results = await sigcom_meta_user_input_signature({ up_entities, down_entities })
     return { id: results.id, up_entities, down_entities }
   })
-  .story(props => `Identified reversers and mimickers from over 1 million signatures using SigCom LINCS [\\ref{doi:10.1093/nar/gkac328}].`)
+  .story(props => `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS [\\ref{doi:10.1093/nar/gkac328}].`)
   .build()
 
 export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigComLINCSSignatureSearch[LINCS L1000 Chemical Perturbagens]`)

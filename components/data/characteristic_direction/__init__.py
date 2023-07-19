@@ -48,7 +48,7 @@ def cd_from_matrix(file):
   # cd
   gene_sig = cd_signature(anndata)
 
-  with upsert_file('.tsv', description=f"Characteristic Direction of {file.get('description') or 'File'}") as f:
+  with upsert_file('.tsv', description=f"Gene signature computed by the Characteristic Direction method of the {file.get('description') or 'file'}") as f:
     gene_sig.to_csv(f.file, sep='\t')
 
   return gene_signature(f)

@@ -70,11 +70,11 @@ def gmt_from_sig(sig: Signature):
   down_250 = d[d['LogFC'] < 0].index[:250].tolist()
   return {
     f"{sig['description']} Up Genes": {
-      'description': f"Top 250 up genes for {sig['description']}",
+      'description': f"Top 250 up genes for the {sig['description']}",
       'set': up_250
     },
     f"{sig['description']} Down Genes": {
-      'description': f"Top 250 down genes for {sig['description']}",
+      'description': f"Top 250 down genes for the {sig['description']}",
       'set': down_250
     }
   }
@@ -86,7 +86,7 @@ def geneset_from_sig(sig: Signature, direction):
   else:
     top_250 = d[d['LogFC'] < 0].index[:250].tolist()
   return {
-    'description': f"{direction.capitalize()} Genes of {sig['description']}",
+    'description': f"{direction.capitalize()} genes from the {sig['description']}",
     'set': top_250
   }
 

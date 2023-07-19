@@ -90,12 +90,18 @@ def geneset_from_sig(sig: Signature, direction):
     'set': top_250
   }
 
+def jsonifyable_float(x):
+  if np.isnan(x): return 'nan'
+  if np.isposinf(x): return 'inf'
+  if np.isneginf(x): return '-inf'
+  return x
+
 def scored_genes_from_sig(sig: Signature):
   from scipy.stats import norm
   d = signature_from_file(sig)
   zscores = pd.Series(np.sign(d['LogFC']) * norm.ppf(1-d['Pval']), index=d.index)
   return [
-    dict(term=term, zscore=zscore)
+    dict(term=term, zscore=jsonifyable_float(zscore))
     for term, zscore in zscores.to_dict().items()
     if zscore > 3 or zscore < -3
   ]

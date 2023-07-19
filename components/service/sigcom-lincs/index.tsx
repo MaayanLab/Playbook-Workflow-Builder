@@ -124,8 +124,8 @@ export const SigComLINCSSignatureSearch = MetaNode(`SigComLINCSSignatureSearch`)
     const up: Record<string, true> = {}
     const down: Record<string, true> = {}
     props.inputs.genes.forEach(({ term, zscore }) => {
-      if ((typeof zscore === 'number' && zscore >= 3) || zscore === 'inf') up[term] = true
-      else if ((typeof zscore === 'number' && zscore <= 3) || zscore === '-inf') down[term] = true
+      if ((typeof zscore === 'number' && zscore >= 1.645) || zscore === 'inf') up[term] = true
+      else if ((typeof zscore === 'number' && zscore <= -1.645) || zscore === '-inf') down[term] = true
     })
     const metaRes = await sigcom_meta_entities_find_by_symbol([...dict.keys(up), ...dict.keys(down)])
     const up_entities: string[] = []

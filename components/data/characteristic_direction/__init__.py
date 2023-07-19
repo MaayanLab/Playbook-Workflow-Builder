@@ -40,6 +40,7 @@ def cd_signature(anndata):
   ], axis=1)
   signature['Pval'] = 1-scipy.stats.norm.sf(abs(scipy.stats.zscore(signature['CD-coefficient'])))*2
   signature.sort_values('Pval', ascending=True, inplace=True)
+  signature['AdjPval'] = scipy.stats.false_discovery_control(signature['Pval'], method='bh')
   return signature
 
 def cd_from_matrix(file):

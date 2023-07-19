@@ -1,8 +1,6 @@
 #loadlibraries
-import sys, os
 import json
 from components.data.gene_count_matrix import anndata_from_file
-import sys, os
 import plotly.graph_objs as go
 import pandas as pd
 import plotly.graph_objects as go

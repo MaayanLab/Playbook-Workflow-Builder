@@ -37,6 +37,8 @@ export * from "./core/input/tumor"
 components.push("core/input/tumor")
 export * from "./data/anndata"
 components.push("data/anndata")
+export * from "./data/barchart"
+components.push("data/barchart")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
 export * from "./data/drug_matrix_transpose"

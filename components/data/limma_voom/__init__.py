@@ -30,8 +30,6 @@ def limma_voom(anndata):
     ctrl_df,
     case_df
   )
-  #signature = signature.sort_values("CD-coefficient", ascending=False)
-  #signature = signature.rename(columns={'CD-coefficient': f"{grp_ids[0]} vs. {grp_ids[1]}:CD-coefficient"})
   return signature
 
 def limma_voom_from_matrix(anndata):

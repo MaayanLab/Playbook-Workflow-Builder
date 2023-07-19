@@ -1,7 +1,6 @@
 #loadlibraries
 from sklearn.decomposition import PCA
 import plotly.graph_objs as go
-import sys, os
 import pandas as pd
 import json
 from components.data.gene_count_matrix import anndata_from_file
@@ -25,19 +24,17 @@ def run(dataset):
 	# Run PCA
 	pca=PCA(n_components=3)
 	pca.fit(expression_dataframe)
-	#pca.fit_transform(expression_dataframe)
 
 	# Get Variance
 	var_explained = ['PC'+str((i+1))+'('+str(round(e*100, 1))+'% var. explained)' for i, e in enumerate(pca.explained_variance_ratio_)]
 
 
 	# Return
-	#pca_results = {'pca': pca, 'var_explained': var_explained, 'sample_metadata': dataset['sample_metadata'].loc[expression_dataframe.columns], 'color_by': color_by, 'color_type': color_type, 'nr_genes': nr_genes, 'normalization': normalization, 'signature_metadata': dataset.get('signature_metadata'), 'plot_type': plot_type}
 	return pca
 
-#Plot
+#code for making pca with no metadata
 
-def plot(pca):
+def plotnometa(pca):
 
 
 	fig = go.Figure(data=[go.Scatter3d(
@@ -58,12 +55,82 @@ def plot(pca):
 
 	return fig
 
-def createpca(gene_count_matrix):
+def createpcanometa(gene_count_matrix):
 	dataset = anndata_from_file(gene_count_matrix)
 	dataset = dataset.to_df()
 	dataset = pd.DataFrame(dataset.values)
 	data = run(dataset)
-	fig = plot(data)
+	fig = plotnometa(data)
 
 	return json.loads(fig.to_json())
 
+
+
+
+
+#code for making pca with metadata
+
+def createmetapcagraph(anndata):
+    dataset = anndata_from_file(anndata)
+    
+    # Extract the relevant columns from .obs
+    col = dataset.obs.columns[0]
+    grp_ids = dataset.obs[col].unique()
+
+    ctrl_ids = dataset.obs[dataset.obs[col] == grp_ids[0]].index.tolist()
+    ctrl_mask = [x in ctrl_ids for x in dataset.obs_names]
+    case_ids = dataset.obs[dataset.obs[col] == grp_ids[1]].index.tolist()
+    case_mask = [x in case_ids for x in dataset.obs_names]
+    
+    # Get PCA data
+    pca = run(dataset.to_df().transpose())
+    
+    # Assign colors based on control and case masks
+    colors = ['blue' if mask else 'red' for mask in (ctrl_mask + case_mask)]
+    
+    # Create the scatter plot with colored points
+    fig = go.Figure(data=[go.Scatter3d(
+        x=pca.components_[0],
+        y=pca.components_[1],
+        z=pca.components_[2],
+        mode='markers',
+        marker=dict(
+            color=colors,
+            size=4
+        )
+    )])
+
+    # Set the axis labels
+    fig.update_layout(
+        scene=dict(
+            xaxis_title='PC1',
+            yaxis_title='PC2',
+            zaxis_title='PC3'
+        )
+    )
+    
+    # Add legend/key
+    fig.update_layout(
+        annotations=[
+            go.layout.Annotation(
+                x=0.25,
+                y=-0.1,
+                showarrow=False,
+                text='Control (Blue)',
+                xref='paper',
+                yref='paper',
+                font=dict(color='blue')
+            ),
+            go.layout.Annotation(
+                x=0.6,
+                y=-0.1,
+                showarrow=False,
+                text='Perturbation (Red)',
+                xref='paper',
+                yref='paper',
+                font=dict(color='red')
+            )
+        ]
+    )
+
+    return json.loads(fig.to_json())

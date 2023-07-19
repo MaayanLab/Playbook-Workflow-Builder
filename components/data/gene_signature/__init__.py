@@ -91,12 +91,11 @@ def geneset_from_sig(sig: Signature, direction):
   }
 
 def scored_genes_from_sig(sig: Signature):
-  from scipy.stats import zscore
+  from scipy.stats import norm
   d = signature_from_file(sig)
-  col = d.columns[0]
-  scores = pd.Series(zscore(d[col]), index=d.index)
+  zscores = pd.Series(np.sign(d['LogFC']) * norm.ppf(1-d['Pval']), index=d.index)
   return [
     dict(term=term, zscore=zscore)
-    for term, zscore in scores.to_dict().items()
+    for term, zscore in zscores.to_dict().items()
     if zscore > 3 or zscore < -3
   ]

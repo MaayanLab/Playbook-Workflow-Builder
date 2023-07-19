@@ -19,8 +19,8 @@ export const GeneSignature = MetaNode('GeneSignature')
   .codec(FileC.merge(z.object({
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()).refine(
-      value => value.includes('Pval') && value.includes('LogFC'),
-      'Expect columns "Pval" & "LogFC"'
+      value => value.includes('Pval') && value.includes('AdjPval') && value.includes('LogFC'),
+      'Expect columns "Pval" & "AdjPval" & "LogFC"'
     ),
     index: z.array(z.string()),
     values: z.array(z.array(z.union([z.number(), z.literal('inf'), z.literal('-inf')]))),
@@ -76,7 +76,7 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
 export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
   .meta({
     label: 'Up Gene Set from Signature',
-    description: 'Extract top 250 up-regulated genes from a signature',
+    description: 'Extract significant up-regulated genes from a signature',
     icon: [filter_icon]
   })
   .inputs({ sig: GeneSignature })
@@ -91,7 +91,7 @@ export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
 export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
   .meta({
     label: 'Down Gene Set from Signature',
-    description: 'Extract top 250 down-regulated genes from a signature',
+    description: 'Extract significant down-regulated genes from a signature',
     icon: [filter_icon]
   })
   .inputs({ sig: GeneSignature })

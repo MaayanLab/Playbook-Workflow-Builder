@@ -27,7 +27,7 @@ def signature_from_file(file: File):
       df = pd.read_excel(fr, index_col=0)
   else:
     raise NotImplementedError
-  assert set(df.columns.tolist()) & { 'Pval', 'LogFC' }
+  assert set(df.columns.tolist()) & { 'Pval', 'AdjPval', 'LogFC' }
   return df
 
 def np_jsonifyable(x):
@@ -66,28 +66,28 @@ def gene_signature(file: File) -> Signature:
 
 def gmt_from_sig(sig: Signature):
   d = signature_from_file(sig).sort_values('Pval', ascending=True)
-  up_250 = d[d['LogFC'] > 0].index[:250].tolist()
-  down_250 = d[d['LogFC'] < 0].index[:250].tolist()
+  up = d[(d['LogFC'] > 0) & (d['AdjPval'] < 0.05)].tolist()
+  down = d[(d['LogFC'] < 0) & (d['AdjPval'] < 0.05)].tolist()
   return {
     f"{sig['description']} Up Genes": {
-      'description': f"Top 250 up genes for the {sig['description']}",
-      'set': up_250
+      'description': f"Significant up genes for the {sig['description']}",
+      'set': up
     },
     f"{sig['description']} Down Genes": {
-      'description': f"Top 250 down genes for the {sig['description']}",
-      'set': down_250
+      'description': f"Significant down genes for the {sig['description']}",
+      'set': down
     }
   }
 
 def geneset_from_sig(sig: Signature, direction):
   d = signature_from_file(sig).sort_values('Pval', ascending=True)
   if direction == 'up':
-    top_250 = d[d['LogFC'] > 0].index[:250].tolist()
+    top = d[(d['LogFC'] > 0) & (d['AdjPval'] < 0.05)].tolist()
   else:
-    top_250 = d[d['LogFC'] < 0].index[:250].tolist()
+    top = d[(d['LogFC'] < 0) & (d['AdjPval'] < 0.05)].tolist()
   return {
-    'description': f"{direction.capitalize()} genes from the {sig['description']}",
-    'set': top_250
+    'description': f"Significant {direction} genes from the {sig['description']}",
+    'set': top
   }
 
 def jsonifyable_float(x):
@@ -99,9 +99,9 @@ def jsonifyable_float(x):
 def scored_genes_from_sig(sig: Signature):
   from scipy.stats import norm
   d = signature_from_file(sig)
-  zscores = pd.Series(np.sign(d['LogFC']) * norm.ppf(1-d['Pval']), index=d.index)
+  d = d[d['AdjPval']<0.05]
+  zscores = pd.Series(np.sign(d['LogFC']) * norm.ppf(1-d['AdjPval']), index=d.index)
   return [
     dict(term=term, zscore=jsonifyable_float(zscore))
     for term, zscore in zscores.to_dict().items()
-    if zscore > 3 or zscore < -3
   ]

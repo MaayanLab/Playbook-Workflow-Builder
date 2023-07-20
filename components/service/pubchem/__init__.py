@@ -1,5 +1,6 @@
 import time
 import json
+import requests
 import xml.etree.ElementTree as ET
 import urllib.request, urllib.parse
 from xml.dom import minidom
@@ -94,8 +95,17 @@ def fetch_fda_approvals(cids):
     'start':1,
     'limit':10000000,
   }
-  with urllib.request.urlopen(f"https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi?infmt=json&outfmt=json&query={urllib.parse.quote(json.dumps(query))}") as req:
-    return json.load(req)
+  req = requests.post(
+    'https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi',
+    params=dict(
+      infmt='json',
+      outfmt='json',
+    ),
+    files=dict(
+      query=(None, json.dumps(query)),
+    ),
+  )
+  return req.json()
 
 def filter_fda_set(drugs):
   drug_name_cids = fetch_drug_name_cids(drugs['set'])

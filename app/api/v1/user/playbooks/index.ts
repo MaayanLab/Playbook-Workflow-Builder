@@ -27,6 +27,11 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
       where: {
         public: true,
       },
+      orderBy: {
+        clicks: 'desc',
+      },
+      skip,
+      take: limit,
     })
     if (search) playbooks = playbooks.filter(playbook =>
       (playbook.title||'').includes(search)
@@ -34,7 +39,7 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
     )
     if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
     if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
-    return playbooks.slice(skip, skip + limit)
+    return playbooks
   })
   .build()
 

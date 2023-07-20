@@ -95,6 +95,8 @@ export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/myvariantinfo"
 components.push("service/myvariantinfo")
+export * from "./service/pubchem"
+components.push("service/pubchem")
 export * from "./service/regulatoryElementInfo"
 components.push("service/regulatoryElementInfo")
 export * from "./service/sigcom-lincs"

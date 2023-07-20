@@ -17,6 +17,7 @@ export default {
   "10.1093/nar/gkaa1083": "Blake, J. A. et al. Mouse Genome Database (MGD): Knowledgebase for mouse–human comparative biology. Nucleic Acids Research vol. 49 D981–D987 (2020).",
   "10.1093/nar/gkac1010": "Sollis, E. et al. The NHGRI-EBI GWAS Catalog: knowledgebase and deposition resource. Nucleic Acids Research vol. 51 D977–D985 (2022).",
   "10.1093/nar/gkac328": "Evangelista, J. E. et al. SigCom LINCS: data and metadata search engine for a million gene expression signatures. Nucleic Acids Research vol. 50 W697–W709 (2022).",
+  "10.1093/nar/gkac956": " Kim, S. et al. PubChem 2023 update. Nucleic Acids Research vol. 51 D1373–D1380 (2022).",
   "10.1093/nar/gkac963": "Kanehisa, M., Furumichi, M., Sato, Y., Kawashima, M. & Ishiguro-Watanabe, M. KEGG for taxonomy-based analysis of pathways and genomes. Nucleic Acids Research vol. 51 D587–D592 (2022).",
   "10.1093/nar/gks1114": "Wu, C., MacLeod, I. & Su, A. I. BioGPS and MyGene.info: organizing online, gene-centric information. Nucleic Acids Research vol. 41 D561–D565 (2012).",
   "10.1093/nar/gks1193": "Barrett, T. et al. NCBI GEO: archive for functional genomics data sets—update. Nucleic Acids Research vol. 41 D991–D995 (2012).",

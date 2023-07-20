@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { ScoredDrugs, ScoredGenes } from '@/components/core/input/scored'
+import { GeneSet } from '@/components/core/input/set'
 
 const sigcom_lincs_url = 'https://maayanlab.cloud/sigcom-lincs'
 
@@ -55,7 +56,7 @@ async function sigcom_signatures_find_by_id(ids: string[]) {
   })).parse(await metaSignatureReq.json())
 }
 
-async function sigcom_meta_user_input_signature(body: { up_entities: string[], down_entities: string[] }) {
+async function sigcom_meta_user_input_signature(body: { entities: string[] } | { up_entities: string[], down_entities: string[] }) {
   const metaInputReq = await fetch(`${sigcom_lincs_url}/metadata-api/user_input`, {
     method: 'POST',
     headers: {
@@ -73,7 +74,7 @@ async function sigcom_meta_user_input_signature(body: { up_entities: string[], d
   return z.object({ id: z.string() }).parse(await metaInputReq.json())
 }
 
-async function sigcom_data_enrich(body: {
+async function sigcom_data_enrich_ranktwosided(body: {
   database: string,
   up_entities: string[],
   down_entities: string[],
@@ -93,6 +94,28 @@ async function sigcom_data_enrich(body: {
       type: z.string(),
       'z-up': z.number(),
       'z-down': z.number(),
+    })),
+  }).parse(await dataReq.json())
+}
+
+async function sigcom_data_enrich_rank(body: {
+  database: string,
+  entities: string[],
+  limit?: number,
+}) {
+  const dataReq = await fetch(`${sigcom_lincs_url}/data-api/api/v1/enrich/rank`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  return z.object({
+    results: z.array(z.object({
+      uuid: z.string(),
+      type: z.string(),
+      'zscore': z.number(),
     })),
   }).parse(await dataReq.json())
 }
@@ -148,7 +171,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
   .inputs({ searchResults: SigComLINCSSignatureResults })
   .output(ScoredDrugs)
   .resolve(async (props) => {
-    const { results } = await sigcom_data_enrich({
+    const { results } = await sigcom_data_enrich_ranktwosided({
       up_entities: props.inputs.searchResults.up_entities,
       down_entities: props.inputs.searchResults.down_entities,
       limit: 100,
@@ -156,7 +179,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
     })
     const signatureScores = dict.init(results.map(({ uuid: key, ...value }) => ({ key, value })))
     const signatureMeta = await sigcom_signatures_find_by_id(dict.keys(signatureScores))
-    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-up'] - signatureScores[signature.id]['z-down'] }))
+    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-up'] - signatureScores[signature.id]['z-down'] })).filter(({ term }) => !!term)
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })
@@ -173,7 +196,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
   .inputs({ searchResults: SigComLINCSSignatureResults })
   .output(ScoredGenes)
   .resolve(async (props) => {
-    const { results } = await sigcom_data_enrich({
+    const { results } = await sigcom_data_enrich_ranktwosided({
       up_entities: props.inputs.searchResults.up_entities,
       down_entities: props.inputs.searchResults.down_entities,
       limit: 100,
@@ -182,6 +205,86 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
     const signatureScores = dict.init(results.map(({ uuid: key, ...value }) => ({ key, value })))
     const signatureMeta = await sigcom_signatures_find_by_id(dict.keys(signatureScores))
     const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-up'] - signatureScores[signature.id]['z-down'] })).filter(({ term }) => !!term)
+    signatures.sort((a, b) => b.zscore - a.zscore)
+    return signatures
+  })
+  .story(props =>
+    `Resolved genes from the LINCS L1000 CRISPR KOs library.`
+  )
+  .build()
+
+export const SigComLINCSGeneSetResults = MetaNode(`SigComLINCSGeneSetResults`)
+  .meta({
+    label: 'SigCom LINCS Gene Set Search Results',
+    description: 'LINCS L1000 Gene Set Query Results',
+  })
+  .codec(z.object({ id: z.string(), entities: z.array(z.string()) }))
+  .view(props => (
+    <div className="flex-grow flex flex-row m-0" style={{ minHeight: 800 }}>
+      <iframe
+        className="flex-grow border-0"
+        src={`${sigcom_lincs_url}/#/SignatureSearch/Set/${props.id}`}
+      />
+    </div>
+  ))
+  .build()
+
+export const SigComLINCSGeneSetSearch = MetaNode(`SigComLINCSGeneSetSearch`)
+  .meta({
+    label: 'SigCom LINCS Gene Set Search',
+    description: 'Query LINCS L1000 Signatures',
+  })
+  .inputs({ genes: GeneSet })
+  .output(SigComLINCSGeneSetResults)
+  .resolve(async (props) => {
+    const metaRes = await sigcom_meta_entities_find_by_symbol(props.inputs.genes.set)
+    const entities = metaRes.map(({ id }) => id)
+    const results = await sigcom_meta_user_input_signature({ entities })
+    return { id: results.id, entities }
+  })
+  .story(props => `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS [\\ref{doi:10.1093/nar/gkac328}].`)
+  .build()
+
+export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigComLINCSGeneSetSearch[LINCS L1000 Chemical Perturbagens]`)
+  .meta({
+    label: `Extract LINCS L1000 Chemical Perturbagens`,
+    description: 'Extract signatures from the results',
+  })
+  .inputs({ searchResults: SigComLINCSGeneSetResults })
+  .output(ScoredDrugs)
+  .resolve(async (props) => {
+    const { results } = await sigcom_data_enrich_rank({
+      entities: props.inputs.searchResults.entities,
+      limit: 100,
+      database: 'l1000_cp',
+    })
+    const signatureScores = dict.init(results.map(({ uuid: key, ...value }) => ({ key, value })))
+    const signatureMeta = await sigcom_signatures_find_by_id(dict.keys(signatureScores))
+    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['zscore'] })).filter(({ term }) => !!term)
+    signatures.sort((a, b) => b.zscore - a.zscore)
+    return signatures
+  })
+  .story(props =>
+    `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
+  )
+  .build()
+
+export const ExtractSigComLINCSGeneSetSearchT_l1000_xpr = MetaNode(`ExtractSigComLINCSGeneSetSearch[LINCS L1000 CRISPR KOs]`)
+  .meta({
+    label: `Extract LINCS L1000 CRISPR KOs`,
+    description: 'Extract signatures from the results',
+  })
+  .inputs({ searchResults: SigComLINCSGeneSetResults })
+  .output(ScoredGenes)
+  .resolve(async (props) => {
+    const { results } = await sigcom_data_enrich_rank({
+      entities: props.inputs.searchResults.entities,
+      limit: 100,
+      database: 'l1000_xpr',
+    })
+    const signatureScores = dict.init(results.map(({ uuid: key, ...value }) => ({ key, value })))
+    const signatureMeta = await sigcom_signatures_find_by_id(dict.keys(signatureScores))
+    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['zscore'] })).filter(({ term }) => !!term)
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { ScoredDrugs, ScoredGenes } from '@/components/core/input/scored'
 import { GeneSet } from '@/components/core/input/set'
+import { drug_icon, gene_icon, lincs_icon, set_icon, weighted_icon } from '@/icons'
 
 const sigcom_lincs_url = 'https://maayanlab.cloud/sigcom-lincs'
 
@@ -124,6 +125,7 @@ export const SigComLINCSSignatureResults = MetaNode(`SigComLINCSSignatureResults
   .meta({
     label: 'SigCom LINCS Signature Search Results',
     description: 'LINCS L1000 Signatures Query Results',
+    icon: [lincs_icon, weighted_icon],
   })
   .codec(z.object({ id: z.string(), up_entities: z.array(z.string()), down_entities: z.array(z.string()) }))
   .view(props => (
@@ -140,6 +142,7 @@ export const SigComLINCSSignatureSearch = MetaNode(`SigComLINCSSignatureSearch`)
   .meta({
     label: 'SigCom LINCS Signature Search',
     description: 'Query LINCS L1000 Signatures',
+    icon: [lincs_icon],
   })
   .inputs({ genes: ScoredGenes })
   .output(SigComLINCSSignatureResults)
@@ -167,6 +170,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
   .meta({
     label: `Extract LINCS L1000 Chemical Perturbagens`,
     description: 'Extract signatures from the results',
+    icon: [lincs_icon, drug_icon],
   })
   .inputs({ searchResults: SigComLINCSSignatureResults })
   .output(ScoredDrugs)
@@ -192,6 +196,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
   .meta({
     label: `Extract LINCS L1000 CRISPR KOs`,
     description: 'Extract signatures from the results',
+    icon: [lincs_icon, gene_icon],
   })
   .inputs({ searchResults: SigComLINCSSignatureResults })
   .output(ScoredGenes)
@@ -217,6 +222,7 @@ export const SigComLINCSGeneSetResults = MetaNode(`SigComLINCSGeneSetResults`)
   .meta({
     label: 'SigCom LINCS Gene Set Search Results',
     description: 'LINCS L1000 Gene Set Query Results',
+    icon: [lincs_icon, set_icon],
   })
   .codec(z.object({ id: z.string(), entities: z.array(z.string()) }))
   .view(props => (
@@ -233,6 +239,7 @@ export const SigComLINCSGeneSetSearch = MetaNode(`SigComLINCSGeneSetSearch`)
   .meta({
     label: 'SigCom LINCS Gene Set Search',
     description: 'Query LINCS L1000 Signatures',
+    icon: [lincs_icon],
   })
   .inputs({ genes: GeneSet })
   .output(SigComLINCSGeneSetResults)
@@ -249,6 +256,7 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigCom
   .meta({
     label: `Extract LINCS L1000 Chemical Perturbagens`,
     description: 'Extract signatures from the results',
+    icon: [lincs_icon, drug_icon],
   })
   .inputs({ searchResults: SigComLINCSGeneSetResults })
   .output(ScoredDrugs)
@@ -273,6 +281,7 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_xpr = MetaNode(`ExtractSigCo
   .meta({
     label: `Extract LINCS L1000 CRISPR KOs`,
     description: 'Extract signatures from the results',
+    icon: [lincs_icon, gene_icon],
   })
   .inputs({ searchResults: SigComLINCSGeneSetResults })
   .output(ScoredGenes)

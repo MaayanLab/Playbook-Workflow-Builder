@@ -368,7 +368,7 @@ export default function Playbooks() {
             </React.Fragment>
           )
           : <div className="col-span-7">
-            <div className="alert prose">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose max-w-full place-content-center">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

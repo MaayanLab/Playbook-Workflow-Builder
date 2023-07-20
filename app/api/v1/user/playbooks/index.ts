@@ -21,7 +21,7 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
     const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
     const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
     const skip = props.query.skip ?? 0
-    const limit = props.query.limit ?? 10
+    const limit = props.query.limit ?? 50
     // TODO: filter in DB
     let playbooks = await db.objects.user_playbook.findMany({
       where: {
@@ -46,7 +46,7 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
 export const UserPlaybooks = API('/api/v1/user/playbooks')
   .query(z.object({
     skip: z.number().optional().transform(v => v ?? 0),
-    limit: z.number().optional().transform(v => v ?? 10),
+    limit: z.number().optional().transform(v => v ?? 50),
   }))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)

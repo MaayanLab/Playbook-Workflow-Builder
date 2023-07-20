@@ -2,7 +2,7 @@ import { Decoded } from '@/spec/codec'
 import { TypedSchema } from '@/spec/sql'
 import * as pg from 'pg'
 import * as dict from '@/utils/dict'
-import { Create, DbDatabase, DbTable, Delete, Find, FindMany, Update, Upsert, Where } from './common'
+import { Create, DbDatabase, DbTable, Delete, Find, FindMany, OrderBy, Update, Upsert, Where } from './common'
 import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/orm'
@@ -130,16 +130,25 @@ export class PgTable<T extends {}> implements DbTable<T> {
   }
   findMany = async (find: FindMany<T> = {}) => {
     const where: Where<T> = (find.where !== undefined) ? find.where : {}
-    const columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
+    const where_columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
+    const orderBy: OrderBy<T> = (find.orderBy !== undefined) ? find.orderBy : {}
+    const orderBy_columns = dict.keys(this.table.field_codecs).filter(col => col in orderBy) as Array<keyof T>
     const results = await this.db.raw(subst => `
       select *
       from ${JSON.stringify(this.table.name)}
-      ${columns.length > 0 ?
-        `where ${columns
+      ${where_columns.length > 0 ?
+        `where ${where_columns
           .map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(where[key] as Decoded<T[keyof T]>))}`)
           .join(' and ')
         }`
-        : ''};
+        : ''}
+      ${orderBy_columns.length > 0 ?
+        `order by ${orderBy_columns
+          .map(key => `${JSON.stringify(key)} ${orderBy[key] === 'desc' ? 'desc' : 'asc'}`)
+          .join(', ')
+        }`
+        : ''}
+      ;
     `)
     return results.rows.map(row => this.table.codec.decode(row))
   }

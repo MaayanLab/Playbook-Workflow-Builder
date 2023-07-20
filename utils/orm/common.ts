@@ -4,6 +4,7 @@ import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
 export type Data<T> = {[K in keyof T]: Decoded<T[K]>}
 export type PartialData<T> = Partial<{[K in keyof T]?: Decoded<T[K]>}>
 export type Where<T> = Partial<{[K in keyof T]?: Decoded<T[K]>}>
+export type OrderBy<T> = Partial<{[K in keyof T]?: 'asc' | 'desc'}>
 export type Find<T> = {
   select?: Partial<{[K in keyof T]?: boolean}>
   where: Where<T>
@@ -11,6 +12,7 @@ export type Find<T> = {
 export type FindMany<T> = {
   select?: Partial<{[K in keyof T]?: boolean}>
   where?: Where<T>
+  orderBy?: OrderBy<T>
 }
 export type Create<T> = {
   data: PartialData<T>

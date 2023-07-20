@@ -133,6 +133,8 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const where_columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
     const orderBy: OrderBy<T> = (find.orderBy !== undefined) ? find.orderBy : {}
     const orderBy_columns = dict.keys(this.table.field_codecs).filter(col => col in orderBy) as Array<keyof T>
+    if (find.skip !== undefined && typeof find.skip !== 'number') throw new Error('Expected number for skip')
+    if (find.take !== undefined && typeof find.take !== 'number') throw new Error('Expected number for take')
     const results = await this.db.raw(subst => `
       select *
       from ${JSON.stringify(this.table.name)}
@@ -148,6 +150,8 @@ export class PgTable<T extends {}> implements DbTable<T> {
           .join(', ')
         }`
         : ''}
+      ${find.take ? `limit ${find.take}` : ''}
+      ${find.skip ? `offset ${find.skip}` : ''}
       ;
     `)
     return results.rows.map(row => this.table.codec.decode(row))

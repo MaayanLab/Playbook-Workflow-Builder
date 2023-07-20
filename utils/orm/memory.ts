@@ -113,7 +113,17 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
         return 0
       })
     }
-    return results
+    if (find.skip !== undefined) {
+      if (find.take !== undefined) {
+        return results.slice(find.skip, find.take)
+      } else {
+        return results.slice(find.skip)
+      }
+    } else if (find.take !== undefined) {
+      return results.slice(0, find.take)
+    } else {
+      return results
+    }
   }
   update = async (update: Update<T>) => {
     await this.ensureMutate()

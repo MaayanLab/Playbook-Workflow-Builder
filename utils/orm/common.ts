@@ -13,6 +13,8 @@ export type FindMany<T> = {
   select?: Partial<{[K in keyof T]?: boolean}>
   where?: Where<T>
   orderBy?: OrderBy<T>
+  skip?: number
+  take?: number
 }
 export type Create<T> = {
   data: PartialData<T>

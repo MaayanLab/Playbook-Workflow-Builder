@@ -6,6 +6,16 @@ import urllib.request, urllib.parse
 from xml.dom import minidom
 doc = minidom.Document()
 
+def chunked(it, n=100):
+  chunk = []
+  for el in it:
+    chunk.append(el)
+    if len(chunk) >= n:
+      yield chunk
+      chunk = []
+  if chunk:
+    yield chunk
+
 def pug(data: str, find: str, n=3, backoff=1.):
   ''' Use the PUG API, and get an XML element from the response or retry n times
   '''
@@ -81,31 +91,36 @@ def fetch_drug_name_cids(drug_names):
 def fetch_fda_approvals(cids):
   ''' Use pubchem's sdq API to query for fdadrugs associated with compound ids
   '''
-  time.sleep(0.5)
-  query = {
-    'download':'*',
-    'collection':'fdadrug',
-    'where':{
-      'ors': [
-        {'cid':cid}
-        for cid in cids
-      ]
-    },
-    'order':['status,desc'],
-    'start':1,
-    'limit':10000000,
-  }
-  req = requests.post(
-    'https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi',
-    params=dict(
-      infmt='json',
-      outfmt='json',
-    ),
-    files=dict(
-      query=(None, json.dumps(query)),
-    ),
-  )
-  return req.json()
+  for chunk_cids in chunked(cids):
+    time.sleep(0.5)
+    query = {
+      'download':'*',
+      'collection':'fdadrug',
+      'where':{
+        'ors': [
+          {'cid':cid}
+          for cid in chunk_cids
+        ]
+      },
+      'order':['status,desc'],
+      'start':1,
+      'limit':10000000,
+    }
+    req = requests.post(
+      'https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi',
+      params=dict(
+        infmt='json',
+        outfmt='json',
+      ),
+      files=dict(
+        query=(None, json.dumps(query)),
+      ),
+    )
+    try:
+      yield from req.json()
+    except requests.exceptions.JSONDecodeError:
+      import sys
+      print('warning, lost information because pubchems response is not valid json', file=sys.stderr)
 
 def filter_fda_set(drugs):
   drug_name_cids = fetch_drug_name_cids(drugs['set'])

@@ -276,8 +276,8 @@ export class FPL {
 export class Data {
   id: string
 
-  constructor(public type: string, public value: string, public persisted = false) {
-    this.id = uuid([type, value])
+  constructor(public type: string, public value: any, public persisted = false) {
+    this.id = uuid([type, JSON.stringify(value)])
   }
 
   toJSON = () => {
@@ -355,7 +355,7 @@ export class PlaybookMetadata {
 
 export const IdOrDataC = z.union([
   z.object({ id: z.string() }),
-  z.object({ type: z.string(), value: z.string() }),
+  z.object({ type: z.string(), value: z.any() }),
 ])
 export type IdOrData = z.infer<typeof IdOrDataC>
 
@@ -381,24 +381,23 @@ export const IdOrPlaybookMetadataC = z.union([
 ])
 export type IdOrPlaybookMetadata = z.infer<typeof IdOrPlaybookMetadataC>
 
-export type IdOrProcess = { id: string }
-| { type: string, inputs: Record<string, IdOrProcess> }
-| { type: string, data: IdOrData, inputs: Record<string, IdOrProcess> }
-
-export const IdOrProcessC: z.ZodType<IdOrProcess> = z.lazy(() => z.union([
+export const IdOrProcessC = z.union([
+  z.object({
+    id: z.string(),
+    type: z.string(),
+    data: IdOrDataC.optional(),
+    inputs: z.record(z.string(), z.object({ id: z.string() })).optional(),
+  }),
   z.object({
     id: z.string(),
   }),
   z.object({
     type: z.string(),
-    data: IdOrDataC,
-    inputs: z.record(z.string(), IdOrProcessC),
+    data: IdOrDataC.optional(),
+    inputs: z.record(z.string(), z.object({ id: z.string() })).optional(),
   }),
-  z.object({
-    type: z.string(),
-    inputs: z.record(z.string(), IdOrProcessC),
-  }),
-]))
+])
+export type IdOrProcess = z.infer<typeof IdOrProcessC>
 
 export type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
 export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
@@ -426,8 +425,8 @@ export default class FPPRG {
     } else {
       return await this.upsertProcess(new Process(
         process.type,
-        'data' in process ? process.data !== undefined ? await this.resolveData(process.data) : undefined : undefined,
-        dict.init(await Promise.all(dict.sortedItems(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) }))))
+        process.data !== undefined ? await this.resolveData(process.data) : undefined,
+        process.inputs !== undefined ? dict.init(await Promise.all(dict.sortedItems(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) })))) : {}
       ))
     }
   }
@@ -626,7 +625,7 @@ export default class FPPRG {
       if (result !== null) {
         this.dataTable[result.id] = new Data(
           result.type,
-          result.value,
+          JSON.parse(result.value),
           true,
         )
       }
@@ -643,7 +642,7 @@ export default class FPPRG {
           create: {
             id: data.id,
             type: data.type,
-            value: data.value,
+            value: JSON.stringify(data.value),
           }
         })
       }

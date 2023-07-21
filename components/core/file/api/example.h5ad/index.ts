@@ -9,8 +9,8 @@ export const exampleFile = path.resolve(
   'core',
   'file',
   'api',
-  'example',
-  'example_matrix.tsv'
+  'example.h5ad',
+  'example.h5ad'
 )
 
 export type UploadExampleFileResponse = Awaited<ReturnType<typeof uploadExampleFile>>
@@ -18,6 +18,6 @@ export type UploadExampleFileResponse = Awaited<ReturnType<typeof uploadExampleF
 export async function uploadExampleFile(session?: SessionWithId) {
   return await uploadFile({
     url: `file://${exampleFile.split(path.sep).join(path.posix.sep)}`,
-    filename: 'example_matrix.tsv',
+    filename: 'example.h5ad',
   }, session)
 }

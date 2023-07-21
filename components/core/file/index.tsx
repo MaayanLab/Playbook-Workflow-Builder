@@ -7,7 +7,7 @@ import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
-import { clientLoadExample } from  '@/components/core/file/api/example/client'
+import { clientLoadExample } from  '@/components/core/file/api/example.h5ad/client'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -15,7 +15,7 @@ export const FileC = z.object({
   description: z.string().optional().nullable(),
   url: z.string(),
   filename: z.string(),
-  size: z.number(),
+  size: z.number().optional(),
 })
 
 export const FileURL = MetaNode('FileURL')
@@ -81,7 +81,7 @@ export const FileInput = MetaNode('FileInput')
               className={classNames('file-input file-input-lg', { 'hidden': currentFile.url })}
               onChange={evt => {
                 const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
-                setCurrentFile(({ description, url: _ }) => ({ description, url }))
+                setCurrentFile(({ description, ...file }) => ({ description, url }))
               }}
               type="file"
             />
@@ -103,7 +103,7 @@ export const FileInput = MetaNode('FileInput')
                 name="description"
                 className="bp4-input"
                 placeholder={`File description`}
-                onChange={evt => {setCurrentFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                onChange={evt => {setCurrentFile(({ description: _, ...file }) => ({ ...file, description: evt.target.value }))}}
                 value={currentFile.description||''}
               />
             </div>

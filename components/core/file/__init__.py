@@ -70,6 +70,19 @@ def file_as_stream(file: File, *args, **kwargs) -> str:
 
 @contextlib.contextmanager
 def file_as_path(file: File, *args, **kwargs) -> str:
-  m = re.match(r'^file://(.+)$', file['url'])
+  m = re.match(r'^(file|https?)://(.+)$', file['url'])
   assert m, 'protocol not yet supported'
-  yield m.group(1)
+  if m.group(1) == 'file':
+    yield m.group(2)
+  elif m.group(1) in ('http', 'https'):
+    import shutil, tempfile, urllib.request, pathlib
+    tmp = tempfile.mktemp(suffix='.'.join(pathlib.PurePosixPath(m.group(2)).suffixes))
+    with open(tmp, 'wb') as fw:
+      with urllib.request.urlopen(m.group(0)) as fr:
+        shutil.copyfileobj(fr, fw)
+    try:
+      yield tmp
+    finally:
+      pathlib.Path(tmp).unlink()
+  else:
+    raise NotImplementedError(m.group(1))

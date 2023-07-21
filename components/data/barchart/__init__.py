@@ -3,29 +3,32 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy.stats import norm
 
-def createbarchart(x, terms='Tissues'):
+def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
     x = pd.DataFrame.from_records(x)
 
-    # Calculate p-values
-    x['pvalue'] = 1 - norm.cdf(x['zscore'])
+    # Calculate p-values from z-scores
+    x['pvalue'] = norm.sf(abs(x['zscore'])) * 2
 
-    # Sort by p-value in descending order and select top 10
-    x = x.sort_values(by='pvalue', ascending=False).drop_duplicates(subset='pvalue').head(10)
+    # Sort by z-score in ascending order and select top 10 unique z-scores
+    x = x.sort_values(by='zscore', ascending=True).drop_duplicates(subset='zscore').head(10)
+
+    # Define colors based on p-value significance
+    x['bar_color'] = x['pvalue'].apply(lambda pval: 'blue' if pval <= pvalue_threshold else 'grey')
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        x=x['pvalue'],
+        x=x['zscore'],
         y=x['term'],
         orientation='h',
         text=x.apply(lambda row: f"{row['term']} (p={row['pvalue']:.4f})", axis=1),
         textposition='inside',
         insidetextanchor='middle',
         textfont=dict(color='white'),
-        marker=dict(line=dict(color='black', width=1))
+        marker=dict(color=x['bar_color'], line=dict(color='black', width=1))
     ))
 
     fig.update_layout(
-        title=f"Top 10 {terms} with Highest Unique P-Values",
+        title=f"Top 10 {terms} with Highest Unique Z-Scores",
         height=600,
         yaxis=dict(showticklabels=False),
         autosize=False,  # Disable automatic resizing

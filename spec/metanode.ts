@@ -18,6 +18,10 @@ import type { MaybeArray, ExtractKey, Ensure } from '@/utils/types'
 import type { Icon } from '@/icons'
 import type { StaticImageData } from 'next/image'
 
+function identity<T>(value: T): T {
+  return value
+}
+
 /**
  * The broadest type parameter for an IdentifiableMetaNode
  */
@@ -157,7 +161,7 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
       /**
        * A codec or zod specification for validating the data type for a DataMetaNode
        */
-      codec: <DATA extends InternalDataMetaNode['data']>(codec: DataMetaNode<{ data: DATA }>['codec'] | z.ZodType<DATA> = { encode: JSON.stringify, decode: JSON.parse } as DataMetaNode<{ data: DATA }>['codec']) =>
+      codec: <DATA extends InternalDataMetaNode['data']>(codec: DataMetaNode<{ data: DATA }>['codec'] | z.ZodType<DATA> = { encode: identity, decode: identity } as DataMetaNode<{ data: DATA }>['codec']) =>
       ({
         /**
          * A view function for rendering the DataMetaNode using React

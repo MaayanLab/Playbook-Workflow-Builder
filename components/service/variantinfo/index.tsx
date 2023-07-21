@@ -99,29 +99,36 @@ export const GitHubVariantInfoC =  z.object({
 })
 export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
 
+const HG38SingleGeneAssociationsC = z.object({
+  distance_to_feature : z.string().optional(),
+  effect : z.string().optional(),
+  feature_id : z.string().optional(),
+  feature_type : z.string().optional(),
+  gene_id : z.string().optional(),
+  genename : z.string().optional(),
+  hgvs_c : z.string().optional(),
+  putative_impact : z.string().optional(),
+  transcript_biotype: z.string().optional()
+});
+
 const HG38GeneAssociationsC = z.object({
   snpeff: z.object({
-    ann: z.array(
-      z.object({
-        distance_to_feature : z.string().optional(),
-				effect : z.string().optional(),
-				feature_id : z.string().optional(),
-				feature_type : z.string().optional(),
-				gene_id : z.string().optional(),
-				genename : z.string().optional(),
-				hgvs_c : z.string().optional(),
-				putative_impact : z.string().optional(),
-				transcript_biotype: z.string().optional()
-      })
-    )
+    ann: z.array( HG38SingleGeneAssociationsC )
   })  
 });
 type HG38GeneAssociations = z.infer<typeof HG38GeneAssociationsC>
 
+const HG38GeneAssociationsProcessedForViewC = z.array(
+  z.object({
+    geneId: z.string(),
+    associations: z.array( HG38SingleGeneAssociationsC )
+  })
+)
+
 const HG38GeneAssociationsSetC = z.array(
   z.object({
     variantCId: z.string(),
-    geneAssociationsHg38: HG38GeneAssociationsC
+    geneAssociationsHg38: HG38GeneAssociationsProcessedForViewC
   })
 )
 
@@ -542,33 +549,49 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
     label: 'GeneAssociations_HG38',
     description: ''
   })
-  .codec(HG38GeneAssociationsC)
+  .codec(HG38GeneAssociationsProcessedForViewC)
   .view(GeneAssociationsList => {
-    var associatedGeens = GeneAssociationsList.snpeff.ann;
-
     return (
       <Table
         height={500}
-        cellRendererDependencies={[associatedGeens]}
-        numRows={associatedGeens.length}
+        cellRendererDependencies={[GeneAssociationsList]}
+        numRows={GeneAssociationsList.length}
         enableGhostCells
         enableFocusedCell
       >
         <Column
           name="Gene ID/Name"
-          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].gene_id}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{GeneAssociationsList[row].geneId}</Cell>}
         />
         <Column
           name="Effect"
-          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].effect}</Cell>}
-        />
-        <Column
-          name="Feature ID"
-          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].feature_id}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {GeneAssociationsList[row].associations.map(associations =>
+                      <tr><td>{ associations.effect }</td></tr>
+                  )}
+                </table>
+          </Cell>}
         />
         <Column
           name="Distance To Feature"
-          cellRenderer={row => <Cell key={row+''}>{associatedGeens[row].distance_to_feature}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {GeneAssociationsList[row].associations.map(associations =>
+                      <tr><td>{ associations.distance_to_feature }</td></tr>
+                  )}
+                </table>
+          </Cell>}
+        />
+        <Column
+          name="Feature ID"
+          cellRenderer={row => <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {GeneAssociationsList[row].associations.map(associations =>
+                      <tr><td>{ associations.feature_id }</td></tr>
+                  )}
+                </table>
+          </Cell>}
         />
       </Table>
     )
@@ -580,6 +603,38 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
     for(let sl in sourceLinks){
       return sourceLinks[sl]['@id'];
     }
+  }
+
+  function processHG38ExternalRecordsResponse(apiResponse: any){
+    let geneID: string = "";
+    var associatedGeensMap: any = {};
+    var associatedGeens = apiResponse.snpeff.ann;
+    for(let agIdx in associatedGeens){
+      let associatedGeenObj = associatedGeens[agIdx];
+      geneID = associatedGeenObj.gene_id+"";
+
+      if(associatedGeenObj.distance_to_feature == null){
+        associatedGeenObj['distance_to_feature'] = "/";
+      }
+
+      if(!associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
+        associatedGeensMap[geneID] = [];
+        associatedGeensMap[geneID].push(associatedGeenObj);
+      }else if(associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
+        associatedGeensMap[geneID].push(associatedGeenObj);
+      }
+    }
+
+    let associatedGeensList = [];
+    for(let agmInd in associatedGeensMap){
+      let associatedGeenFInalData = {
+          "geneId": agmInd,
+          "associations":associatedGeensMap[agmInd]
+      }
+      associatedGeensList.push(associatedGeenFInalData)
+    }
+
+    return associatedGeensList;
   }
 
   async function  getHG38externalRecordsDataAPI(hg38ExtSourceLink: string): Promise<HG38GeneAssociations>{
@@ -616,7 +671,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       response = await getHG38externalRecordsDataAPI(hg38ExtSourceLink);
     }
 
-    return response;
+    return processHG38ExternalRecordsResponse(response);
   }).story(props =>
     `Get Associated Gene info for a given Variant.`
   ).build()
@@ -705,62 +760,129 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   .codec(HG38GeneAssociationsSetC)
   .view( geneAssociationsSet => {
     return ( 
-        <Table
-        height={500}
-        cellRendererDependencies={[geneAssociationsSet]}
-        numRows={geneAssociationsSet.length}
-        enableGhostCells
-        enableFocusedCell
-        >
-          <Column
-            name="Variant CId"
-            cellRenderer={row => <Cell key={row+''}>{geneAssociationsSet[row].variantCId}</Cell>}
-          />
-          <Column
-            name="Gene ID/Name"
-            cellRenderer={row =>
-              <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
-                      <tr><td>{ associations.gene_id }</td></tr>
-                  )}
-                </table>
-              </Cell>}
-          />
-          <Column
-            name="Effect"
-            cellRenderer={row =>
-              <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
-                      <tr><td>{ associations.effect }</td></tr>
-                  )}
-                </table>
-              </Cell>}
-          />
-          <Column
-            name="Feature ID"
-            cellRenderer={row =>
-              <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
-                      <tr><td>{ associations.feature_id }</td></tr>
-                  )}
-                </table>
-              </Cell>}
-          />
-          <Column
-            name="Distance to Feature"
-            cellRenderer={row =>
-              <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {geneAssociationsSet[row].geneAssociationsHg38.snpeff.ann.map(associations =>
-                      <tr><td>{ associations.distance_to_feature }</td></tr>
-                  )}
-                </table>
-              </Cell>}
-          />
-        </Table>
+      <Table
+      height={500}
+      cellRendererDependencies={[geneAssociationsSet]}
+      numRows={geneAssociationsSet.length}
+      enableGhostCells
+      enableFocusedCell
+      >
+        <Column
+          name="Variant CId"
+          cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCId }</Cell>}
+        />
+        <Column
+          name="Gene ID/Name"
+          cellRenderer={row =>
+            <Cell key={row+''}>
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>              
+                    <tr style={{borderBottom:'1px solid lightgrey'}}>
+                      <td>{ associationsList.geneId }</td>
+                      <td>
+                        <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                            {associationsList.associations.map(association =>
+                                <tr><td style={{visibility:'hidden'}}>{association.effect}</td></tr>
+                            )}
+                        </table>
+                      </td>
+                    </tr>     
+                )}
+              </table>
+            </Cell>}
+        />
+        <Column
+          name="Effect"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.effect }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+        <Column
+          name="Feature ID"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.feature_id }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+        <Column
+          name="Feature_Type"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.feature_type }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+        <Column
+          name="Distance To Feature"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.distance_to_feature }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+        <Column
+          name="HGVS_C"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.hgvs_c }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+        <Column
+          name="Putative Impact"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.putative_impact }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+        <Column
+          name="Transcript Biotype"
+          cellRenderer={row =>
+            <Cell key={row+''}>             
+                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                        {associationsList.associations.map(association =>
+                            <tr><td>{ association.transcript_biotype }</td></tr>
+                        )}
+                    </table>
+                )}             
+            </Cell>}
+        />
+      </Table>
     )  
   })
   .build()
@@ -783,16 +905,11 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
         if(externalRecords[erIdx] != null && externalRecords[erIdx].name == "MyVariantInfo_hg38"){
           let hg38ExtSourceLink = processHG38externalRecords(externalRecords[erIdx]);
           let response = await getHG38externalRecordsDataAPI(hg38ExtSourceLink);
-          let associations = response.snpeff.ann;
-          for(let aIndx in associations){
-            let a = associations[aIndx];
-            if(a.distance_to_feature == null){
-              a['distance_to_feature'] = "/";
-            }
-          }
+          let associatedGeensList = processHG38ExternalRecordsResponse(response);
+
           let varinatGeneAssociation = {
             "variantCId": variantExternalRecords.variantCId,
-            "geneAssociationsHg38": response
+            "geneAssociationsHg38": associatedGeensList
           }
           varinatGeneAssociationsSet.push(varinatGeneAssociation);
         }

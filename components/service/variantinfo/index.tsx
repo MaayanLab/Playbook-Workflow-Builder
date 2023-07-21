@@ -187,11 +187,7 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
         enableFocusedCell
       >
         <Column
-          name="Varinat id"
-          cellRenderer={row => <Cell key={row+''}>{variantInfoSet[row].entId}</Cell>}
-        />
-        <Column
-          name="Variant link"
+          name="Varinat id (link)"
           cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${variantInfoSet[row].entId}`}>{variantInfoSet[row].entId}</a></Cell>}
         />
       </Table>
@@ -469,11 +465,11 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
         enableFocusedCell
       >
         <Column
-          name="External Source Name"
+          name="External Resource Name"
           cellRenderer={row => <Cell key={row+''}>{AlleleRegistryExternalSourcesList[row].name}</Cell>}
         />
         <Column
-          name="Source Id"
+          name="Resource Id"
           cellRenderer={row =>
           <Cell  key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -484,7 +480,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
           </Cell>}
         />
         <Column
-          name="Source Link"
+          name="Resource Link"
           cellRenderer={row =>
           <Cell  key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -574,7 +570,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           </Cell>}
         />
         <Column
-          name="Distance To Feature"
+          name="Distance To Feature (bp)"
           cellRenderer={row => <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                   {GeneAssociationsList[row].associations.map(associations =>
@@ -697,12 +693,23 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCId}</Cell>}
         />
         <Column
-          name="External Source Name"
+          name="External Resource Name"
           cellRenderer={row =>
             <Cell key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
                 {externalRecordsSet[row].externalRecords.map(externalRecord =>
                     <tr><td>{ externalRecord.name}</td></tr>
+                )}
+              </table>
+            </Cell>}
+        />
+        <Column
+          name="Resource ID"
+          cellRenderer={row =>
+            <Cell key={row+''}>
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {externalRecordsSet[row].externalRecords.map(externalRecord =>
+                    <tr><td>{ externalRecord.sources[0].id}</td></tr>
                 )}
               </table>
             </Cell>}
@@ -831,7 +838,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
             </Cell>}
         />
         <Column
-          name="Distance To Feature"
+          name="Distance To Feature (bp)"
           cellRenderer={row =>
             <Cell key={row+''}>             
                 {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>

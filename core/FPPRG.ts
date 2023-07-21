@@ -49,7 +49,7 @@ export class Process {
      */
     public persisted = false,
   ) {
-    this.id = uuid([type, data, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = uuid([type, data?.id, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
 
   toJSONWithOutput = async () => {
@@ -129,7 +129,7 @@ export class FPL {
       process.id,
       cell_metadata,
       playbook_metadata,
-      parent ? parent.id : null,
+      parent?.id,
     ])
   }
 
@@ -277,7 +277,7 @@ export class Data {
   id: string
 
   constructor(public type: string, public value: any, public persisted = false) {
-    this.id = uuid([type, JSON.stringify(value)])
+    this.id = uuid([type, value])
   }
 
   toJSON = () => {

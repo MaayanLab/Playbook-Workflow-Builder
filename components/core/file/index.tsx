@@ -7,7 +7,7 @@ import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
-import { clientLoadExample } from  '@/components/core/file/api/example/client'
+import { clientLoadExample } from  '@/components/core/file/api/example.h5ad/client'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 

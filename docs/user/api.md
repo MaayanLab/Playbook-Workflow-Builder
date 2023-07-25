@@ -32,6 +32,32 @@ res = requests.post(ENDPOINT + '/api/db/fpl', json={
   ]
 })
 print(ENDPOINT + '/graph/' + res.json())
+
+# Upload file for FileInput workflow
+API_KEY = ''
+# fetch example file
+import pathlib
+if not pathlib.Path('example.tsv').exists():
+  import urllib.request
+  urllib.request.urlretreive(ENDPOINT + '/api/v1/components/core/file/example.tsv', filename='example.tsv')
+
+# upload file
+with open('example.tsv', 'r') as fr:
+  res = requests.post(
+    ENDPOINT + '/api/v1/components/core/file/upload',
+    headers={'Authorization': 'Token '+API_KEY},
+    files=dict(file=('example.tsv', fr)),
+  )
+file = res.json()['file'][0]
+
+# use uploaded file as input to workflow
+res = requests.post(ENDPOINT + '/api/db/fpl', json={
+  "workflow": [
+    {"id": "0", "type": "FileInput", "data": { "type": "FileURL", "value": file } },
+    {"id": "1", "type": "GeneCountMatrixFromFile", "inputs": { "file": { "id": "0" } } }
+  ]
+})
+print(ENDPOINT + '/graph/' + res.json())
 ```
 
 Both of these examples will return an `id` for the workflow. This id can be used as follows:

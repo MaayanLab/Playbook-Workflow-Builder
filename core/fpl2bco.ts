@@ -1,7 +1,6 @@
 import { z } from "zod"
 import sha256 from '@/utils/sha256'
 import type KRG from "@/core/KRG"
-import type { MetaNode } from '@/spec/metanode'
 import IEE2791schema from '@/spec/bco'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
@@ -40,10 +39,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       } else {
         const inputs = await decode_complete_process_inputs(props.krg, step.process)
         const output = await decode_complete_process_output(props.krg, step.process)
-        story = metanode.story ? metanode.story({
-          inputs: inputs && dict.values(inputs).some(inp => (inp as MetaNode).spec === 'Error') ? undefined : inputs,
-          output: output && (output as MetaNode).spec === 'Error' ? undefined : output,
-        }) : undefined
+        story = metanode.story ? metanode.story({ inputs, output }) : undefined
       }
       return {
         key: step.process.id,

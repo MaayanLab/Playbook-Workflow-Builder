@@ -49,7 +49,7 @@ export class Process {
      */
     public persisted = false,
   ) {
-    this.id = uuid([type, data, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = uuid([type, data?.id, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
 
   toJSONWithOutput = async () => {
@@ -129,7 +129,7 @@ export class FPL {
       process.id,
       cell_metadata,
       playbook_metadata,
-      parent ? parent.id : null,
+      parent?.id,
     ])
   }
 
@@ -276,7 +276,7 @@ export class FPL {
 export class Data {
   id: string
 
-  constructor(public type: string, public value: string, public persisted = false) {
+  constructor(public type: string, public value: any, public persisted = false) {
     this.id = uuid([type, value])
   }
 
@@ -355,7 +355,7 @@ export class PlaybookMetadata {
 
 export const IdOrDataC = z.union([
   z.object({ id: z.string() }),
-  z.object({ type: z.string(), value: z.string() }),
+  z.object({ type: z.string(), value: z.any() }),
 ])
 export type IdOrData = z.infer<typeof IdOrDataC>
 
@@ -381,24 +381,23 @@ export const IdOrPlaybookMetadataC = z.union([
 ])
 export type IdOrPlaybookMetadata = z.infer<typeof IdOrPlaybookMetadataC>
 
-export type IdOrProcess = { id: string }
-| { type: string, inputs: Record<string, IdOrProcess> }
-| { type: string, data: IdOrData, inputs: Record<string, IdOrProcess> }
-
-export const IdOrProcessC: z.ZodType<IdOrProcess> = z.lazy(() => z.union([
+export const IdOrProcessC = z.union([
+  z.object({
+    id: z.string(),
+    type: z.string(),
+    data: IdOrDataC.optional(),
+    inputs: z.record(z.string(), z.object({ id: z.string() })).optional(),
+  }),
   z.object({
     id: z.string(),
   }),
   z.object({
     type: z.string(),
-    data: IdOrDataC,
-    inputs: z.record(z.string(), IdOrProcessC),
+    data: IdOrDataC.optional(),
+    inputs: z.record(z.string(), z.object({ id: z.string() })).optional(),
   }),
-  z.object({
-    type: z.string(),
-    inputs: z.record(z.string(), IdOrProcessC),
-  }),
-]))
+])
+export type IdOrProcess = z.infer<typeof IdOrProcessC>
 
 export type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
 export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
@@ -426,8 +425,8 @@ export default class FPPRG {
     } else {
       return await this.upsertProcess(new Process(
         process.type,
-        'data' in process ? process.data !== undefined ? await this.resolveData(process.data) : undefined : undefined,
-        dict.init(await Promise.all(dict.sortedItems(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) }))))
+        process.data !== undefined ? await this.resolveData(process.data) : undefined,
+        process.inputs !== undefined ? dict.init(await Promise.all(dict.sortedItems(process.inputs).map(async ({ key, value }) => ({ key, value: await this.resolveProcess(value) })))) : {}
       ))
     }
   }
@@ -442,7 +441,7 @@ export default class FPPRG {
           this,
           true,
         )
-        this.processTable[id] = process
+        this.processTable[id] = this.processTable[process.id] = process
         // this process was already resolved?
         // save that information, saves a lookup or two
         if (result.resolved) {
@@ -451,7 +450,7 @@ export default class FPPRG {
               process,
               result.output !== null ? (await this.getData(result.output)) : undefined,
             )
-            this.resolvedTable[id] = resolved
+            this.resolvedTable[id] = this.resolvedTable[resolved.id] = resolved
             process.resolved = resolved
           }
         }
@@ -534,13 +533,14 @@ export default class FPPRG {
     if (!(id in this.cellMetadataTable)) {
       const result = await this.db.objects.cell_metadata.findUnique({ where: { id } })
       if (result !== null) {
-        this.cellMetadataTable[id] = new CellMetadata(
+        const cellMetadata = new CellMetadata(
           result.label,
           result.description,
           result.process_visible,
           result.data_visible,
           true,
         )
+        this.cellMetadataTable[id] = this.cellMetadataTable[cellMetadata.id] = cellMetadata
       }
     }
     return this.cellMetadataTable[id] as CellMetadata | undefined
@@ -582,13 +582,14 @@ export default class FPPRG {
     if (!(id in this.playbookMetadataTable)) {
       const result = await this.db.objects.playbook_metadata.findUnique({ where: { id } })
       if (result !== null) {
-        this.playbookMetadataTable[id] = new PlaybookMetadata(
+        const playbookMetadata = new PlaybookMetadata(
           result.title,
           result.description,
           result.summary,
           result.gpt_summary,
           true,
         )
+        this.playbookMetadataTable[id] = this.playbookMetadataTable[playbookMetadata.id] = playbookMetadata
       }
     }
     return this.playbookMetadataTable[id] as PlaybookMetadata | undefined
@@ -624,11 +625,12 @@ export default class FPPRG {
     if (!(id in this.dataTable)) {
       const result = await this.db.objects.data.findUnique({ where: { id } })
       if (result !== null) {
-        this.dataTable[result.id] = new Data(
+        const data = new Data(
           result.type,
-          result.value,
+          JSON.parse(result.value),
           true,
         )
+        this.dataTable[id] = this.dataTable[data.id] = data
       }
     }
     return this.dataTable[id] as Data | undefined
@@ -643,7 +645,7 @@ export default class FPPRG {
           create: {
             id: data.id,
             type: data.type,
-            value: data.value,
+            value: JSON.stringify(data.value),
           }
         })
       }
@@ -662,7 +664,7 @@ export default class FPPRG {
           true,
         )
         process.resolved = resolved
-        this.resolvedTable[result.id] = resolved
+        this.resolvedTable[id] = this.resolvedTable[result.id] = resolved
       }
     }
     return this.resolvedTable[id] as Resolved | undefined
@@ -737,13 +739,14 @@ export default class FPPRG {
     if (!(id in this.fplTable)) {
       const result = await this.db.objects.fpl.findUnique({ where: { id } })
       if (result !== null) {
-        this.fplTable[result.id] = new FPL(
+        const fpl = new FPL(
           (await this.getProcess(result.process)) as Process,
           result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
           result.cell_metadata ? await this.getCellMetadata(result.cell_metadata) : undefined,
           result.playbook_metadata ? await this.getPlaybookMetadata(result.playbook_metadata) : undefined,
           true,
         )
+        this.fplTable[id] = this.fplTable[fpl.id] = fpl
       }
     }
     return this.fplTable[id] as FPL | undefined

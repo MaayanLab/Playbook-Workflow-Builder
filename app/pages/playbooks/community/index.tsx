@@ -232,7 +232,7 @@ export default function CommunityPlaybooks() {
             </React.Fragment>
           )
           : <div className="col-span-2 row-span-1 md:row-span-1 md:col-span-6">
-            <div className="alert prose">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose max-w-full place-content-center">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

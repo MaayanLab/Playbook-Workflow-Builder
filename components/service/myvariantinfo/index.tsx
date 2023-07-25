@@ -2,36 +2,36 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm, VariantTerm } from '@/components/core/input/term'
 import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon } from '@/icons'
-
-const z_maybe_array = (inner: z.ZodType) => z.union([inner, z.array(inner)])
+import * as array from '@/utils/array'
+import { z_maybe_array } from '@/utils/zod'
 
 export const MyVariantInfoC = z.object({
   _id: z.string(),
   dbsnp: z.object({
     gene: z.object({
-      geneid: z.number().optional(),
+      // geneid: z.number().optional(),
       symbol: z.string().optional(),
     }).optional(),
   }).optional(),
   clinvar: z.object({
-    variant_id: z.number().optional(),
+    // variant_id: z.number().optional(),
     gene: z.object({
-      id: z.string().optional(),
+      // id: z.string().optional(),
       symbol: z.string().optional(),
     }),
-    rcv: z_maybe_array(z.object({
-      accession: z.string().optional(),
-      clinical_significance: z.string().optional(),
-      conditions: z.object({
-        name: z.string().optional(),
-      }).optional(),
-    })).optional(),
+    // rcv: z_maybe_array(z.object({
+    //   accession: z.string().optional(),
+    //   clinical_significance: z.string().optional(),
+    //   conditions: z.object({
+    //     name: z.string().optional(),
+    //   }).optional(),
+    // })).optional(),
   }).optional(),
   snpeff: z.object({
-    ann: z.object({
-      gene_id: z.string().optional(),
+    ann: z_maybe_array(z.object({
+      // gene_id: z.string().optional(),
       genename: z.string().optional(),
-    }).optional(),
+    })).optional(),
   }).optional(),
 })
 
@@ -82,9 +82,9 @@ export const GeneTermFromMyVariantInfo = MetaNode('GeneTermFromMyVariantInfo')
   .output(GeneTerm)
   .resolve(async (props) => {
     let gene: string | undefined
-    if (gene === undefined) gene = props.inputs.info.dbsnp?.gene?.symbol
-    if (gene === undefined) gene = props.inputs.info.clinvar?.gene?.symbol
-    if (gene === undefined) gene = props.inputs.info.snpeff?.ann?.genename
+    if (gene === undefined && props.inputs.info.dbsnp !== undefined) gene = array.ensureArray(props.inputs.info.dbsnp)[0].gene?.symbol
+    if (gene === undefined && props.inputs.info.clinvar !== undefined) gene = array.ensureArray(props.inputs.info.clinvar)[0].gene?.symbol
+    if (gene === undefined && props.inputs.info.snpeff?.ann !== undefined) gene = array.ensureArray(props.inputs.info.snpeff.ann)[0].genename
     if (gene === undefined) throw new Error('Gene not identified in MyVariantInfo')
     return gene
   })

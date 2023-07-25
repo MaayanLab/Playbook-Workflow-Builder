@@ -44,5 +44,5 @@ export default handler(async (req, res) => {
       .replace(/^\n*/g, '')
       .replace(/\n*$/g, '')
   )
-  res.status(200).send(JSON.stringify(gptResponse))
+  res.status(200).json(gptResponse)
 })

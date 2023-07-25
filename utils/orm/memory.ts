@@ -92,9 +92,38 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
   }
   findMany = async (find: FindMany<T> = {}) => {
     await this.ensureFind()
-    return dict.values(this.db.data[this.table.name]).filter(record =>
+    const results = dict.values(this.db.data[this.table.name]).filter(record =>
       find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value)) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
+    if (find.orderBy !== undefined) {
+      results.sort((a, b) => {
+        for (const k in find.orderBy) {
+          let cmp
+          if (find.orderBy[k] === 'asc') { cmp = 1 }
+          else if (find.orderBy[k] === 'desc') { cmp = -1 }
+          else continue
+
+          if (typeof a[k] === 'number' && typeof b[k] === 'number') {
+            return cmp * ((a[k] as number) - (b[k] as number))
+          }
+          if (a[k] > b[k]) return cmp
+          else if (b[k] > a[k]) return 1-cmp
+          else continue
+        }
+        return 0
+      })
+    }
+    if (find.skip !== undefined) {
+      if (find.take !== undefined) {
+        return results.slice(find.skip, find.take)
+      } else {
+        return results.slice(find.skip)
+      }
+    } else if (find.take !== undefined) {
+      return results.slice(0, find.take)
+    } else {
+      return results
+    }
   }
   update = async (update: Update<T>) => {
     await this.ensureMutate()

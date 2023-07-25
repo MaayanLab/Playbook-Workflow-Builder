@@ -49,18 +49,26 @@ export * from "./data/gene_matrix_transpose"
 components.push("data/gene_matrix_transpose")
 export * from "./data/gene_signature"
 components.push("data/gene_signature")
+export * from "./data/librarysize"
+components.push("data/librarysize")
+export * from "./data/limma_voom"
+components.push("data/limma_voom")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
 export * from "./data/metadata_matrix"
 components.push("data/metadata_matrix")
 export * from "./data/pca_transformation"
 components.push("data/pca_transformation")
+export * from "./data/pcagraph"
+components.push("data/pcagraph")
 export * from "./data/quantile_normalization"
 components.push("data/quantile_normalization")
 export * from "./data/tsne_transformation"
 components.push("data/tsne_transformation")
 export * from "./data/umap_transformation"
 components.push("data/umap_transformation")
+export * from "./data/volcanoplot"
+components.push("data/volcanoplot")
 export * from "./data/z_score_normalization"
 components.push("data/z_score_normalization")
 export * from "./filters"
@@ -87,8 +95,12 @@ export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/myvariantinfo"
 components.push("service/myvariantinfo")
+export * from "./service/pubchem"
+components.push("service/pubchem")
 export * from "./service/regulatoryElementInfo"
 components.push("service/regulatoryElementInfo")
+export * from "./service/sigcom-lincs"
+components.push("service/sigcom-lincs")
 export * from "./service/targetranger"
 components.push("service/targetranger")
 export * from "./service/variantinfo"
@@ -99,7 +111,7 @@ export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/graph"
 components.push("viz/graph")
-export * from "./viz/plotly"
-components.push("viz/plotly")
 export * from "./viz/kf_barplot"
 components.push("viz/kf_barplot")
+export * from "./viz/plotly"
+components.push("viz/plotly")

@@ -9,25 +9,23 @@
 import React from 'react'
 import type KRG from '@/core/KRG'
 import type { Metapath } from '@/app/fragments/metapath'
-import type { MetaNode } from '@/spec/metanode'
 import { useMetapathInputs, useMetapathOutput } from '@/app/fragments/metapath'
 import extractCitations from '@/utils/citations'
-import * as dict from '@/utils/dict'
 
 /**
  * Attempt to compute the story for any given step
  */
 function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange: () => void }) {
   const processNode = krg.getProcessNode(head.process.type)
-  const { data: inputs } = useMetapathInputs(krg, head)
-  const { data: { output } } = useMetapathOutput(krg, head)
+  const { data: inputs, error: inputsError } = useMetapathInputs(krg, head)
+  const { data: { output, outputNode }, error: outputError } = useMetapathOutput(krg, head)
   const story = React.useMemo(() => {
     if (!processNode.story) return null
     try {
       return <>
         {processNode.story({
-          inputs: inputs && dict.values(inputs).some(inp => (inp as MetaNode).spec === 'Error') ? undefined : inputs,
-          output: output && output.spec === 'Error' ? undefined : output,
+          inputs: !inputsError ? inputs : undefined,
+          output: !outputError && outputNode.spec !== 'Error' ? output : undefined,
         })}&nbsp;
       </>
     } catch (e) {

@@ -6,7 +6,7 @@ The Playbook Partnership API allows you to construct workflows via a REST API. W
 import requests
 
 # The playbook partnership endpoint to query
-ENDPOINT = 'https://playbook-partnership.cloud'
+ENDPOINT = 'https://playbook-workflow-builder.cloud/'
 # ENDPOINT=http://localhost:3000
 
 # Construct a workflow Gene => GTEx Tissue => Barplot with the input: ACE2

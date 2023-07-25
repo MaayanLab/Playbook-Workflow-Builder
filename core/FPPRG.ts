@@ -169,13 +169,18 @@ export class FPL {
    * Opposite of resolve, build a fully persistent list out
    *  of a list of processes.
    */
-  static fromProcessArray = (processArray: Array<Process>) => {
+  static fromProcessArray = (processArray: Array<Process>, playbook_metadata = undefined as PlaybookMetadata | undefined) => {
+    if (processArray.length === 0) {
+      return undefined
+    }
     const P = [...processArray]
+    const last = P.pop()
     P.reverse()
     let head = undefined
     while (P.length !== 0) {
       head = new FPL(P.pop() as Process, head)
     }
+    head = new FPL(last as Process, head, undefined, playbook_metadata)
     return head
   }
 
@@ -328,8 +333,8 @@ export class PlaybookMetadata {
   id: string
 
   constructor(
-    public title?: string,
-    public description?: string,
+    public title = '',
+    public description = '',
     public summary = 'auto' as 'auto' | 'gpt' | 'manual',
     public gpt_summary = '',
     public persisted = false,
@@ -375,8 +380,8 @@ export const IdOrPlaybookMetadataC = z.union([
   z.object({
     title: z.string().optional(),
     description: z.string().optional(),
-    summary: z.enum(['auto', 'gpt', 'manual']),
-    gpt_summary: z.string(),
+    summary: z.enum(['auto', 'gpt', 'manual']).optional(),
+    gpt_summary: z.string().optional(),
   }),
 ])
 export type IdOrPlaybookMetadata = z.infer<typeof IdOrPlaybookMetadataC>
@@ -573,8 +578,8 @@ export default class FPPRG {
         new PlaybookMetadata(
           playbook_metadata.title,
           playbook_metadata.description,
-          playbook_metadata.summary,
-          playbook_metadata.gpt_summary,
+          playbook_metadata.summary || 'auto',
+          playbook_metadata.gpt_summary || '',
         ))
     }
   }

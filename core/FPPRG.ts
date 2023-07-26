@@ -478,8 +478,6 @@ export default class FPPRG {
             await this.upsertProcess(value)
           }
         }
-        process.persisted = true
-        this.processTable[process.id] = process
         // TODO:
         // await this.db.objects.process.upsert({
         //   where: { id: process.id },
@@ -517,6 +515,8 @@ export default class FPPRG {
             }
           })
         }
+        process.persisted = true
+        this.processTable[process.id] = process
       }
     }
     return this.processTable[process.id] as Process
@@ -553,8 +553,6 @@ export default class FPPRG {
   upsertCellMetadata = async (cell_metadata: CellMetadata) => {
     if (!cell_metadata.persisted) {
       if (!(cell_metadata.id in this.cellMetadataTable)) {
-        cell_metadata.persisted = true
-        this.cellMetadataTable[cell_metadata.id] = cell_metadata
         await this.db.objects.cell_metadata.upsert({
           where: { id: cell_metadata.id },
           create: {
@@ -565,6 +563,8 @@ export default class FPPRG {
             data_visible: cell_metadata.data_visible,
           }
         })
+        cell_metadata.persisted = true
+        this.cellMetadataTable[cell_metadata.id] = cell_metadata
       }
     }
     return this.cellMetadataTable[cell_metadata.id] as CellMetadata
@@ -602,8 +602,6 @@ export default class FPPRG {
   upsertPlaybookMetadata = async (playbook_metadata: PlaybookMetadata) => {
     if (!playbook_metadata.persisted) {
       if (!(playbook_metadata.id in this.playbookMetadataTable)) {
-        playbook_metadata.persisted = true
-        this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
         await this.db.objects.playbook_metadata.upsert({
           where: { id: playbook_metadata.id },
           create: {
@@ -614,6 +612,8 @@ export default class FPPRG {
             gpt_summary: playbook_metadata.gpt_summary,
           }
         })
+        playbook_metadata.persisted = true
+        this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
       }
     }
     return this.playbookMetadataTable[playbook_metadata.id] as PlaybookMetadata
@@ -643,8 +643,6 @@ export default class FPPRG {
   upsertData = async (data: Data) => {
     if (!data.persisted) {
       if (!(data.id in this.dataTable)) {
-        data.persisted = true
-        this.dataTable[data.id] = data
         await this.db.objects.data.upsert({
           where: { id: data.id },
           create: {
@@ -653,6 +651,8 @@ export default class FPPRG {
             value: JSON.stringify(data.value),
           }
         })
+        data.persisted = true
+        this.dataTable[data.id] = data
       }
     }
     return this.dataTable[data.id] as Data
@@ -713,9 +713,6 @@ export default class FPPRG {
         if (resolved.data) {
           await this.upsertData(resolved.data)
         }
-        resolved.persisted = true
-        this.resolvedTable[resolved.id] = resolved
-        resolved.process.resolved = resolved
         await this.db.objects.resolved.upsert({
           where: { id: resolved.id },
           create: {
@@ -723,6 +720,9 @@ export default class FPPRG {
             data: resolved.data !== undefined ? resolved.data.id : null,
           },
         })
+        resolved.persisted = true
+        this.resolvedTable[resolved.id] = resolved
+        resolved.process.resolved = resolved
       }
     }
     return this.resolvedTable[resolved.id] as Resolved
@@ -769,8 +769,6 @@ export default class FPPRG {
         if (fpl.playbook_metadata !== undefined) {
           fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
         }
-        fpl.persisted = true
-        this.fplTable[fpl.id] = fpl
         await this.db.objects.fpl.upsert({
           where: { id: fpl.id },
           create: {
@@ -781,6 +779,8 @@ export default class FPPRG {
             parent: fpl.parent !== undefined ? fpl.parent.id : null,
           }
         })
+        fpl.persisted = true
+        this.fplTable[fpl.id] = fpl
       }
     }
     return this.fplTable[fpl.id] as FPL

@@ -475,7 +475,7 @@ export default class FPPRG {
         for (const key in process.inputs) {
           const value = process.inputs[key]
           if (!value.persisted) {
-            await this.upsertProcess(value)
+            process.inputs[key] = await this.upsertProcess(value)
           }
         }
         // TODO:
@@ -759,7 +759,9 @@ export default class FPPRG {
   upsertFPL = async (fpl: FPL) => {
     if (!fpl.persisted) {
       if (!(fpl.id in this.fplTable)) {
+        console.log({ before: fpl.process.toJSON() })
         fpl.process = await this.upsertProcess(fpl.process)
+        console.log({ after: fpl.process.toJSON() })
         if (fpl.parent !== undefined) {
           fpl.parent = await this.upsertFPL(fpl.parent)
         }

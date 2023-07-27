@@ -1,5 +1,24 @@
-import { GeneCountMatrix, DrugTerm, GeneSet, GeneTerm, PhenotypeTerm, ScoredTissues, Supervenn, ScoredDrugs, ScoredGenes, MetgeneMetabolites, VariantSet, LINCSL1000ReverseSearchDashboard, MetGeneSummary, GlyGenResponseNode, MetGeneRxns, GeneSignature, VariantTerm, PlotlyPlot } from '@/components'
-import { RegulatoryElement } from '@/components/core/primitives'
+import {
+  GeneCountMatrix,
+  DrugTerm,
+  GeneSet,
+  GeneTerm,
+  PhenotypeTerm,
+  ScoredTissues,
+  Supervenn,
+  ScoredDrugs,
+  ScoredGenes,
+  MetgeneMetabolites,
+  VariantSet,
+  LINCSL1000ReverseSearchDashboard,
+  MetGeneSummary,
+  GlyGenResponseNode,
+  MetGeneRxns,
+  GeneSignature,
+  VariantTerm,
+  PlotlyPlot,
+  RegulatoryElementSet,
+} from '@/components'
 
 const playbooks = [
   {
@@ -359,7 +378,7 @@ References:
       VariantTerm,
     ],
     outputs: [
-      RegulatoryElement,
+      RegulatoryElementSet,
     ],
     collapsed: {} as Record<number, boolean>,
     clicks: 1,

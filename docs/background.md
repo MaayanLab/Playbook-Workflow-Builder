@@ -32,3 +32,7 @@ Below we provide some justifications for the approach described above.
 ![An image illustrating how a knowledge graph can be derived from a knowledge resolution graph path](./figures/krgp-to-kg.svg)
 
 Through building a KRG we can construct classic KGs based on any given path or Playbook through the KRG once concrete information is resolved. These knowledge graphs are federated and can be re-computed to receive more up to date information or augmented information.
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

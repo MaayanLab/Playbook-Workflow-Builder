@@ -6,6 +6,11 @@ A repository for playbook partnership collaboration. The purpose of this reposit
 
 Quick Links:
 - [User Guide](./docs/user/index.md)
-- [Background Concepts](./docs/background.md)
-- [Contribution Guide](./docs/contributions.md)
-- [Frequently Asked Questions](./docs/faq.md)
+  - [Building Workflows with the Playbook](./docs/user/workflows.md)
+  - [Publishing Workfows as BioCompute Objects](./docs/user/biocompute.md)
+  - [Using the Playbook REST API](./docs/user/api.md)
+- [Developer Guide](./docs/index.md)
+  - [Background Concepts](./docs/background.md)
+  - [Contribution Guide](./docs/contributions.md)
+  - [Deploying Platform in Production](./docs/production.md)
+  - [Frequently Asked Questions](./docs/faq.md)

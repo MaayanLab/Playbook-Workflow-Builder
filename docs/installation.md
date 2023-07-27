@@ -50,3 +50,7 @@ echo "PATH=$HOME/.npm-global/bin:$PATH" >> ~/.profile
 source ~/.profile
 npm i -g node
 ```
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

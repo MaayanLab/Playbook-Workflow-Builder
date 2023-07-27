@@ -248,3 +248,7 @@ numpy
 
 ### Anything we missed?
 Let us know by [submitting an issue](https://github.com/nihc-cfde/playbook-partnership/issues)!
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

@@ -23,14 +23,14 @@ BioCompute is integrated into multiple platforms, including DNAnexus, Seven Brid
 In the Playbook Partnership, BioCompute is integrated into the framework of the project to help trace routes through the network based on queries, making it easy for a user to save a query (including identification of versioned resources) and annotate it for later use, sharing, or repeatability.
 
 <p align="center">
-  <img src="images/figure1.png" width="350" title="Exporting a BCO from the Playbook Partnership Interactive Workflow Builder.">
+  <img src="./figures/biocompute/figure1.png" width="350" title="Exporting a BCO from the Playbook Partnership Interactive Workflow Builder.">
 </p>
 Figure 1. Export BCO function on the Playbook Partnership Workflow Builder. The one-click button can achieve either BCO downloading or creating a draft on the BioCompute Portal
 
 BioCompute is integrated in the Playbook Workflow where users can directly export BCOs into either a JSON file or export into BCO portal (https://biocomputeobject.org/). By selecting Draft in BioCompute Portal (Figure 1), a direct link would show up leading to the portal for further edits. On the BCO portal, users can easily modify, publish, track version, and exchange workflows (Figure 2). 
 
 <p align="center">
-  <img src="images/figure2.png" width="350" title="Published Objects vs. draft Objects.">
+  <img src="./figures/biocompute/figure2.png" width="350" title="Published Objects vs. draft Objects.">
 </p>
 Figure 2. The DRAFT suffix indicates the BCO is still under draft status. Once the BCO is published, the version number is going to replace the DRAFT suffix. 
 
@@ -42,3 +42,7 @@ BioCompute Portal also supports prefix registration and permission control which
 BioCompute also provides API endpoint interactions via Swagger and BCODB Sandbox for users and developers. If prefers to create and publish BCOs via API endpoints, see more at https://wiki.biocomputeobject.org/index.php?title=Swagger_Usage and information about the Sandbox set up and usage can be found at https://wiki.biocomputeobject.org/index.php?title=BCODB_Sandbox. 
 
 For general FAQs, refer to https://wiki.biocomputeobject.org/index.php?title=Faq or contact the BioCompute team via the Contact Us button on the portal header. 
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder user guide](./index.md).

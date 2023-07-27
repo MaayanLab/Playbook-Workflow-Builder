@@ -144,11 +144,11 @@ export default function App() {
                       dict.items(proc.inputs).forEach(({ key, value }) => {
                         if (Array.isArray(value)) {
                           dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                            formData.append(key, data.nodes[id].data)
+                            formData.append(key, JSON.stringify(data.nodes[id].data))
                           })
                         } else {
                           dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                            formData.append(key, data.nodes[id].data)
+                            formData.append(key, JSON.stringify(data.nodes[id].data))
                           })
                         }
                       })
@@ -189,7 +189,7 @@ export default function App() {
             overflow: 'auto',
           }}>
             <JsonEditor
-              value={currentNode.data}
+              value={JSON.stringify(currentNode.data)}
               onValueChange={value => {
                 setData(data => ({ ...data,
                   nodes: {

@@ -1,20 +1,23 @@
 import fpprg from '@/app/fpprg'
-import { FPL, Process } from '@/core/FPPRG'
+import { FPL, IdOrPlaybookMetadataC, Process } from '@/core/FPPRG'
 import { z } from 'zod'
 import { IdOrProcessC } from '@/core/FPPRG'
 import { NotFoundError, ResponseCodedError, UnsupportedMethodError } from '@/spec/error'
 import handler from '@/utils/next-rest'
 
-const BodyType = z.array(IdOrProcessC)
+const BodyType = z.object({
+  workflow: z.array(IdOrProcessC),
+  metadata: IdOrPlaybookMetadataC.optional(),
+})
 
 export default handler(async (req, res) => {
   if (req.method !== 'POST') throw new UnsupportedMethodError()
   // load the submitted processArray specification
-  const processArraySpec = BodyType.parse(req.body)
+  const { workflow, metadata } = BodyType.parse(req.body)
   // resolve the process array by walking through the specification, collecting instantiated processes
   const processArray: Process[] = []
   const processArrayLookup: Record<string|number, string> = {}
-  for (const el of processArraySpec) {
+  for (const el of workflow) {
     if ('id' in el && 'type' in el) {
       // given both id and type makes this a 
       const { id, ...proc } = el
@@ -37,7 +40,8 @@ export default handler(async (req, res) => {
       processArray.push(resolvedProc)
     }
   }
-  const processArrayFPL = FPL.fromProcessArray(processArray)
+  const playbookMetadata = metadata ? await fpprg.resolvePlaybookMetadata(metadata) : undefined
+  const processArrayFPL = FPL.fromProcessArray(processArray, playbookMetadata)
   if (!processArrayFPL) throw new NotFoundError()
   const fpl = await fpprg.upsertFPL(processArrayFPL)
   res.status(200).json(fpl.id)

@@ -169,13 +169,18 @@ export class FPL {
    * Opposite of resolve, build a fully persistent list out
    *  of a list of processes.
    */
-  static fromProcessArray = (processArray: Array<Process>) => {
+  static fromProcessArray = (processArray: Array<Process>, playbook_metadata = undefined as PlaybookMetadata | undefined) => {
+    if (processArray.length === 0) {
+      return undefined
+    }
     const P = [...processArray]
+    const last = P.pop()
     P.reverse()
     let head = undefined
     while (P.length !== 0) {
       head = new FPL(P.pop() as Process, head)
     }
+    head = new FPL(last as Process, head, undefined, playbook_metadata)
     return head
   }
 
@@ -328,8 +333,8 @@ export class PlaybookMetadata {
   id: string
 
   constructor(
-    public title?: string,
-    public description?: string,
+    public title = '',
+    public description = '',
     public summary = 'auto' as 'auto' | 'gpt' | 'manual',
     public gpt_summary = '',
     public persisted = false,
@@ -375,8 +380,8 @@ export const IdOrPlaybookMetadataC = z.union([
   z.object({
     title: z.string().optional(),
     description: z.string().optional(),
-    summary: z.enum(['auto', 'gpt', 'manual']),
-    gpt_summary: z.string(),
+    summary: z.enum(['auto', 'gpt', 'manual']).optional(),
+    gpt_summary: z.string().optional(),
   }),
 ])
 export type IdOrPlaybookMetadata = z.infer<typeof IdOrPlaybookMetadataC>
@@ -470,11 +475,9 @@ export default class FPPRG {
         for (const key in process.inputs) {
           const value = process.inputs[key]
           if (!value.persisted) {
-            await this.upsertProcess(value)
+            process.inputs[key] = await this.upsertProcess(value)
           }
         }
-        process.persisted = true
-        this.processTable[process.id] = process
         // TODO:
         // await this.db.objects.process.upsert({
         //   where: { id: process.id },
@@ -512,6 +515,8 @@ export default class FPPRG {
             }
           })
         }
+        process.persisted = true
+        this.processTable[process.id] = process
       }
     }
     return this.processTable[process.id] as Process
@@ -548,8 +553,6 @@ export default class FPPRG {
   upsertCellMetadata = async (cell_metadata: CellMetadata) => {
     if (!cell_metadata.persisted) {
       if (!(cell_metadata.id in this.cellMetadataTable)) {
-        cell_metadata.persisted = true
-        this.cellMetadataTable[cell_metadata.id] = cell_metadata
         await this.db.objects.cell_metadata.upsert({
           where: { id: cell_metadata.id },
           create: {
@@ -560,6 +563,8 @@ export default class FPPRG {
             data_visible: cell_metadata.data_visible,
           }
         })
+        cell_metadata.persisted = true
+        this.cellMetadataTable[cell_metadata.id] = cell_metadata
       }
     }
     return this.cellMetadataTable[cell_metadata.id] as CellMetadata
@@ -573,8 +578,8 @@ export default class FPPRG {
         new PlaybookMetadata(
           playbook_metadata.title,
           playbook_metadata.description,
-          playbook_metadata.summary,
-          playbook_metadata.gpt_summary,
+          playbook_metadata.summary || 'auto',
+          playbook_metadata.gpt_summary || '',
         ))
     }
   }
@@ -597,8 +602,6 @@ export default class FPPRG {
   upsertPlaybookMetadata = async (playbook_metadata: PlaybookMetadata) => {
     if (!playbook_metadata.persisted) {
       if (!(playbook_metadata.id in this.playbookMetadataTable)) {
-        playbook_metadata.persisted = true
-        this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
         await this.db.objects.playbook_metadata.upsert({
           where: { id: playbook_metadata.id },
           create: {
@@ -609,6 +612,8 @@ export default class FPPRG {
             gpt_summary: playbook_metadata.gpt_summary,
           }
         })
+        playbook_metadata.persisted = true
+        this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
       }
     }
     return this.playbookMetadataTable[playbook_metadata.id] as PlaybookMetadata
@@ -638,8 +643,6 @@ export default class FPPRG {
   upsertData = async (data: Data) => {
     if (!data.persisted) {
       if (!(data.id in this.dataTable)) {
-        data.persisted = true
-        this.dataTable[data.id] = data
         await this.db.objects.data.upsert({
           where: { id: data.id },
           create: {
@@ -648,6 +651,8 @@ export default class FPPRG {
             value: JSON.stringify(data.value),
           }
         })
+        data.persisted = true
+        this.dataTable[data.id] = data
       }
     }
     return this.dataTable[data.id] as Data
@@ -708,9 +713,6 @@ export default class FPPRG {
         if (resolved.data) {
           await this.upsertData(resolved.data)
         }
-        resolved.persisted = true
-        this.resolvedTable[resolved.id] = resolved
-        resolved.process.resolved = resolved
         await this.db.objects.resolved.upsert({
           where: { id: resolved.id },
           create: {
@@ -718,6 +720,9 @@ export default class FPPRG {
             data: resolved.data !== undefined ? resolved.data.id : null,
           },
         })
+        resolved.persisted = true
+        this.resolvedTable[resolved.id] = resolved
+        resolved.process.resolved = resolved
       }
     }
     return this.resolvedTable[resolved.id] as Resolved
@@ -754,7 +759,9 @@ export default class FPPRG {
   upsertFPL = async (fpl: FPL) => {
     if (!fpl.persisted) {
       if (!(fpl.id in this.fplTable)) {
+        console.log({ before: fpl.process.toJSON() })
         fpl.process = await this.upsertProcess(fpl.process)
+        console.log({ after: fpl.process.toJSON() })
         if (fpl.parent !== undefined) {
           fpl.parent = await this.upsertFPL(fpl.parent)
         }
@@ -764,8 +771,6 @@ export default class FPPRG {
         if (fpl.playbook_metadata !== undefined) {
           fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
         }
-        fpl.persisted = true
-        this.fplTable[fpl.id] = fpl
         await this.db.objects.fpl.upsert({
           where: { id: fpl.id },
           create: {
@@ -776,6 +781,8 @@ export default class FPPRG {
             parent: fpl.parent !== undefined ? fpl.parent.id : null,
           }
         })
+        fpl.persisted = true
+        this.fplTable[fpl.id] = fpl
       }
     }
     return this.fplTable[fpl.id] as FPL

@@ -49,6 +49,7 @@ services:
     - DATABASE_URL
     - NEXT_PUBLIC_MATOMO_URL
     - NEXT_PUBLIC_MATOMO_SITE_ID
+    - OPENAI_API_KEY
     - N_WORKERS=0
     labels:
     - "traefik.enable=true"
@@ -109,6 +110,7 @@ services:
     - DATABASE_URL
     - NEXT_PUBLIC_MATOMO_URL
     - NEXT_PUBLIC_MATOMO_SITE_ID
+    - OPENAI_API_KEY
     - N_WORKERS
     labels:
     - "traefik.enable=true"

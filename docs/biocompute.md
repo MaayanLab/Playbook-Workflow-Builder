@@ -1,12 +1,26 @@
 # What are BioCompute Objects?
-The IEEE 2791-2020 standard (AKA BioCompute Objects) is a standardized way of representing an instance of a computational workflow in a way that includes metadata and other contextual information, and which is repeatable. An instance of a workflow written according to the standard is called a BioCompute Object (BCO). The concept was developed during the planning of NCBI’s BioProject as a way to capture all of the metadata about a project, but in a way that was computable; however, the project ultimately diverged into its own standard, and has since been adopted by three Centers at the US FDA.
 
-BCOs include registration for version, data provenance, user attribution, input and output tracking, and more in both machine and human-readable formats. With the usage of BCO, computational workflow can be better documented, revised, and exchanged between researchers, industries, and organizations. 
+BioCompute is a standardized way of representing a computational workflow (the official standard name is [2791-2020](https://standards.ieee.org/ieee/2791/7337/), and the open source repository for the source files is [here](https://opensource.ieee.org/2791-object/ieee-2791-schema/).). An instance of a computational workflow that adheres to the standard is called a BioCompute Object, or BCO.
+
+A BCO includes relevant metadata and other contextual information for understanding a workflow and the context in which it was carried out. A BCO is human- and machine-readable, and is repeatable. The concept was developed during the planning of NCBI’s BioProject as a way to capture all of the metadata about a project, but in a way that was computable; however, the project ultimately diverged into its own standard. Since its standardization, BioCompute has been adopted by three Centers at the US Food and Drug Administration (CBER, CDER, and CFSAN) for most regulatory submissions.
+
+Although BCOs are repeatable, they are distinct from workflow languages in their descriptive focus on metadata and context. BCOs include registration for version, data provenance, user attribution, input and output tracking at every step, and more, and does so by incorporating existing standards like ORCID, PROV-O, and others. With a BCO, a computational workflow can be better documented, revised, and exchanged between researchers, industries, and organizations, with less uncertainty around what was carried out and how it was carried out.
+
+BCOs are organized into 8 top level "Domains," into which all information is conceptually organized. One of the Domains is the "Extension Domain," which enables a user to extend the base standard out to other functions or standards, including workflow languages for greater portability of exeuction, like Nextflow, Common Workflow Laguage, and WDL.
 
 ## Why does BCO matter? Why should a user use it?
-The main goal of the BioCompute Object project is to increase efficiency in the evaluation process of bioinformatics analyses. With the many different platforms for analyzing genome data, there are high risks of misinterpretation of analyses and time and money are wasted. This is why there is a need for a standardized mechanism of communicating workflows. BioCompute integration allows for transparency and reproducibility in communicating bioinformatics analysis through regulating documentation of workflow. BCOs aim to help with tracking versioning, sharing workflow, submitting workflow to the FDA and more. An instance of FDA BCO Database (BCODB) is securely set up at the FDA to smooth the submission process so that the FDA can pull BCOs from the public BCODB as requested by the sponsor. With such implementation, burden of workflow communication can be eased.  
+
+The main goal of the BioCompute Object project is to increase efficiency in the evaluation process of bioinformatics analyses. With the many different platforms for analyzing genome data, there has traditionally been a high risk of misinterpretation of analyses resulting in wasted time and funds. From this, a rapidly growing community began to call for a standardized mechanism for communicating workflows.
+
+BioCompute allows for transparency and reproducibility in communicating bioinformatics analysis through a standardized documentation of workflow. A BCO can be selectively shared, edited, deleted, published, and rearranged to represent its JSON-ized contents in a variety of ways. **With a BCO, a workflow can be worked on just as collaboratively as a text document in the cloud.**
+
+BCOs aim to help with version tracking, workflow sharing or collaborative editing, workflow submission to regulatory agencies, publications, and more. A database has been built to store and work with BCOs in these ways, called the BCODB. An instance of the BCODB is deployed at the FDA, as well as a public BCODB operated by George Washington University.
 
 ## How should a user use it?
+
+BioCompute is integrated into multiple platforms, including DNAnexus, Seven Bridges, HIVE, and Galaxy, all of which let a user automatically create a BCO from a workflow and edit the descriptive content. The [public BCODB](https://biocomputeobject.org/) also lets users create BCOs, which they can download anonymously, or create an account to work with and control permissions on the DB.
+
+In the Playbook Partnership, BioCompute is integrated into the framework of the project to help trace routes through the network based on queries, making it easy for a user to save a query (including identification of versioned resources) and annotate it for later use, sharing, or repeatability.
 
 Figure 1. Export BCO function on the Playbook Partnership Workflow Builder. The one-click button can achieve either BCO downloading or creating a draft on the BioCompute Portal
 

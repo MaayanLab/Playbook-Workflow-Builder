@@ -408,7 +408,45 @@ References:
     collapsed: {} as Record<number, boolean>,
     clicks: 1,
   },
-  // TODO: 11
+  {
+    id: '7ee323a7-80d7-21dc-ecc9-ad055826d2ab',
+    label: 'Use Case 11: Related Proteins/Metabolites across DCCs',
+    description: '',
+    gpt_summary: `To begin the workflow, the search term RPE is selected. Using the API from StringDB PPI, the gene ID (SYMBOL) is extracted [1]. This extraction generates a list of nodes (Gene Set) from the given StringDB PPI. From over 1 million signatures, reversers and mimickers are identified using SigCom LINCS [2]. The gene set is then submitted to Enrichr [3]. Next, the gene set is searched in the Metabolomics Workbench to identify relevant reactions [4]. Additionally, the gene set is searched in the Metabolomics Workbench to identify associated metabolites [REF]. Finally, the gene set is searched in the Metabolomics Workbench to identify relevant studies related to the genes [5].
+
+Here are the references for the sources mentioned:
+1. STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set
+2. Evangelista, J. E. et al. SigCom LINCS: data and metadata search engine for a million gene expression signatures. Nucleic Acids Research vol. 50 W697–W709 (2022). doi:10.1093/nar/gkac328
+3. Xie, Z. et al. Gene Set Knowledge Discovery with Enrichr. Current Protocols vol. 1 (2021). doi:10.1002/cpz1.90
+4. The Metabolomics Workbench, https://www.metabolomicsworkbench.org/`,
+    published: 'July 27, 2023',
+    version: '1.0.0',
+    authors: ['CFDE Playbook Partnership'],
+    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    license: 'CC-BY-NC-SA-4.0',
+    url: 'https://playbook-workflow-builder.cloud/report/7ee323a7-80d7-21dc-ecc9-ad055826d2ab',
+    dataSources: [
+      'LINCS L1000',
+      'STRING',
+      'ChEA',
+      'GTEx',
+      'Enrichr',
+      'KEGG',
+      'GO',
+      'MSigDB',
+      'Metabolomics',
+    ],
+    inputs: [
+      GeneTerm,
+    ],
+    outputs: [
+      MetGeneRxns,
+      MetgeneMetabolites,
+      MetGeneStudies,
+    ],
+    collapsed: {} as Record<number, boolean>,
+    clicks: 1,
+  },
   // TODO: 12
   {
     id: '1d66906d-980b-b690-111e-c341145aa080',

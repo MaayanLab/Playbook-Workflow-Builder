@@ -6,7 +6,7 @@ The Playbook Partnership API allows you to construct workflows via a REST API. W
 import requests
 
 # The playbook partnership endpoint to query
-ENDPOINT = 'https://playbook-workflow-builder.cloud/'
+ENDPOINT = 'https://playbook-workflow-builder.cloud'
 # ENDPOINT=http://localhost:3000
 
 # Construct a workflow Gene => GTEx Tissue => Barplot with the input: ACE2
@@ -69,3 +69,7 @@ Both of these examples will return an `id` for the workflow. This id can be used
 Each process (step of the workflow) can be accessed independently, those ids are at `[{"id": "fpl_id", "process": { "id": "{process_id}", ... }, ... }]` and can be accessed like:
 - `https://playbook-workflow-builder.cloud/api/db/process/{id}` => See the resulting process as registered in the db
 - `https://playbook-workflow-builder.cloud/api/db/process/{id}/output` => See the resulting process along with its output (for all nodes)
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder user guide](./index.md).

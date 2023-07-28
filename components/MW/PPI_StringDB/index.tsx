@@ -7,11 +7,11 @@ import { metabolomicsworkbench_icon } from '@/icons'
 import { z } from 'zod'
 import { additional_info_icon, gene_icon } from '@/icons'
 import * as array from '@/utils/array'
-
+import { GetGeneSetIDConv } from '../ConvertedGeneID'
 
 // How the schema validation works: https://codex.so/zod-validation-en
 
-// StringDB PPI edge schema informaTION: FROM: https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set
+// StringDB PPI edge schema information: FROM: https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set
 /*
 Output fields (TSV and JSON formats):
 Field 	Description
@@ -63,8 +63,17 @@ export const MyedgeArrayC = z.array(
     MyedgeC
 )
 
+
 export type StringDBedgeArray = z.infer<typeof StringDBedgeArrayC>
 export type MyedgeArray = z.infer<typeof MyedgeArrayC>
+
+export const StringDB_PPI_NetworkDataC = z.object({
+  species_txid: z.string(),
+  species_id: z.string(),
+  edges: StringDBedgeArrayC
+})
+
+export type StringDB_PPI_NetworkData = z.infer<typeof StringDB_PPI_NetworkDataC>
 
 export function SimplifyStringDBedgeArray(data:StringDBedgeArray) {
   // Given the list of edges in standard StringDB PPI format, extract only three columns: 
@@ -96,7 +105,8 @@ export function GetAllNodes_from_MyedgeArray(data:MyedgeArray) {
     return array.unique(data.flatMap(a => [a.SYMBOL_A, a.SYMBOL_B]));
 }
 
-export function Format_StringDBedgeArray_for_GraphPlot(data:StringDBedgeArray) {
+export async function Format_StringDBedgeArray_for_GraphPlot(data:StringDBedgeArray, species_id:string = "hsa", geneid_type:string = "SYMBOL_OR_ALIAS") {
+    // Need to use async since GetGeneSetIDConv is an async function
     // Given the list of edges in standard StringDB PPI format, get an object in the codec format for network plot:
     // https://github.com/nih-cfde/playbook-partnership/blob/network-viz/components/viz/graph/index.tsx
 /*
@@ -113,11 +123,15 @@ export function Format_StringDBedgeArray_for_GraphPlot(data:StringDBedgeArray) {
   }))
 */
     let allnodes = GetAllNodes_from_StringDBedgeArray(data);
-    let nodes_array = allnodes.map(d => {
+    let allnodes_more = await GetGeneSetIDConv(allnodes,  species_id, geneid_type); // GetGeneSetIDConv is async function, so, await is needed
+    let nodes_array = allnodes_more.map((d,i) => {
+        let ezid = d.ENTREZID;
         return {
-         id : d, 
-         label : d, 
-         type : "gene",
+         id :  d.SYMBOL, 
+         label : d.SYMBOL, // allnodes_more[i].GENENAME, // d, // need to cross-check order if d goes with allnodes_more[i]
+         link: `https://www.ncbi.nlm.nih.gov/gene/${ezid}`,
+         hovertext: d.GENENAME,
+         type : (d.SYMBOL==allnodes[0]) ? "gene1" : "gene",
        };
     });
 
@@ -141,13 +155,16 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(StringDBedgeArrayC)
+  .codec(StringDB_PPI_NetworkDataC)
   // react component rendering your data goes here
   .view(data => {
-    const dataobj = data; //const dataobj = [data][0];
+    const dataobj = data.edges; //const dataobj = [data][0];
 
     return(
-          <div><table>
+          <div>
+            <h3>Species: {data.species_id}</h3>
+            <h3>Taxonomy ID: {data.species_txid}</h3>
+            <table>
     <tr>
     <th>SYMBOL A</th>
     <th>SYMBOL B</th>
@@ -167,8 +184,8 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
   })
   .build()
 
-  // A unique name for your resolver is used here
-export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI')
+// A unique name for your resolver is used here
+export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI_Gene')
 // Human readble descriptors about this node should go here
 .meta({
   label: 'Fetch StringDB PPI',
@@ -187,6 +204,7 @@ export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI')
   // Based on the API at: https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set
   // See also: get, post, fetch, request: https://medium.com/meta-box/how-to-send-get-and-post-requests-with-javascript-fetch-api-d0685b7ee6ed
   const species_txid = "9606"
+  const species_id = "hsa"
   const string_api_url = "https://version-11-5.string-db.org/api"
   const output_format = "json"
   const method = "interaction_partners"
@@ -194,11 +212,13 @@ export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI')
   const request_url_base = [string_api_url, output_format, method].join("/");
   const my_genes = [props.inputs.gene];
   
+  // Try with the gene RPE as its PPI with 900 cut off is not that large and all those genes
+  // don't have too many metabolites associated with them.
   const params = {
       identifiers : my_genes.join("%0d"), // your protein
       species : species_txid, // species NCBI identifier 
       limit : "5000",
-      required_score : "400",
+      required_score : "900",
       caller_identity : "sc-cfdewebdev.sdsc.edu" // your app name
   }
   const params_str = "identifiers=" + params.identifiers + "&" +
@@ -209,8 +229,10 @@ export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI')
 
   const req = await fetch(`${request_url_base}?${params_str}`);
   const res = await req.json()
+  //return res
+  let PPIobj = {species_id: species_id, species_txid: species_txid, edges:res};
 
-  return res
+  return PPIobj
 })
 .story(props =>
   `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API [\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}].`
@@ -233,8 +255,8 @@ export const StringDBPPI_to_GeneSet = MetaNode('StringDBPPI_to_GeneSet')
 // The resolve function uses the inputs and returns output
 //  both in the shape prescribed by the data type codecs
 .resolve(async (props) => {
-  const allnodes = GetAllNodes_from_StringDBedgeArray(props.inputs.data);  
-  return {"description":"", "set":allnodes} ;
+  const allnodes = GetAllNodes_from_StringDBedgeArray(props.inputs.data.edges);  
+  return {"description": "", "set": allnodes} ;
 })
 .story(props =>
   `For the Given StringDB PPI, the list of nodes (GeneSet) is generated.`
@@ -257,7 +279,11 @@ export const StringDBPPI_to_GraphPlot = MetaNode('StringDBPPI_to_GraphPlot')
 // The resolve function uses the inputs and returns output
 //  both in the shape prescribed by the data type codecs
 .resolve(async (props) => {
-  const GraphPlotObj = Format_StringDBedgeArray_for_GraphPlot(props.inputs.data);
+  let species_id = props.inputs.data.species_id;
+  let species_txid = props.inputs.data.species_txid;
+  let edges = props.inputs.data.edges;
+  
+  const GraphPlotObj = Format_StringDBedgeArray_for_GraphPlot(edges, species_id);
 
   return GraphPlotObj;
 })

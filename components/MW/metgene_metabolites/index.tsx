@@ -6,7 +6,7 @@ import { MetGeneMetObj } from '../metgene_metabolite_table'
 import { MetGeneMetObjArray } from '../metgene_metabolite_table'
 import { MetaboliteSet } from '@/components/core/input/set'
 import { metgene_icon } from '@/icons'
-import { MetGeneSummary } from '../metgene_summary'
+import * as array from '@/utils/array'
 
 
 // A unique name for your resolver is used here
@@ -99,7 +99,7 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     }
 
     // keep only unique metabolites
-    MetArr = [...new Set( MetArr )];
+    MetArr = array.unique(MetArr);
     return {"description": "", "set": MetArr} ; // Added 2023/01/25
   })
   .story(props =>

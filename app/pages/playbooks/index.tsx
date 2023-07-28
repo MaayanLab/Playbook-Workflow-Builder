@@ -11,35 +11,58 @@ import useAsyncEffect from 'use-async-effect'
 import { useRouter } from 'next/router'
 
 import ARCHS4_icon from '@/app/public/logos/datasources/ARCHS4.png'
+import BioThings_icon from '@/app/public/logos/datasources/BioThings.png'
 import ChEA3_icon from '@/app/public/logos/datasources/ChEA3.png'
+import ClinGen_icon from '@/app/public/logos/datasources/ClinGen.png'
 import ENCODE_icon from '@/app/public/logos/datasources/ENCODE.png'
+import Enrichr_icon from '@/app/public/logos/datasources/Enrichr.png'
+import exRNA_icon from '@/app/public/logos/exRNA.png'
+import Geneshot_icon from '@/app/public/logos/datasources/Geneshot.png'
+import GEO_icon from '@/app/public/logos/datasources/GEO.gif'
+import GlyGen_icon from '@/app/public/logos/glygen.svg'
+import GO_icon from '@/app/public/logos/datasources/GO.png'
 import GTEx_icon from '@/app/public/logos/datasources/GTEx.png'
 import GWAS_icon from '@/app/public/logos/datasources/GWAS.jpeg'
+import HPO_icon from '@/app/public/logos/datasources/HPO.png'
+import IDG_icon from '@/app/public/logos/datasources/IDG.png'
 import IMPC_icon from '@/app/public/logos/datasources/IMPC.png'
+import KEGG_icon from '@/app/public/logos/datasources/KEGG.png'
+import KidsFirst_icon from '@/app/public/logos/KidsFirst.png'
 import KOMP_icon from '@/app/public/logos/datasources/KOMP.png'
 import LINCS_icon from '@/app/public/logos/datasources/LINCS.gif'
-import IDG_icon from '@/app/public/logos/datasources/IDG.png'
 import Metabolomics_icon from '@/app/public/logos/Metabolomics.png'
-import KidsFirst_icon from '@/app/public/logos/KidsFirst.png'
-import GlyGen_icon from '@/app/public/logos/glygen.svg'
-import exRNA_icon from '@/app/public/logos/exRNA.png'
+import MSigDB_icon from '@/app/public/logos/datasources/MSigDB.gif'
+import STRING_icon from '@/app/public/logos/datasources/STRING.png'
+import WikiPathways_icon from '@/app/public/logos/datasources/WikiPathways.png'
 import Image, { StaticImageData } from 'next/image'
 import classNames from 'classnames'
 
 const dataSourceIcons: Record<string, StaticImageData> = {
-  ARCHS4: ARCHS4_icon,
-  ChEA: ChEA3_icon,
-  ENCODE: ENCODE_icon,
-  GTEx: GTEx_icon,
-  'GWAS Catalog': GWAS_icon,
-  IMPC: IMPC_icon,
-  KOMP: KOMP_icon,
-  'LINCS L1000': LINCS_icon,
-  'Metabolomics': Metabolomics_icon,
+  'exRNA': exRNA_icon,
   'GlyGen': GlyGen_icon,
   'KidsFirst': KidsFirst_icon,
-  'exRNA': exRNA_icon,
+  'LINCS': LINCS_icon,
+  'Metabolomics': Metabolomics_icon,
+
+  'ARCHS4': ARCHS4_icon,
+  'BioThings': BioThings_icon,
+  'ChEA': ChEA3_icon,
+  'ClinGen': ClinGen_icon,
+  'ENCODE': ENCODE_icon,
+  'Enrichr': Enrichr_icon,
+  'Geneshot': Geneshot_icon,
+  'GEO': GEO_icon,
+  'GO': GO_icon,
+  'GTEx': GTEx_icon,
+  'GWAS Catalog': GWAS_icon,
+  'HPO': HPO_icon,
   'IDG': IDG_icon,
+  'IMPC': IMPC_icon,
+  'KEGG': KEGG_icon,
+  'KOMP': KOMP_icon,
+  'MSigDB': MSigDB_icon,
+  'STRING': STRING_icon,
+  'WikiPathways': WikiPathways_icon,
 }
 
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -165,7 +188,7 @@ export default function Playbooks() {
           <div className="flex flex-col gap-2">
             <div className="prose"><h2>Data Sources</h2></div>
             <div className="flex flex-row flex-wrap gap-2">
-              {dict.values(allDataSources).map(dataSource => (
+              {dict.keys(dataSourceIcons).filter((dataSource) => dataSource in allDataSources).map((dataSource) => (
                 <DataSourceButton
                   key={dataSource}
                   dataSource={dataSource}

@@ -49,11 +49,11 @@ Here are the references for the sources used:
     license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/356e4bd8-8146-a05a-b403-aa050814a3fd',
     dataSources: [
-      'MGI-MP',
+      'KOMP',
       'HPO',
       'GWAS Catalog',
       'Geneshot',
-      'LINCS L1000',
+      'LINCS',
     ],
     inputs: [
       PhenotypeTerm,
@@ -87,7 +87,7 @@ Finally, a Supervenn diagram was used to visualize the collection of gene sets. 
     dataSources: [
       'GWAS Catalog',
       'KOMP',
-      'LINCS L1000',
+      'LINCS',
     ],
     inputs: [
       PhenotypeTerm,
@@ -128,7 +128,7 @@ References:
     dataSources: [
       'GTEx',
       'GEO',
-      'LINCS L1000',
+      'LINCS',
     ],
     inputs: [
       GeneSignature,
@@ -193,11 +193,11 @@ References:
     url: 'https://playbook-workflow-builder.cloud/report/820b7d27-382e-d565-e35e-948938a846c9',
     dataSources: [
       'HPO',
-      'MGI-MP',
+      'KOMP',
       'KEGG',
       'WikiPathways',
       'GO',
-      'LINCS L1000',
+      'LINCS',
     ],
     inputs: [
       PhenotypeTerm,
@@ -225,7 +225,7 @@ References:
     license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/dfd2b35c-aabf-fb96-c63c-27ecb73fc4be',
     dataSources: [
-      'MyGene.info',
+      'BioThings',
       'LINCS',
       'GTEx',
     ],
@@ -254,7 +254,7 @@ References:
     license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/b19a8c08-ba02-fc3b-c50d-7d4d5f3767e5',
     dataSources: [
-      'MyGene.info',
+      'BioThings',
       'LINCS',
       'GTEx',
     ],
@@ -285,7 +285,7 @@ References:
     license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/d04dceaa-25c0-d7db-2e68-b06f92806289',
     dataSources: [
-      'MyVariant.info',
+      'BioThings',
       'KidsFirst',
       'GTEx',
     ],
@@ -319,6 +319,7 @@ References:
       'KidsFirst',
       'GTEx',
       'Enrichr',
+      'BioThings',
     ],
     inputs: [
       VariantTerm,
@@ -427,7 +428,7 @@ Here are the references for the sources mentioned:
     license: 'CC-BY-NC-SA-4.0',
     url: 'https://playbook-workflow-builder.cloud/report/7ee323a7-80d7-21dc-ecc9-ad055826d2ab',
     dataSources: [
-      'LINCS L1000',
+      'LINCS',
       'STRING',
       'ChEA',
       'GTEx',
@@ -466,7 +467,7 @@ The Metabolomics Workbench was used to identify associated metabolites and relev
     url: 'https://playbook-workflow-builder.cloud/report/1d66906d-980b-b690-111e-c341145aa080',
     dataSources: [
       'KidsFirst',
-      'LINCS L1000',
+      'LINCS',
       'GTEx',
       'exRNA',
       'GlyGen',

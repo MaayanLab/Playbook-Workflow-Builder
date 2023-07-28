@@ -18,6 +18,7 @@ import {
   VariantTerm,
   PlotlyPlot,
   RegulatoryElementSet,
+  MetGeneStudies,
 } from '@/components'
 
 const playbooks = [

@@ -2,7 +2,6 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { additional_info_icon, gene_icon } from '@/icons'
-//import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 
 // How the schema validation works: https://codex.so/zod-validation-en
 export const MyGeneIDOutputC = z.object({

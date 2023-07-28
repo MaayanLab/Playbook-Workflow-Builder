@@ -1,11 +1,9 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
 import { MetgeneMetaboliteTable } from '../metgene_metabolite_table'
-import { MetGeneMetObj } from '../metgene_metabolite_table'
-import { MetGeneMetObjArray } from '../metgene_metabolite_table'
 import { MetaboliteSet } from '@/components/core/input/set'
 import { metgene_icon } from '@/icons'
+import { MetGeneSummary } from '@/components/MW/metgene_summary'
 import * as array from '@/utils/array'
 
 

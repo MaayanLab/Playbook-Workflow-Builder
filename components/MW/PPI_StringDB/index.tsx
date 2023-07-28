@@ -7,7 +7,7 @@ import { metabolomicsworkbench_icon } from '@/icons'
 import { z } from 'zod'
 import { additional_info_icon, gene_icon } from '@/icons'
 import * as array from '@/utils/array'
-import { GetGeneSetIDConv } from '../ConvertedGeneID'
+import { GetGeneSetIDConv } from '@/components/MW/ConvertedGeneID'
 
 // How the schema validation works: https://codex.so/zod-validation-en
 

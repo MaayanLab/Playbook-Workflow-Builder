@@ -1,8 +1,8 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
-import { ConvertedGeneID } from '../ConvertedGeneID'
-import { uniqJsonSubset } from '../ConvertedGeneID'
+import { ConvertedGeneID } from '@/components/MW/ConvertedGeneID'
+import { uniqJsonSubset } from '@/components/MW/ConvertedGeneID'
 import { metabolomicsworkbench_icon } from '@/icons'
 
 // A unique name for your resolver is used here

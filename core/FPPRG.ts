@@ -435,7 +435,7 @@ export default class FPPRG {
       ))
     }
   }
-  getProcess = async (id: string, force = false) => {
+  getProcess = async (id: string, force = false): Promise<Process | undefined> => {
     if (!(id in this.processTable) || force) {
       const result = await this.db.objects.process_complete.findUnique({ where: { id } })
       if (result !== null) {
@@ -443,10 +443,10 @@ export default class FPPRG {
           result.type,
           result.data !== null ? await this.getData(result.data) : undefined,
           dict.init(await Promise.all(dict.sortedItems(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
-          this,
-          true,
+          this
         )
-        this.processTable[id] = this.processTable[process.id] = process
+        if (id === process.id) process.persisted = true
+        this.processTable[id] = this.processTable[process.id] = await this.upsertProcess(process)
         // this process was already resolved?
         // save that information, saves a lookup or two
         if (result.resolved) {
@@ -455,13 +455,13 @@ export default class FPPRG {
               process,
               result.output !== null ? (await this.getData(result.output)) : undefined,
             )
-            this.resolvedTable[id] = this.resolvedTable[resolved.id] = resolved
-            process.resolved = resolved
+            if (id === resolved.id) resolved.persisted = true
+            this.resolvedTable[id] = this.resolvedTable[resolved.id] = process.resolved = await this.upsertResolved(resolved)
           }
         }
       }
     }
-    return this.processTable[id] as Process | undefined
+    return this.processTable[id]
   }
   upsertProcess = async (process: Process) => {
     if (!process.persisted) {
@@ -543,9 +543,9 @@ export default class FPPRG {
           result.description,
           result.process_visible,
           result.data_visible,
-          true,
         )
-        this.cellMetadataTable[id] = this.cellMetadataTable[cellMetadata.id] = cellMetadata
+        if (id === cellMetadata.id) cellMetadata.persisted = true
+        this.cellMetadataTable[id] = this.cellMetadataTable[cellMetadata.id] = await this.upsertCellMetadata(cellMetadata)
       }
     }
     return this.cellMetadataTable[id] as CellMetadata | undefined
@@ -592,9 +592,9 @@ export default class FPPRG {
           result.description,
           result.summary,
           result.gpt_summary,
-          true,
         )
-        this.playbookMetadataTable[id] = this.playbookMetadataTable[playbookMetadata.id] = playbookMetadata
+        if (id === playbookMetadata.id) playbookMetadata.persisted = true
+        this.playbookMetadataTable[id] = this.playbookMetadataTable[playbookMetadata.id] = await this.upsertPlaybookMetadata(playbookMetadata)
       }
     }
     return this.playbookMetadataTable[id] as PlaybookMetadata | undefined
@@ -619,28 +619,28 @@ export default class FPPRG {
     return this.playbookMetadataTable[playbook_metadata.id] as PlaybookMetadata
   }
 
-  resolveData = async (data: IdOrData) => {
+  resolveData = async (data: IdOrData): Promise<Data> => {
     if ('id' in data) {
       return await this.getData(data.id) as Data
     } else {
       return await this.upsertData(new Data(data.type, data.value))
     }
   }
-  getData = async (id: string) => {
+  getData = async (id: string): Promise<Data | undefined> => {
     if (!(id in this.dataTable)) {
       const result = await this.db.objects.data.findUnique({ where: { id } })
       if (result !== null) {
         const data = new Data(
           result.type,
           JSON.parse(result.value),
-          true,
         )
-        this.dataTable[id] = this.dataTable[data.id] = data
+        if (id === data.id) data.persisted = true
+        this.dataTable[id] = this.dataTable[data.id] = await this.upsertData(data)
       }
     }
-    return this.dataTable[id] as Data | undefined
+    return this.dataTable[id]
   }
-  upsertData = async (data: Data) => {
+  upsertData = async (data: Data): Promise<Data> => {
     if (!data.persisted) {
       if (!(data.id in this.dataTable)) {
         await this.db.objects.data.upsert({
@@ -655,10 +655,10 @@ export default class FPPRG {
         this.dataTable[data.id] = data
       }
     }
-    return this.dataTable[data.id] as Data
+    return this.dataTable[data.id]
   }
 
-  getResolved = async (id: string) => {
+  getResolved = async (id: string): Promise<Resolved | undefined> => {
     if (!(id in this.resolvedTable)) {
       const result = await this.db.objects.resolved.findUnique({ where: { id } })
       if (result !== null) {
@@ -666,18 +666,17 @@ export default class FPPRG {
         const resolved = new Resolved(
           process,
           result.data !== null ? (await this.getData(result.data)) as Data : undefined,
-          true,
         )
-        process.resolved = resolved
-        this.resolvedTable[id] = this.resolvedTable[result.id] = resolved
+        if (id === resolved.id) resolved.persisted = true
+        this.resolvedTable[id] = this.resolvedTable[result.id] = process.resolved = await this.upsertResolved(resolved)
       }
     }
-    return this.resolvedTable[id] as Resolved | undefined
+    return this.resolvedTable[id]
   }
   /**
    * Like getResolved but if it's not in the db yet, request & wait for it
    */
-  awaitResolved = async (id: string) => {
+  awaitResolved = async (id: string): Promise<Resolved> => {
     const resolved = await this.getResolved(id)
     if (!resolved) {
       await new Promise<void>(async (resolve, reject) => {
@@ -705,9 +704,9 @@ export default class FPPRG {
         }, 5000)
       })
     }
-    return this.resolvedTable[id] as Resolved
+    return this.resolvedTable[id]
   }
-  upsertResolved = async (resolved: Resolved) => {
+  upsertResolved = async (resolved: Resolved): Promise<Resolved> => {
     if (!resolved.persisted) {
       if (!(resolved.id in this.resolvedTable)) {
         if (resolved.data) {
@@ -725,7 +724,7 @@ export default class FPPRG {
         resolved.process.resolved = resolved
       }
     }
-    return this.resolvedTable[resolved.id] as Resolved
+    return this.resolvedTable[resolved.id]
   }
   deleteResolved = async (resolved: Resolved) => {
     if (resolved.id in this.resolvedTable) {
@@ -740,7 +739,7 @@ export default class FPPRG {
     }
   }
 
-  getFPL = async (id: string) => {
+  getFPL = async (id: string): Promise<FPL | undefined> => {
     if (!(id in this.fplTable)) {
       const result = await this.db.objects.fpl.findUnique({ where: { id } })
       if (result !== null) {
@@ -749,19 +748,17 @@ export default class FPPRG {
           result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
           result.cell_metadata ? await this.getCellMetadata(result.cell_metadata) : undefined,
           result.playbook_metadata ? await this.getPlaybookMetadata(result.playbook_metadata) : undefined,
-          true,
         )
-        this.fplTable[id] = this.fplTable[fpl.id] = fpl
+        if (id === fpl.id) fpl.persisted = true
+        this.fplTable[id] = this.fplTable[fpl.id] = await this.upsertFPL(fpl)
       }
     }
-    return this.fplTable[id] as FPL | undefined
+    return this.fplTable[id]
   }
-  upsertFPL = async (fpl: FPL) => {
+  upsertFPL = async (fpl: FPL): Promise<FPL> => {
     if (!fpl.persisted) {
       if (!(fpl.id in this.fplTable)) {
-        console.log({ before: fpl.process.toJSON() })
         fpl.process = await this.upsertProcess(fpl.process)
-        console.log({ after: fpl.process.toJSON() })
         if (fpl.parent !== undefined) {
           fpl.parent = await this.upsertFPL(fpl.parent)
         }
@@ -771,21 +768,26 @@ export default class FPPRG {
         if (fpl.playbook_metadata !== undefined) {
           fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
         }
-        await this.db.objects.fpl.upsert({
-          where: { id: fpl.id },
-          create: {
-            id: fpl.id,
-            process: fpl.process.id,
-            cell_metadata: fpl.cell_metadata !== undefined ? fpl.cell_metadata.id : null,
-            playbook_metadata: fpl.playbook_metadata !== undefined ? fpl.playbook_metadata.id : null,
-            parent: fpl.parent !== undefined ? fpl.parent.id : null,
-          }
-        })
+        try{
+          await this.db.objects.fpl.upsert({
+            where: { id: fpl.id },
+            create: {
+              id: fpl.id,
+              process: fpl.process.id,
+              cell_metadata: fpl.cell_metadata !== undefined ? fpl.cell_metadata.id : null,
+              playbook_metadata: fpl.playbook_metadata !== undefined ? fpl.playbook_metadata.id : null,
+              parent: fpl.parent !== undefined ? fpl.parent.id : null,
+            }
+          })
+        }catch(e){
+          console.error({ fpl_id: fpl.id, fpl_process_id: fpl.process.id, fpl_parent_id: fpl.parent?.id })
+          throw e
+        }
         fpl.persisted = true
         this.fplTable[fpl.id] = fpl
       }
     }
-    return this.fplTable[fpl.id] as FPL
+    return this.fplTable[fpl.id]
   }
 
   dump = async () => {

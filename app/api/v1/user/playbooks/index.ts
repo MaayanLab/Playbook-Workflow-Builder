@@ -60,12 +60,12 @@ export const PublicPlaybooks = API('/api/v1/public/playbooks')
     playbooks = playbooks.slice(skip, limit)
     const userPlaybooks = await db.objects.user_playbook.findMany({
       where: {
-        id: {
+        playbook: {
           in: playbooks.map(({ id }) => id),
         },
       },
     })
-    const userPlaybookLookup = dict.init(userPlaybooks.map((playbook) => ({ key: playbook.id, value: playbook })))
+    const userPlaybookLookup = dict.init(userPlaybooks.map((playbook) => ({ key: playbook.playbook, value: playbook })))
     const results = playbooks.map(({ inputs, outputs, dataSources, ...playbook }) => {
       return {
         ...playbook,

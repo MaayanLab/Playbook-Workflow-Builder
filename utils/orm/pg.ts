@@ -2,7 +2,7 @@ import { Decoded } from '@/spec/codec'
 import { TypedSchema } from '@/spec/sql'
 import * as pg from 'pg'
 import * as dict from '@/utils/dict'
-import { Create, DbDatabase, DbTable, Delete, Find, FindMany, OrderBy, Update, Upsert, Where } from './common'
+import { Create, DbDatabase, DbTable, Delete, Find, FindMany, OrderBy, Update, Upsert, WhereMany } from './common'
 import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/orm'
@@ -129,7 +129,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
     else return this.table.codec.decode(results.rows[0])
   }
   findMany = async (find: FindMany<T> = {}) => {
-    const where: Where<T> = (find.where !== undefined) ? find.where : {}
+    const where: WhereMany<T> = (find.where !== undefined) ? find.where : {}
     const where_columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
     const orderBy: OrderBy<T> = (find.orderBy !== undefined) ? find.orderBy : {}
     const orderBy_columns = dict.keys(this.table.field_codecs).filter(col => col in orderBy) as Array<keyof T>
@@ -140,7 +140,14 @@ export class PgTable<T extends {}> implements DbTable<T> {
       from ${JSON.stringify(this.table.name)}
       ${where_columns.length > 0 ?
         `where ${where_columns
-          .map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(where[key] as Decoded<T[keyof T]>))}`)
+          .map(key => {
+            const value = where[key]
+            if (typeof value === 'object' && value !== null && 'in' in value) {
+              return `${JSON.stringify(key)} = any(${subst((value.in as Decoded<T[keyof T]>[]).map(this.table.field_codecs[key].encode))})`
+            } else {
+              return `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(value as Decoded<T[keyof T]>))}`
+            }
+          })
           .join(' and ')
         }`
         : ''}

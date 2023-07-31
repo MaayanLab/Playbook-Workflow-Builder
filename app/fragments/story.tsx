@@ -20,7 +20,7 @@ function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange
   const { data: inputs, error: inputsError } = useMetapathInputs(krg, head)
   const { data: { output, outputNode }, error: outputError } = useMetapathOutput(krg, head)
   const story = React.useMemo(() => {
-    if (!processNode.story) return null
+    if (!processNode?.story) return null
     try {
       return <>
         {processNode.story({

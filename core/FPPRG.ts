@@ -703,6 +703,9 @@ export default class FPPRG {
           }
         }, 5000)
       })
+      if (await this.getResolved(id) === undefined) {
+        throw new Error(`Received event but not resolved (${id})`)
+      }
     }
     return this.resolvedTable[id]
   }

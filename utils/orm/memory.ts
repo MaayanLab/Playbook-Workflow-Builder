@@ -93,7 +93,13 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
   findMany = async (find: FindMany<T> = {}) => {
     await this.ensureFind()
     const results = dict.values(this.db.data[this.table.name]).filter(record =>
-      find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value)) : true
+      find.where ? array.all(dict.items(find.where).map(({ key, value }) => {
+        if (typeof value === 'object' && value !== null && 'in' in value) {
+          return (value.in as unknown[]).includes(record[key as string])
+        } else {
+          return record[key as string] === value
+        }
+      })) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
     if (find.orderBy !== undefined) {
       results.sort((a, b) => {

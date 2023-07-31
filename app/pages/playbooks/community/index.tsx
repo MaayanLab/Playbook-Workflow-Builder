@@ -204,7 +204,6 @@ export default function CommunityPlaybooks() {
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row gap-2 justify-center">
                     <button onClick={() => {
-                      // TODO: register click
                       router.push(`/report/${playbook.playbook}`)
                     }}>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />

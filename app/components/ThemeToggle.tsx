@@ -21,7 +21,7 @@ export default function ThemeToggle() {
       className="toggle"
       title="Toggle light/dark theme"
       checked={theme === 'dark'}
-      onClick={evt => {setTheme(evt.currentTarget.checked ? 'dark' : 'light')}}
+      onChange={evt => {setTheme(evt.currentTarget.checked ? 'dark' : 'light')}}
     />
   )
 }

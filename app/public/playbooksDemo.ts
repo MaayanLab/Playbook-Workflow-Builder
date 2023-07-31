@@ -47,7 +47,6 @@ Here are the references for the sources used:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/356e4bd8-8146-a05a-b403-aa050814a3fd',
     dataSources: [
       'KOMP',
       'HPO',
@@ -63,8 +62,6 @@ Here are the references for the sources used:
     outputs: [
       Supervenn,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: '0c0e357d-79b7-47d0-ec94-7915a88bf493',
@@ -83,7 +80,6 @@ Finally, a Supervenn diagram was used to visualize the collection of gene sets. 
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/0c0e357d-79b7-47d0-ec94-7915a88bf493',
     dataSources: [
       'GWAS Catalog',
       'KOMP',
@@ -97,8 +93,6 @@ Finally, a Supervenn diagram was used to visualize the collection of gene sets. 
       GeneSet,
       Supervenn,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: 'd961b9c5-d9c1-8d0c-9ce2-12ad75c690d0',
@@ -124,7 +118,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/d961b9c5-d9c1-8d0c-9ce2-12ad75c690d0',
     dataSources: [
       'GTEx',
       'GEO',
@@ -137,8 +130,6 @@ References:
     outputs: [
       ScoredDrugs,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: '0db222e1-9958-b01d-4e22-fef5599ce1f5',
@@ -150,7 +141,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/0db222e1-9958-b01d-4e22-fef5599ce1f5',
     dataSources: [
       'ENCODE',
       'ChEA',
@@ -163,8 +153,6 @@ References:
     outputs: [
       ScoredTissues,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 2,
   },
   {
     id: '820b7d27-382e-d565-e35e-948938a846c9',
@@ -190,7 +178,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/820b7d27-382e-d565-e35e-948938a846c9',
     dataSources: [
       'HPO',
       'KOMP',
@@ -205,8 +192,6 @@ References:
     outputs: [
       ScoredDrugs,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: 'dfd2b35c-aabf-fb96-c63c-27ecb73fc4be',
@@ -223,7 +208,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/dfd2b35c-aabf-fb96-c63c-27ecb73fc4be',
     dataSources: [
       'BioThings',
       'LINCS',
@@ -236,8 +220,6 @@ References:
       LINCSL1000ReverseSearchDashboard,
       PlotlyPlot,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: 'b19a8c08-ba02-fc3b-c50d-7d4d5f3767e5',
@@ -252,7 +234,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/b19a8c08-ba02-fc3b-c50d-7d4d5f3767e5',
     dataSources: [
       'BioThings',
       'LINCS',
@@ -265,8 +246,6 @@ References:
       LINCSL1000ReverseSearchDashboard,
       PlotlyPlot,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: 'd04dceaa-25c0-d7db-2e68-b06f92806289',
@@ -283,7 +262,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/d04dceaa-25c0-d7db-2e68-b06f92806289',
     dataSources: [
       'BioThings',
       'KidsFirst',
@@ -295,8 +273,6 @@ References:
     outputs: [
       PlotlyPlot,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: '703a150e-ee10-2a26-418a-89a69e1a82e7',
@@ -314,7 +290,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/703a150e-ee10-2a26-418a-89a69e1a82e7',
     dataSources: [
       'KidsFirst',
       'GTEx',
@@ -327,8 +302,6 @@ References:
     outputs: [
       PlotlyPlot,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: 'ec5a2d97-fca2-df40-578a-9c84129963bf',
@@ -345,7 +318,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/ec5a2d97-fca2-df40-578a-9c84129963bf',
     dataSources: [
       'KidsFirst',
       'GTEx',
@@ -357,8 +329,6 @@ References:
     outputs: [
       PlotlyPlot,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: '3eace23d-c9f0-79d2-548b-707f04c1ded5',
@@ -370,7 +340,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/3eace23d-c9f0-79d2-548b-707f04c1ded5',
     dataSources: [
       'ClinGen',
       'STRING',
@@ -382,8 +351,6 @@ References:
     outputs: [
       RegulatoryElementSet,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: '7701ff8a-adbd-5a41-8291-17097d0a3ecb',
@@ -395,7 +362,6 @@ References:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/7701ff8a-adbd-5a41-8291-17097d0a3ecb',
     dataSources: [
       'ClinGen',
       'STRING',
@@ -407,8 +373,6 @@ References:
     outputs: [
       GeneSet,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   {
     id: '7ee323a7-80d7-21dc-ecc9-ad055826d2ab',
@@ -426,7 +390,6 @@ Here are the references for the sources mentioned:
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/7ee323a7-80d7-21dc-ecc9-ad055826d2ab',
     dataSources: [
       'LINCS',
       'STRING',
@@ -446,8 +409,6 @@ Here are the references for the sources mentioned:
       MetgeneMetabolites,
       MetGeneStudies,
     ],
-    collapsed: {} as Record<number, boolean>,
-    clicks: 1,
   },
   // TODO: 12
   {
@@ -464,7 +425,6 @@ The Metabolomics Workbench was used to identify associated metabolites and relev
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
-    url: 'https://playbook-workflow-builder.cloud/report/1d66906d-980b-b690-111e-c341145aa080',
     dataSources: [
       'KidsFirst',
       'LINCS',
@@ -487,17 +447,6 @@ The Metabolomics Workbench was used to identify associated metabolites and relev
       VariantSet,
       GlyGenResponseNode,
     ],
-    collapsed: {
-      4: false,
-      5: false,
-      7: false,
-      8: false,
-      9: false,
-      10: false,
-      11: false,
-      12: false,
-    } as Record<number, boolean>,
-    clicks: 5,
   },
 ]
 

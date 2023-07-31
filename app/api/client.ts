@@ -4,6 +4,8 @@
  * It is designed to be imported client-side.
  */
 import { APIInterface } from '@/spec/api'
+import type { PublicPlaybooks as PublicPlaybooks_ } from './v1/user/playbooks'
+export const PublicPlaybooks = APIInterface<typeof PublicPlaybooks_>("/api/v1/public/playbooks", "GET")
 import type { PublicUserPlaybooks as PublicUserPlaybooks_ } from './v1/user/playbooks'
 export const PublicUserPlaybooks = APIInterface<typeof PublicUserPlaybooks_>("/api/v1/public/user/playbooks", "GET")
 import type { UserPlaybooks as UserPlaybooks_ } from './v1/user/playbooks'

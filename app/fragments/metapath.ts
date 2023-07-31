@@ -24,7 +24,7 @@ export function useMetapathOutput(krg: KRG, head: Metapath) {
       return { data: { output: undefined, outputNode }, decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
     }
   }, [rawOutput, outputNode])
-    return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
+  return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
 }
 
 /**
@@ -50,6 +50,7 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
                   .filter(({ key: k }) => k.toString().startsWith(`${key}:`))
                   .map(({ value: { id } }) => {
                     const output = rawInputs[`/api/db/process/${id}/output`]
+                    if (!output) throw new Error(`No output for ${id}`)
                     if (output.type === ErrorComponent.spec) {
                       throw new Error(ErrorComponent.codec.decode(output.value))
                     }
@@ -58,6 +59,7 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
               }
             } else {
               const output = rawInputs[`/api/db/process/${head.process.inputs[key].id}/output`]
+              if (!output) throw new Error(`No output for ${head.process.inputs[key].id}`)
               if (output.type === ErrorComponent.spec) {
                 throw new Error(ErrorComponent.codec.decode(output.value))
               }

@@ -44,10 +44,6 @@ export class Process {
      * A database instance to operate this class like an ORM
      */
     public db: FPPRG | undefined = undefined,
-    /**
-     * Whether or not this has been persisted to the db
-     */
-    public persisted = false,
   ) {
     this.id = uuid([type, data?.id, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
   }
@@ -101,7 +97,7 @@ export class Process {
 export class Resolved {
   public id: string
 
-  constructor(public process: Process, public data: Data | undefined, public persisted = false) {
+  constructor(public process: Process, public data: Data | undefined) {
     this.id = process.id
   }
 
@@ -123,7 +119,6 @@ export class FPL {
     public parent: FPL | undefined = undefined,
     public cell_metadata: CellMetadata | undefined = undefined,
     public playbook_metadata: PlaybookMetadata | undefined = undefined,
-    public persisted = false,
   ) {
     this.id = uuid([
       process.id,
@@ -281,7 +276,7 @@ export class FPL {
 export class Data {
   id: string
 
-  constructor(public type: string, public value: any, public persisted = false) {
+  constructor(public type: string, public value: any) {
     this.id = uuid([type, value])
   }
 
@@ -305,7 +300,6 @@ export class CellMetadata {
     public description?: string,
     public process_visible = true,
     public data_visible = true,
-    public persisted = false,
   ) {
     this.id = uuid([
       label,
@@ -337,7 +331,6 @@ export class PlaybookMetadata {
     public description = '',
     public summary = 'auto' as 'auto' | 'gpt' | 'manual',
     public gpt_summary = '',
-    public persisted = false,
   ) {
     this.id = uuid([
       title,
@@ -445,8 +438,8 @@ export default class FPPRG {
           dict.init(await Promise.all(dict.sortedItems(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
           this
         )
-        if (id === process.id) process.persisted = true
-        this.processTable[id] = this.processTable[process.id] = await this.upsertProcess(process)
+        if (id === process.id) this.processTable[process.id] = process
+        else this.processTable[id] = await this.upsertProcess(process)
         // this process was already resolved?
         // save that information, saves a lookup or two
         if (result.resolved) {
@@ -455,8 +448,8 @@ export default class FPPRG {
               process,
               result.output !== null ? (await this.getData(result.output)) : undefined,
             )
-            if (id === resolved.id) resolved.persisted = true
-            this.resolvedTable[id] = this.resolvedTable[resolved.id] = process.resolved = await this.upsertResolved(resolved)
+            if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
+            else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
           }
         }
       }
@@ -464,60 +457,55 @@ export default class FPPRG {
     return this.processTable[id]
   }
   upsertProcess = async (process: Process) => {
-    if (!process.persisted) {
-      if (!(process.id in this.processTable)) {
-        process.db = this
-        // TODO: get these things done in the context manager
-        //       in a single transaction
-        if (process.data !== undefined) {
-          process.data = await this.upsertData(process.data)
+    if (!(process.id in this.processTable)) {
+      process.db = this
+      // TODO: get these things done in the context manager
+      //       in a single transaction
+      if (process.data !== undefined) {
+        process.data = await this.upsertData(process.data)
+      }
+      for (const key in process.inputs) {
+        const value = process.inputs[key]
+        process.inputs[key] = await this.upsertProcess(value)
+      }
+      // TODO:
+      // await this.db.objects.process.upsert({
+      //   where: { id: process.id },
+      //   update: {
+      //     type: process.type,
+      //     data: process.data !== undefined ? process.data.id : null,
+      //   },
+      //   create: {
+      //     id: process.id,
+      //     type: process.type,
+      //     data: process.data !== undefined ? process.data.id : null,
+      //     inputs: dict.sortedItems(process.inputs).map(({ key, value }) => ({
+      //       id: process.id,
+      //       key,
+      //       value: value.id,
+      //     }))
+      //   }
+      // })
+      await this.db.objects.process.upsert({
+        where: { id: process.id },
+        create: {
+          id: process.id,
+          type: process.type,
+          data: process.data !== undefined ? process.data.id : null,
         }
-        for (const key in process.inputs) {
-          const value = process.inputs[key]
-          if (!value.persisted) {
-            process.inputs[key] = await this.upsertProcess(value)
-          }
-        }
-        // TODO:
-        // await this.db.objects.process.upsert({
-        //   where: { id: process.id },
-        //   update: {
-        //     type: process.type,
-        //     data: process.data !== undefined ? process.data.id : null,
-        //   },
-        //   create: {
-        //     id: process.id,
-        //     type: process.type,
-        //     data: process.data !== undefined ? process.data.id : null,
-        //     inputs: dict.sortedItems(process.inputs).map(({ key, value }) => ({
-        //       id: process.id,
-        //       key,
-        //       value: value.id,
-        //     }))
-        //   }
-        // })
-        await this.db.objects.process.upsert({
-          where: { id: process.id },
+      })
+      for (const key in process.inputs) {
+        const value = process.inputs[key]
+        await this.db.objects.process_input.upsert({
+          where: { id: process.id, key },
           create: {
             id: process.id,
-            type: process.type,
-            data: process.data !== undefined ? process.data.id : null,
+            key,
+            value: value.id,
           }
         })
-        for (const key in process.inputs) {
-          const value = process.inputs[key]
-          await this.db.objects.process_input.upsert({
-            where: { id: process.id, key },
-            create: {
-              id: process.id,
-              key,
-              value: value.id,
-            }
-          })
-        }
-        process.persisted = true
-        this.processTable[process.id] = process
       }
+      this.processTable[process.id] = process
     }
     return this.processTable[process.id] as Process
   }
@@ -544,28 +532,25 @@ export default class FPPRG {
           result.process_visible,
           result.data_visible,
         )
-        if (id === cellMetadata.id) cellMetadata.persisted = true
-        this.cellMetadataTable[id] = this.cellMetadataTable[cellMetadata.id] = await this.upsertCellMetadata(cellMetadata)
+        if (id === cellMetadata.id) this.cellMetadataTable[cellMetadata.id] = cellMetadata
+        else this.cellMetadataTable[id] = await this.upsertCellMetadata(cellMetadata)
       }
     }
     return this.cellMetadataTable[id] as CellMetadata | undefined
   }
   upsertCellMetadata = async (cell_metadata: CellMetadata) => {
-    if (!cell_metadata.persisted) {
-      if (!(cell_metadata.id in this.cellMetadataTable)) {
-        await this.db.objects.cell_metadata.upsert({
-          where: { id: cell_metadata.id },
-          create: {
-            id: cell_metadata.id,
-            label: cell_metadata.label,
-            description: cell_metadata.description,
-            process_visible: cell_metadata.process_visible,
-            data_visible: cell_metadata.data_visible,
-          }
-        })
-        cell_metadata.persisted = true
-        this.cellMetadataTable[cell_metadata.id] = cell_metadata
-      }
+    if (!(cell_metadata.id in this.cellMetadataTable)) {
+      await this.db.objects.cell_metadata.upsert({
+        where: { id: cell_metadata.id },
+        create: {
+          id: cell_metadata.id,
+          label: cell_metadata.label,
+          description: cell_metadata.description,
+          process_visible: cell_metadata.process_visible,
+          data_visible: cell_metadata.data_visible,
+        }
+      })
+      this.cellMetadataTable[cell_metadata.id] = cell_metadata
     }
     return this.cellMetadataTable[cell_metadata.id] as CellMetadata
   }
@@ -593,28 +578,25 @@ export default class FPPRG {
           result.summary,
           result.gpt_summary,
         )
-        if (id === playbookMetadata.id) playbookMetadata.persisted = true
-        this.playbookMetadataTable[id] = this.playbookMetadataTable[playbookMetadata.id] = await this.upsertPlaybookMetadata(playbookMetadata)
+        if (id === playbookMetadata.id) this.playbookMetadataTable[playbookMetadata.id] = playbookMetadata
+        else this.playbookMetadataTable[id] = await this.upsertPlaybookMetadata(playbookMetadata)
       }
     }
     return this.playbookMetadataTable[id] as PlaybookMetadata | undefined
   }
   upsertPlaybookMetadata = async (playbook_metadata: PlaybookMetadata) => {
-    if (!playbook_metadata.persisted) {
-      if (!(playbook_metadata.id in this.playbookMetadataTable)) {
-        await this.db.objects.playbook_metadata.upsert({
-          where: { id: playbook_metadata.id },
-          create: {
-            id: playbook_metadata.id,
-            title: playbook_metadata.title,
-            description: playbook_metadata.description,
-            summary: playbook_metadata.summary,
-            gpt_summary: playbook_metadata.gpt_summary,
-          }
-        })
-        playbook_metadata.persisted = true
-        this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
-      }
+    if (!(playbook_metadata.id in this.playbookMetadataTable)) {
+      await this.db.objects.playbook_metadata.upsert({
+        where: { id: playbook_metadata.id },
+        create: {
+          id: playbook_metadata.id,
+          title: playbook_metadata.title,
+          description: playbook_metadata.description,
+          summary: playbook_metadata.summary,
+          gpt_summary: playbook_metadata.gpt_summary,
+        }
+      })
+      this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
     }
     return this.playbookMetadataTable[playbook_metadata.id] as PlaybookMetadata
   }
@@ -634,26 +616,23 @@ export default class FPPRG {
           result.type,
           JSON.parse(result.value),
         )
-        if (id === data.id) data.persisted = true
-        this.dataTable[id] = this.dataTable[data.id] = await this.upsertData(data)
+        if (id === data.id) this.dataTable[data.id] = data
+        else this.dataTable[id] = await this.upsertData(data)
       }
     }
     return this.dataTable[id]
   }
   upsertData = async (data: Data): Promise<Data> => {
-    if (!data.persisted) {
-      if (!(data.id in this.dataTable)) {
-        await this.db.objects.data.upsert({
-          where: { id: data.id },
-          create: {
-            id: data.id,
-            type: data.type,
-            value: JSON.stringify(data.value),
-          }
-        })
-        data.persisted = true
-        this.dataTable[data.id] = data
-      }
+    if (!(data.id in this.dataTable)) {
+      await this.db.objects.data.upsert({
+        where: { id: data.id },
+        create: {
+          id: data.id,
+          type: data.type,
+          value: JSON.stringify(data.value),
+        }
+      })
+      this.dataTable[data.id] = data
     }
     return this.dataTable[data.id]
   }
@@ -667,8 +646,8 @@ export default class FPPRG {
           process,
           result.data !== null ? (await this.getData(result.data)) as Data : undefined,
         )
-        if (id === resolved.id) resolved.persisted = true
-        this.resolvedTable[id] = this.resolvedTable[result.id] = process.resolved = await this.upsertResolved(resolved)
+        if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
+        else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
       }
     }
     return this.resolvedTable[id]
@@ -710,31 +689,25 @@ export default class FPPRG {
     return this.resolvedTable[id]
   }
   upsertResolved = async (resolved: Resolved): Promise<Resolved> => {
-    if (!resolved.persisted) {
-      if (!(resolved.id in this.resolvedTable)) {
-        if (resolved.data) {
-          await this.upsertData(resolved.data)
-        }
-        await this.db.objects.resolved.upsert({
-          where: { id: resolved.id },
-          create: {
-            id: resolved.id,
-            data: resolved.data !== undefined ? resolved.data.id : null,
-          },
-        })
-        resolved.persisted = true
-        this.resolvedTable[resolved.id] = resolved
-        resolved.process.resolved = resolved
+    if (!(resolved.id in this.resolvedTable)) {
+      if (resolved.data) {
+        await this.upsertData(resolved.data)
       }
+      await this.db.objects.resolved.upsert({
+        where: { id: resolved.id },
+        create: {
+          id: resolved.id,
+          data: resolved.data !== undefined ? resolved.data.id : null,
+        },
+      })
+      this.resolvedTable[resolved.id] = resolved
+      resolved.process.resolved = resolved
     }
     return this.resolvedTable[resolved.id]
   }
   deleteResolved = async (resolved: Resolved) => {
     if (resolved.id in this.resolvedTable) {
-      if (resolved.persisted) {
-        await this.db.objects.resolved.delete({ where: { id: resolved.id } })
-        resolved.persisted = false
-      }
+      await this.db.objects.resolved.delete({ where: { id: resolved.id } })
       if (resolved.id in this.processTable) {
         this.processTable[resolved.id].resolved = undefined
       }
@@ -752,43 +725,40 @@ export default class FPPRG {
           result.cell_metadata ? await this.getCellMetadata(result.cell_metadata) : undefined,
           result.playbook_metadata ? await this.getPlaybookMetadata(result.playbook_metadata) : undefined,
         )
-        if (id === fpl.id) fpl.persisted = true
-        this.fplTable[id] = this.fplTable[fpl.id] = await this.upsertFPL(fpl)
+        if (id === fpl.id) this.fplTable[fpl.id] = fpl
+        else this.fplTable[id] = await this.upsertFPL(fpl)
       }
     }
     return this.fplTable[id]
   }
   upsertFPL = async (fpl: FPL): Promise<FPL> => {
-    if (!fpl.persisted) {
-      if (!(fpl.id in this.fplTable)) {
-        fpl.process = await this.upsertProcess(fpl.process)
-        if (fpl.parent !== undefined) {
-          fpl.parent = await this.upsertFPL(fpl.parent)
-        }
-        if (fpl.cell_metadata !== undefined) {
-          fpl.cell_metadata = await this.upsertCellMetadata(fpl.cell_metadata)
-        }
-        if (fpl.playbook_metadata !== undefined) {
-          fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
-        }
-        try{
-          await this.db.objects.fpl.upsert({
-            where: { id: fpl.id },
-            create: {
-              id: fpl.id,
-              process: fpl.process.id,
-              cell_metadata: fpl.cell_metadata !== undefined ? fpl.cell_metadata.id : null,
-              playbook_metadata: fpl.playbook_metadata !== undefined ? fpl.playbook_metadata.id : null,
-              parent: fpl.parent !== undefined ? fpl.parent.id : null,
-            }
-          })
-        }catch(e){
-          console.error({ fpl_id: fpl.id, fpl_process_id: fpl.process.id, fpl_parent_id: fpl.parent?.id })
-          throw e
-        }
-        fpl.persisted = true
-        this.fplTable[fpl.id] = fpl
+    if (!(fpl.id in this.fplTable)) {
+      fpl.process = await this.upsertProcess(fpl.process)
+      if (fpl.parent !== undefined) {
+        fpl.parent = await this.upsertFPL(fpl.parent)
       }
+      if (fpl.cell_metadata !== undefined) {
+        fpl.cell_metadata = await this.upsertCellMetadata(fpl.cell_metadata)
+      }
+      if (fpl.playbook_metadata !== undefined) {
+        fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
+      }
+      try{
+        await this.db.objects.fpl.upsert({
+          where: { id: fpl.id },
+          create: {
+            id: fpl.id,
+            process: fpl.process.id,
+            cell_metadata: fpl.cell_metadata !== undefined ? fpl.cell_metadata.id : null,
+            playbook_metadata: fpl.playbook_metadata !== undefined ? fpl.playbook_metadata.id : null,
+            parent: fpl.parent !== undefined ? fpl.parent.id : null,
+          }
+        })
+      }catch(e){
+        console.error({ fpl_id: fpl.id, fpl_process_id: fpl.process.id, fpl_parent_id: fpl.parent?.id })
+        throw e
+      }
+      this.fplTable[fpl.id] = fpl
     }
     return this.fplTable[fpl.id]
   }

@@ -12,8 +12,8 @@ export const MyRegulatoryElementC = z.object({
     entType: z.string(),
     coordinates: z.object({
       chromosome: z.string(),
-      start: z.string(),
-      end: z.string()
+      start: z.any(),
+      end: z.any()
     }),
     ld: z.object({
       ENCODERegulatoryElementEvidence: z.array(z.object({

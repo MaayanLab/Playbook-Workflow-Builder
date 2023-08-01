@@ -248,7 +248,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
               pagerank: -100,
             })
             .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
-            ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
+            ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
             .output(OutputNode)
             .prompt((props) => {
               return <div>

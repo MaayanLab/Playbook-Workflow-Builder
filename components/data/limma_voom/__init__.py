@@ -29,16 +29,21 @@ def limma_voom(anndata):
   signature = limma_voom_differential_expression(
     ctrl_df,
     case_df
-  )
+  ).rename({
+    't': 'Statistic',
+    'P.Value': 'Pval',
+    'adj.P.Val': 'AdjPval',
+    'logFC': 'LogFC',
+  }, axis=1)[['Statistic', 'Pval', 'AdjPval', 'LogFC']]
   return signature
 
-def limma_voom_from_matrix(anndata):
-  anndata = anndata_from_file(anndata)
+def limma_voom_from_matrix(file):
+  anndata = anndata_from_file(file)
 
   # cd
   gene_sig = limma_voom(anndata)
 
-  with upsert_file('.tsv') as f:
+  with upsert_file('.tsv', description=f"Gene signature computed by the Limma-Voom analysis from the {file.get('description') or 'file'}") as f:
     gene_sig.to_csv(f.file, sep='\t')
 
   return gene_signature(f)

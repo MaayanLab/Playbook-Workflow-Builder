@@ -2,7 +2,6 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { additional_info_icon, gene_icon } from '@/icons'
-//import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 
 // How the schema validation works: https://codex.so/zod-validation-en
 export const MyGeneIDOutputC = z.object({
@@ -34,6 +33,7 @@ export function uniqJsonSubset(data:MyGeneIDOutputArray) {
   //const [dataobj] = data; // did not work
   //const dataobj = data; //const dataobj = [data][0];
 
+  // will not work if more than one ENTREZID for the same SYMBOL.
   let uniqENTREZID : string[] = Array.from(new Set( data.map(a => a.ENTREZID)));
   let uniqSYMBOL : string[] = Array.from(new Set( data.map(a => a.SYMBOL)));
   let uniqGENENAME : string[] = Array.from(new Set( data.map(a => a.GENENAME)));
@@ -45,6 +45,23 @@ export function uniqJsonSubset(data:MyGeneIDOutputArray) {
     GENENAME : uniqGENENAME[idx],
   };
   });
+  return uniqdataobj;
+}
+
+export async function GetGeneSetIDConv(geneset:string[], species_id:string = "hsa", geneid_type:string = "SYMBOL_OR_ALIAS") {
+
+  //const species_id = "hsa";
+  //const geneid_type = "SYMBOL_OR_ALIAS";
+  const gene_id = geneset.join(","); 
+  //console.log(gene_id)
+  const json_or_txt = "json"
+  
+  //const req = await fetch(`https://bdcw.org/geneid/rest/species/${species_id}/GeneIDType/${geneid_type}/GeneListStr/${gene_id}/View/${json_or_txt}`)
+  const req = await fetch(`https://sc-cfdewebdev.sdsc.edu/geneid/rest/species/${species_id}/GeneIDType/${geneid_type}/GeneListStr/${gene_id}/View/${json_or_txt}`)
+  const res = await req.json();
+  // Above, try catch is not explicitly needed since metanodes handle that.
+  
+  let uniqdataobj = uniqJsonSubset(res);
   return uniqdataobj;
 }
 

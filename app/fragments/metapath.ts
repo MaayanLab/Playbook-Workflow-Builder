@@ -5,6 +5,7 @@ import useSWRImmutable from 'swr/immutable'
 import fetcher from '@/utils/next-rest-fetcher'
 import useSWRMap from '@/utils/swr-map'
 import * as dict from '@/utils/dict'
+import { Error as ErrorComponent } from '@/components'
 
 export type Metapath = ReturnType<FPL['toJSON']>
 
@@ -16,14 +17,14 @@ export function useMetapathOutput(krg: KRG, head: Metapath) {
   const processNode = krg.getProcessNode(head.process.type)
   const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
   const { output, decodeError } = React.useMemo(() => {
-      try {
+    try {
       return { output: rawOutput && outputNode ? outputNode.codec.decode(rawOutput.value) : rawOutput }
     } catch (e: any) {
       console.error(e)
       return { data: { output: undefined, outputNode }, decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
     }
   }, [rawOutput, outputNode])
-    return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
+  return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
 }
 
 /**
@@ -47,12 +48,24 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
                 key,
                 value: dict.items(head.process.inputs)
                   .filter(({ key: k }) => k.toString().startsWith(`${key}:`))
-                  .map(({ value: { id } }) => value[0].codec.decode(rawInputs[`/api/db/process/${id}/output`].value))
+                  .map(({ value: { id } }) => {
+                    const output = rawInputs[`/api/db/process/${id}/output`]
+                    if (!output) throw new Error(`No output for ${id}`)
+                    if (output.type === ErrorComponent.spec) {
+                      throw new Error(ErrorComponent.codec.decode(output.value))
+                    }
+                    return value[0].codec.decode(output.value)
+                  })
               }
             } else {
+              const output = rawInputs[`/api/db/process/${head.process.inputs[key].id}/output`]
+              if (!output) throw new Error(`No output for ${head.process.inputs[key].id}`)
+              if (output.type === ErrorComponent.spec) {
+                throw new Error(ErrorComponent.codec.decode(output.value))
+              }
               return {
                 key,
-                value: value.codec.decode(rawInputs[`/api/db/process/${head.process.inputs[key].id}/output`].value)
+                value: value.codec.decode(output.value)
               }
             }
           })

@@ -76,7 +76,8 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
         })
         .inputs(suggestion.inputs ?
             dict.init(suggestion.inputs.split(',').map((spec: string, ind: number) =>
-              ({ key: ind.toString(), value: krg.getDataNode(spec) })))
+              ({ key: ind.toString(), value: krg.getDataNode(spec) }))
+              .filter(({ key, value }) => !!value))
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {

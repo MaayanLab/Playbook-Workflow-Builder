@@ -168,7 +168,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     return await response.json()
   })
   .story(props =>
-    `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr [\\ref{10.1002/cpz1.90}].`
+    `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr [\\ref{doi:10.1002/cpz1.90}].`
   )
   .build()
 
@@ -246,7 +246,7 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .output(EnrichrGeneSearchResults)
   .resolve(async (props) => props.inputs.gene)
   .story(props =>
-    `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{10.1002/cpz1.90}].`
+    `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
   )
   .build()
 
@@ -333,7 +333,7 @@ export const EnrichrTermTSearch = [
     .output(EnrichrTermSearchResults)
     .resolve(async (props) => props.inputs.term)
     .story(props =>
-      `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{10.1002/cpz1.90}].`
+      `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
     )
     .build()
 )

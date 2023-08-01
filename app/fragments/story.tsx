@@ -17,15 +17,15 @@ import extractCitations from '@/utils/citations'
  */
 function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange: () => void }) {
   const processNode = krg.getProcessNode(head.process.type)
-  const { data: inputs } = useMetapathInputs(krg, head)
-  const { data: { output } } = useMetapathOutput(krg, head)
+  const { data: inputs, error: inputsError } = useMetapathInputs(krg, head)
+  const { data: { output, outputNode }, error: outputError } = useMetapathOutput(krg, head)
   const story = React.useMemo(() => {
-    if (!processNode.story) return null
+    if (!processNode?.story) return null
     try {
       return <>
         {processNode.story({
-          inputs,
-          output,
+          inputs: !inputsError ? inputs : undefined,
+          output: !outputError && outputNode.spec !== 'Error' ? output : undefined,
         })}&nbsp;
       </>
     } catch (e) {

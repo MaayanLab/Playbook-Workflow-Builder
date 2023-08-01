@@ -5,6 +5,12 @@ Currently, the prototype of this project is hosted here: <https://playbook-workf
 A repository for playbook partnership collaboration. The purpose of this repository is to assemble playbook components in parallel while we design applications to use those components.
 
 Quick Links:
-- [Background Concepts](./docs/background.md)
-- [Contribution Guide](./docs/contributions.md)
-- [Frequently Asked Questions](./docs/faq.md)
+- [User Guide](./docs/user/index.md)
+  - [Building Workflows with the Playbook](./docs/user/workflows.md)
+  - [Publishing Workfows as BioCompute Objects](./docs/user/biocompute.md)
+  - [Using the Playbook REST API](./docs/user/api.md)
+- [Developer Guide](./docs/index.md)
+  - [Background Concepts](./docs/background.md)
+  - [Contribution Guide](./docs/contributions.md)
+  - [Deploying Platform in Production](./docs/production.md)
+  - [Frequently Asked Questions](./docs/faq.md)

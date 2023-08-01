@@ -1,9 +1,8 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
-import { MetGeneStudyTable } from '../metgene_study_table'
+import { MetGeneStudyTable } from '@/components/MW/metgene_study_table'
 import { metgene_icon, additional_info_icon, gene_icon, set_icon } from '@/icons'
-import { MetGeneSummary } from '../metgene_summary'
+import { MetGeneSummary } from '@/components/MW/metgene_summary'
 
 // A unique name for your resolver is used here
 export const MetGeneStudies = MetaNode('MetGeneStudies')
@@ -70,6 +69,6 @@ export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
     return  res
   })
   .story(props =>
-    `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/'}] to identify relevant studies related to the genes.`
+    `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant studies related to the genes.`
   )
   .build()

@@ -1,7 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { SERVER_PROPS_ID } from 'next/dist/shared/lib/constants'
 import { additional_info_icon, drug_icon } from '@/icons';
 
 const MetGeneMetObjC = z.object({

@@ -21,7 +21,7 @@ export default function Layout({ session }: { session: SessionWithId }) {
   return (
     <Bp4Tabs
       id="account-tabs"
-      className="flex-grow"
+      className="flex-grow flex overflow-hidden"
       selectedTabId={tab}
       onChange={(tab) => {
         if (tab === 'signout') {
@@ -34,17 +34,17 @@ export default function Layout({ session }: { session: SessionWithId }) {
       vertical
     >
       <span className='font-bold'>{session.user.email}</span>
-      <Bp4Tab id="profile" title={<><Bp4Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col" panel={<AccountProfile session={session}  />} />
-      <Bp4Tab id="settings" title={<><Bp4Icon icon="cog" /> Settings</>} panelClassName="flex-grow flex flex-col" panel={<AccountSettings session={session}  />} />
+      <Bp4Tab id="profile" title={<><Bp4Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountProfile session={session}  />} />
+      <Bp4Tab id="settings" title={<><Bp4Icon icon="cog" /> Settings</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSettings session={session}  />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Data</span>
-      <Bp4Tab id="uploads" title={<><Bp4Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col" panel={<AccountUploads />} />
-      <Bp4Tab id="playbooks" title={<><Bp4Icon icon="control" /> Playbooks</>} panelClassName="flex-grow flex flex-col" panel={<AccountPlaybooks />} />
-      <Bp4Tab id="suggestions" title={<><Bp4Icon icon="lightbulb" /> Suggestions</>} panelClassName="flex-grow flex flex-col" panel={<AccountSuggestions />} />
+      <Bp4Tab id="uploads" title={<><Bp4Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountUploads />} />
+      <Bp4Tab id="playbooks" title={<><Bp4Icon icon="control" /> Playbooks</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountPlaybooks />} />
+      <Bp4Tab id="suggestions" title={<><Bp4Icon icon="lightbulb" /> Suggestions</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSuggestions />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Integrations</span>
-      <Bp4Tab id="biocompute" title={<><Bp4Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col" panel={<AccountBioCompute />} />
-      <Bp4Tab id="cavatica" title={<><Bp4Icon icon="application" /> CAVATICA</>} panelClassName="flex-grow flex flex-col" panel={<AccountCAVATICA />} />
+      <Bp4Tab id="biocompute" title={<><Bp4Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountBioCompute />} />
+      <Bp4Tab id="cavatica" title={<><Bp4Icon icon="application" /> CAVATICA</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountCAVATICA />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Session</span>
       <Bp4Tab id="signout" title={<><Bp4Icon icon="log-out" /> Sign Out</>} />

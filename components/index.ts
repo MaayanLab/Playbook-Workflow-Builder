@@ -1,6 +1,10 @@
 export const components: string[] = []
 export * from "./MW/ConvertedGeneID"
 components.push("MW/ConvertedGeneID")
+export * from "./MW/MetENP_on_MetSet"
+components.push("MW/MetENP_on_MetSet")
+export * from "./MW/PPI_StringDB"
+components.push("MW/PPI_StringDB")
 export * from "./MW/geneidconv"
 components.push("MW/geneidconv")
 export * from "./MW/metaboliteInfo"
@@ -97,8 +101,12 @@ export * from "./service/mygeneinfo"
 components.push("service/mygeneinfo")
 export * from "./service/myvariantinfo"
 components.push("service/myvariantinfo")
+export * from "./service/pubchem"
+components.push("service/pubchem")
 export * from "./service/regulatoryElementInfo"
 components.push("service/regulatoryElementInfo")
+export * from "./service/sigcom-lincs"
+components.push("service/sigcom-lincs")
 export * from "./service/targetranger"
 components.push("service/targetranger")
 export * from "./service/variantinfo"
@@ -109,5 +117,7 @@ export * from "./viz/bokeh"
 components.push("viz/bokeh")
 export * from "./viz/graph"
 components.push("viz/graph")
+export * from "./viz/kf_barplot"
+components.push("viz/kf_barplot")
 export * from "./viz/plotly"
 components.push("viz/plotly")

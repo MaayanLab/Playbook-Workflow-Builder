@@ -1,9 +1,13 @@
 import { z } from 'zod'
 import { Codec } from '@/spec/codec'
 
-export default function codecFrom<T>(typ: z.ZodType<T>): Codec<T> {
+function identity<T>(value: T): T {
+  return value
+}
+
+export default function codecFrom<Output = any, Def extends z.ZodTypeDef = z.ZodTypeDef>(typ: z.ZodType<Output, Def, Output>): Codec<Output, Output> {
   return {
-    encode: (obj: T) => JSON.stringify(obj),
-    decode: (obj: string) => typ.parse(JSON.parse(obj)),
+    encode: (obj: Output) => identity(obj),
+    decode: (obj: Output) => typ.parse(identity(obj)),
   }
 }

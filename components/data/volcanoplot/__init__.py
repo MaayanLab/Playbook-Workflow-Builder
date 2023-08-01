@@ -9,19 +9,19 @@ def run(signature, signature_label='', pvalue_threshold=0.05, logfc_threshold=1.
     text = []
     for index, rowData in signature.iterrows():
         # Text
-        text.append('<b>'+str(index)+'</b><br>Avg Expression = '+str(round(rowData['AveExpr'], ndigits=2))+'<br>logFC = '+str(round(rowData['logFC'], ndigits=2))+'<br>p = '+'{:.2e}'.format(rowData['P.Value'])+'<br>FDR = '+'{:.2e}'.format(rowData['adj.P.Val']))
+        text.append('<b>'+str(index)+'</b><br>LogFC = '+str(round(rowData['LogFC'], ndigits=2))+'<br>p = '+'{:.2e}'.format(rowData['Pval'])+('<br>Adj P = '+'{:.2e}'.format(rowData['AdjPval']) if 'AdjPval' in rowData else ''))
         # Color
-        if rowData['P.Value'] < pvalue_threshold:
-            if rowData['logFC'] < -logfc_threshold:
+        if rowData['Pval'] < pvalue_threshold:
+            if rowData['LogFC'] < -logfc_threshold:
                 color.append('blue')
-            elif rowData['logFC'] > logfc_threshold:
+            elif rowData['LogFC'] > logfc_threshold:
                 color.append('red')
             else:
                 color.append('black')
         else:
             color.append('black')
     # Results
-    volcano_plot_results = {'x': signature['logFC'], 'y': -np.log10(signature['P.Value']), 'text':text, 'color': color, 'signature_label': signature_label, 'plot_type': plot_type}
+    volcano_plot_results = {'x': signature['LogFC'], 'y': -np.log10(signature['Pval']), 'text':text, 'color': color, 'signature_label': signature_label, 'plot_type': plot_type}
     return volcano_plot_results
 
 def plot(volcano_plot_results):

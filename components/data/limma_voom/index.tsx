@@ -18,8 +18,6 @@ export const LimmaVoom = MetaNode('Limma-Voom')
     { kargs: [props.inputs.anndata]}
   ))
   .story(props =>
-    `The anndata file was then analyzed using differential expression Limma-Voom function.`
+    `The anndata file was then analyzed using differential expression by Limma-Voom [\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}].`
   )
   .build()
- 
-

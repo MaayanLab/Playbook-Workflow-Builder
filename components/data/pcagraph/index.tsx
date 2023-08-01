@@ -20,7 +20,7 @@ export const PCAGraphWithNoMeta = MetaNode('PCAGraphWithoutMetadata')
     { kargs: [props.inputs.matrix]  },
   ))
   .story(props =>
-    `The gene count matrix was then visualized as a PCA graph.`
+    `The gene count matrix was then visualized as a PCA plot.`
   )
   .build()
 

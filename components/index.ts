@@ -59,8 +59,6 @@ export * from "./data/limma_voom"
 components.push("data/limma_voom")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
-export * from "./data/manual_labelling"
-components.push("data/manual_labelling")
 export * from "./data/metadata_matrix"
 components.push("data/metadata_matrix")
 export * from "./data/pca_transformation"

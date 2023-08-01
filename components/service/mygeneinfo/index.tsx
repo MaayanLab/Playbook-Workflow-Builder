@@ -1,11 +1,12 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import { GeneTerm } from '@/components/core/input/term'
-import { GeneSet, RegulatoryElementSet } from '@/components/core/input/set'
+import { GeneSet } from '@/components/core/input/set'
 import { GraphPlot } from '@/components/viz/graph'
 import { z } from 'zod'
 import { gene_icon, linkeddatahub_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
+import { Table, Cell, Column} from '@/app/components/Table'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -33,18 +34,33 @@ export const MyGeneInfoC = z.object({
 })
 export type MyGeneInfo = z.infer<typeof MyGeneInfoC>
 
+const MyRegulatoryElement = z.object({
+  entId: z.string(),
+  ldhId: z.string(),
+  entContent: z.object({
+    coordinates: z.object({    
+      chromosome: z.string(),
+      end: z.any(),
+      start: z.any()
+    })
+  })
+})
+
 export const MyGeneInfoByTermC = z.object({
   data: z.object({
     ld: z.object({
-      RegulatoryElement: z.array(z.object({
-            entId: z.string(),
-            ldhId: z.string()
-          })
-        )
+      RegulatoryElement: z.array(
+          MyRegulatoryElement
+      )
     })
   })
 })
 export type MyGeneInfoByTerm = z.infer<typeof MyGeneInfoByTermC>
+
+const MyRegulatoryElementSetInfoC = z.array(
+  MyRegulatoryElement
+)
+export type MyRegulatoryElementSetInfo = z.infer<typeof MyRegulatoryElementSetInfoC>
 
 async function mygeneinfo_query(geneId: string): Promise<{total: number, hits: Array<MyGeneInfoHit>}> {
   const res = await fetch(`https://mygene.info/v3/query?q=${encodeURIComponent(geneId)}`)
@@ -56,7 +72,7 @@ async function mygeneinfo(geneId: string): Promise<MyGeneInfo> {
   return await res.json()
 }
 
-async function myGeneInfoByGeneTerm(geneTerm: string): Promise<MyGeneInfoByTerm> {
+async function myGeneInfoFromLinkDataHub(geneTerm: string): Promise<MyGeneInfoByTerm> {
   const res = await fetch(`https://genboree.org/cfde-gene-dev/Gene/id/${encodeURIComponent(geneTerm)}`)
   return await res.json()
 }
@@ -100,8 +116,42 @@ export async function getGeneData(geneSymbol: string){
     return await mygeneinfo(_id)
   }
 
+export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
+  .meta({
+    label: 'RegulatoryElementSetInfo',
+    description: '',
+    icon: [datafile_icon]
+  })
+  .codec(MyRegulatoryElementSetInfoC)
+  .view(regulatoryElementSet => {
+    return( 
+      <Table
+        height={500}
+        cellRendererDependencies={[regulatoryElementSet]}
+        numRows={regulatoryElementSet.length}
+        enableGhostCells
+        enableFocusedCell>
+        <Column
+          name="Entity id"
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
+        />
+        <Column
+          name="Chromosome"
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.chromosome}</Cell>}
+        />
+        <Column
+          name="Start Pos."
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.start}</Cell>}
+        />
+        <Column
+          name="End Pos."
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.end}</Cell>}
+        />
+      </Table>
+    )
+}).build()
 
-export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsForGeneInfo')
+export const RegulatoryElementsForGeneInfo = MetaNode('RegulatoryElementsForGeneInfo')
   .meta({
     label: 'Resolve Regulatory Elements from LDH',
     description: 'Resolve regulatory elements from gene with Linked Data Hub',
@@ -109,21 +159,23 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
     pagerank: 1,
   })
   .inputs({ geneInfo: GeneInfo  })
-  .output(RegulatoryElementSet)
+  .output(RegulatoryElementSetInfo)
   .resolve(async (props) => {
-    const response =  await myGeneInfoByGeneTerm(props.inputs.geneInfo.symbol);
-    if(response.data == null || response.data.ld == null){
-      return {
-        description: 'Regulatory Element set for gene is empty' ,
-        set: []
-      };
-    }
-    let reNames = response.data.ld.RegulatoryElement.map(({ entId }) => entId );
-    let reSet = {
-      description: 'Regulatory Element set for gene '+props.inputs.geneInfo.symbol ,
-      set: reNames
-    };
-    return reSet;
+    const response =  await myGeneInfoFromLinkDataHub(props.inputs.geneInfo.symbol);
+    return response.data.ld.RegulatoryElement;
+  })
+  .story(props =>
+    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
+  )
+  .build()
+
+export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryElementsForGeneInfoFromGene')
+  .meta(RegulatoryElementsForGeneInfo.meta)
+  .inputs({ gene: GeneTerm })
+  .output(RegulatoryElementsForGeneInfo.output)
+  .resolve(async (props) => {
+    const geneInfo = await GeneInfoFromGeneTerm.resolve(props)
+    return await RegulatoryElementsForGeneInfo.resolve({ inputs: { geneInfo } })
   })
   .story(props =>
     `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
@@ -331,15 +383,3 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     `CTD_Graph_Nodes.`
   ).build()
 
-export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryElementsForGeneInfoFromGene')
-  .meta(GetRegulatoryElementsForGeneInfo.meta)
-  .inputs({ gene: GeneTerm })
-  .output(GetRegulatoryElementsForGeneInfo.output)
-  .resolve(async (props) => {
-    const geneInfo = await GeneInfoFromGeneTerm.resolve(props)
-    return await GetRegulatoryElementsForGeneInfo.resolve({ inputs: { geneInfo } })
-  })
-  .story(props =>
-    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
-  )
-  .build()

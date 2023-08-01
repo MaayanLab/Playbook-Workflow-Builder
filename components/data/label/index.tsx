@@ -6,7 +6,7 @@ import { useClientUpdateMetadata } from './api/metadata/update/client'
 
 export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .meta({
-    label: 'Manual Labelling of Samples',
+    label: 'Manual Labeling of Samples',
     description: 'Manually label samples as either control or perturbation.',
   })
   .inputs({ matrix: AnnData })

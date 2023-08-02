@@ -53,6 +53,8 @@ export * from "./data/gene_matrix_transpose"
 components.push("data/gene_matrix_transpose")
 export * from "./data/gene_signature"
 components.push("data/gene_signature")
+export * from "./data/label"
+components.push("data/label")
 export * from "./data/librarysize"
 components.push("data/librarysize")
 export * from "./data/limma_voom"

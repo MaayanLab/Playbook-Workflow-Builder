@@ -20,7 +20,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
 
     React.useEffect(() => {
       if (!data) return
-      setTableData({...data, 'Type: Control or Perturbation': data['Type: Control or Perturbation'] || {}})
+      setTableData(data)
     }, [data])
 
     const { index, columns } = React.useMemo(() => {
@@ -34,11 +34,15 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
           })
         })
       }
+      if (!columns.includes('Type: Control or Perturbation')) {
+        columns.push('Type: Control or Perturbation')
+      }
       return { index: Object.keys(index), columns }
     }, [tableData])
 
     const handleCellChange = React.useCallback((row: string, column: string, value: string) => {
       const newTableData = {...tableData}
+      if (!(column in newTableData)) newTableData[column] = {}
       newTableData[column][row] = value
       setTableData(newTableData)
     }, [tableData])
@@ -81,7 +85,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
                         <input
                           type="checkbox"
                           className="toggle"
-                          ref={ref => {if (ref) ref.indeterminate = (tableData[column] || {})[row] === undefined}}
+                          ref={ref => {if (ref) ref.indeterminate = !['Control', 'Perturbation'].includes((tableData[column] || {})[row])}}
                           checked={(tableData[column] || {})[row] === 'Perturbation'}
                           onClick={evt =>
                             handleCellChange(row, column, (tableData[column] || {})[row] === 'Control' ? 'Perturbation' : 'Control')

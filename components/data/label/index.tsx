@@ -121,6 +121,6 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
     );
   })
   .story(props =>
-    'The samples were then labelled as either control or perturbation to allow for further analysis.'
+    'The samples were then labeled as either control or perturbation to allow for further analysis.'
   )
   .build()

@@ -3,6 +3,7 @@ import { MetaNode } from "@/spec/metanode"
 import { AnnData } from '@/components/data/anndata'
 import { useClientMetadataFromFile } from './api/metadata/client'
 import { useClientUpdateMetadata } from './api/metadata/update/client'
+import classNames from 'classnames'
 
 export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .meta({
@@ -12,7 +13,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .inputs({ matrix: AnnData })
   .output(AnnData)
   .prompt(props => {
-    const { data } = useClientMetadataFromFile(props.inputs.matrix)
+    const { data, isLoading } = useClientMetadataFromFile(props.inputs.matrix)
     const { trigger } = useClientUpdateMetadata(props.inputs.matrix.url)
     const [tableData, setTableData] = React.useState<Record<string, Record<string, string>>>({})
 
@@ -43,7 +44,8 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
 
     return (
       <div>
-        <div className="overflow-x-auto">
+        <progress className={classNames('progress w-full', { 'hidden': !isLoading })}></progress>
+        <div className={classNames("overflow-x-auto", { 'hidden': index.length === 0 || columns.length === 0 })}>
           <table style={{ borderCollapse: 'collapse', border: '1px solid black' }}>
             <thead>
               <tr>

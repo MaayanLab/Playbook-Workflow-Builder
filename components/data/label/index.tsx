@@ -13,8 +13,9 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .inputs({ matrix: AnnData })
   .output(AnnData)
   .prompt(props => {
-    const { data, isLoading } = useClientMetadataFromFile(props.inputs.matrix)
-    const { trigger } = useClientUpdateMetadata(props.inputs.matrix.url)
+    const matrix = props.output ? props.output : props.inputs.matrix
+    const { data, isLoading } = useClientMetadataFromFile(matrix)
+    const { trigger } = useClientUpdateMetadata(matrix.url)
     const [tableData, setTableData] = React.useState<Record<string, Record<string, string>>>({})
 
     React.useEffect(() => {
@@ -114,7 +115,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
         <button className="bp4-button bp4-large" onClick={async () => {
           props.submit(
             await trigger({
-              file: props.inputs.matrix,
+              file: matrix,
               data: tableData,
             })
           )

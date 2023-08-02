@@ -28,7 +28,7 @@ def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
     ))
 
     fig.update_layout(
-        title=f"Top 10 {terms} with Highest Unique Z-Scores",
+        title=f"Top 10 {terms} with Highest Z-Scores",
         height=600,
         yaxis=dict(showticklabels=False),
         autosize=False,  # Disable automatic resizing

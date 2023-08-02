@@ -18,7 +18,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
 
     React.useEffect(() => {
       if (!data) return
-      setTableData({...data, 'Type: Control or Perturbation': {}})
+      setTableData({...data, 'Type: Control or Perturbation': data['Type: Control or Perturbation'] || {}})
     }, [data])
 
     const { index, columns } = React.useMemo(() => {

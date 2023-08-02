@@ -16,6 +16,7 @@ export default function Playbooks() {
         <table className="table table-compact w-full text-black dark:text-white">
           <thead>
             <tr>
+              <th></th>
               <th>Title</th>
               <th>Inputs</th>
               <th>Outputs</th>
@@ -23,11 +24,14 @@ export default function Playbooks() {
               <th>Public</th>
               <th>Clicks</th>
               <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
+            {(playbooks ?? []).length === 0 ? <tr><td colSpan={9} align="center">No playbooks saved</td></tr> : null}
             {(playbooks ?? []).map(playbook => (
               <tr key={playbook.id}>
+                <td></td>
                 <td>{playbook.title}</td>
                 <td>{playbook.inputs}</td>
                 <td>{playbook.outputs}</td>
@@ -54,6 +58,7 @@ export default function Playbooks() {
                     <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                   </button>
                 </td>
+                <td></td>
               </tr>
             ))}
           </tbody>

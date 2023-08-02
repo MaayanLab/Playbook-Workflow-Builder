@@ -14,6 +14,8 @@ import type { UserIntegrationsCAVATICAStatus as UserIntegrationsCAVATICAStatus_ 
 export const UserIntegrationsCAVATICAStatus = APIInterface<typeof UserIntegrationsCAVATICAStatus_>("/api/v1/user/integrations/cavatica/[session_id]/status", "GET")
 import type { UserIntegrationsCAVATICADisconnect as UserIntegrationsCAVATICADisconnect_ } from './v1/user/integrations/cavatica'
 export const UserIntegrationsCAVATICADisconnect = APIInterface<typeof UserIntegrationsCAVATICADisconnect_>("/api/v1/user/integrations/cavatica/[session_id]/disconnect", "POST")
+import type { PublicPlaybooks as PublicPlaybooks_ } from './v1/user/playbooks'
+export const PublicPlaybooks = APIInterface<typeof PublicPlaybooks_>("/api/v1/public/playbooks", "GET")
 import type { PublicUserPlaybooks as PublicUserPlaybooks_ } from './v1/user/playbooks'
 export const PublicUserPlaybooks = APIInterface<typeof PublicUserPlaybooks_>("/api/v1/public/user/playbooks", "GET")
 import type { UserPlaybooks as UserPlaybooks_ } from './v1/user/playbooks'

@@ -76,7 +76,8 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
         })
         .inputs(suggestion.inputs ?
             dict.init(suggestion.inputs.split(',').map((spec: string, ind: number) =>
-              ({ key: ind.toString(), value: krg.getDataNode(spec) })))
+              ({ key: ind.toString(), value: krg.getDataNode(spec) }))
+              .filter(({ key, value }) => !!value))
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {
@@ -85,6 +86,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
             <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
           </div>
         })
+        .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)
         .build()
       krg.add(ProcessNode)
     }

@@ -85,7 +85,7 @@ export async function getRegElemPositionData(regElemId: string): Promise<RE_Posi
 export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegElementTerm')
   .meta({
     label: 'Resolve Regulatory Element Info from Term',
-    description: 'Resolve Regulatory Element info from variant term with MyVariantInfo',
+    description: 'Resolve Regulatory Element info from variant term',
     icon: [linkeddatahub_icon],
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
@@ -104,6 +104,7 @@ export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegE
     }
     return response;
   })
+  .story(props => `Additional information about the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} was resolved.`)
   .build()
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
@@ -121,6 +122,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     };
     return geneSet;
   })
+  .story(props => `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
   .build()
 
 export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRegulatoryElementInfo')
@@ -138,4 +140,5 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     };
     return variantSet;
   })
+  .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
   .build()

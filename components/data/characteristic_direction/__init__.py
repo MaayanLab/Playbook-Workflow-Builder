@@ -1,48 +1,55 @@
-from components.data.gene_count_matrix import anndata_from_path
-from components.data.metadata_matrix import metadata_from_path
+from components.data.gene_count_matrix import anndata_from_file
+from components.data.metadata_matrix import metadata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
-from maayanlab_bioinformatics.dge import characteristic_direction
+from maayanlab_bioinformatics.dge import characteristic_direction, logfc_differential_expression
 import pandas as pd
+import scipy.stats
 
 # Function for computing signatures with characteristic direction
-def cd_signature(data_mat, meta_mat):
-  col = meta_mat.columns[0]
-  grp_ids = meta_mat[col].unique()
+def cd_signature(anndata):
+  col = anndata.obs.columns[0]
+  grp_ids = anndata.obs[col].unique()
 
-  ctrl_ids = meta_mat[meta_mat[col] == grp_ids[0]].index.tolist()
-  ctrl_mask = [x in ctrl_ids for x in data_mat.var_names]
-  case_ids = meta_mat[meta_mat[col] == grp_ids[1]].index.tolist()
-  case_mask = [x in case_ids for x in data_mat.var_names]
+  ctrl_ids = anndata.obs[anndata.obs[col] == grp_ids[0]].index.tolist()
+  ctrl_mask = [x in ctrl_ids for x in anndata.obs_names]
+  case_ids = anndata.obs[anndata.obs[col] == grp_ids[1]].index.tolist()
+  case_mask = [x in case_ids for x in anndata.obs_names]
 
   ctrl_df = pd.DataFrame(
-    data = data_mat.X[:, ctrl_mask],
-    columns = data_mat.var_names[ctrl_mask],
-    index = data_mat.obs_names
-  )
+    data = anndata.X[ctrl_mask, :],
+    index = anndata.obs_names[ctrl_mask],
+    columns = anndata.var_names
+  ).T
 
   case_df = pd.DataFrame(
-    data = data_mat.X[:, case_mask],
-    columns = data_mat.var_names[case_mask],
-    index = data_mat.obs_names
-  )
+    data = anndata.X[case_mask, :],
+    index = anndata.obs_names[case_mask],
+    columns = anndata.var_names
+  ).T
 
-  signature = characteristic_direction(
-    ctrl_df,
-    case_df
-  )
-  signature = signature.sort_values("CD-coefficient", ascending=False)
-  signature = signature.rename(columns={'CD-coefficient': f"{grp_ids[0]} vs. {grp_ids[1]}:CD-coefficient"})
+  signature = pd.concat([
+    characteristic_direction(
+      ctrl_df,
+      case_df,
+    ),
+    logfc_differential_expression(
+      ctrl_df,
+      case_df,
+    ),
+  ], axis=1)
+  signature['Pval'] = 1-scipy.stats.norm.sf(abs(scipy.stats.zscore(signature['CD-coefficient'])))*2
+  signature.sort_values('Pval', ascending=True, inplace=True)
+  signature['AdjPval'] = scipy.stats.false_discovery_control(signature['Pval'], method='bh')
   return signature
 
-def cd_from_matrix(data, meta):
-  data_df = anndata_from_path(data['url'])
-  meta_df = metadata_from_path(meta['url'])
+def cd_from_matrix(file):
+  anndata = anndata_from_file(file)
 
   # cd
-  gene_sig = cd_signature(data_df, meta_df)
+  gene_sig = cd_signature(anndata)
 
-  with upsert_file('.tsv') as f:
+  with upsert_file('.tsv', description=f"Gene signature computed by the Characteristic Direction method of the {file.get('description') or 'file'}") as f:
     gene_sig.to_csv(f.file, sep='\t')
 
-  return gene_signature(f.url)
+  return gene_signature(f)

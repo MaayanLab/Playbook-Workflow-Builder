@@ -70,11 +70,11 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
           <div className="prose">
             {playbookMetadata.summary === 'auto' ?
               <>
-                <p className="prose-lg mt-1">{storyText}</p>
-                <div className="prose-sm whitespace-pre-line">{storyCitations}</div>
+                <p className="prose-lg text-justify mt-1">{storyText}</p>
+                <div className="prose-sm text-justify whitespace-pre-line">{storyCitations}</div>
               </>
             : playbookMetadata.summary === 'manual' ?
-              <p className="prose-lg mt-1">
+              <p className="prose-lg text-justify mt-1 whitespace-pre-line">
                 <EditableText
                   placeholder="Add your manual summary here to be included when publishing."
                   value={playbookMetadata.description || ''}
@@ -86,7 +86,7 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
               <>
                 {chatGPTAvailable && isAugmentingWithChatGPT ? <progress className="progress" /> : null}
                 {chatGPTAvailable && errorAugmentingWithChatGPT ? <div className="alert alert-error prose">{errorAugmentingWithChatGPT.toString()}</div> : null}
-                <p className="prose-lg mt-1 whitespace-pre-line">{playbookMetadata.gpt_summary}</p>
+                <p className="prose-lg text-justify mt-1 whitespace-pre-line">{playbookMetadata.gpt_summary}</p>
               </>
               : null}
           </div>

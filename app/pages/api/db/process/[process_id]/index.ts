@@ -12,6 +12,5 @@ export default handler(async (req, res) => {
   const { process_id } = QueryType.parse(req.query)
   const process = await fpprg.getProcess(process_id)
   if (process === undefined) throw new NotFoundError()
-  const output = await process.output()
-  res.status(200).json(output ? output.toJSON() : null)
+  res.status(200).json(process ? process.toJSON() : null)
 })

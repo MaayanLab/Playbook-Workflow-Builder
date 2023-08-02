@@ -63,7 +63,8 @@ export function SuggestionEdges(input?: DataMetaNode) {
         })
         .inputs()
         .output(Suggestion)
-        .prompt((props) => <></>)
+        .prompt(props => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
   }
@@ -78,6 +79,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
     suggestion_edges.push(
@@ -90,6 +92,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
   }
@@ -245,7 +248,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
               pagerank: -100,
             })
             .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
-            ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
+            ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
             .output(OutputNode)
             .prompt((props) => {
               return <div>
@@ -253,6 +256,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
                 <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
               </div>
             })
+            .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)
             .build()
           krg.add(ProcessNode)
           // extend using those nodes

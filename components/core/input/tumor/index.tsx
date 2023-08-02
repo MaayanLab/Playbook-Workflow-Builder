@@ -29,7 +29,8 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
                             Disease : z.string(),
                             Gene_symbol : z.string(),
                             Gene_Ensembl_ID : z.string(),
-                            Dataset : z.string()})))
+                            Dataset : z.string(),
+                            zscore: z.number()})))
   .view(expressionTable => {
     return (
       <Table
@@ -66,6 +67,10 @@ const GeneExpressionInTumor_T = (T: Primative) => MetaNode(`[${T.name}]`)
         <Column
           name="Ensembl ID"
           cellRenderer={row => <Cell key={row+''}>{expressionTable[row].Gene_Ensembl_ID}</Cell>}
+        />
+        <Column
+          name="Zscore"
+          cellRenderer={row => <Cell key={row+''}>{expressionTable[row].zscore}</Cell>}
         />
       </Table>
     )

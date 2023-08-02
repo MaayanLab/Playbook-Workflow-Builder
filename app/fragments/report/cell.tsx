@@ -11,9 +11,10 @@ const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
-  const processNode = krg.getProcessNode(head.process.type)
   const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput({ session_id, krg, head })
   const View = outputNode ? outputNode.view : undefined
+  const processNode = krg.getProcessNode(head.process.type)
+  if (!processNode) return <div className="alert alert-error">Error: {head.process.type} does not exist</div>
   return (
     <>
       {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">

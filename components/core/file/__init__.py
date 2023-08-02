@@ -6,14 +6,27 @@ access it.
 '''
 import re
 import os
+import typing
 import tempfile
 import requests
 import contextlib
 
-class TemporaryFile:
-  def __init__(self, suffix='') -> None:
+class File(typing.TypedDict):
+  url: str
+  filename: str
+  description: typing.Optional[str]
+  size: int
+
+class TemporaryFile(dict):
+  def __init__(self, suffix='', description=None):
+    super().__init__(
+      url='',
+      filename='',
+      description=description,
+      size=0,
+    )
     self.file = tempfile.mktemp(suffix=suffix)
-    self.url = None
+    self['filename'] = self.file
 
   def __repr__(self) -> str:
     return f"TemporaryFile({repr(self)})"
@@ -22,7 +35,7 @@ class TemporaryFile:
     os.unlink(self.file)
 
 @contextlib.contextmanager
-def upsert_file(suffix=''):
+def upsert_file(suffix='', description=None):
   ''' Usage:
   from components.core.file import upsert_file
   with upsert_file('.csv') as f:
@@ -31,7 +44,7 @@ def upsert_file(suffix=''):
   print(f.url)
   '''
   # NOTE: this context manager will remove the temporary file when done
-  tmp = TemporaryFile(suffix)
+  tmp = TemporaryFile(suffix, description=description)
   try:
     # we give you a temporary file to write to
     yield tmp
@@ -44,19 +57,32 @@ def upsert_file(suffix=''):
     assert req.status_code >= 200 and req.status_code < 300, f"Error ({req.status_code}): {req.json()}"
     res = req.json()
     # we return register url to the file
-    tmp.url = res['file'][0]['url']
+    tmp.update(res['file'][0])
   finally:
     # we remove the temporary file
     tmp.unlink()
 
 @contextlib.contextmanager
-def file_as_stream(url, *args, **kwargs) -> str:
+def file_as_stream(file: File, *args, **kwargs) -> str:
   import fsspec
-  with fsspec.open(url, *args, **kwargs) as fr:
+  with fsspec.open(file['url'], *args, **kwargs) as fr:
     yield fr
 
 @contextlib.contextmanager
-def file_as_path(url, *args, **kwargs) -> str:
-  m = re.match(r'^file://(.+)$', url)
+def file_as_path(file: File, *args, **kwargs) -> str:
+  m = re.match(r'^(file|https?)://(.+)$', file['url'])
   assert m, 'protocol not yet supported'
-  yield m.group(1)
+  if m.group(1) == 'file':
+    yield m.group(2)
+  elif m.group(1) in ('http', 'https'):
+    import shutil, tempfile, urllib.request, pathlib
+    tmp = tempfile.mktemp(suffix='.'.join(pathlib.PurePosixPath(m.group(2)).suffixes))
+    with open(tmp, 'wb') as fw:
+      with urllib.request.urlopen(m.group(0)) as fr:
+        shutil.copyfileobj(fr, fw)
+    try:
+      yield tmp
+    finally:
+      pathlib.Path(tmp).unlink()
+  else:
+    raise NotImplementedError(m.group(1))

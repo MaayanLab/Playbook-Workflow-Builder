@@ -9,7 +9,7 @@ import { AnnData } from '@/components/data/anndata'
 
 export const PCAGraphWithNoMeta = MetaNode('PCAGraphWithoutMetadata')
   .meta({
-    label: 'PCA Graph of RNAseq Data from Gene Count Matrix',
+    label: 'PCA Graph of RNA-seq Data from Gene Count Matrix',
     description: 'Construct an interactive, three-dimensional scatter plot of the first three Principal Components (PCs) of data from a Gene Count Matrix. Each point represents an RNA-seq sample. Samples with similar gene expression profiles are closer in the three-dimensional space.',
     icon: [norm_icon],
   })
@@ -26,8 +26,8 @@ export const PCAGraphWithNoMeta = MetaNode('PCAGraphWithoutMetadata')
 
   export const PCAGraphWithMetadata = MetaNode('PCAGraphWithMetadata')
   .meta({
-    label: 'PCA Graph of RNAseq Data from AnnData file',
-    description: 'Construct an interactive, three-dimensional scatter plot of the first three Principal Components (PCs) of data from a Gene Count Matrix. Each point represents an RNA-seq sample. Samples with similar gene expression profiles are closer in the three-dimensional space.',
+    label: 'PCA Graph of RNA-seq Data from AnnData file',
+    description: 'Construct an interactive, three-dimensional scatter plot of the first three Principal Components (PCs) of data from an AnnData file. Each point represents an RNA-seq sample. Samples with similar gene expression profiles are closer in the three-dimensional space.',
     icon: [norm_icon],
   })
   .inputs({ anndata: AnnData })

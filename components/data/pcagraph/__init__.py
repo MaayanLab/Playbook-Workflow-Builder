@@ -9,66 +9,65 @@ from sklearn.preprocessing import FunctionTransformer
 
 def run(dataset):
 
-# Assuming you have your data stored in a variable called `data`
+    # Define a function to perform logCPM transformation
+    logcpm_transform = FunctionTransformer(np.log1p, validate=True)
 
-	# Define a function to perform logCPM transformation
-	logcpm_transform = FunctionTransformer(np.log1p, validate=True)
+    # Apply logCPM transformation to your data
+    expression_dataframe = logcpm_transform.transform(dataset)
 
-	# Apply logCPM transformation to your data
-	expression_dataframe = logcpm_transform.transform(dataset)
+    # Convert the NumPy array to a pandas DataFrame
+    expression_dataframe = pd.DataFrame(expression_dataframe, columns=dataset.columns)
 
-	# Convert the NumPy array to a pandas DataFrame
-	expression_dataframe = pd.DataFrame(expression_dataframe, columns=dataset.columns)
+    # Run PCA
+    pca = PCA(n_components=3)
+    pca.fit(expression_dataframe)
+
+    # Get Variance explained for each principal component
+    var_explained = ['PC'+str((i+1))+' ('+str(round(e*100, 1))+'% var. explained)' for i, e in enumerate(pca.explained_variance_ratio_)]
+
+    # Store variance explained with the PCA object
+    pca.variance_explained = var_explained
+
+    # Return PCA object
+    return pca
 
 
-	# Run PCA
-	pca=PCA(n_components=3)
-	pca.fit(expression_dataframe)
-
-	# Get Variance
-	var_explained = ['PC'+str((i+1))+'('+str(round(e*100, 1))+'% var. explained)' for i, e in enumerate(pca.explained_variance_ratio_)]
-
-
-	# Return
-	return pca
-
-#code for making pca with no metadata
+# Code for making PCA with no metadata
 
 def plotnometa(pca):
+    fig = go.Figure(data=[go.Scatter3d(
+        x=pca.components_[0],
+        y=pca.components_[1],
+        z=pca.components_[2],
+        mode='markers'
+    )])
 
+    # Set the axis labels with variance explained and font size for readability
+    fig.update_layout(
+        scene=dict(
+            xaxis_title=pca.variance_explained[0],
+            yaxis_title=pca.variance_explained[1],
+            zaxis_title=pca.variance_explained[2],
+            xaxis_title_font=dict(size=10),
+            yaxis_title_font=dict(size=10),
+            zaxis_title_font=dict(size=10)
+        )
+    )
 
-	fig = go.Figure(data=[go.Scatter3d(
-	x=pca.components_[0],
-	y=pca.components_[1],
-	z=pca.components_[2],
-	mode='markers'
-)])
-
-	# Set the axis labels
-	fig.update_layout(
-		scene=dict(
-			xaxis_title='PC1',
-			yaxis_title='PC2',
-			zaxis_title='PC3'
-		)
-	)
-
-	return fig
+    return fig
 
 def createpcanometa(gene_count_matrix):
-	dataset = anndata_from_file(gene_count_matrix)
-	dataset = dataset.to_df()
-	dataset = pd.DataFrame(dataset.values)
-	data = run(dataset)
-	fig = plotnometa(data)
+    dataset = anndata_from_file(gene_count_matrix)
+    dataset = dataset.to_df()
+    dataset = pd.DataFrame(dataset.values)
+    data = run(dataset)
+    fig = plotnometa(data)
 
-	return json.loads(fig.to_json())
-
-
+    return json.loads(fig.to_json())
 
 
 
-#code for making pca with metadata
+# Code for making PCA with metadata
 
 def createmetapcagraph(anndata):
     dataset = anndata_from_file(anndata)
@@ -100,16 +99,19 @@ def createmetapcagraph(anndata):
         )
     )])
 
-    # Set the axis labels
+    # Set the axis labels with variance explained and font size for readability
     fig.update_layout(
         scene=dict(
-            xaxis_title='PC1',
-            yaxis_title='PC2',
-            zaxis_title='PC3'
+            xaxis_title=f'({pca.variance_explained[0]})',
+            yaxis_title=f'({pca.variance_explained[1]})',
+            zaxis_title=f'({pca.variance_explained[2]})',
+            xaxis_title_font=dict(size=10),
+            yaxis_title_font=dict(size=10),
+            zaxis_title_font=dict(size=10)
         )
     )
     
-    # Add legend/key
+    # Add legend/key that labels colors as control or perturbation
     fig.update_layout(
         annotations=[
             go.layout.Annotation(

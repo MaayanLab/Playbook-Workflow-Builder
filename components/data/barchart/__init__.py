@@ -9,8 +9,22 @@ def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
     # Calculate p-values from z-scores
     x['pvalue'] = norm.sf(abs(x['zscore'])) * 2
 
-    # Sort by z-score in ascending order and select top 10 unique z-scores
-    x = x.sort_values(by='zscore', ascending=True).drop_duplicates(subset='zscore').head(10)
+    unique_zscores = set()
+    unique_data = []
+
+    for _, row in x.iterrows():
+        zscore = row['zscore']
+        if zscore not in unique_zscores:
+            unique_zscores.add(zscore)
+            unique_data.append(row)
+        
+        if len(unique_data) == 10:
+            break
+
+    x = pd.DataFrame(unique_data)
+
+    # Sort by the absolute values of z-score in descending order
+    x = x.iloc[abs(x['zscore']).argsort()[::-1]]
 
     # Define colors based on p-value significance
     x['bar_color'] = x['pvalue'].apply(lambda pval: 'blue' if pval <= pvalue_threshold else 'grey')
@@ -40,3 +54,4 @@ def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
     fig.update_traces(width=bar_width)
 
     return json.loads(fig.to_json())
+

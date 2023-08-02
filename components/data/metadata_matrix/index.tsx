@@ -52,5 +52,6 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
     'components.data.metadata_matrix.metadata_matrix',
     { kargs: [props.inputs.file] },
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`)
   .build()
 

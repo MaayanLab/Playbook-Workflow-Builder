@@ -7,6 +7,79 @@ import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
+import tsvector, { TSVector } from '@/utils/tsvector'
+
+import publicPlaybooks from '@/app/public/playbooksDemo'
+const playbook_tsvectors: Record<string, TSVector> = {}
+publicPlaybooks.forEach(playbook => {
+  playbook_tsvectors[playbook.id] = tsvector([
+    playbook.label,
+    playbook.description,
+    playbook.published,
+    ...playbook.inputs.flatMap(input => [
+      input.meta.label,
+      input.meta.description,
+    ]),
+    ...playbook.outputs.flatMap(output => [
+      output.meta.label,
+      output.meta.description,
+    ]),
+    ...playbook.dataSources,
+  ].join(' '))
+})
+
+export const PublicPlaybooks = API('/api/v1/public/playbooks')
+  .query(z.object({
+    search: z.string().optional(),
+    inputs: z.string().optional(),
+    outputs: z.string().optional(),
+    dataSources: z.string().optional(),
+    skip: z.number().optional(),
+    limit: z.number().optional(),
+  }))
+  .call(async (props, req, res) => {
+    const search = props.query.search
+    const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
+    const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
+    const dataSources = props.query.dataSources ? props.query.dataSources.split(', ') : undefined
+    const skip = props.query.skip ?? 0
+    const limit = props.query.limit ?? 50
+    let playbooks = publicPlaybooks
+    if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !playbook.inputs.map(t=>t.spec as string).includes(spec)))
+    if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !playbook.outputs.map(t=>t.spec as string).includes(spec)))
+    if (dataSources) playbooks = playbooks.filter(playbook => !dataSources.some(dataSource => !playbook.dataSources.includes(dataSource)))
+    if (search) {
+      const search_tsvector = tsvector(search)
+      const search_scores: Record<string, number> = {}
+      playbooks.forEach(playbook => {
+        search_scores[playbook.id] = playbook_tsvectors[playbook.id]?.intersect(search_tsvector).size
+      })
+      playbooks = playbooks.filter(playbook => search_scores[playbook.id] > 0)
+      playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
+    }
+    playbooks = playbooks.slice(skip, limit)
+    const userPlaybooks = await db.objects.user_playbook.findMany({
+      where: {
+        playbook: {
+          in: playbooks.map(({ id }) => id),
+        },
+      },
+    })
+    const userPlaybookLookup = dict.init(userPlaybooks.map((playbook) => ({ key: playbook.playbook, value: playbook })))
+    const results = playbooks.map(({ inputs, outputs, dataSources, ...playbook }) => {
+      return {
+        ...playbook,
+        inputs: inputs.map(t => t.spec as string).join(', '),
+        outputs: outputs.map(t => t.spec as string).join(', '),
+        dataSources: dataSources.join(', '),
+        clicks: userPlaybookLookup[playbook.id]?.clicks || 0,
+        disabled: userPlaybookLookup[playbook.id] === undefined,
+      }
+    })
+    if (!search) results.sort((a, b) => b.clicks - a.clicks)
+    return results
+  })
+  .build()
 
 export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
   .query(z.object({
@@ -21,12 +94,17 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
     const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
     const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
     const skip = props.query.skip ?? 0
-    const limit = props.query.limit ?? 10
+    const limit = props.query.limit ?? 50
     // TODO: filter in DB
     let playbooks = await db.objects.user_playbook.findMany({
       where: {
         public: true,
       },
+      orderBy: {
+        clicks: 'desc',
+      },
+      skip,
+      take: limit,
     })
     if (search) playbooks = playbooks.filter(playbook =>
       (playbook.title||'').includes(search)
@@ -34,14 +112,14 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
     )
     if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
     if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
-    return playbooks.slice(skip, skip + limit)
+    return playbooks
   })
   .build()
 
 export const UserPlaybooks = API('/api/v1/user/playbooks')
   .query(z.object({
     skip: z.number().optional().transform(v => v ?? 0),
-    limit: z.number().optional().transform(v => v ?? 10),
+    limit: z.number().optional().transform(v => v ?? 50),
   }))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)

@@ -63,6 +63,7 @@ export const SomeFileOp = MetaNode('SomeFileOp')
     const file = await fileFromStream(res.body, `derived.${props.inputs.file.filename}`)
     return file
   })
+  .story(props => `The performed some operation on the file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''}.`)
   .build()
 ```
 
@@ -88,6 +89,7 @@ MetaNode('MyProcess')
       },
     })
   })
+  //...
 ```
 
 ## How can I add new icons to include in my components?
@@ -112,3 +114,7 @@ Note that the `Icon` type can be a list, the `<Icon>` react component in `app/co
 ## Something in my development environment isn't working
 
 We've Dockerized our dev environment, so if all else fails you should be able to use that given that you have `Docker` and `docker-compose` installed. It can be used with `docker-compose run dev`, in that shell you can execute any commands that weren't working.
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

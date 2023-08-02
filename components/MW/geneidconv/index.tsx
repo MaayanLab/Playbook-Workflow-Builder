@@ -1,8 +1,8 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
-import { ConvertedGeneID } from '../ConvertedGeneID'
-import { uniqJsonSubset } from '../ConvertedGeneID'
+import { ConvertedGeneID } from '@/components/MW/ConvertedGeneID'
+import { uniqJsonSubset } from '@/components/MW/ConvertedGeneID'
 import { metabolomicsworkbench_icon } from '@/icons'
 
 // A unique name for your resolver is used here
@@ -69,7 +69,7 @@ export const GeneSetIDConv = MetaNode('GeneSetIDConv')
     return res
   })
   .story(props =>
-    `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [REF].`
+    `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
   )
   .build()
 
@@ -85,4 +85,7 @@ export const ConvertedGeneID2GeneInfo = MetaNode('ConvertedGeneID2GeneInfo')
   .resolve(async (props) => {
     return uniqJsonSubset(props.inputs.data)[0].SYMBOL;
   })
+  .story(props =>
+    `The official gene symbol${props.output ? ` ${props.output}` : ''} was resolved.`
+  )
   .build()

@@ -68,7 +68,7 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
       return new Resolved(instanceProcess, undefined)
     } else {
       console.error(e)
-      return new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString())))
+      return new Resolved(instanceProcess, new Data('Error', (e as Error).toString()))
     }
   }
 }

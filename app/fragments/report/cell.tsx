@@ -10,10 +10,11 @@ import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: { krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
-  const processNode = krg.getProcessNode(head.process.type)
-  const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput(krg, head)
+export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
+  const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput({ session_id, krg, head })
   const View = outputNode ? outputNode.view : undefined
+  const processNode = krg.getProcessNode(head.process.type)
+  if (!processNode) return <div className="alert alert-error">Error: {head.process.type} does not exist</div>
   return (
     <>
       {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
@@ -36,7 +37,7 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
           </div>
         </div>
         <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !cellMetadata[head.id].process_visible })}>
-          <Link href={`/graph/${id}/node/${head.id}`}>
+          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} />
             </button>
@@ -46,6 +47,7 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
       <div className="flex-grow flex-shrink items-center overflow-auto bp4-card p-0">
         {'prompt' in processNode ?
           <Prompt
+            session_id={session_id}
             id={id}
             krg={krg}
             head={head}
@@ -63,12 +65,12 @@ export default function Cell({ krg, id, head, cellMetadata, setCellMetadata }: {
           </div>
         </div>}
         <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !cellMetadata[head.id].data_visible })}>
-          <Link href={`/graph/${id}/node/${head.id}`}>
+          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
-          <Link href={`/graph/${id}/node/${head.id}/extend`}>
+          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}/extend`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>

@@ -9,8 +9,8 @@ export default function SaveButton({ userPlaybook, toggleSave, updateRequired }:
   toggleSave: () => void,
   updateRequired: boolean,
 }) {
-  const session = useSessionWithId()
-  const disabled = !session.data?.user
+  const userSession = useSessionWithId()
+  const disabled = !userSession.data?.user
   return (
     <>
       <button

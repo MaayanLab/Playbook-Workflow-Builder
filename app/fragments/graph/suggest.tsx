@@ -63,7 +63,8 @@ export function SuggestionEdges(input?: DataMetaNode) {
         })
         .inputs()
         .output(Suggestion)
-        .prompt((props) => <></>)
+        .prompt(props => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
   }
@@ -78,6 +79,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
     suggestion_edges.push(
@@ -90,6 +92,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
         .inputs({ input })
         .output(Suggestion)
         .prompt((props) => <></>)
+        .story(props => ``)
         .build() as ProcessMetaNode
     )
   }
@@ -101,16 +104,16 @@ export function SuggestionEdges(input?: DataMetaNode) {
   }))
 }
 
-export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
+export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
-  const { data: session } = useSessionWithId({ required: true })
+  const { data: userSession } = useSessionWithId({ required: true })
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined
   const [suggestion, setSuggestion] = React.useState({
     name: '',
     inputs: input ? input.spec as string : '',
     output: '',
-    user: session?.user?.id,
+    user: userSession?.user?.id,
     description: '',
   })
   return (
@@ -245,7 +248,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
               pagerank: -100,
             })
             .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
-            ({ key: ind.toString(), value: krg.getDataNode(spec) }))))
+            ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
             .output(OutputNode)
             .prompt((props) => {
               return <div>
@@ -253,6 +256,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
                 <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
               </div>
             })
+            .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)
             .build()
           krg.add(ProcessNode)
           // extend using those nodes

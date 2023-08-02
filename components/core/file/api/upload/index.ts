@@ -36,14 +36,14 @@ export async function fileFromStream(reader_: Readable | ReadableStream<Uint8Arr
 
 export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>
 
-export async function uploadFile(file: { url: string, size: number, sha256?: string, filename: string }, session?: SessionWithId) {
-  if (!file.sha256) {
+export async function uploadFile(file: { url: string, size?: number, sha256?: string, filename: string }, session?: SessionWithId) {
+  if (!file.sha256 || !file.size) {
     const stats = await statsFromStream(await fileAsStream(file))
     file.sha256 = stats.sha256
-    if (file.size !== stats.size) {
-      file.size = stats.size
+    if (file.size !== undefined && file.size !== stats.size) {
       console.warn('mismatched filesize')
     }
+    file.size = stats.size
   }
   // TODO: store it in fsspec
   const upload = await db.objects.upload.upsert({

@@ -15,10 +15,12 @@
     "next-auth": "^4.19.2",
     "nodemailer": "^6.8.0",
     "prismjs": "^1.29.0",
-    "react-markdown": "^8.0.6",
     "raw-body": "^2.5.2",
+    "react-markdown": "^8.0.6",
     "react-masonry-css": "^1.0.16",
     "react-simple-code-editor": "^0.13.1",
+    "socket.io": "^4.6.2",
+    "socket.io-client": "^4.6.2",
     "use-async-effect": "^2.2.7",
     "uuid": "^9.0.0"
   },

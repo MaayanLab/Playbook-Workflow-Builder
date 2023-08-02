@@ -43,7 +43,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             <div className="hidden lg:flex">
               <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
               <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Explore Components</button></Link>
-              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank"><button className="btn btn-ghost">Contribute</button></a>
+              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -66,11 +66,12 @@ export default function Layout({ children }: React.PropsWithChildren) {
         <div className="grid grid-flow-row md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 justify-items-center items-center text-center mb-2">
           <div className="flex flex-col grid-cols-1">
             <a className="prose prose-sm" href="mailto:avi.maayan@mssm.edu">Contact Us</a>
-            <a className="prose prose-sm" href="https://github.com/nih-cfde/playbook-partnership/blob/master/LICENSE" target="_blank">Usage License</a>
+            <a className="prose prose-sm" href="https://github.com/nih-cfde/playbook-partnership/blob/main/LICENSE" target="_blank">Usage License</a>
+            <a className="prose prose-sm" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank">Contribute</a>
           </div>
           <div className="grid-cols-1">
             <a href="https://www.nih-cfde.org/" target="_blank">
-              <img className="rounded h-20" src={`${publicUrl}/logos/CFDE.png`} />
+              <img className="rounded h-20 dark:bg-white" src={`${publicUrl}/logos/CFDE.png`} />
             </a>
           </div>
           <div className="flex flex-col grid-cols-1 gap-1">
@@ -98,7 +99,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
           </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
           <li><Link href="/explore">Explore Components</Link></li>
-          <li><a href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank">Contribute</a></li>
+          <li><a href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
           <li className="menu-title">
             <span>Account</span>
           </li>

@@ -55,7 +55,7 @@ export const AnnDataFromFile = MetaNode('AnnDataFromFile')
     { kargs: [props.inputs.file] },
   ))
   .story(props =>
-    `The file was parsed as an anndata matrix.`
+    `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`
   )
   .build()
 
@@ -72,6 +72,6 @@ export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFrom
     { kargs: [props.inputs.gene_count_matrix, props.inputs.metadata_matrix] },
   ))
   .story(props =>
-    `An AnnData file was prepared from the input data and metadata.`
+    `An AnnData file was prepared from the input data${props.inputs && props.inputs.gene_count_matrix.description ? ` containing ${props.inputs.gene_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`
   )
   .build()

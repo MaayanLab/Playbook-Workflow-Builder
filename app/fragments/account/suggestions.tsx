@@ -30,17 +30,20 @@ export default function Suggestions() {
           <table className="table table-compact w-full text-black dark:text-white">
             <thead>
               <tr>
+                <th></th>
                 <th>Title</th>
                 <th>Inputs</th>
                 <th>Output</th>
                 <th>Timestamp</th>
                 <th>Actions</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {suggestions.length === 0 ? <tr><td colSpan={5} align="center">No suggestions registered</td></tr> : null}
+              {suggestions.length === 0 ? <tr><td colSpan={7} align="center">No suggestions registered</td></tr> : null}
               {suggestions.map(suggest => (
                 <tr key={suggest.id}>
+                  <td></td>
                   <td>{suggest.name}</td>
                   <td>{suggest.inputs}</td>
                   <td>{suggest.output}</td>
@@ -65,9 +68,10 @@ export default function Suggestions() {
                       <Icon icon={delete_icon} className="fill-black dark:fill-white" />
                     </button>
                   </td>
+                  <td></td>
                 </tr>
               ))}
-              <tr><td colSpan={5} align="center">
+              <tr><td colSpan={7} align="center">
                 <Link href="/graph/start/node/start/suggest"><button className="btn btn-primary btn-sm">Suggest a core data type</button></Link>
               </td></tr>
             </tbody>

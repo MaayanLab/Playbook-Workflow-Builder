@@ -31,6 +31,12 @@
     "**/*.ts",
     "**/*.tsx"
   ],
+  "ts-node": {
+    "require": [
+      "esm",
+      "tsconfig-paths/register"
+    ]
+  },
   "exclude": [
     "node_modules"
   ]

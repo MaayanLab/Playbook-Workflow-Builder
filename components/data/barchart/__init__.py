@@ -40,5 +40,3 @@ def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
     fig.update_traces(width=bar_width)
 
     return json.loads(fig.to_json())
-
-

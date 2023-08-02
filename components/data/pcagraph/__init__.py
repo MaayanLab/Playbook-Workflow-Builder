@@ -102,9 +102,9 @@ def createmetapcagraph(anndata):
     # Set the axis labels with variance explained and font size for readability
     fig.update_layout(
         scene=dict(
-            xaxis_title=f'({pca.variance_explained[0]})',
-            yaxis_title=f'({pca.variance_explained[1]})',
-            zaxis_title=f'({pca.variance_explained[2]})',
+            xaxis_title=pca.variance_explained[0],
+            yaxis_title=pca.variance_explained[1],
+            zaxis_title=pca.variance_explained[2],
             xaxis_title_font=dict(size=10),
             yaxis_title_font=dict(size=10),
             zaxis_title_font=dict(size=10)

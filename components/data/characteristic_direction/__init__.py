@@ -1,8 +1,8 @@
 from components.data.gene_count_matrix import anndata_from_file
-from components.data.metadata_matrix import metadata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
-from maayanlab_bioinformatics.dge import characteristic_direction, logfc_differential_expression
+from maayanlab_bioinformatics.dge import characteristic_direction
+from maayanlab_bioinformatics.dge import logfc_differential_expression
 import pandas as pd
 import scipy.stats
 

@@ -41,6 +41,8 @@ export * from "./core/input/tumor"
 components.push("core/input/tumor")
 export * from "./data/anndata"
 components.push("data/anndata")
+export * from "./data/barchart"
+components.push("data/barchart")
 export * from "./data/characteristic_direction"
 components.push("data/characteristic_direction")
 export * from "./data/drug_matrix_transpose"
@@ -51,12 +53,16 @@ export * from "./data/gene_matrix_transpose"
 components.push("data/gene_matrix_transpose")
 export * from "./data/gene_signature"
 components.push("data/gene_signature")
+export * from "./data/label"
+components.push("data/label")
 export * from "./data/librarysize"
 components.push("data/librarysize")
 export * from "./data/limma_voom"
 components.push("data/limma_voom")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
+export * from "./data/manual_labelling"
+components.push("data/manual_labelling")
 export * from "./data/metadata_matrix"
 components.push("data/metadata_matrix")
 export * from "./data/pca_transformation"

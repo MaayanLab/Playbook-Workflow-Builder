@@ -6,6 +6,7 @@ import { VariantSet } from '@/components/core/input/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
+import internal from 'stream'
 
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),
@@ -26,7 +27,7 @@ const AlleleRegistryExternalSourcesInfoC = z.array(
       id: z.string()
     }))
   })
-).optional();
+).nullable();
 export type AlleleRegistryExternalSourcesInfo = z.infer<typeof AlleleRegistryExternalSourcesInfoC>
 
 
@@ -134,6 +135,85 @@ const HG38GeneAssociationsSetC = z.array(
   })
 )
 
+const GenomeNetworkAlleleObjReponse = z.object({
+  '@id':z.string(),
+})
+const GenomeNetworkAlleleArrayReponse = z.array( GenomeNetworkAlleleObjReponse )
+
+function getCaIdFromAlleleRegistryLink(jsonObj: any){
+  //console.log(JSON.stringify(jsonObj));
+
+  let alleleRegistrylink = null;
+  if(Array.isArray(jsonObj)){
+    //console.log("size: "+jsonObj.length);
+    alleleRegistrylink = (jsonObj[0])['@id'];
+  }else{
+    alleleRegistrylink = jsonObj['@id'];
+  }
+  let alleleRegistrylinkArray = alleleRegistrylink.split("/")
+  return alleleRegistrylinkArray[(alleleRegistrylinkArray.length)-1];
+}
+
+async function getGenomeNetworkAlleles_dbSNP(variantIdTerm: string){
+  const res = await fetch(`https://reg.test.genome.network/alleles?dbSNP.rs=${encodeURIComponent(variantIdTerm)}`)
+  let respObj = await res.json();
+  return getCaIdFromAlleleRegistryLink(respObj);
+}
+
+async function getGenomeNetworkAlleles_HGVS(variantIdTerm: string){
+  const res = await fetch(`https://reg.test.genome.network/allele?hgvs=${encodeURIComponent(variantIdTerm)}`)
+  let respObj = await res.json();
+  return getCaIdFromAlleleRegistryLink(respObj);
+}
+
+async function getGenomeNetworkAlleles_ClinVar(variantIdTerm: string){
+  const res = await fetch(`https://reg.test.genome.network/alleles?ClinVar.variationId=${encodeURIComponent(variantIdTerm)}`)
+  let respObj = await res.json();
+  return getCaIdFromAlleleRegistryLink(respObj);
+}
+
+async function getGenomeNetworkAlleles_gnomAD(variantIdTerm: string){
+  const res = await fetch(`https://reg.test.genome.network/alleles?gnomAD.id=${encodeURIComponent(variantIdTerm)}`)
+  let respObj = await res.json();
+  return getCaIdFromAlleleRegistryLink(respObj);
+}
+
+async function getGenomeNetworkAlleles_myVariantInfoHG38(variantIdTerm: string){
+  const res = await fetch(`https://reg.test.genome.network/alleles?MyVariantInfo_hg38.id=${encodeURIComponent(variantIdTerm)}`)
+  let respObj = await res.json();
+  return getCaIdFromAlleleRegistryLink(respObj);
+}
+
+async function resolveVarinatCaID(variantIdTerm: string){
+  var caId_regex = new RegExp("^(CA|ca)[0-9]");
+  var rsId_regex = new RegExp("^(RS|rs)[0-9]");
+  var hgvs_regex = new RegExp("^NM_|XM_[0-9]\.[0-9]:$");
+  var clinvar_regex = new RegExp("^[0-9]+$");
+  var gnomAD_regex = new RegExp("[0-9]*-[0-9]*-[A-Za-z]*-[A-Za-z]*");
+  var myVariantInfoHG38_regex = new RegExp("chr[0-9]*:[a-z]\.[0-9]*[A-Za-z]*");
+
+  if(caId_regex.test(variantIdTerm)){
+    return variantIdTerm;
+  }else if(rsId_regex.test(variantIdTerm)){
+    console.log("dbSNP (RsId)");
+    return await getGenomeNetworkAlleles_dbSNP(variantIdTerm.slice(2));
+  }else if(hgvs_regex.test(variantIdTerm)){
+    console.log("HGVS");
+    return await getGenomeNetworkAlleles_HGVS(variantIdTerm);
+  }else if(clinvar_regex.test(variantIdTerm)){
+    console.log("ClinVar");
+    return await getGenomeNetworkAlleles_ClinVar(variantIdTerm);
+  }else if(gnomAD_regex.test(variantIdTerm)){
+    console.log("gnomAD");
+    return await getGenomeNetworkAlleles_gnomAD(variantIdTerm);
+  }else if(myVariantInfoHG38_regex.test(variantIdTerm)){
+    console.log("myGenomeHG38");
+    return await getGenomeNetworkAlleles_myVariantInfoHG38(variantIdTerm);
+  }else{
+    return variantIdTerm;
+  }
+}
+
 async function getGitDataHubVariantInfo(variantId: string): Promise<GitHubVariantInfo> {
   const res = await fetch(`https://genboree.org/cfde-gene-dev/Variant/id/${encodeURIComponent(variantId)}`)
   return await res.json()
@@ -167,8 +247,10 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   .inputs({ variant: VariantTerm })
   .output(VariantInfo)
   .resolve(async (props) => {
-    const response = await getAlleleRegistryVariantInfo(props.inputs.variant);
-    response.entId = props.inputs.variant;
+    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    console.log("Var CaId: "+varCaId)
+    const response = await getAlleleRegistryVariantInfo(varCaId);
+    response.entId = varCaId;
     return response;
   })
   .build()
@@ -226,8 +308,9 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
   .inputs({ variant: VariantTerm })
   .output(RegulatoryElementTerm)
   .resolve(async (props) => {
-    //const response = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
-    const response = await getGitDataHubVariantInfo( props.inputs.variant);
+    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    console.log("Var CaId: "+varCaId)
+    const response = await getGitDataHubVariantInfo(varCaId);
     if(response.data.ldFor.RegulatoryElement != null && response.data.ldFor.RegulatoryElement.length == 1){
       return response.data.ldFor.RegulatoryElement[0].entId;
     }
@@ -317,8 +400,9 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
   .inputs({ variant: VariantTerm })
   .output(AlleleSpecificEvidencesTable)
   .resolve(async (props) => {
-    //let response = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
-    const response = await getGitDataHubVariantInfo( props.inputs.variant);
+    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    console.log("Var CaId: "+varCaId)
+    const response = await getGitDataHubVariantInfo(varCaId);
 
     var alleleSpecificEvidence: any = [];
 
@@ -430,8 +514,9 @@ export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDa
   .inputs({ variant: VariantTerm })
   .output(xQTL_EvidenceDataTable)
   .resolve(async (props) => {
-    //const reponse = await getGitDataHubVariantInfo(props.inputs.variantInfo.entId);
-    let response = await getGitDataHubVariantInfo(props.inputs.variant);
+    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    console.log("Var CaId: "+varCaId)
+    let response = await getGitDataHubVariantInfo(varCaId);
 
     let xqtlEvidences = response.data.ld.xqtlEvidence;
       for(let e in xqtlEvidences){
@@ -462,21 +547,21 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     return (
       <Table
         height={500}
-        cellRendererDependencies={[AlleleRegistryExternalSourcesList]}
-        numRows={AlleleRegistryExternalSourcesList.length}
+        cellRendererDependencies={[sourcesList]}
+        numRows={sourcesList.length}
         enableGhostCells
         enableFocusedCell
       >
         <Column
           name="External Resource Name"
-          cellRenderer={row => <Cell key={row+''}>{AlleleRegistryExternalSourcesList[row].name}</Cell>}
+          cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
         />
         <Column
           name="Resource Id"
           cellRenderer={row =>
           <Cell  key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {AlleleRegistryExternalSourcesList[row].sources.map(sources =>
+                  {sourcesList[row].sources.map(sources =>
                       <tr><td>{ sources.id }</td></tr>
                   )}
               </table>
@@ -487,7 +572,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
           cellRenderer={row =>
           <Cell  key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                    {AlleleRegistryExternalSourcesList[row].sources.map(sources =>
+                    {sourcesList[row].sources.map(sources =>
                         <tr><td><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td></tr>
                     )}
               </table>
@@ -536,8 +621,10 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   .inputs({ variant: VariantTerm  })
   .output(AlleleRegistryExternalRecordsTable)
   .resolve(async (props) => {
-    let variantInfoObj: any = await getAlleleRegistryVariantInfo(props.inputs.variant);
-    let reponse: AlleleRegistryExternalSourcesInfo;
+    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    console.log("Var CaId: "+varCaId)
+    let variantInfoObj: any = await getAlleleRegistryVariantInfo(varCaId);
+    let reponse = null;
     if(variantInfoObj['externalRecords'] != null){
       reponse = processExternalRecords(variantInfoObj);
     }

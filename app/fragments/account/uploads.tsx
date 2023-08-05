@@ -99,7 +99,10 @@ export default function Uploads() {
                     body: JSON.stringify({
                       type: FileInput.spec,
                       inputs: {},
-                      data: { type: FileURL.spec, },
+                      data: {
+                        type: FileURL.spec,
+                        value: null,
+                      },
                     })
                   })
                   const res = z.string().parse(await req.json())

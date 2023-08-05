@@ -39,14 +39,6 @@ export default function Uploads() {
   return (
     <>
       <h3 className="bp4-heading">Uploads</h3>
-      <div className="hero">
-        <div className="hero-content text-center">
-          <div className="max-w-md">
-            <h1 className="text-5xl font-bold prose">Work In Progress</h1>
-            <p className="py-6 prose">This feature is still in development. Uploads may not be persistent.</p>
-          </div>
-        </div>
-      </div>
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">

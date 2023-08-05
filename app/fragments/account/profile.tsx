@@ -52,7 +52,7 @@ export default function Profile({ session }: { session: SessionWithId }) {
                 type="email"
                 placeholder="Email"
                 readOnly
-                value={session.user.email || ''}
+                value={session.user?.email || ''}
                 leftIcon="envelope"
               />
             </Bp4ControlGroup>

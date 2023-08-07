@@ -11,6 +11,7 @@ import { Metapath } from '../metapath'
 const SaveButton = dynamic(() => import('@/app/fragments/report/save-button'))
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
+const DownloadButton = dynamic(() => import('@/app/fragments/report/download-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -131,6 +132,9 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
           <LinkButton
             id={id}
             disabled={!userPlaybook}
+          />
+          <DownloadButton
+            id={id}
           />
         </div>
       </div>

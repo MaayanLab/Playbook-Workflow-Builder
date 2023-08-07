@@ -130,37 +130,38 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
-      {session_id ? <SessionStatus session_id={session_id} /> : null}
-      <div className="flex w-auto items-center justify-center">
-        <Breadcrumbs
-          graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}
-          onclick={(_evt, id) => {
-            if (id === 'extend') {
-              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
-            } else {
-              const focus_node_id = id.split(':')[0]
-              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== focus_node_id ? `/node/${focus_node_id}` : ''}`, undefined, { shallow: true })
-            }
-          }}
-        />
-        <CAVATICAButton session_id={session_id} />
-        <RestartButton session_id={session_id} />
-        <ReportButton session_id={session_id} graph_id={graph_id} />
-      </div>
-      <main className="flex-grow flex flex-col">
-        {error ? <div>{error}</div> : null}
-        {suggest ?
-          <Suggest session_id={session_id} krg={krg} id={graph_id} head={head} />
-          : extend ?
-            <Extend session_id={session_id} krg={krg} id={graph_id} head={head} metapath={metapath} />
-            : node_id === 'start' ?
-              <Home />
-              : head ?
-                <StoryProvider session_id={session_id} krg={krg} metapath={metapathToHead(metapath, head)}>
-                  <Cell session_id={session_id} krg={krg} id={graph_id} head={head} autoextend />
-                </StoryProvider>
-                : null}
-      </main>
+      <SessionStatus session_id={session_id}>
+        <div className="flex w-auto items-center justify-center">
+          <Breadcrumbs
+            graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}
+            onclick={(_evt, id) => {
+              if (id === 'extend') {
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
+              } else {
+                const focus_node_id = id.split(':')[0]
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== focus_node_id ? `/node/${focus_node_id}` : ''}`, undefined, { shallow: true })
+              }
+            }}
+          />
+          <CAVATICAButton session_id={session_id} />
+          <RestartButton session_id={session_id} />
+          <ReportButton session_id={session_id} graph_id={graph_id} />
+        </div>
+        <main className="flex-grow flex flex-col">
+          {error ? <div>{error}</div> : null}
+          {suggest ?
+            <Suggest session_id={session_id} krg={krg} id={graph_id} head={head} />
+            : extend ?
+              <Extend session_id={session_id} krg={krg} id={graph_id} head={head} metapath={metapath} />
+              : node_id === 'start' ?
+                <Home />
+                : head ?
+                  <StoryProvider session_id={session_id} krg={krg} metapath={metapathToHead(metapath, head)}>
+                    <Cell session_id={session_id} krg={krg} id={graph_id} head={head} autoextend />
+                  </StoryProvider>
+                  : null}
+        </main>
+      </SessionStatus>
     </>
   )
 }

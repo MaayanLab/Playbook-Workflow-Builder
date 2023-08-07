@@ -2,8 +2,7 @@ import React from 'react'
 import { useAPIQuery } from '@/core/api/client'
 import { UserIntegrationsCAVATICAStatus } from '../api/client'
 
-export default function SessionStatus({ session_id }: { session_id: string }) {
-  const { data: status, error } = useAPIQuery(UserIntegrationsCAVATICAStatus, { session_id }, { refreshInterval: 5 })
+function SessionStatusMessage({ status, error }: { status?: { state: string | null }, error?: any }) {
   if (!status) {
     if (!error) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Waiting for status..</div>
     else return <div className="alert alert-error prose prose-lg max-w-none justify-center">{error.toString()}</div>
@@ -19,4 +18,17 @@ export default function SessionStatus({ session_id }: { session_id: string }) {
   if (status.state === 'EXECUTOR_ERROR') return <div className="alert alert-error prose prose-lg max-w-none justify-center">An error occurred while executing.</div>
   if (status.state === 'COMPLETE') return <div className="alert alert-error prose prose-lg max-w-none justify-center">Session was closed.</div>
   return <div className="alert alert-error prose prose-lg max-w-none justify-center">Status is {status.state}.</div>
+}
+
+export default function SessionStatus({ session_id, children }: React.PropsWithChildren<{ session_id?: string }>) {
+  const { data: status, error } = useAPIQuery(UserIntegrationsCAVATICAStatus, () => session_id ? { session_id } : null, { refreshInterval: 5 })
+  if (!session_id) return <>{children}</>
+  const ready = status?.state === 'CONNECTED'
+  return <>
+    <SessionStatusMessage status={status} error={error} />
+    <div className="relative z-0 h-full w-full">
+      {children}
+      {!ready ? <div className="absolute inset-0 flex bg-gray-200 opacity-80 z-10" /> : null}
+    </div>
+  </>
 }

@@ -1,20 +1,20 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { download_icon } from '@/icons'
+import { export_icon } from '@/icons'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function DownloadButton({ id }: { id: string }) {
+export default function ExportButton({ session_id, id }: { session_id?: string, id: string }) {
   return (
     <a
       className="bp4-button bp4-minimal"
-      href={`/api/db/fpl/${id}/output`}
+      href={`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/output/export`}
       download={`${id}.json`}
     >
       <Icon
-        icon={download_icon}
+        icon={export_icon}
         className={'fill-black dark:fill-white'}
-        title="Download Report"
+        title="Export Workflow"
       />
     </a>
   )

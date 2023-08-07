@@ -16,6 +16,7 @@ const Extend = dynamic(() => import('@/app/fragments/graph/extend'))
 const Suggest = dynamic(() => import('@/app/fragments/graph/suggest'))
 const Cell = dynamic(() => import('@/app/fragments/graph/cell'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
+const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button'))
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -143,6 +144,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
               }
             }}
           />
+          <ImportButton session_id={session_id} />
           <CAVATICAButton session_id={session_id} />
           <RestartButton session_id={session_id} />
           <ReportButton session_id={session_id} graph_id={graph_id} />

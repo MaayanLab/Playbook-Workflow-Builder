@@ -1,11 +1,12 @@
 import fpprg from '@/app/fpprg'
-import { FPL, IdOrPlaybookMetadataC, Process } from '@/core/FPPRG'
+import { DataC, FPL, IdOrPlaybookMetadataC, Process } from '@/core/FPPRG'
 import { z } from 'zod'
 import { IdOrProcessC } from '@/core/FPPRG'
 import { NotFoundError, ResponseCodedError, UnsupportedMethodError } from '@/spec/error'
 import handler from '@/utils/next-rest'
 
 const BodyType = z.object({
+  data: z.record(z.string(), DataC).optional(),
   workflow: z.array(IdOrProcessC),
   metadata: IdOrPlaybookMetadataC.optional(),
 })

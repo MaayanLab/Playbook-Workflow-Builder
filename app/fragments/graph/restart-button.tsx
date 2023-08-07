@@ -13,7 +13,7 @@ export default function RestartButton({ session_id }: { session_id?: string }) {
     setIsOpen(false)
     router.push(`${session_id ? `/session/${session_id}` : ''}/graph/extend`, undefined, { shallow: true })
   }, [router])
-  const disabled = router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
+  const disabled = router.asPath.endsWith('/graph') || router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
   return (
     <>
       <button

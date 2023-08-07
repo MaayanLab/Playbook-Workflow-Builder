@@ -94,7 +94,7 @@ function buildBreadcrumbGraph({
 
 function ReportButton({ session_id, graph_id }: { session_id?: string, graph_id: string }) {
   const router = useRouter()
-  const disabled = router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
+  const disabled = router.asPath.endsWith('/graph') || router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
   return (
     <Link href={`${session_id ? `/session/${session_id}` : ''}/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
       <button className='bp4-button bp4-minimal' disabled={disabled}>

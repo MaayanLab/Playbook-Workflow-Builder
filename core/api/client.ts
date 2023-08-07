@@ -7,20 +7,21 @@ import type { APIRouteInterface } from "@/spec/api"
 
 type FParamO<F> = F extends (param0: infer _P0, param1: infer _P1, opts: infer O) => infer _R ? O : never
 
-export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, query: Q, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWR<O>> = {} as { base?: string } & FParamO<typeof useSWR<O>>) {
-  const key = React.useMemo(() => {
+export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, query: (() => Q | null) | Q, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWR<O>> = {} as { base?: string } & FParamO<typeof useSWR<O>>) {
+  return useSWR(() => {
+    const q = typeof query === 'function' ? (query as (() => Q | null))() : query
+    if (q === null) return null
     let path = route.path
     const searchParams = new URLSearchParams()
-    dict.items(query).forEach(({ key, value }) => {
+    dict.items(q).forEach(({ key, value }) => {
       const m = (new RegExp(`\\[\\.*${key as string}\\]`)).exec(path)
       if (m !== null) path = path.replace(m[0], typeof value === 'string' ? value : JSON.stringify(value))
       else searchParams.append(key as string, typeof value === 'string' ? value : JSON.stringify(value))
     })
     const params = searchParams.toString()
-    if (params) return path + '?' + params
-    else return path
-  }, [route.path, query])
-  return useSWR(`${base ?? ''}${key}`, fetcherGET<O>, opts)
+    const key = params ? path + '?' + params : path
+    return `${base ?? ''}${key}`
+  }, fetcherGET<O>, opts)
 }
 
 export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O, B>, query: Partial<Q> = {}, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>> = {} as { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>>) {

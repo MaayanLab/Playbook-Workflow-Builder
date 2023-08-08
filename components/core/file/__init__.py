@@ -34,6 +34,7 @@ class File(typing.TypedDict):
   filename: str
   description: typing.Optional[str]
   size: int
+  sha256: typing.Optional[str]
 
 class TemporaryFile(dict):
   def __init__(self, suffix='', description=None):
@@ -108,3 +109,51 @@ def file_move(origFile: File, newFile: File):
     *ufs_file_from_url(origFile['url']),
     *ufs_file_from_url(newFile['url']),
   )
+
+def one_or_none(it):
+  try:
+    one = next(it)
+  except StopIteration:
+    return None
+  try:
+    next(it)
+  except StopIteration:
+    return one
+  else:
+    return None
+
+def file_stats_from_url(url: str, chunk_size=8192):
+  import hashlib
+  h = hashlib.sha256()
+  s = 0
+  with file_as_stream(dict(url=url), 'rb') as fr:
+    while True:
+      buf = fr.read(chunk_size)
+      if not buf:
+        break
+      h.update(buf)
+      s += len(buf)
+  return dict(
+    size=s,
+    sha256=h.hexdigest(),
+  )
+
+def file_from_url(url: str):
+  from ufs.utils.url import parse_url, parse_netloc
+  url_parsed = parse_url(url)
+  if url_parsed['proto'] == 'drs':
+    import requests
+    netloc_parsed = parse_netloc(url_parsed)
+    scheme = 'http' if netloc_parsed['port'] else 'https'
+    req = requests.get(f"{scheme}://{netloc_parsed['netloc']}/ga4gh/drs/v1/objects{netloc_parsed['path']}")
+    assert req.ok
+    file_info = req.json()
+    filename = file_info.get('name') or url_parsed['path'].rpartition('/')[-1]
+    sha256 = one_or_none(checksum['checksum'] for checksum in file_info.get('checksums', []) if checksum.get('type') == 'sha-256')
+    if sha256:
+      size = file_info['size']
+      return dict(url=url, filename=filename, size=size, sha256=sha256)
+    else:
+      return dict(url=url, filename=filename, **file_stats_from_url(url))
+  else:
+    return dict(url=url, filename=url_parsed['path'].rpartition('/')[-1], **file_stats_from_url(url))

@@ -89,9 +89,9 @@ def file_as_stream(file: File, *args, **kwargs) -> str:
 @contextlib.contextmanager
 def file_as_path(file: File, *args, **kwargs) -> str:
   from ufs.access.url import ufs_file_from_url
-  from ufs.access.mount import mount
+  from ufs.access.ffuse import ffuse_mount
   ufs, filename = ufs_file_from_url(file['url'], filename=file['filename'])
-  with mount(ufs, readonly=True) as mount_dir:
+  with ffuse_mount(ufs, readonly=True) as mount_dir:
     yield str(mount_dir / filename)
 
 def file_read_stream(file: File, chunk_size=8192):

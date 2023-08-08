@@ -3,6 +3,8 @@
  * We use {key, value} "Item" objects instead of tuples for improved compatibility with typescript.
  */
 
+import type { IncomingHttpHeaders } from "http"
+
 /**
  * Python style list of tuples => object
  */
@@ -80,4 +82,16 @@ export function sortedValues<T extends {}>(dict: T): Array<T[keyof T]> {
  */
 export function sortedItems<T extends {}>(dict: T) {
   return sortedKeys(dict).map((key) => ({ key, value: dict[key] }))
+}
+
+export function fromHeaders(headers: Headers) {
+  const dict: Record<string, string> = {}
+  headers.forEach((value, key) => {
+    dict[key] = value
+  })
+  return dict
+}
+
+export function fromIncomingHeaders(headers: IncomingHttpHeaders) {
+  return init(items(headers))
 }

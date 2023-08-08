@@ -28,6 +28,9 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
           output={output}
           submit={async (output) => {
             const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
+              headers: {
+                'Content-Type': 'application/json',
+              },
               method: 'POST',
               body: JSON.stringify({
                 type: head.process.type,

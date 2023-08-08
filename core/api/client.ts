@@ -35,6 +35,19 @@ export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O
     })
     const params = searchParams.toString()
     if (params) path = path + '?' + params
-    return fetcher<O>(`${base ?? ''}${path}`, { method: 'POST', body: typeof arg.body === 'undefined' ? undefined : arg.body instanceof FormData ? arg.body : JSON.stringify(arg.body) })
+    if (arg.body instanceof FormData) {
+      return fetcher<O>(`${base ?? ''}${path}`, {
+        method: 'POST',
+        body: arg.body,
+      })
+    } else {
+      return fetcher<O>(`${base ?? ''}${path}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: arg.body === !undefined ? JSON.stringify(arg.body) : undefined
+      })
+    }
   }, opts)
 }

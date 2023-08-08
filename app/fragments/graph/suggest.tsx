@@ -222,6 +222,9 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
           }
           // register the suggestion
           const kvReq = await fetch(`/api/suggest/`, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
             method: 'POST',
             body: JSON.stringify(suggestion_final)
           })
@@ -267,6 +270,9 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
             }
           }
           const extendReq = await fetch(`/api/db/fpl/${id}/extend`, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
             method: 'POST',
             body: JSON.stringify({
               type: ProcessNode.spec,

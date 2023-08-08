@@ -4,15 +4,14 @@ import * as Auth from 'next-auth/react'
 import useSWRMutation from 'swr/mutation'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'
+import { fetcherPOST } from '@/utils/next-rest-fetcher'
 
 const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
-const poster = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
-
 function DeleteAccount({ session }: { session: SessionWithId }) {
   const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
-  const { trigger: deleteUser, isMutating } = useSWRMutation('/api/db/user/delete', poster)
+  const { trigger: deleteUser, isMutating } = useSWRMutation('/api/db/user/delete', fetcherPOST)
   return (
     <>
       <h3 className="bp4-heading text-red-600">Delete Account</h3>

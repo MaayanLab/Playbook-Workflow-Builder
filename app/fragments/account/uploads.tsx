@@ -4,7 +4,7 @@ import useSWRMutation from 'swr/mutation'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import useSWR from 'swr'
-import fetcher from '@/utils/next-rest-fetcher'
+import fetcher, { fetcherPOST } from '@/utils/next-rest-fetcher'
 import * as schema from '@/db'
 import type { TypedSchemaRecord } from '@/spec/sql'
 import { FileInput, FileURL } from '@/components/core/file'
@@ -13,8 +13,6 @@ import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
-
-const deleter = (endpoint: string, { arg }: { arg: any }) => fetch(`${endpoint}/${arg}/delete`, { method: 'POST' }).then(res => res.json())
 
 function humanSize(size: number) {
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -35,7 +33,7 @@ export default function Uploads() {
   const router = useRouter()
   const { data: uploads, isLoading } = useSWR<Array<TypedSchemaRecord<typeof schema.user_upload_complete>>>('/api/db/user/uploads', fetcher)
   const [uploadToDelete, setUploadToDelete] = React.useState<TypedSchemaRecord<typeof schema.user_upload_complete> | undefined>(undefined)
-  const { trigger: deleteUpload, isMutating } = useSWRMutation('/api/db/user/uploads', deleter)
+  const { trigger: deleteUpload, isMutating } = useSWRMutation(() => uploadToDelete ? `/api/db/user/uploads/${uploadToDelete.id}/delete` : null, fetcherPOST)
   return (
     <>
       <h3 className="bp4-heading">Uploads</h3>
@@ -68,6 +66,9 @@ export default function Uploads() {
                   <td className="flex flex-row">
                     <button onClick={async () => {
                       const req = await fetch(`/api/db/fpl/start/extend`, {
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
                         method: 'POST',
                         body: JSON.stringify({
                           type: FileInput.spec,
@@ -95,6 +96,9 @@ export default function Uploads() {
               <tr><td colSpan={8} align="center">
                 <button className="btn btn-primary btn-sm" onClick={async () => {
                   const req = await fetch(`/api/db/fpl/start/extend`, {
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
                     method: 'POST',
                     body: JSON.stringify({
                       type: FileInput.spec,
@@ -124,7 +128,7 @@ export default function Uploads() {
         onCancel={() => {setUploadToDelete(undefined)}}
         onConfirm={() => {
           if (!uploadToDelete) return
-          deleteUpload(uploadToDelete.id, { revalidate: true })
+          deleteUpload(undefined, { revalidate: true })
             .then(() => setUploadToDelete(undefined))
         }}
       >

@@ -25,7 +25,7 @@ export default handler(async (req, res) => {
   } else if (req.method === 'POST') {
     return res.status(200).json(await db.objects.user.update({
       where: { id: session.user.id },
-      data: BodyType.parse(JSON.parse(req.body)),
+      data: BodyType.parse(req.body),
     }))
   } else {
     throw new UnsupportedMethodError()

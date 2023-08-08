@@ -89,6 +89,9 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
                   }
                 })
                 const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/extend`, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
                   method: 'POST',
                   body: JSON.stringify({
                     type: item.spec,

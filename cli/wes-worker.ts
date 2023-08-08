@@ -7,6 +7,7 @@ import next from 'next'
 import path from 'path'
 import conf from '@/app/next.config'
 import { io } from 'socket.io-client'
+import * as dict from '@/utils/dict'
 
 const dir = path.join(path.dirname(__dirname), 'app')
 const dev = process.env.NODE_ENV !== 'production'
@@ -20,18 +21,20 @@ fetch(`${process.argv[2]}/api/socket`).then(() => {
     console.log(`Connected, joining ${process.argv[3]}...`)
     socket.emit('join', process.argv[3])
   })
-  socket.on('http:send', async ({ id, path, method, body }: { id: string, path: string, method: string, body?: any }) => {
-    console.log(JSON.stringify({ handle: { id, path, method, body } }))
+  socket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: any }) => {
+    console.log(JSON.stringify({ handle: { id, path, headers, method, body } }))
+    let responseHeaders: Record<string, string> = {}
     try {
-      const req = await fetch(`http://${hostname}:${port}${path}`, { method, body: body ? body : undefined })
+      const req = await fetch(`http://${hostname}:${port}${path}`, { headers, method, body: body ? body : undefined })
+      responseHeaders = dict.fromHeaders(req.headers)
       const res = await req.text()
       const status = req.status
-      socket.emit(`http:recv`, { id, status, body: res, headers: {} })
+      socket.emit(`http:recv`, { id, status, body: res, headers: responseHeaders })
     } catch (err) {
       const status = 500
       console.warn(err)
       const res = JSON.stringify(err)
-      socket.emit(`http:recv`, { id, status, body: res, headers: {} })
+      socket.emit(`http:recv`, { id, status, body: res, headers: responseHeaders })
     }
   })
   socket.on('close', () => {

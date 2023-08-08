@@ -10,6 +10,25 @@ import tempfile
 import requests
 import contextlib
 
+from ufs.access.url import register_proto_handler
+def Storage():
+  import json
+  from ufs.spec import UFS
+  if 'UFS_STORAGE' in os.environ:
+    return UFS.from_dict(**json.loads(os.environ['UFS_STORAGE']))
+  else:
+    import pathlib
+    from ufs.impl.local import Local
+    from ufs.impl.prefix import Prefix
+    storagePath = pathlib.Path(os.environ.get('PYTHON_ROOT', pathlib.Path.cwd())) / 'data' / 'ufs'
+    storagePath.mkdir(parents=True, exist_ok=True)
+    return Prefix(Local(), storagePath)
+
+@register_proto_handler('storage')
+def proto_storage(url):
+  from ufs.impl.prefix import Prefix
+  return Prefix(Storage(), url['path'])
+
 class File(typing.TypedDict):
   url: str
   filename: str
@@ -74,3 +93,18 @@ def file_as_path(file: File, *args, **kwargs) -> str:
   ufs, filename = ufs_file_from_url(file['url'], filename=file['filename'])
   with mount(ufs, readonly=True) as mount_dir:
     yield str(mount_dir / filename)
+
+def file_read_stream(file: File, chunk_size=8192):
+  with file_as_stream(file, 'rb') as fr:
+    while True:
+      buf = fr.read(chunk_size)
+      if not buf: break
+      yield buf
+
+def file_move(origFile: File, newFile: File):
+  from ufs.access.url import ufs_file_from_url
+  from ufs.access.shutil import movefile
+  movefile(
+    *ufs_file_from_url(origFile['url']),
+    *ufs_file_from_url(newFile['url']),
+  )

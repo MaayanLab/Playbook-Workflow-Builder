@@ -7,6 +7,7 @@ import type { Writable, Readable } from 'stream'
 import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
 import { toReadable } from '@/utils/readable'
 import { fileAsStream } from '@/components/core/file/api/download'
+import python from '@/utils/python'
 
 function statsFromStream(reader: Readable, writer?: Writable) {
   return new Promise<{ sha256: string, size: number }>((resolve, reject) => {
@@ -45,7 +46,16 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
     }
     file.size = stats.size
   }
-  // TODO: store it in fsspec
+  if (file.url.startsWith('file://')) {
+    const origFile = {...file}
+    file.url = `storage://${file.sha256}`
+    python('components.core.file.file_move', {
+      kargs: [
+        origFile,
+        file
+      ],
+    })
+  }
   const upload = await db.objects.upload.upsert({
     where: {
       url: file.url,

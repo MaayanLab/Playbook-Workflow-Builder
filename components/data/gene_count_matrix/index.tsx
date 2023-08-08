@@ -70,6 +70,6 @@ export const Transpose = MetaNode('Transpose')
     { kargs: [props.inputs.file] },
   ))
   .story(props =>
-    `The gene count matrix was then transposed`
+    `The gene count matrix was then transposed.`
   )
   .build()

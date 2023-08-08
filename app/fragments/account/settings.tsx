@@ -30,7 +30,7 @@ function DeleteAccount({ session }: { session: SessionWithId }) {
         canOutsideClickCancel
         onCancel={() => {setDeletionConfirmation(false)}}
         onConfirm={() => {
-          deleteUser(undefined, { revalidate: false })
+          deleteUser()
             .then(() => Auth.signOut({ callbackUrl: '/' }))
         }}
       >

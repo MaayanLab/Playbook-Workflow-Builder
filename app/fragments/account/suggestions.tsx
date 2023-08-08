@@ -16,7 +16,7 @@ const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => A
 
 export default function Suggestions() {
   const router = useRouter()
-  const { data: suggestions, isLoading } = useSWR<Array<TypedSchemaRecord<typeof schema.suggestion>>>('/api/db/user/suggestions', fetcher)
+  const { data: suggestions, isLoading, mutate } = useSWR<Array<TypedSchemaRecord<typeof schema.suggestion>>>('/api/db/user/suggestions', fetcher)
   const [suggestionToDelete, setSuggestionToDelete] = React.useState<TypedSchemaRecord<typeof schema.suggestion> | undefined>(undefined)
   const { trigger: deleteSuggestion, isMutating } = useSWRMutation(() => suggestionToDelete ? `/api/db/user/suggestions/${suggestionToDelete.id}/delete` : null, fetcherPOST)
   return (
@@ -90,8 +90,11 @@ export default function Suggestions() {
         onCancel={() => {setSuggestionToDelete(undefined)}}
         onConfirm={() => {
           if (!suggestionToDelete) return
-          deleteSuggestion(undefined, { revalidate: true })
-            .then(() => setSuggestionToDelete(undefined))
+          deleteSuggestion()
+            .then(() => {
+              mutate(data => data ? data.filter(({ id }) => id !== suggestionToDelete.id) : data)
+              setSuggestionToDelete(undefined)
+            })
         }}
       >
         Are you sure you want to delete {suggestionToDelete?.name} suggestioned at {suggestionToDelete?.created.toString()}?

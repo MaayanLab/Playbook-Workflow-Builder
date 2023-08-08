@@ -31,7 +31,7 @@ function humanSize(size: number) {
 
 export default function Uploads() {
   const router = useRouter()
-  const { data: uploads, isLoading } = useSWR<Array<TypedSchemaRecord<typeof schema.user_upload_complete>>>('/api/db/user/uploads', fetcher)
+  const { data: uploads, isLoading, mutate } = useSWR<Array<TypedSchemaRecord<typeof schema.user_upload_complete>>>('/api/db/user/uploads', fetcher)
   const [uploadToDelete, setUploadToDelete] = React.useState<TypedSchemaRecord<typeof schema.user_upload_complete> | undefined>(undefined)
   const { trigger: deleteUpload, isMutating } = useSWRMutation(() => uploadToDelete ? `/api/db/user/uploads/${uploadToDelete.id}/delete` : null, fetcherPOST)
   return (
@@ -133,8 +133,11 @@ export default function Uploads() {
         onCancel={() => {setUploadToDelete(undefined)}}
         onConfirm={() => {
           if (!uploadToDelete) return
-          deleteUpload(undefined, { revalidate: true })
-            .then(() => setUploadToDelete(undefined))
+          deleteUpload()
+            .then(() => {
+              mutate(data => data ? data.filter(({ id }) => id !== uploadToDelete.id) : data)
+              setUploadToDelete(undefined)
+            })
         }}
       >
         Are you sure you want to delete {uploadToDelete?.filename} uploaded at {uploadToDelete?.created.toString()}?

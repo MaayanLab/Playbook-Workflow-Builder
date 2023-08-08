@@ -61,6 +61,17 @@ export default function Playbooks() {
                 <td></td>
               </tr>
             ))}
+            <tr>
+              <td></td>
+              <td colSpan={7} align="center">
+                <Link href="/graph/extend">
+                  <button className="btn btn-primary btn-sm">
+                    Create a new playbook
+                  </button>
+                </Link>
+              </td>
+              <td></td>
+            </tr>
           </tbody>
         </table>
       </div>

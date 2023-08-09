@@ -31,6 +31,7 @@ process.env.UFS_STORAGE = JSON.stringify({
   },
   "prefix": `/${project}`,
 })
+process.env.N_WORKERS = '50'
 
 console.log(`Connecting to ${url}...`)
 fetch(`${url}/api/socket`).then(() => {

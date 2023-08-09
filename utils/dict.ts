@@ -87,11 +87,21 @@ export function sortedItems<T extends {}>(dict: T) {
 export function fromHeaders(headers: Headers) {
   const dict: Record<string, string> = {}
   headers.forEach((value, key) => {
-    dict[key] = value
+    if ([
+      'accept',
+      'content-type',
+      'authorization',
+    ].includes(key.toLowerCase())) {
+      dict[key] = value
+    }
   })
   return dict
 }
 
 export function fromIncomingHeaders(headers: IncomingHttpHeaders) {
-  return init(items(headers))
+  return init(items(headers).filter(({ key }) => ([
+    'accept' as keyof IncomingHttpHeaders,
+    'content-type' as keyof IncomingHttpHeaders,
+    'authorization' as keyof IncomingHttpHeaders,
+  ].includes(key.toString().toLowerCase()))))
 }

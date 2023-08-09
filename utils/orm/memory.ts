@@ -64,7 +64,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
 
   create = async (create: Create<T>)=> {
     await this.ensureCreate()
-    const data = {...create.data}
+    const data = JSON.parse(JSON.stringify(create.data))
     dict.items(this.table.field_default)
       .forEach(({ key, value: field_default }) => {
         if (typeof field_default === 'function' && (!(key in data) || data[key] === undefined || data[key] === null)) {
@@ -135,7 +135,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     await this.ensureMutate()
     const record = await this.findUnique({ where: update.where })
     if (record === null) return null
-    Object.assign(record, update.data)
+    Object.assign(record, JSON.parse(JSON.stringify(update.data)))
     return record as TypedSchemaRecord<TypedSchema<T>>
   }
   upsert = async (upsert: Upsert<T>) => {

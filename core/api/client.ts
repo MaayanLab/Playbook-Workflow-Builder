@@ -46,7 +46,7 @@ export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O
           'Content-Type': 'application/json',
         },
         method: 'POST',
-        body: arg.body === !undefined ? JSON.stringify(arg.body) : undefined
+        body: arg.body !== undefined ? JSON.stringify(arg.body) : undefined
       })
     }
   }, opts)

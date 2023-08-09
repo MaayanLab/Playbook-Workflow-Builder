@@ -52,7 +52,11 @@ export default function App({ fallback }: { fallback: any }) {
     <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
-          <Cells krg={krg} id={params.id || ''} />
+          <Cells
+            session_id={params?.session_id}
+            krg={krg}
+            id={params.id || ''}
+          />
         </main>
       </SWRConfig>
     </Layout>

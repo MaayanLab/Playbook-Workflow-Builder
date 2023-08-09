@@ -18,7 +18,19 @@ const [_node, _script, config] = process.argv
 const {
   url,
   session_id,
+  auth_token,
+  project,
 } = JSON.parse(config)
+process.env.UFS_STORAGE = JSON.stringify({
+  "cls": "ufs.impl.prefix.Prefix",
+  "ufs": {
+    "cls": "ufs.impl.sbfs.SBFS",
+    "auth_token": auth_token,
+    "api_endpoint": "https://cavatica-api.sbgenomics.com",
+    "ttl": 60,
+  },
+  "prefix": `/${project}`,
+})
 
 console.log(`Connecting to ${url}...`)
 fetch(`${url}/api/socket`).then(() => {

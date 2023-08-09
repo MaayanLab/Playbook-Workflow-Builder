@@ -82,6 +82,8 @@ export async function *run_wes_worker({
       config: JSON.stringify({
         socket,
         session_id,
+        auth_token,
+        project,
       })
     },
     project

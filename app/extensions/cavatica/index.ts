@@ -1,7 +1,7 @@
 import uuid5 from "@/utils/uuid"
 
 const docker_tag = 'maayanlab/playbook-partnership'
-const version = 'c5'
+const version = 'c6'
 const cwl = {
   "cwlVersion": "v1.2",
   "class": "CommandLineTool",
@@ -22,24 +22,14 @@ const cwl = {
   "s:keywords": ["pwb"],
   "inputs": [
     {
-      "id": "socket",
+      "id": "config",
       "inputBinding": {
         "position": 1,
         "separate": true,
         "shellQuote": true
       },
       "type": "string",
-      "label": "Location to send realtime update stream"
-    },
-    {
-      "id": "session_id",
-      "inputBinding": {
-        "position": 2,
-        "separate": true,
-        "shellQuote": true
-      },
-      "type": "string",
-      "label": "Session id"
+      "label": "A JSON serialized configuration object"
     }
   ],
   "outputs": [],
@@ -89,8 +79,10 @@ export async function *run_wes_worker({
   const body = new FormData()
   body.append('workflow_params', new Blob([JSON.stringify({
     inputs: {
-      socket,
-      session_id,
+      config: JSON.stringify({
+        socket,
+        session_id,
+      })
     },
     project
   })], { type: 'application/json' }))

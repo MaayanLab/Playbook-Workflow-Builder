@@ -1,3 +1,3 @@
 #!/bin/sh
 cd /app
-npm run start:wes-worker -- $@
+npm run start:wes-worker -- "$@"

@@ -14,12 +14,18 @@ const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
 const port = 3001
 
-console.log(`Connecting to ${process.argv[2]}...`)
-fetch(`${process.argv[2]}/api/socket`).then(() => {
-  const socket = io(process.argv[2]) // e.g. ws://localhost:3000
+const [_node, _script, config] = process.argv
+const {
+  url,
+  session_id,
+} = JSON.parse(config)
+
+console.log(`Connecting to ${url}...`)
+fetch(`${url}/api/socket`).then(() => {
+  const socket = io(url) // e.g. ws://localhost:3000
   socket.on('connect', () => {
-    console.log(`Connected, joining ${process.argv[3]}...`)
-    socket.emit('join', process.argv[3])
+    console.log(`Connected, joining ${session_id}...`)
+    socket.emit('join', session_id)
   })
   socket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: any }) => {
     console.log(JSON.stringify({ handle: { id, path, headers, method, body } }))

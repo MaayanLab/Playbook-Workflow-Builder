@@ -1,7 +1,7 @@
 import uuid5 from "@/utils/uuid"
 
 const docker_tag = 'maayanlab/playbook-partnership'
-const version = 'c7'
+const version = 'c8'
 const cwl = {
   "cwlVersion": "v1.2",
   "class": "CommandLineTool",
@@ -46,7 +46,7 @@ async function sleep(s: number) {
 }
 
 export async function *run_wes_worker({
-  socket,
+  url,
   session_id,
   auth_token,
   project,
@@ -54,7 +54,7 @@ export async function *run_wes_worker({
   wes_endpoint = 'wes://cavatica-ga4gh-api.sbgenomics.com',
   polling_interval = 5,
 }: {
-  socket: string,
+  url: string,
   session_id: string,
   auth_token: string,
   project: string,
@@ -80,7 +80,7 @@ export async function *run_wes_worker({
   body.append('workflow_params', new Blob([JSON.stringify({
     inputs: {
       config: JSON.stringify({
-        socket,
+        url,
         session_id,
         auth_token,
         project,

@@ -76,9 +76,9 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
       })
       try {
         for await (const status of run_wes_worker({
+          url: process.env.PUBLIC_URL as string,
           auth_token: integrations.cavatica_api_key,
           project: integrations.cavatica_default_project,
-          socket: process.env.PUBLIC_URL as string,
           session_id: proxy_session.id,
         })) {
           await db.objects.proxy_session.update({

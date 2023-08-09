@@ -8,11 +8,11 @@ function SessionStatusMessage({ status, error }: { status?: { state: string | nu
     else return <div className="alert alert-error prose prose-lg max-w-none justify-center">{error.toString()}</div>
   }
   if (!status.state) return <div className="alert alert-info prose prose-lg max-w-none justify-center">Sending job to CAVATICA..</div>
-  if (status.state === 'ERROR') return <div className="alert alert-error prose prose-lg max-w-none justify-center">An error occurred while submitting the task.</div>
-  if (status.state === 'QUEUED') return <div className="alert alert-info prose prose-lg max-w-none justify-center">Task is queued..</div>
-  if (status.state === 'INITIALIZING') return <div className="alert alert-info prose prose-lg max-w-none justify-center">CAVATICA is initializing the task.</div>
-  if (status.state === 'RUNNING') return <div className="alert alert-info prose prose-lg max-w-none justify-center">CAVATICA has started the task, waiting to connect.</div>
-  if (status.state === 'CONNECTED') return <div className="alert alert-success prose prose-lg max-w-none justify-center">All executions are now being sent to CAVATICA worker.</div>
+  if (status.state === 'ERROR') return <div className="alert alert-error prose prose-lg max-w-none justify-center">An error occurred while submitting the task, check your CAVATICA account for details.</div>
+  if (status.state === 'QUEUED') return <div className="alert alert-info prose prose-lg max-w-none justify-center">Task is queued.. if this is taking too long, check your CAVATICA account for details</div>
+  if (status.state === 'INITIALIZING') return <div className="alert alert-info prose prose-lg max-w-none justify-center">CAVATICA is initializing the task, this can take up to 5 minutes.</div>
+  if (status.state === 'RUNNING') return <div className="alert alert-info prose prose-lg max-w-none justify-center">CAVATICA has started the task, waiting to connect, which usually occurs within 2 minutes.</div>
+  if (status.state === 'CONNECTED') return <div className="alert alert-success prose prose-lg max-w-none justify-center">Connected. All executions are now being routed through the CAVATICA worker.</div>
   if (status.state === 'CANCELING') return <div className="alert alert-warning prose prose-lg max-w-none justify-center">Session is being cancelled.</div>
   if (status.state === 'CANCELED') return <div className="alert alert-error prose prose-lg max-w-none justify-center">Session was cancelled.</div>
   if (status.state === 'EXECUTOR_ERROR') return <div className="alert alert-error prose prose-lg max-w-none justify-center">An error occurred while executing.</div>

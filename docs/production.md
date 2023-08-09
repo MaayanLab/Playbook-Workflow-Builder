@@ -25,6 +25,12 @@ While somewhat elaborate, the benefits of using ufs+drs are:
 - file accessibility in distributed scenarios
 - compatibility with cloud workspaces like CAVATICA
 
+## CAVATICA Integration
+
+The way this works is by using WES to start a task in the user's account with their API key. The task runs an in-memory dockerized version of the actual app. Additionally, a websocket connection is made back to the public app acting as a reverse proxy--requests made to `/socket/{session_id}/*` forward the request over the websocket, the worker performs the request and returns the result, allowing the standard front-end to be driven through communications with the backend running on the user's account.
+
+The database used on the worker is an in-memory database rather than the production database. However, files are persisted to & accessed from the user's CAVATICA workspace in realtime over sbfs.
+
 ## Learn More
 
 [Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

@@ -66,7 +66,7 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
     })
     if (!integrations?.cavatica_api_key || !integrations?.cavatica_default_project) throw new ResponseCodedError(402, 'CAVATICA Integration not configured')
     // TODO: spawn with pg-boss
-    const proxy_session = await db.objects.proxy_session.create({ data: {} })
+    const proxy_session = await db.objects.proxy_session.create({ data: { state: '' } })
     ;(async () => {
       emitter.on(`join:${proxy_session.id}`, async () => {
         await db.objects.proxy_session.update({

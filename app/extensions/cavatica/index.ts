@@ -98,6 +98,11 @@ export async function *run_wes_worker({
     headers,
     body,
   })
+  if (!req1.ok) {
+    console.error(`${session_id}: Failed to determine CWL id revision (${req1.status})`)
+    console.error(await req1.text())
+    throw new Error('Failed to submit WES job')
+  }
   const res1 = await req1.json()
   const run_id = res1['run_id']
   yield { run_id, state: null }

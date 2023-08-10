@@ -105,9 +105,18 @@ export async function *run_wes_worker({
   let current_state = null
   while (true) {
     await sleep(polling_interval * (0.5 + Math.random()))
+    let state: string
     const req2 = await fetch(`${wes_url}/v1/runs/${run_id}/status`, { headers, method: 'GET' })
-    const res2 = await req2.json()
-    const state = res2['state'] as string
+    if (!req2.ok) {
+      if (current_state === 'UNKNOWN') {
+        state = 'COMPLETE'
+      } else {
+        state = 'UNKNOWN'
+      }
+    } else {
+      const res2 = await req2.json()
+      state = res2['state']
+    }
     if (current_state != state) {
       current_state = state
       yield { run_id, state }

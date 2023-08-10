@@ -33,18 +33,19 @@ process.env.UFS_STORAGE = JSON.stringify({
 })
 process.env.N_WORKERS = '50'
 
+const ctx = {
+  lastMessage: Date.now(),
+}
+setInterval(() => {
+  if ((Date.now() - ctx.lastMessage) > 2*60*1000) {
+    console.log(`Session expired, exiting...`)
+    process.exit(0)
+  }
+}, 30*1000)
+
 console.log(`Connecting to ${url}...`)
 fetch(`${url}/api/socket`).then(() => {
   const socket = io(url) // e.g. ws://localhost:3000
-  const ctx = {
-    lastMessage: Date.now(),
-  }
-  setInterval(() => {
-    if ((Date.now() - ctx.lastMessage) > 5*60*1000) {
-      console.log(`Session expired, exiting...`)
-      process.exit(0)
-    }
-  }, 60*1000)
   socket.on('connect', () => {
     console.log(`Connected, joining ${session_id}...`)
     socket.emit('join', session_id)

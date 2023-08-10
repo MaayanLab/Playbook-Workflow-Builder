@@ -1,7 +1,7 @@
 import uuid5 from "@/utils/uuid"
 
 const docker_tag = 'maayanlab/playbook-partnership'
-const version = 'c9'
+const version = 'c10'
 const cwl = {
   "cwlVersion": "v1.2",
   "class": "CommandLineTool",

@@ -65,14 +65,15 @@ export async function *run_wes_worker({
   const wes_url = wes_endpoint.replace(/^wes:\/\/(.+)$/, 'https://$1/ga4gh/wes')
   const headers = { 'Accept': 'application/json', 'X-SBG-Auth-Token': auth_token }
   // Step 1: Get the right CWL id revision
-  const req0 = await fetch(`${api_endpoint}/v2/apps/${project}/${cwl['id']}`, { headers })
-  if (req0.status == 404) cwl['id'] = `${cwl['id']}/0`
+  const revised_cwl = {...cwl}
+  const req0 = await fetch(`${api_endpoint}/v2/apps/${project}/${revised_cwl['id']}`, { headers })
+  if (req0.status == 404) revised_cwl['id'] = `${revised_cwl['id']}/0`
   else {
     const res0 = await req0.json()
-    if (uuid5(res0['raw']['hints']) == uuid5(cwl['hints'])) {
-      cwl['id'] = `${cwl['id']}/${res0['revision']}`
+    if (uuid5(res0['raw']['hints']) == uuid5(revised_cwl['hints'])) {
+      revised_cwl['id'] = `${revised_cwl['id']}/${res0['revision']}`
     } else {
-      cwl['id'] = `${cwl['id']}/${res0['revision']+1}`
+      revised_cwl['id'] = `${revised_cwl['id']}/${res0['revision']+1}`
     }
   }
   // Step 2: Submit job to WES
@@ -89,9 +90,9 @@ export async function *run_wes_worker({
     project
   })], { type: 'application/json' }))
   body.append('workflow_url', new Blob(['#/workflow_attachment/0'], { type: 'text/plain' }))
-  body.append('workflow_attachment', new Blob([JSON.stringify(cwl)], { type: 'application/json' }), "pwb-worker.cwl")
+  body.append('workflow_attachment', new Blob([JSON.stringify(revised_cwl)], { type: 'application/json' }), "pwb-worker.cwl")
   body.append('workflow_type', new Blob(['CWL'], { type: 'text/plain' }))
-  body.append('workflow_type_version', new Blob([cwl['cwlVersion']], { type: 'text/plain' }))
+  body.append('workflow_type_version', new Blob([revised_cwl['cwlVersion']], { type: 'text/plain' }))
   const req1 = await fetch(`${wes_url}/v1/runs`, {
     method: 'POST',
     headers,

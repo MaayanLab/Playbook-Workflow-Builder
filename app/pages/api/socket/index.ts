@@ -9,12 +9,13 @@ export default function SocketHandler(req: any, res: any) {
     const io = new Server(res.socket.server)
     res.socket.server.io = io
     io.on('connection', (client) => {
-      console.log(`${client} connected`)
+      console.debug(`${client.id} connected`)
       client.on('join', (id) => {
+        console.debug(`${client.id} joined ${id}`)
         client.join(id)
         emitter.emit(`join:${id}`)
         emitter.on(`close:${id}`, () => {
-          console.log(`${client} disconnected from closing room ${id}`)
+          console.debug(`${client.id} disconnected from ${id}`)
           client.leave(id)
           client.send('close')
         })

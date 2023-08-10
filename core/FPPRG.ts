@@ -351,9 +351,10 @@ export class PlaybookMetadata {
   }
 }
 
+export const DataC = z.object({ type: z.string(), value: z.any() })
 export const IdOrDataC = z.union([
   z.object({ id: z.string() }),
-  z.object({ type: z.string(), value: z.any() }),
+  DataC,
 ])
 export type IdOrData = z.infer<typeof IdOrDataC>
 

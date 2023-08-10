@@ -7,8 +7,8 @@ import Link from 'next/link'
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Playbooks() {
-  const { data: playbooks, mutate: mutatePlaybooks } = useAPIQuery(UserPlaybooks, {}, undefined)
-  const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, {}, undefined)
+  const { data: playbooks, mutate: mutatePlaybooks } = useAPIQuery(UserPlaybooks, {})
+  const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, {})
   return (
     <>
       <h3 className="bp4-heading">Playbooks</h3>
@@ -61,6 +61,17 @@ export default function Playbooks() {
                 <td></td>
               </tr>
             ))}
+            <tr>
+              <td></td>
+              <td colSpan={7} align="center">
+                <Link href="/graph/extend">
+                  <button className="btn btn-primary btn-sm">
+                    Create a new playbook
+                  </button>
+                </Link>
+              </td>
+              <td></td>
+            </tr>
           </tbody>
         </table>
       </div>

@@ -11,10 +11,12 @@ import { Metapath } from '../metapath'
 const SaveButton = dynamic(() => import('@/app/fragments/report/save-button'))
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
 const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
+const ExportButton = dynamic(() => import('@/app/fragments/report/export-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Introduction({ id, userPlaybook, playbookMetadata, setPlaybookMetadata, toggleSave, togglePublic, updateRequired, error }: {
+export default function Introduction({ session_id, id, userPlaybook, playbookMetadata, setPlaybookMetadata, toggleSave, togglePublic, updateRequired, error }: {
+  session_id?: string,
   id: string,
   userPlaybook?: { public: boolean },
   playbookMetadata: Exclude<Metapath['playbook_metadata'], null>, setPlaybookMetadata: React.Dispatch<React.SetStateAction<Exclude<Metapath['playbook_metadata'], null>>>,
@@ -23,7 +25,7 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
   togglePublic: () => void,
   error: any
 }) {
-  const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT()
+  const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT({ session_id })
   const story = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   return (
@@ -92,12 +94,12 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
         </div>
         {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
-          <Link href={`/graph${id ? `/${id}/node/start` : ``}`}>
+          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
-          <Link href={`/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
+          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
             <button className="bp4-button bp4-minimal">
               <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
@@ -130,6 +132,10 @@ export default function Introduction({ id, userPlaybook, playbookMetadata, setPl
           <LinkButton
             id={id}
             disabled={!userPlaybook}
+          />
+          <ExportButton
+            id={id}
+            session_id={session_id}
           />
         </div>
       </div>

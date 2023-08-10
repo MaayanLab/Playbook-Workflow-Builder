@@ -12,7 +12,7 @@ import { components } from '@/components'
 import { create_prefix_tree_from_paths, search_prefix_tree } from '@/utils/prefix_tree'
 import APIRouter from '@/core/api/router'
 import * as dict from '@/utils/dict'
-import * as APIs from '@/app/api'
+import * as APIs from '@/app/api/server'
 
 const api_router = new APIRouter()
 dict.values(APIs).forEach(api => {api_router.add(api)})

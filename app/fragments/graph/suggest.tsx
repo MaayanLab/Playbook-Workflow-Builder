@@ -104,16 +104,16 @@ export function SuggestionEdges(input?: DataMetaNode) {
   }))
 }
 
-export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
+export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
-  const { data: session } = useSessionWithId({ required: true })
+  const { data: userSession } = useSessionWithId({ required: true })
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined
   const [suggestion, setSuggestion] = React.useState({
     name: '',
     inputs: input ? input.spec as string : '',
     output: '',
-    user: session?.user?.id,
+    user: userSession?.user?.id,
     description: '',
   })
   return (
@@ -222,6 +222,9 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
           }
           // register the suggestion
           const kvReq = await fetch(`/api/suggest/`, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
             method: 'POST',
             body: JSON.stringify(suggestion_final)
           })
@@ -267,6 +270,9 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
             }
           }
           const extendReq = await fetch(`/api/db/fpl/${id}/extend`, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
             method: 'POST',
             body: JSON.stringify({
               type: ProcessNode.spec,

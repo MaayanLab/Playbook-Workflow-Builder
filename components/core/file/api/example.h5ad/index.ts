@@ -3,8 +3,7 @@ import { uploadFile } from '@/components/core/file/api/upload'
 import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 
 export const exampleFile = path.resolve(
-  process.cwd(),
-  '..',
+  process.env.APP_ROOT as string,
   'components',
   'core',
   'file',

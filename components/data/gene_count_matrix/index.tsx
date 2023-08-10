@@ -32,7 +32,7 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
           ellipses={props.ellipses}
           shape={props.shape}
           downloads={{
-            'URL': () => downloadUrl(props.url)
+            'URL': () => downloadUrl(props.url, props.filename)
           }}
         />
       </div>
@@ -70,6 +70,6 @@ export const Transpose = MetaNode('Transpose')
     { kargs: [props.inputs.file] },
   ))
   .story(props =>
-    `The gene count matrix was then transposed`
+    `The gene count matrix was then transposed.`
   )
   .build()

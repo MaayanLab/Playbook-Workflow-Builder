@@ -7,6 +7,7 @@ import type { Writable, Readable } from 'stream'
 import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
 import { toReadable } from '@/utils/readable'
 import { fileAsStream } from '@/components/core/file/api/download'
+import python from '@/utils/python'
 
 function statsFromStream(reader: Readable, writer?: Writable) {
   return new Promise<{ sha256: string, size: number }>((resolve, reject) => {
@@ -45,7 +46,16 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
     }
     file.size = stats.size
   }
-  // TODO: store it in fsspec
+  if (file.url.startsWith('file://')) {
+    const origFile = {...file}
+    file.url = `storage://${file.sha256}`
+    python('components.core.file.file_move', {
+      kargs: [
+        origFile,
+        file
+      ],
+    })
+  }
   const upload = await db.objects.upload.upsert({
     where: {
       url: file.url,
@@ -58,7 +68,7 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
     },
   })
   if (session && session.user && (session.user.id !== '00000000-0000-0000-0000-000000000000' || process.env.NODE_ENV === 'development')) {
-    await db.objects.user_upload.upsert({
+    const user_upload = await db.objects.user_upload.upsert({
       where: {
         user: session.user.id,
         upload: upload.id,
@@ -69,6 +79,7 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
         filename: file.filename,
       },
     })
+    return { url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
   }
   return { url: file.url, filename: file.filename, sha256: file.sha256, size: file.size }
 }

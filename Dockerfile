@@ -63,5 +63,6 @@ FROM prepare_system as app
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_build /app /app
+RUN chmod +x /app/cli/wes-worker.sh
 EXPOSE 3000
 CMD ["npm", "run", "start"]

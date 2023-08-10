@@ -4,6 +4,16 @@
  * It is designed to be imported client-side.
  */
 import { APIInterface } from '@/spec/api'
+import type { UserIntegrationsCAVATICA as UserIntegrationsCAVATICA_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICA = APIInterface<typeof UserIntegrationsCAVATICA_>("/api/v1/user/integrations/cavatica", "GET")
+import type { UserIntegrationsCAVATICAUpdate as UserIntegrationsCAVATICAUpdate_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICAUpdate = APIInterface<typeof UserIntegrationsCAVATICAUpdate_>("/api/v1/user/integrations/cavatica/update", "POST")
+import type { UserIntegrationsCAVATICALaunch as UserIntegrationsCAVATICALaunch_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICALaunch = APIInterface<typeof UserIntegrationsCAVATICALaunch_>("/api/v1/user/integrations/cavatica/launch", "POST")
+import type { UserIntegrationsCAVATICAStatus as UserIntegrationsCAVATICAStatus_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICAStatus = APIInterface<typeof UserIntegrationsCAVATICAStatus_>("/api/v1/user/integrations/cavatica/[session_id]/status", "GET")
+import type { UserIntegrationsCAVATICADisconnect as UserIntegrationsCAVATICADisconnect_ } from './v1/user/integrations/cavatica'
+export const UserIntegrationsCAVATICADisconnect = APIInterface<typeof UserIntegrationsCAVATICADisconnect_>("/api/v1/user/integrations/cavatica/[session_id]/disconnect", "POST")
 import type { PublicPlaybooks as PublicPlaybooks_ } from './v1/user/playbooks'
 export const PublicPlaybooks = APIInterface<typeof PublicPlaybooks_>("/api/v1/public/playbooks", "GET")
 import type { PublicUserPlaybooks as PublicUserPlaybooks_ } from './v1/user/playbooks'

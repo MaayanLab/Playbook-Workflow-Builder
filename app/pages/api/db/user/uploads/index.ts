@@ -8,6 +8,9 @@ export default handler(async (req, res) => {
   if (!session || !session.user) throw new UnauthorizedError()
   if (req.method === 'GET') {
     const uploads = await db.objects.user_upload_complete.findMany({ where: { user: session.user.id } })
+    uploads.forEach(upload => {
+      upload.url = `${process.env.NEXT_PUBLIC_URL?.replace(/https?:\/\//, 'drs://')}/${upload.id}`
+    })
     return res.status(200).json(uploads)
   } else {
     throw new UnsupportedMethodError()

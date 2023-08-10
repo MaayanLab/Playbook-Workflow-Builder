@@ -2,6 +2,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import useSWRMutation from 'swr/mutation'
 import { biocompute_icon } from '@/icons'
+import { fetcherPOST } from '@/utils/next-rest-fetcher'
 
 const Bp4Popover = dynamic(() => import('@blueprintjs/popover2').then(({ Popover2 }) => Popover2))
 const Bp4Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
@@ -10,14 +11,8 @@ const Bp4Spinner = dynamic(() => import('@blueprintjs/core').then(({ Spinner }) 
 const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-async function submitBcoDraft(endpoint: string): Promise<{ object_id: string }> {
-  const req = await fetch(endpoint, { method: 'POST' })
-  if (req.status !== 200) throw new Error(await req.json())
-  else return await req.json()
-}
-
-export default function BCOButton({ id, metadata, disabled }: { id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
-  const { trigger, isMutating, error } = useSWRMutation(id ? `/api/bco/${id}/draft` : null, submitBcoDraft)
+export default function BCOButton({ session_id, id, metadata, disabled }: { session_id?: string, id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
+  const { trigger, isMutating, error } = useSWRMutation(id ? `${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}/draft` : null, fetcherPOST<undefined, { object_id: string }>)
   const [isError, setIsError] = React.useState(false)
   React.useEffect(() => {
     if (error) {

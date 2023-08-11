@@ -29,7 +29,7 @@ RUN npm run codegen:requirements \
 
 FROM prepare_src as prepare_build
 COPY --from=prepare_npm_i /app /app
-RUN echo "Building app..." && LANDING_PAGE=/graph/extend npm run build
+RUN echo "Building app..." && LANDING_PAGE=/graph/extend PUBLIC_URL=https://playbook-workflow-builder.cloud npm run build
 
 FROM base as prepare_system
 RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv && rm -rf /var/lib/apt/lists/*

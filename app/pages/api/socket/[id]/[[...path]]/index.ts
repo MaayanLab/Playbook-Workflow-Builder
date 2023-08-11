@@ -2,9 +2,11 @@ import type { Server } from "socket.io"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { randomUUID } from "crypto"
 import getRawBody from 'raw-body'
-import { TimeoutError } from "@/spec/error"
+import { TimeoutError, UnauthorizedError } from "@/spec/error"
 import emitter from "@/app/emitter"
 import * as dict from '@/utils/dict'
+import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
+import db from '@/app/db'
 
 export const config = {
   api: {
@@ -13,6 +15,14 @@ export const config = {
 }
 
 export default async function Forward(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getServerSessionWithId(req, res)
+  if (!session || !session.user) throw new UnauthorizedError()
+  const integrations = await db.objects.user_integrations.findUnique({
+    where: {
+      id: session.user.id
+    }
+  })
+  if (integrations === null || !integrations.cavatica_api_key) throw new UnauthorizedError()
   const room_id = req.query.id as string
   const path = `/${((req.query.path ?? []) as string[]).join('/')}`
   const io = (res as any).socket.server.io as Server
@@ -26,7 +36,10 @@ export default async function Forward(req: NextApiRequest, res: NextApiResponse)
   socket.emit('http:send', {
     id: request_id,
     path,
-    headers: dict.fromIncomingHeaders(req.headers),
+    headers: {
+      'authorization': `Token ${integrations.cavatica_api_key}`,
+      ...dict.fromIncomingHeaders(req.headers)
+    },
     method: req.method,
     body: body ? body : undefined
   })

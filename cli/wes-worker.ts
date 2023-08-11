@@ -32,6 +32,7 @@ process.env.UFS_STORAGE = JSON.stringify({
   "prefix": `/${project}`,
 })
 process.env.N_WORKERS = '50'
+process.env.NEXTAUTH_SECRET = auth_token
 
 const ctx = {
   lastMessage: Date.now(),

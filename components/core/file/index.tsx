@@ -43,14 +43,17 @@ export const FileInput = MetaNode('FileInput')
   .output(FileURL)
   .prompt(props => {
     const [currentFile, setCurrentFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
-    const [tab, setTab] = React.useState<'upload' | 'url'>()
+    const [tab, setTab] = React.useState<'upload' | 'url'>('upload')
     const fileInputRef = React.useRef<HTMLInputElement>(null)
     const { data: session } = useSessionWithId()
     const output = React.useMemo(() => props.output || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.output])
     React.useEffect(() => {
       setCurrentFile(output)
+      if (output && output.url && !output.url.startsWith((process.env.NEXT_PUBLIC_URL as string).replace(/https?:/, 'drs:'))) {
+        // only go to url when the url isn't our DRS server
+        setTab('url')
+      }
     }, [output])
-    const activeTab = tab ? tab : currentFile.url ? 'url' : 'upload'
     return (
       <div>
         {!session || !session.user ? (
@@ -69,7 +72,7 @@ export const FileInput = MetaNode('FileInput')
                   filename: currentFile.filename,
                   size: currentFile.size,
                 })
-              } else if (activeTab === 'upload') {
+              } else if (tab === 'upload') {
                 const formData = new FormData(evt.currentTarget)
                 const rawDescription = formData.get('description')
                 const description = rawDescription === null ? undefined : rawDescription.toString()
@@ -89,17 +92,17 @@ export const FileInput = MetaNode('FileInput')
             <div className="tabs">
               <button
                 type="button"
-                className={classNames("tab tab-bordered", { "tab-active": activeTab === 'upload' })}
+                className={classNames("tab tab-bordered", { "tab-active": tab === 'upload' })}
                 onClick={() => { setTab('upload') }}
               >Upload file</button>
               <button
                 type="button"
-                className={classNames("tab tab-bordered", { "tab-active": activeTab === 'url' })}
+                className={classNames("tab tab-bordered", { "tab-active": tab === 'url' })}
                 onClick={() => { setTab('url') }}
               >File from URL</button>
             </div>
             <div className="h-24 flex flex-col items-stretch justify-center">
-              <div className={classNames({ 'hidden': activeTab !== 'upload' })}>
+              <div className={classNames({ 'hidden': tab !== 'upload' })}>
                 <input
                   ref={fileInputRef}
                   name="file"
@@ -123,7 +126,7 @@ export const FileInput = MetaNode('FileInput')
                   <span className="text-lg">{currentFile.filename||currentFile.url||'No file chosen'}</span>
                 </div>
               </div>
-              <div className={classNames({ 'hidden': activeTab !== 'url' })}>
+              <div className={classNames({ 'hidden': tab !== 'url' })}>
                 <div className="bp4-input-group">
                   <input
                     type="text"

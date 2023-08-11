@@ -105,10 +105,11 @@ def file_read_stream(file: File, chunk_size=8192):
 def file_move(origFile: File, newFile: File):
   from ufs.access.url import ufs_file_from_url
   from ufs.access.shutil import movefile
-  movefile(
-    *ufs_file_from_url(origFile['url']),
-    *ufs_file_from_url(newFile['url']),
-  )
+  orig_ufs, orig_file = ufs_file_from_url(origFile['url'])
+  new_ufs, new_file = ufs_file_from_url(newFile['url'])
+  with orig_ufs:
+    with new_ufs:
+      movefile(orig_ufs, orig_file, new_ufs, new_file)
 
 def one_or_none(it):
   try:

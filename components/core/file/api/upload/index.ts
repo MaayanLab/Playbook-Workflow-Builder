@@ -49,7 +49,7 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
   if (file.url.startsWith('file://')) {
     const origFile = {...file}
     file.url = `storage://${file.sha256}`
-    python('components.core.file.file_move', {
+    await python('components.core.file.file_move', {
       kargs: [
         origFile,
         file

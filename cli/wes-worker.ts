@@ -24,10 +24,13 @@ const {
 process.env.UFS_STORAGE = JSON.stringify({
   "cls": "ufs.impl.prefix.Prefix",
   "ufs": {
-    "cls": "ufs.impl.sbfs.SBFS",
-    "auth_token": auth_token,
-    "api_endpoint": "https://cavatica-api.sbgenomics.com",
-    "ttl": 60,
+    "cls": "ufs.impl.sync.Sync",
+    "ufs": {
+      "cls": "ufs.impl.sbfs.SBFS",
+      "auth_token": auth_token,
+      "api_endpoint": "https://cavatica-api.sbgenomics.com",
+      "ttl": 60,
+    },
   },
   "prefix": `/${project}`,
 })

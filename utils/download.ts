@@ -1,5 +1,5 @@
 export function downloadUrl(url: string, filename?: string) {
-  if (url.startsWith((process.env.NEXT_PUBLIC_URL||'').replace(/^https?:/, 'drs:'))) {
+  if (url.startsWith('drs://localhost:3000') || url.startsWith((process.env.NEXT_PUBLIC_URL||'').replace(/^https?:/, 'drs:'))) {
     const session_match = /^\/session\/([^\/]+)/.exec(window.location.pathname)
     url = url.replace(
       /^drs:\/\/([^\/]+)\/(.+)$/,

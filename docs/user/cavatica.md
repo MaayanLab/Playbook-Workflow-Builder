@@ -29,7 +29,7 @@ Since the CAVATICA worker is blank, it won't have the published playbooks or ind
 
 ## Accessing Files in your CAVATICA Workspace
 
-CAVATICA's files are accessible over DRS from the CAVATICA environment, but only with your authentication token. The file ID which is visible on the URL of a file in CAVATICA, is the same id which you can use to access it with DRS from: `drs://cavatica-ga4gh-api.sbgenomics.com/{file_id}`.
+CAVATICA's files are accessible over DRS from the CAVATICA environment, but only with your authentication token. The file ID which is visible on the URL of a file in CAVATICA, is the same id which you can use to access it with DRS from: `drs://cavatica-ga4gh-api.sbgenomics.com/{file_id}#?headers={"X-SBG-Auth-Token":"{cavatica_api_key}"}`.
 
 ![A screenshot showing the CAVATICA File ID](./figures/cavatica/04-cavatica-file-id.png)  
 **Figure 4.** A screenshot showing the CAVATICA File ID.

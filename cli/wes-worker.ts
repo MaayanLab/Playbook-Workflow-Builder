@@ -54,12 +54,12 @@ fetch(`${url}/api/socket`).then(() => {
     console.log(`Connected, joining ${session_id}...`)
     socket.emit('join', session_id)
   })
-  socket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: any }) => {
-    console.log(JSON.stringify({ handle: { id, path, headers, method, body } }))
+  socket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: string }) => {
+    console.log(JSON.stringify({ handle: { id, path, headers, method } }))
     ctx.lastMessage = Date.now()
     let responseHeaders: Record<string, string> = {}
     try {
-      const req = await fetch(`http://${hostname}:${port}${path}`, { headers, method, body: body ? body : undefined })
+      const req = await fetch(`http://${hostname}:${port}${path}`, { headers, method, body: body ? Buffer.from(body, 'base64') : undefined })
       responseHeaders = dict.fromHeaders(req.headers)
       const res = await req.text()
       const status = req.status

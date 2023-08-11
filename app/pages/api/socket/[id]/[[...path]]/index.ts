@@ -27,7 +27,7 @@ export default async function Forward(req: NextApiRequest, res: NextApiResponse)
   const path = `/${((req.query.path ?? []) as string[]).join('/')}`
   const io = (res as any).socket.server.io as Server
   const request_id = randomUUID()
-  const body = (await getRawBody(req)).toString()
+  const body = ['HEAD', 'GET'].includes(req.method ?? '') ? undefined : (await getRawBody(req)).toString('base64')
   const [socket, ..._] = await io.to(room_id).fetchSockets()
   const proxyReq = new Promise<{ status: number, body?: string, headers: Record<string, string> }>((resolve, reject) => {
     emitter.once(`http:recv:${request_id}`, (r) => resolve(r))
@@ -41,7 +41,7 @@ export default async function Forward(req: NextApiRequest, res: NextApiResponse)
       ...dict.fromIncomingHeaders(req.headers)
     },
     method: req.method,
-    body: body ? body : undefined
+    body: body,
   })
   try {
     const proxyRes = await proxyReq

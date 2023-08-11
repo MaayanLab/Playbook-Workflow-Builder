@@ -27,6 +27,23 @@ Since the CAVATICA worker is blank, it won't have the published playbooks or ind
 ![A screenshot showing how to use the export & import features](./figures/cavatica/03-export-import.png)  
 **Figure 3.** A screenshot showing how to use the export & import features.
 
+## Accessing Files in your CAVATICA Workspace
+
+CAVATICA's files are accessible over DRS from the CAVATICA environment. The file ID which is visible on the URL of a file in CAVATICA, is the same id which you can use to access it with DRS from: `drs://cavatica-ga4gh-api.sbgenomics.com/{file_id}`.
+
+![A screenshot showing the CAVATICA File ID](./figures/cavatica/04-cavatica-file-id.png)  
+**Figure 4.** A screenshot showing the CAVATICA File ID.
+
+In this case the DRS URI would be:
+`drs://cavatica-ga4gh-api.sbgenomics.com/64d66395b4a1f74f0aef1a68`
+
+This DRS URI can then be used when inputting a file (Fig. 5)
+
+![A screenshot of the DRS input](./figures/cavatica/05-input-drs.png)  
+**Figure 5.** A screenshot of the DRS input.
+
+Alternatively, the standard upload feature will upload files directly into your CAVATICA account.
+
 ## Learn More
 
 [Find other topics in the Playbook Workflow Builder user guide](./index.md).

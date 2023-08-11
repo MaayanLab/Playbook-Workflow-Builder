@@ -20,6 +20,13 @@ With CAVATICA configured, it is possible to connect to CAVATICA when you would l
 
 If you leave without disconnecting, you can use the back button on your browser to disconnect. Otherwise, the task will automatically shut itself down after 2 minutes of inactivity.
 
+## Using Published Playbooks in CAVATICA
+
+Since the CAVATICA worker is blank, it won't have the published playbooks or indeed any of the playbooks you've saved to your account. To transfer them, you can use the playbook export & import feature (Fig. 3).
+
+![A screenshot showing how to use the export & import features](./figures/cavatica/03-export-import.png)  
+**Figure 3.** A screenshot showing how to use the export & import features.
+
 ## Learn More
 
 [Find other topics in the Playbook Workflow Builder user guide](./index.md).

@@ -8,7 +8,6 @@ import { pythonStream } from '@/utils/python'
 export async function fileAsStream(file: { url: string }): Promise<Readable> {
   let url = file.url
   if (url.startsWith('file://')) {
-    if (process.env.NODE_ENV !== 'development') throw new UnauthorizedError()
     return fs.createReadStream(url.slice('file://'.length).split(path.posix.sep).join(path.sep))
   } else if (url.startsWith('http://') || url.startsWith('https://')) {
     const req = await fetch(url)

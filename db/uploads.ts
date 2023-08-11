@@ -13,7 +13,7 @@ export const upload = Table.create('upload')
 
 export const user_upload = Table.create('user_upload')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
-  .field('user', 'uuid', 'not null references "user" ("id") on delete cascade', z_uuid())
+  .field('user', 'uuid', 'references "user" ("id") on delete cascade', z_uuid().nullable())
   .field('upload', 'uuid', 'not null references "upload" ("id") on delete cascade', z_uuid())
   .field('filename', 'varchar', 'not null', z.string())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })

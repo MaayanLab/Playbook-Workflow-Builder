@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const processNodeInput_i = array.ensureOne(processNode.inputs[i])
       let inputs_i
       if (i in raw.fields) {
-        inputs_i = raw.fields[i].map(v => processNodeInput_i.codec.decode(v))
+        inputs_i = raw.fields[i].map(v => processNodeInput_i.codec.decode(JSON.parse(v)))
       } else if (i in raw.files) {
         inputs_i = (
           await Promise.all(raw.files[i].map(file =>

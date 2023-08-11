@@ -24,6 +24,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
       {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
+          session_id={session_id}
           inputs={inputs}
           output={output}
           submit={async (output) => {

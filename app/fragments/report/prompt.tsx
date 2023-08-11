@@ -26,6 +26,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head 
       <div className="collapse-content">
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component
+            session_id={session_id}
             inputs={inputs}
             output={output}
             submit={async (output) => {

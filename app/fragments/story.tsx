@@ -45,6 +45,9 @@ const StoryContext = React.createContext('')
 export function StoryProvider({ children, metapath, krg }: React.PropsWithChildren<{ metapath: Metapath[], krg: KRG }>) {
   const ref = React.useRef<HTMLSpanElement>(null)
   const [story, setStory] = React.useState('')
+  React.useEffect(() => {
+    setStory(() => extractCitations(ref.current?.textContent || ''))
+  }, [ref, metapath])
   return (
     <>
       <StoryContext.Provider value={story}>

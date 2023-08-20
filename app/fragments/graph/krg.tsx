@@ -3,7 +3,9 @@ import * as dict from '@/utils/dict'
 import { MetaNode } from '@/spec/metanode'
 import krg from '@/app/krg'
 import useSWR from 'swr'
-import { UserIdentity } from '@/app/fragments/graph/useridentity'
+import dynamic from 'next/dynamic'
+
+const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 export default function useKRG() {
   const { data: suggestions, error } = useSWR(`/api/suggest`)

@@ -7,6 +7,7 @@ import type { Metapath } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
+import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs'))
@@ -101,6 +102,24 @@ function ReportButton({ graph_id }: { graph_id: string }) {
   )
 }
 
+/**
+ * Find the metapath to the current head, excluding irrelevant steps
+ */
+function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
+  const relevant: Record<string, boolean> = {}
+  const processMetapathMapping = dict.init(metapath.map(h => ({ key: h.process.id, value: h })))
+  const Q = [head]
+  while (true) {
+    const el = Q.pop()
+    if (!el) break
+    relevant[el.id] = true
+    Object.values(el.process.inputs).map(dep => {
+      Q.push(processMetapathMapping[dep.id])
+    })
+  }
+  return metapath.filter(({ id }) => relevant[id] === true)
+}
+
 export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const krg = useKRG()
@@ -133,7 +152,9 @@ export default function Graph({ graph_id, node_id, extend, suggest }: { graph_id
             : node_id === 'start' ?
               <Home />
               : head ?
-                <Cell krg={krg} id={graph_id} head={head} autoextend />
+                <StoryProvider krg={krg} metapath={metapathToHead(metapath, head)}>
+                  <Cell krg={krg} id={graph_id} head={head} autoextend />
+                </StoryProvider>
                 : null}
       </main>
     </>

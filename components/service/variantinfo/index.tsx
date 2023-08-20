@@ -6,7 +6,7 @@ import { VariantSet } from '@/components/core/input/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
-import internal from 'stream'
+//import internal from 'stream'
 
 let caIdRegex = "^(CA|ca)[0-9]";
 let rsIdRegex = "^(RS|rs)[0-9]";
@@ -751,7 +751,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   .inputs({ externalRecords: AlleleRegistryExternalRecordsTable })
   .output(GeneAssociations_HG38)
   .resolve(async (props) => {
-    let externalRecords = props.inputs.externalRecords;
+    let externalRecords: any = props.inputs.externalRecords;
 
     let hg38ExtSourceLink = null;
     let response = null;
@@ -1007,7 +1007,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
 
     for(let vERIdx in variantExternalRecordsSetInfo){
       let variantExternalRecords = variantExternalRecordsSetInfo[vERIdx];
-      let externalRecords = variantExternalRecords.externalRecords;
+      let externalRecords: any = variantExternalRecords.externalRecords;
       for(let erIdx in externalRecords){
         if(externalRecords[erIdx] != null && externalRecords[erIdx].name == "MyVariantInfo_hg38"){
           let hg38ExtSourceLink = processHG38externalRecords(externalRecords[erIdx]);

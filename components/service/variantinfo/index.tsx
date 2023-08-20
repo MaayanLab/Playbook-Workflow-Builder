@@ -8,6 +8,13 @@ import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
 import internal from 'stream'
 
+let caIdRegex = "^(CA|ca)[0-9]";
+let rsIdRegex = "^(RS|rs)[0-9]";
+let hgvsRegex = "^NM_|XM_[0-9]\.[0-9]:$";
+let clinvarRegex = "^[0-9]+$";
+let gnomADRegex = "[0-9]*-[0-9]*-[A-Za-z]*-[A-Za-z]*";
+let myVariantInfoHG38Regex = "chr[0-9]*:[a-z]\.[0-9]*[A-Za-z]*";
+
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),
   entId: z.string(),
@@ -135,10 +142,12 @@ const HG38GeneAssociationsSetC = z.array(
   })
 )
 
+/*
 const GenomeNetworkAlleleObjReponse = z.object({
   '@id':z.string(),
 })
 const GenomeNetworkAlleleArrayReponse = z.array( GenomeNetworkAlleleObjReponse )
+*/
 
 function getCaIdFromAlleleRegistryLink(jsonObj: any){
   //console.log(JSON.stringify(jsonObj));
@@ -185,28 +194,28 @@ async function getGenomeNetworkAlleles_myVariantInfoHG38(variantIdTerm: string){
 }
 
 async function resolveVarinatCaID(variantIdTerm: string){
-  var caId_regex = new RegExp("^(CA|ca)[0-9]");
-  var rsId_regex = new RegExp("^(RS|rs)[0-9]");
-  var hgvs_regex = new RegExp("^NM_|XM_[0-9]\.[0-9]:$");
-  var clinvar_regex = new RegExp("^[0-9]+$");
-  var gnomAD_regex = new RegExp("[0-9]*-[0-9]*-[A-Za-z]*-[A-Za-z]*");
-  var myVariantInfoHG38_regex = new RegExp("chr[0-9]*:[a-z]\.[0-9]*[A-Za-z]*");
+  let caIdRegexObj = new RegExp(caIdRegex);
+  let rsIdRegexObj = new RegExp(rsIdRegex);
+  let hgvsRegexObj = new RegExp(hgvsRegex);
+  let clinvarRegexObj = new RegExp(clinvarRegex);
+  let gnomADRegexObj = new RegExp(gnomADRegex);
+  let myVariantInfoHG38RegexObj = new RegExp(myVariantInfoHG38Regex);
 
-  if(caId_regex.test(variantIdTerm)){
+  if(caIdRegexObj.test(variantIdTerm)){
     return variantIdTerm;
-  }else if(rsId_regex.test(variantIdTerm)){
+  }else if(rsIdRegexObj.test(variantIdTerm)){
     console.log("dbSNP (RsId)");
     return await getGenomeNetworkAlleles_dbSNP(variantIdTerm.slice(2));
-  }else if(hgvs_regex.test(variantIdTerm)){
+  }else if(hgvsRegexObj.test(variantIdTerm)){
     console.log("HGVS");
     return await getGenomeNetworkAlleles_HGVS(variantIdTerm);
-  }else if(clinvar_regex.test(variantIdTerm)){
+  }else if(clinvarRegexObj.test(variantIdTerm)){
     console.log("ClinVar");
     return await getGenomeNetworkAlleles_ClinVar(variantIdTerm);
-  }else if(gnomAD_regex.test(variantIdTerm)){
+  }else if(gnomADRegexObj.test(variantIdTerm)){
     console.log("gnomAD");
     return await getGenomeNetworkAlleles_gnomAD(variantIdTerm);
-  }else if(myVariantInfoHG38_regex.test(variantIdTerm)){
+  }else if(myVariantInfoHG38RegexObj.test(variantIdTerm)){
     console.log("myGenomeHG38");
     return await getGenomeNetworkAlleles_myVariantInfoHG38(variantIdTerm);
   }else{

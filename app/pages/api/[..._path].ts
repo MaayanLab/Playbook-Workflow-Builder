@@ -1,6 +1,6 @@
 /**
  * Expose APIs from @/app/api/*
- * 
+ *
  * The reason for this redirection is to
  *   1. dispatch GET/POST/... to different handlers
  *   2. allow co-locating server route and client code to access that route
@@ -10,6 +10,12 @@ import handler, { RouteHandler } from '@/utils/next-rest'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
 import { components } from '@/components'
 import { create_prefix_tree_from_paths, search_prefix_tree } from '@/utils/prefix_tree'
+import APIRouter from '@/core/api/router'
+import * as dict from '@/utils/dict'
+import * as APIs from '@/app/api'
+
+const api_router = new APIRouter()
+dict.values(APIs).forEach(api => {api_router.add(api)})
 
 export const config = {
   api: {
@@ -53,7 +59,7 @@ export default handler(async (req, res) => {
       if (component === undefined || path === undefined) throw new NotFoundError()
       Object.assign(component_handlers, await require(`@/components/${component}/api/${path}/route.ts`))
     } else {
-      Object.assign(component_handlers, await require(`@/app/api/${_path.join('/')}/route.ts`))
+      Object.assign(component_handlers, { GET: api_router.route, POST: api_router.route })
     }
   } catch (e) {
     console.warn(e)

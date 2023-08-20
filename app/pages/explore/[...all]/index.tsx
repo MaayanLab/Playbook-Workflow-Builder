@@ -172,7 +172,7 @@ export default function Explore() {
       .flatMap(edge => [
         ...dict.isEmpty(edge.inputs) ?
           [{ source: 'Start', target: edge.spec }]
-        : dict.values(edge.inputs).map(input => 
+        : dict.values(edge.inputs).map(input =>
             ({ source: array.ensureOne(input).spec, target: edge.spec })
           ),
         { source: edge.spec, target: edge.output.spec },

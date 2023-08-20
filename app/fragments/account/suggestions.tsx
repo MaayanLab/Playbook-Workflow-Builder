@@ -31,12 +31,12 @@ export default function Suggestions() {
             <thead>
               <tr>
                 <th>Title</th>
-                <th>Inputs</th> 
+                <th>Inputs</th>
                 <th>Output</th>
                 <th>Timestamp</th>
                 <th>Actions</th>
               </tr>
-            </thead> 
+            </thead>
             <tbody>
               {suggestions.length === 0 ? <tr><td colSpan={5} align="center">No suggestions registered</td></tr> : null}
               {suggestions.map(suggest => (

@@ -248,8 +248,8 @@ export default function Playbooks() {
           <div className="bg-secondary font-bold p-3 text-center md:block hidden rounded-tr-lg">Actions</div>
           {searchFilteredPlaybooks ?
             searchFilteredPlaybooks.length > 0 ?
-              searchFilteredPlaybooks.map((playbook, i) =>
-              <>
+              searchFilteredPlaybooks.map(playbook =>
+              <React.Fragment key={playbook.id}>
                 <div className="col-span-1 row-span-1 p-3 hidden md:block">
                   <div className="tooltip z-50" data-tip="Click to view details">
                     <button
@@ -364,13 +364,18 @@ export default function Playbooks() {
                 </div>
               </div>
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
-            </>
+            </React.Fragment>
           )
-          : <div className="col-span-2 row-span-2 md:row-span-6 md:col-span-1">
+          : <div className="col-span-7">
             <div className="alert">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>
+        <Link href="/playbooks/community">
+          <button className="btn btn-primary w-min whitespace-nowrap place-self-center text-center">
+            Click for Additional Playbooks Contributed by Other Users
+          </button>
+        </Link>
       </main>
     </Layout>
   )

@@ -21,12 +21,18 @@ async function resolveFilteredResult(cannonicalAccession) {
   return intermediateResult;
 }
 
-export function filterGlyGenResults(result, gene_name) {
+export function filterGlyGenResults(result, prop_type, prop_name) {
+    
+    const result_type = prop_type === 'gene' ? 'gene_name' : 'protein_name'
+
     for (const idx in result['results']) {
-      if (result['results'][idx].hasOwnProperty('gene_name')){
-        const geneName = result['results'][idx]['gene_name'].toUpperCase();
+      if (result['results'][idx].hasOwnProperty(result_type)){
+        const propName = result['results'][idx][result_type].toUpperCase();
         const speciesName = result['results'][idx]['organism'];
-        if (geneName === gene_name.toUpperCase() && speciesName === 'Homo sapiens'){ 
+        console.log('-> Prop name: %s', propName);
+        console.log('-> Species name: %s', speciesName);
+        console.log('+> Species match?: %s', propName === prop_name.toUpperCase() && speciesName === 'Homo sapiens')
+        if (propName === prop_name.toUpperCase() && speciesName === 'Homo sapiens'){
             console.log('==========================');
             console.log(`Human result: ${result['results'][idx]['gene_name']}`)
             console.log(`Type of result: ${typeof(result['results'][idx])}`)

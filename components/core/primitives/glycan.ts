@@ -4,11 +4,12 @@ import levenSort from '@/utils/leven-sort'
 import fetcher from '@/utils/next-rest-fetcher'
 import { protein_icon } from '@/icons'
 
-function useHarmonizomeGeneSuggestions(search: string) {
-  const { data, error } = useSWRImmutable<string[]>(() => search.length >= 2 ? `https://maayanlab.cloud/Harmonizome/api/1.0/suggest?t=protein&q=${encodeURIComponent(search)}` : null, fetcher)
-  const items = data ? levenSort(data, search).slice(0, 10) as string[] : []
-  return { items, error }
-}
+// XXX
+// function useHarmonizomeGeneSuggestions(search: string) {
+//   const { data, error } = useSWRImmutable<string[]>(() => search.length >= 2 ? `https://maayanlab.cloud/Harmonizome/api/1.0/suggest?t=protein&q=${encodeURIComponent(search)}` : null, fetcher)
+//   const items = data ? levenSort(data, search).slice(0, 10) as string[] : []
+//   return { items, error }
+// }
 
 export const glycan = {
   name: 'glycan',
@@ -25,7 +26,7 @@ export const glycan = {
     },
     set: {
       meta: {
-        example: { description: 'Example glycoprotein set', set: ['ADORA1', 'G08146BT', 'G86750HK', 'G93822DY', 'G81459MV', 'G37626XQ',] },
+        example: { description: 'Example glycan set', set: ['G08146BT', 'G86750HK', 'G93822DY', 'G81459MV', 'G37626XQ',] },
         pagerank: 6,
       },
     },

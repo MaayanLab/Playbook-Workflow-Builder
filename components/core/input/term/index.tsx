@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Protein, glycoProtein, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
+import { Gene, Protein, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
 
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
@@ -28,7 +28,6 @@ export const DiseaseTerm = Term_T(Disease)
 export const DrugTerm = Term_T(Drug)
 export const GeneTerm = Term_T(Gene)
 export const ProteinTerm = Term_T(Protein)
-export const GlycoproteinTerm = Term_T(glycoProtein)
 export const VariantTerm = Term_T(Variant)
 export const RegulatoryElementTerm = Term_T(RegulatoryElement)
 export const MetaboliteTerm = Term_T(Metabolite)
@@ -134,7 +133,6 @@ export const InputDiseaseTerm = Input_Term_T(Disease, DiseaseTerm)
 export const InputDrugTerm = Input_Term_T(Drug, DrugTerm)
 export const InputGeneTerm = Input_Term_T(Gene, GeneTerm)
 export const InputProteinTerm = Input_Term_T(Protein, ProteinTerm)
-export const InputGlycoproteinTerm = Input_Term_T(glycoProtein, GlycoproteinTerm)
 export const InputVariantTerm = Input_Term_T(Variant, VariantTerm)
 export const InputRegulatoryElementTerm = Input_Term_T(RegulatoryElement, RegulatoryElementTerm)
 export const InputMetaboliteTerm = Input_Term_T(Metabolite, MetaboliteTerm)

@@ -9,11 +9,36 @@ import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
 import { filter } from '@/utils/dict'
 
 export const GlyGenResponse = z.object({
-    gene_name: z.string(),
-    protein_name: z.string(),
-    uniprot_canonical_ac: z.string()
+    gene: z.object({
+      name: z.string(),
+      locus: z.object({
+        chromosome: z.string(),
+        start_pos: z.number(),
+        end_pos: z.number(),
+        strand: z.string()
+      })
+    }),
+    uniprot: z.object({
+      uniprot_id: z.string(),
+      uniprot_canonical_ac: z.string(),
+      length: z.number()
+    }),
+    protein_names: z.object({
+      name: z.string()
+    }),
+    // mass: z.object({
+    //   chemical_mass: z.string()
+    // }),
+    // refseq_ac: z.string(),
+    // refseq_name: z.string(),
+    species: z.object({
+      name: z.string(),
+      common_name: z.string(),
+      taxid: z.string(),
+    })
   })
-// export const GlyGenResponse = z.object({})
+
+// export const GlycanResponse = z.object({})
 // TODO - List API
 // export const GlyGenListResponse = z.object({
 //   results: z.array(z.object({
@@ -24,16 +49,13 @@ export const GlyGenResponse = z.object({
 // })
 export const ProteinResponse = z.object({})
 
-export const GlycoproteinResponse = z.object({})
-
 export type GlyGenResponseType = z.infer<typeof GlyGenResponse>
 export type ProtienResponseType = z.infer<typeof ProteinResponse>
-export type GlycoproteinResponse = z.infer<typeof GlycoproteinResponse>
 
 export const ProteinResponseNode = MetaNode('Protein')
   .meta({
     label: 'Basic Protein',
-    description: 'Protein primative type sourced from the Glygen server',
+    description: 'Protein primitive type sourced from the Glygen server',
     icon: [protein_icon],
   })
   .codec(ProteinResponse)
@@ -42,29 +64,6 @@ export const ProteinResponseNode = MetaNode('Protein')
       Results: Pending
     </div>)
   )
-  .build()
-
-export const GlycoproteinResponseNode = MetaNode('Glycoprotein')
-  .meta({
-    label: 'GlyGen Glycoprotein Products',
-    description: 'Protein product records in GlyGen',
-    icon: [protein_icon],
-  })
-  .codec(GlycoproteinResponse)
-  .view(data => (
-    <div>
-      Results: Pending
-      {/* {data.results.map((result, index) => (
-        <div>
-        --- Human filtered data ---
-            <div>Gene Name: {result.gene_name}</div>
-            <div>Protien Name: {result.protein_name}</div>
-            <div>UniProtKB Accession: {result.uniprot_canonical_ac}</div>
-        <br/>
-        </div>
-      ))} */}
-    </div>
-  ))
   .build()
 
 export const GlyGenResponseNode = MetaNode('GlyGenResponse')
@@ -76,12 +75,13 @@ export const GlyGenResponseNode = MetaNode('GlyGenResponse')
   .codec(GlyGenResponse)
   .view( data => (
     <div>
-      Results:
-        <>
-        <div>Gene Name: {data.gene_name}</div>
-        <div>Protien Name: {data.protein_name}</div>
-        <div>UniProtKB Accession: {data.uniprot_canonical_ac}</div>
-        </>
+        <div>Gene Name: <b>{data.gene.name}</b></div>
+        <div>Gene location: Chromosome: {data.gene.locus.chromosome} ({data.gene.locus.start_pos} - {data.gene.locus.end_pos}, '{data.gene.locus.strand}' strand)</div>
+        <div>UniProtKB ID: {data.uniprot.uniprot_id}</div>
+        <div>UniProtKB Accession: {data.uniprot.uniprot_canonical_ac}</div>
+        <div>Protein Length: <b>{data.uniprot.length}</b></div>
+        <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
+        <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
     </div>
   ))
   // .view( data => {
@@ -143,8 +143,6 @@ export const ProteinProductInformation = MetaNode('ProteinProductInformation')
       body: JSON.stringify({ id: id['list_id'] }),
       })
     const searchResult = await protein_response.json()
-    debugger;
-    // TODO - Iterate through results, as below
     const filteredResult = filterGlyGenResults(searchResult, props.inputs.gene.symbol);
     return filteredResult;
   })

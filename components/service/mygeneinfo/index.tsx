@@ -200,24 +200,24 @@ const CTDResponseInfoC = z.object({
 });
 export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
 
-export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
-  const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/file`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-    body: formData
-  })
-  return await res.json()
-}
-
 export async function getCTDGenSetResponse(strValue: string): Promise<CTDResponseInfo> {
-  const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/geneList`, {
+  const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/geneList`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: strValue
+  })
+  return await res.json()
+}
+
+export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
+  const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/file`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    body: formData
   })
   return await res.json()
 }
@@ -239,6 +239,7 @@ export const CTDResponseInfo = MetaNode('CTDResponseInfo')
     )
   }).build()
 
+/* kegg is not used for now because of licencing issues
 export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
   .meta({
     label: `GeneSet_CTD_Kegg`,
@@ -255,7 +256,7 @@ export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
   }).story(props =>
     `Get a CTD response for a set of genes for graph type kegg.`
   ).build()
-
+*/
 
 export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
@@ -274,7 +275,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
 
-
+/* kegg is not used for now because of licencing issues
 export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .meta({
     label: `GenesFile_CTD_Kegg`,
@@ -291,6 +292,7 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
     formData.append('graphType', "kegg");
     return await getCTDFileResponse(formData);
   }).build()
+*/
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({

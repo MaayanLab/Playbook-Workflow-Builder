@@ -343,19 +343,19 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             enableFocusedCell
           >
             <Column
-              name="ldhId"
+              name="LDH Id"
               cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidence[row].ldhId}</Cell>}
             />
             <Column
-              name="Tissue Site od Cell Type"
+              name="Tissue Site or Cell Type"
               cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidence[row].sourceDescription.replace(/_/g, " ")}</Cell>}
             />
             <Column
-              name="ldhIri"
+              name="LDH Iri"
               cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${alleleSpecificEvidence[row].ldhIri}`}>evidence link</a></Cell>}
             />
             <Column
-              name="Allele Specif. Name"
+              name="Allele Specificity Type"
               cellRenderer={row =>
                 <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -366,7 +366,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
                 </Cell>}
             />
             <Column
-              name="Allele Specif. Ref. Quant"
+              name="Allele Specificity Ref. Count"
               cellRenderer={row =>
               <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -377,7 +377,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               }</Cell>}
             />
             <Column
-              name="Allele Specif. Alt. Quant"
+              name="Allele Specificity Alt. Count"
               cellRenderer={row => <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                 {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
@@ -387,7 +387,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               }</Cell>}
             />
             <Column
-              name="Allele Specif. sig"
+              name="Adjusted P-Value"
               cellRenderer={row => <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                 {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
@@ -487,7 +487,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
         enableFocusedCell
       >
         <Column
-          name="ldhId"
+          name="LHD Id"
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].ldhId}</Cell>}
         />
         <Column
@@ -495,7 +495,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
         />
         <Column
-          name="Type"
+          name="QTL Type"
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.type}</Cell>}
         />
         <Column
@@ -503,7 +503,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.nes ?? null}</Cell>}
         />
         <Column
-          name="p-value"
+          name="P-Value"
           cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.sig ?? null}</Cell>}
         />
         <Column
@@ -562,11 +562,11 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
         enableFocusedCell
       >
         <Column
-          name="External Resource Name"
+          name="Data Base Name"
           cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
         />
         <Column
-          name="Resource Id"
+          name="Variant Id"
           cellRenderer={row =>
           <Cell  key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -577,12 +577,12 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
           </Cell>}
         />
         <Column
-          name="Resource Link"
+          name="Link"
           cellRenderer={row =>
           <Cell  key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {sourcesList[row].sources.map(sources =>
-                        <tr><td><a target="_blank" href={`${sources['@id']}`}>Resource link</a></td></tr>
+                        <tr><td><a target="_blank" href={`${sources['@id']}`}>Link</a></td></tr>
                     )}
               </table>
           </Cell>}
@@ -660,7 +660,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           cellRenderer={row => <Cell key={row+''}>{GeneAssociationsList[row].geneId}</Cell>}
         />
         <Column
-          name="Effect"
+          name="Variant association to Transcript"
           cellRenderer={row => <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                   {GeneAssociationsList[row].associations.map(associations =>
@@ -670,7 +670,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           </Cell>}
         />
         <Column
-          name="Distance To Feature (bp)"
+          name="Distance To Transcript (bp)"
           cellRenderer={row => <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                   {GeneAssociationsList[row].associations.map(associations =>
@@ -680,7 +680,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           </Cell>}
         />
         <Column
-          name="Feature ID"
+          name="Transcript ID"
           cellRenderer={row => <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                   {GeneAssociationsList[row].associations.map(associations =>

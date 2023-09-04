@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { gene_icon, linkeddatahub_icon, mygeneinfo_icon, file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { Table, Cell, Column} from '@/app/components/Table'
+import FormData from 'form-data'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -211,12 +212,10 @@ export async function getCTDGenSetResponse(strValue: string): Promise<CTDRespons
   return await res.json()
 }
 
-export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
+//@ts-ignore
+export async function getCTDFileResponse(formData): Promise<CTDResponseInfo> {
   const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/file`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
     body: formData
   })
   return await res.json()
@@ -275,7 +274,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
 
-/* kegg is not used for now because of licencing issues
+/* //kegg is not used for now because of licencing issues
 export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .meta({
     label: `GenesFile_CTD_Kegg`,
@@ -291,8 +290,7 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "kegg");
     return await getCTDFileResponse(formData);
-  }).build()
-*/
+  }).build()*/
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({

@@ -8,6 +8,7 @@ import { Table, Cell, Column } from '@/app/components/Table'
 import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
 import classNames from 'classnames'
+import pluralize from 'pluralize'
 
 function withPrecision(value: number | string, precision: number) {
   if (typeof value === 'number') return value.toPrecision(precision)
@@ -184,7 +185,64 @@ export const SetFromScoredT = [
       )
     })
     .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
-    .build()
+    .build(),
+  MetaNode(`SomeSetT[${SetT.spec}]`)
+    .meta({
+      label: `Select Some ${pluralize(TermT.meta.label)}`,
+      description: `Select some ${pluralize(TermT.meta.label)}`,
+    })
+    .inputs({ set: SetT })
+    .output(SetT)
+    .prompt(props => {
+      const set = props.inputs.set.set
+      const [selected, setSelected] = React.useState({} as Record<string, true>)
+      React.useEffect(() => {
+        if (props.output !== undefined) {
+          const selected_ = {} as Record<string, true>
+          set.forEach(item => {
+            if (!props.output?.set.includes(item)) {
+              selected_[item] = true
+            }
+          })
+          setSelected(selected_)
+        }
+      }, [props.output, set])
+      return (
+        <div>
+          <Table
+            height={500}
+            cellRendererDependencies={[set]}
+            rowHeaderCellRenderer={(row) =>
+              <div
+                className="text-center block"
+                onClick={evt => {
+                  setSelected(({ [set[row]]: current, ...selected }) => !current ? ({ ...selected, [set[row]]: true }) : selected)
+                }}
+              >
+                <input type="checkbox" checked={!selected[set[row]]} />
+              </div>
+            }
+            numRows={set.length}
+            shape={[set.length - Object.keys(selected).length]}
+            enableGhostCells
+            enableFocusedCell
+          >
+            <Column
+              name={T.label}
+              cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
+            />
+          </Table>
+          <button className="bp4-button bp4-large" onClick={async () => {
+            props.submit({
+              description: props.inputs.set.description ? `Filtered ${props.inputs.set.description}` : undefined,
+              set: props.inputs.set.set.filter((item) => !selected[item])
+            })
+          }}>Submit</button>
+        </div>
+      )
+    })
+    .story(props => props.output ? `Some genes were selected for further investigation.` : '')
+    .build(),
 ])
 
 export const ReduceMultiScoredT = [

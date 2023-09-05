@@ -6,7 +6,7 @@ import { VariantSet } from '@/components/core/input/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
-//import internal from 'stream'
+import { getRegElemPositionData } from '@/components/service/regulatoryElementInfo'
 
 let caIdRegex = "^(CA|ca)[0-9]";
 let rsIdRegex = "^(RS|rs)[0-9]";
@@ -40,7 +40,7 @@ export type AlleleRegistryExternalSourcesInfo = z.infer<typeof AlleleRegistryExt
 
 const AlleleRegistryExternalSourcesSetInfoC = z.array(
   z.object({
-    variantCId: z.string(),
+    variantCaId: z.string(),
     externalRecords: AlleleRegistryExternalSourcesInfoC
   })
 );
@@ -59,6 +59,32 @@ const AlleleSpecificEvidenceInfoC = z.array(
   })
 );
 
+const xQTL_EvidenceEntContent = z.object({
+  GTExIri: z.string(),
+  score: z.number(),
+  sourceDescription: z.string(),
+  eQTL: z.object({
+    nes: z.string(),
+    sig: z.string()
+  }).optional(),
+  sQTL: z.object({
+    nes: z.string(),
+    sig: z.string()
+  }).optional(),
+  esQTL: z.object({
+    nes: z.string(),
+    sig: z.string()
+  }).optional(),
+  type: z.string().optional()
+});
+
+const xQTL_EvidenceArray = z.array(
+  z.object({
+    ldhId: z.string(),
+    xQTLEntContent: xQTL_EvidenceEntContent
+  })
+);
+
 export const GitHubVariantInfoC =  z.object({
   data: z.object({
     entId: z.string(),
@@ -74,29 +100,11 @@ export const GitHubVariantInfoC =  z.object({
           })
         })
       ),
-      xqtlEvidence: z.array(
-        z.object({
-          entId: z.string(),
-          ldhId: z.string(),
-          ldhIri: z.string(),
-          entContent: z.object({
-            GTExIri: z.string(),
-            score: z.number(),
-            sourceDescription: z.string(),
-            eQTL: z.object({
-              nes: z.string(),
-              sig: z.string()
-            }).optional(),
-            sQTL: z.object({
-              nes: z.string(),
-              sig: z.string()
-            }).optional(),
-            esQTL: z.object({
-              nes: z.string(),
-              sig: z.string()
-            }).optional(),
-            type: z.string().optional()
-          })
+      xqtlEvidence:  z.array(z.object({
+        entId: z.string(),
+        ldhId: z.string(),
+        ldhIri: z.string(),
+        entContent: xQTL_EvidenceEntContent
         })
       )
     }),
@@ -137,7 +145,7 @@ const HG38GeneAssociationsProcessedForViewC = z.array(
 
 const HG38GeneAssociationsSetC = z.array(
   z.object({
-    variantCId: z.string(),
+    variantCaId: z.string(),
     geneAssociationsHg38: HG38GeneAssociationsProcessedForViewC
   })
 )
@@ -150,11 +158,8 @@ const GenomeNetworkAlleleArrayReponse = z.array( GenomeNetworkAlleleObjReponse )
 */
 
 function getCaIdFromAlleleRegistryLink(jsonObj: any){
-  //console.log(JSON.stringify(jsonObj));
-
   let alleleRegistrylink = null;
   if(Array.isArray(jsonObj)){
-    //console.log("size: "+jsonObj.length);
     alleleRegistrylink = (jsonObj[0])['@id'];
   }else{
     alleleRegistrylink = jsonObj['@id'];
@@ -290,7 +295,7 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   export const VariantInfoFromVariantSet = MetaNode('VariantInfoFromVariantSet')
   .meta({
     label: `VariantInfoFromVariantSet`,
-    description: "Get Variant Info from Allele Registry for a set of Varinat CId's."
+    description: "Get Variant Info from Allele Registry for a set of Varinat CaId's."
   })
   .inputs({ variantset: VariantSet })
   .output(VariantSetInfo)
@@ -401,6 +406,62 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
   })
   .build()
 
+function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
+  var alleleSpecificEvidence: any = [];
+  for(let a in alleleSpecificEvidencesList){
+    let specificities = alleleSpecificEvidencesList[a].entContent.AlleleSpecificity;
+    if(specificities == null){
+      continue;
+    }
+    let specificitieNamesList = Object.getOwnPropertyNames(specificities);
+    if(specificitieNamesList.length == 0){
+      continue;
+    }
+    let alleleSpecificityList: any = []
+
+    for(let s in specificitieNamesList){
+        let specificitieName = specificitieNamesList[s];
+        let specificity = specificities[specificitieName.toString()];
+
+        var specificityObject: any = null;
+
+        if(specificitieName != "HM" && specificitieName != "TF"){
+          specificityObject = {
+            "name": specificitieName,
+            "altAlleleQuant": specificity.altAlleleQuant,
+            "refAlleleQuant": specificity.refAlleleQuant,
+            "sig": specificity.sig
+          }
+          alleleSpecificityList.push(specificityObject);
+          continue;
+        }else{
+          let specificitySubName = Object.getOwnPropertyNames(specificity);
+          for(let ssN in specificitySubName){
+            let s = specificity[specificitySubName[ssN]];
+            specificityObject = {
+              "name": specificitieName+": "+specificitySubName[ssN],
+              "altAlleleQuant": s.altAlleleQuant,
+              "refAlleleQuant": s.refAlleleQuant,
+              "sig": s.sig
+            }
+            alleleSpecificityList.push(specificityObject);
+            continue;
+          }
+        }
+    }
+
+    let specificEvidence = {
+      "ldhId": alleleSpecificEvidencesList[a].ldhId,
+      "ldhIri": alleleSpecificEvidencesList[a].ldhIri,
+      "sourceDescription": alleleSpecificEvidencesList[a].entContent.sourceDescription,
+      "alleleSpecificityList": alleleSpecificityList
+    }
+    alleleSpecificEvidence.push(specificEvidence)
+  }
+  return alleleSpecificEvidence;
+}
+
+
 export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpecificEvidencesForThisVariant')
   .meta({
     label: 'Resolve Allele Specific Evidences from Var. Info',
@@ -412,61 +473,11 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
     console.log("Var CaId: "+varCaId)
     const response = await getGitDataHubVariantInfo(varCaId);
-
-    var alleleSpecificEvidence: any = [];
-
-    let alleleSpecificEvidencesList = response.data.ld.AlleleSpecificEvidence;
-    for(let a in alleleSpecificEvidencesList){
-        let specificities = alleleSpecificEvidencesList[a].entContent.AlleleSpecificity;
-        if(specificities == null){
-          continue;
-        }
-        let specificitieNamesList = Object.getOwnPropertyNames(specificities);
-        if(specificitieNamesList.length == 0){
-          continue;
-        }
-        let alleleSpecificityList: any = []
-
-        for(let s in specificitieNamesList){
-            let specificitieName = specificitieNamesList[s];
-            let specificity = specificities[specificitieName.toString()];
-
-            var specificityObject: any = null;
-
-            if(specificitieName != "HM" && specificitieName != "TF"){
-              specificityObject = {
-                "name": specificitieName,
-                "altAlleleQuant": specificity.altAlleleQuant,
-                "refAlleleQuant": specificity.refAlleleQuant,
-                "sig": specificity.sig
-              }
-              alleleSpecificityList.push(specificityObject);
-              continue;
-            }else{
-              let specificitySubName = Object.getOwnPropertyNames(specificity);
-              for(let ssN in specificitySubName){
-                let s = specificity[specificitySubName[ssN]];
-                specificityObject = {
-                  "name": specificitieName+": "+specificitySubName[ssN],
-                  "altAlleleQuant": s.altAlleleQuant,
-                  "refAlleleQuant": s.refAlleleQuant,
-                  "sig": s.sig
-                }
-                alleleSpecificityList.push(specificityObject);
-                continue;
-              }
-            }
-        }
-
-        let specificEvidence = {
-          "ldhId": alleleSpecificEvidencesList[a].ldhId,
-          "ldhIri": alleleSpecificEvidencesList[a].ldhIri,
-          "sourceDescription": alleleSpecificEvidencesList[a].entContent.sourceDescription,
-          "alleleSpecificityList": alleleSpecificityList
-        }
-        alleleSpecificEvidence.push(specificEvidence)
+    let alleleSpecificEvidencesList = null;
+    if(response.data.ld != null &&  response.data.ld.AlleleSpecificEvidence != null){
+      alleleSpecificEvidencesList = response.data.ld.AlleleSpecificEvidence;
     }
-    return alleleSpecificEvidence;
+    return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
   })
   .build()
 
@@ -515,6 +526,43 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   })
   .build()
 
+function reformatxQTLEvidences(xqtlEvidences: any){
+  for(let e in xqtlEvidences){
+    let xqtlE_entContent = xqtlEvidences[e].entContent;
+    if(xqtlE_entContent.hasOwnProperty('eQTL')){
+      xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
+      xqtlE_entContent.type = "eQTL";
+      delete xqtlE_entContent.eQTL;
+    }else if(xqtlE_entContent.hasOwnProperty('sQTL')){
+      xqtlE_entContent.esQTL = xqtlE_entContent.sQTL;
+      delete xqtlE_entContent.sQTL;
+      xqtlE_entContent.type = "sQTL";
+    }
+  }
+}
+
+function reformatxQTLEvidences2(xqtlEvidences: any){
+  let newXQTLArray : any= [];
+  for(let e in xqtlEvidences){
+    let xqtlE_entContent = xqtlEvidences[e].entContent;
+    if(xqtlE_entContent.hasOwnProperty('eQTL')){
+      xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
+      xqtlE_entContent.type = "eQTL";
+      delete xqtlE_entContent.eQTL;
+    }else if(xqtlE_entContent.hasOwnProperty('sQTL')){
+      xqtlE_entContent.esQTL = xqtlE_entContent.sQTL;
+      delete xqtlE_entContent.sQTL;
+      xqtlE_entContent.type = "sQTL";
+    }
+    let tempObj = {
+      'ldhId': xqtlEvidences[e].ldhId,
+      'xQTLEntContent': xqtlE_entContent
+    }
+    newXQTLArray.push(tempObj);
+  }
+  return newXQTLArray;
+}
+
 export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
   .meta({
     label: 'Resolve xQTL Evidence Data for Variant Info',
@@ -526,20 +574,13 @@ export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDa
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
     console.log("Var CaId: "+varCaId)
     let response = await getGitDataHubVariantInfo(varCaId);
-
-    let xqtlEvidences = response.data.ld.xqtlEvidence;
-      for(let e in xqtlEvidences){
-        let xqtlE_entContent = xqtlEvidences[e].entContent;
-        if(xqtlE_entContent.hasOwnProperty('eQTL')){
-          xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
-          xqtlE_entContent.type = "eQTL";
-          delete xqtlE_entContent.eQTL;
-        }else if(xqtlE_entContent.hasOwnProperty('sQTL')){
-          xqtlE_entContent.esQTL = xqtlE_entContent.sQTL;
-          delete xqtlE_entContent.sQTL;
-          xqtlE_entContent.type = "sQTL";
-        }
-      }
+    
+    if(response.data.ld != null &&  response.data.ld.xqtlEvidence != null){
+      reformatxQTLEvidences(response.data.ld.xqtlEvidence);
+    }else{
+      throw Error();
+    }
+    
     return response;
   })
   .build()
@@ -789,8 +830,8 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       enableFocusedCell
       >
         <Column
-          name="Varinat CId"
-          cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCId}</Cell>}
+          name="Varinat CaId"
+          cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
         />
         <Column
           name="External Resource Name"
@@ -846,7 +887,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       if(variantInfoObj['externalRecords'] != null){
         let exteralRecordsData = processExternalRecords(variantInfoObj);
         let variantExternalRecords = {
-          "variantCId" : variantInfoObj.entId,
+          "variantCaId" : variantInfoObj.entId,
           "externalRecords" : exteralRecordsData
         };
 
@@ -857,7 +898,6 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   }).story(props =>
     `Get External Records for a given Variant Set.`
   ).build()
-
 
   export const GeneAssociationsSet_HG38 = MetaNode('GeneAssociationsSet_HG38')
   .meta({
@@ -875,8 +915,8 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       enableFocusedCell
       >
         <Column
-          name="Variant CId"
-          cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCId }</Cell>}
+          name="Variant CaId"
+          cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
         />
         <Column
           name="Gene ID/Name"
@@ -1015,7 +1055,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
           let associatedGeensList = processHG38ExternalRecordsResponse(response);
 
           let varinatGeneAssociation = {
-            "variantCId": variantExternalRecords.variantCId,
+            "variantCaId": variantExternalRecords.variantCaId,
             "geneAssociationsHg38": associatedGeensList
           }
           varinatGeneAssociationsSet.push(varinatGeneAssociation);
@@ -1026,5 +1066,367 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
     return varinatGeneAssociationsSet;
   }).story(props =>
     `Get Associated Gene info for a given set of Variant External records.`
+  ).build()
+
+  export const REforVariantSet = MetaNode('REforVariantSet')
+  .meta({
+    label: 'REforVariantSet',
+    description: ''
+  })
+  .codec(
+    z.array(z.object({
+      caid: z.string(),
+      reEntId: z.string(),
+      rePosition: z.string()
+    }))
+  )
+  .view( varAndReIdArray => {
+    return ( 
+      <Table
+      height={500}
+      cellRendererDependencies={[varAndReIdArray]}
+      numRows={varAndReIdArray.length}
+      enableGhostCells
+      enableFocusedCell
+      >
+        <Column
+          name="Variant CaId"
+          cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].caid }</Cell>}
+        />
+        <Column
+          name="Regulatory Element EntId"
+          cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].reEntId }</Cell>}
+        />
+        <Column
+          name="Regulatory Element Position"
+          cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].rePosition }</Cell>}
+        />
+      </Table>  
+    )
+  })
+  .build()
+
+  export const GetRegulatoryElementsForVariantSet = MetaNode('GetRegulatoryElementsForVariantSet')
+  .meta({
+    label: `RegulatoryElementsForVariantSet`,
+    description: "Get Regulatory Elements for the Variant Set"
+  })
+  .inputs({ variantset: VariantSet })
+  .output(REforVariantSet)
+  .resolve(async (props) => {
+    var varinatSetInpt = props.inputs.variantset.set;
+    
+    let varAndRegulatoryElem = [];
+
+    for(let indx in varinatSetInpt){
+      let varCaID = varinatSetInpt[indx];
+      const response = await getGitDataHubVariantInfo(varCaID);
+      if(response.data.ldFor.RegulatoryElement != null && response.data.ldFor.RegulatoryElement.length == 1){
+        let reEntId = response.data.ldFor.RegulatoryElement[0].entId;
+        let tempObj = {
+          'caid':varCaID,
+          'reEntId': reEntId,
+          'rePosition':""
+        }
+
+        const rePositionData = await getRegElemPositionData(reEntId);
+        if(rePositionData.data.cCREQuery[0].coordinates != null){
+          tempObj.rePosition = rePositionData.data.cCREQuery[0].coordinates.chromosome+": "+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
+        }
+        varAndRegulatoryElem.push(tempObj);
+      }
+    }
+    return varAndRegulatoryElem;
+  }).story(props =>
+    `Get Regulatory Elements id and posotion for Varinat Set.`
+  ).build()
+
+  export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')
+  .meta({
+    label: 'AlleleSpecificEvidenceForVariantSet',
+    description: ''
+  })
+  .codec(
+    z.array(z.object({
+      caid: z.string(),
+      alleleSpecificEvidence: AlleleSpecificEvidenceInfoC
+    }))
+  )
+  .view( alleleEvidncForVarSetArray => {
+    return ( 
+      <Table
+      height={500}
+      cellRendererDependencies={[alleleEvidncForVarSetArray]}
+      numRows={alleleEvidncForVarSetArray.length}
+      enableGhostCells
+      enableFocusedCell
+      >
+        <Column
+          name="Varinat CaID"
+          cellRenderer={row => <Cell key={row+''}>{alleleEvidncForVarSetArray[row].caid}</Cell>}
+        />
+        <Column
+          name="LDH Id"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td>{ sources.ldhId }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Tissue Site or Cell Type"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td>{ sources.sourceDescription.replace(/_/g, " ") }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="LDH Iri"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td><a target="_blank" href={`${sources.ldhIri}`}>evidence link</a></td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Allele Specificity Type"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      {  sources.alleleSpecificityList.map(sources =>  
+                        <tr><td>{ sources.name }</td></tr>  
+                      )}
+                  </table>
+                </td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Allele Specificity Ref. Count"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      {  sources.alleleSpecificityList.map(sources =>  
+                        <tr><td>{ sources.refAlleleQuant }</td></tr>  
+                      )}
+                  </table>
+                </td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Allele Specificity Alt. Count"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      {  sources.alleleSpecificityList.map(sources =>  
+                        <tr><td>{ sources.altAlleleQuant }</td></tr>  
+                      )}
+                  </table>
+                </td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Adjusted P-Value"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+            {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                <tr><td>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      {  sources.alleleSpecificityList.map(sources =>  
+                        <tr><td>{ sources.sig }</td></tr>  
+                      )}
+                  </table>
+                </td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+      </Table>
+    )
+  })
+  .build()
+
+  export const GetVarinatSetAlleleSpecificEvidence = MetaNode('GetVarinatSetAlleleSpecificEvidence')
+  .meta({
+    label: `GetVarinatSetAlleleSpecificEvidence`,
+    description: "Get Allele Specific Evidence form Varinat Set."
+  })
+  .inputs({ variantSetInfo: VariantSetInfo })
+  .output(AlleleSpecificEvidenceForVariantSet)
+  .resolve(async (props) => {
+    let variantSetInfo = props.inputs.variantSetInfo;
+
+    let varinatSetAlleleSpecificEvdnc = [];
+    for(let indx in variantSetInfo){
+      let variantInfoObj = variantSetInfo[indx];
+      const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
+      
+      let tempObj = {
+        'caid': variantInfoObj.entId,
+        'alleleSpecificEvidence' : [] 
+      };
+
+      if(response.data.ld != null &&  response.data.ld.AlleleSpecificEvidence != null){
+        let evidenceReponse = getAlleleSpecificEvdncFromGitDataHub(response.data.ld.AlleleSpecificEvidence);
+        tempObj.alleleSpecificEvidence = evidenceReponse;
+      }
+
+      varinatSetAlleleSpecificEvdnc.push(tempObj);
+    }
+    return varinatSetAlleleSpecificEvdnc;
+  }).story(props =>
+    `Get Allele Specific Evidence form Varinat Set.`
+  ).build()
+
+
+  export const xQTL_EvidenceFroVariantSet = MetaNode('xQTL_EvidenceFroVariantSet')
+  .meta({
+    label: 'xQTL_EvidenceFroVariantSet',
+    description: ''
+  })
+  .codec(
+    z.array(z.object({
+      caid: z.string(),
+      xQTL_Evidence: xQTL_EvidenceArray
+    }))
+  )
+  .view( xQTLEvdVariantSet => {
+    return (
+      <Table
+        height={500}
+        cellRendererDependencies={[xQTLEvdVariantSet]}
+        numRows={xQTLEvdVariantSet.length}
+        enableGhostCells
+        enableFocusedCell
+      >
+        <Column
+          name="Variant CaID"
+          cellRenderer={row => <Cell key={row+''}>{xQTLEvdVariantSet[row].caid}</Cell>}
+        />
+        <Column
+          name="LDH Id"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                <tr><td>{ sources.ldhId }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Evidence link"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                <tr><td>{ sources.ldhId }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="QTL Type"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                <tr><td>{ sources.xQTLEntContent.type }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Normalized Effect Size (nes)"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                <tr><td>{ sources.xQTLEntContent.esQTL?.nes ?? null }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="P-Value"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                <tr><td>{ sources.xQTLEntContent.esQTL?.sig ?? null }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+        <Column
+          name="Tissue site"
+          cellRenderer={row =>
+          <Cell key={row+''}>{
+            <table style={{borderCollapse: 'collapse', width:'100%'}}>
+              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                <tr><td>{ sources.xQTLEntContent.sourceDescription.replace(/_/g, " ") }</td></tr>
+              )}
+            </table>
+          }</Cell>}
+        />
+      </Table>
+    )
+  }).build()
+
+  export const GetVarinatSetXQTLEvidence = MetaNode('GetVarinatSetXQTLEvidence')
+  .meta({
+    label: `GetVarinatSetXQTLEvidence`,
+    description: "Get xQTL Evidence form Varinat Set."
+  })
+  .inputs({ variantSetInfo: VariantSetInfo })
+  .output(xQTL_EvidenceFroVariantSet)
+  .resolve(async (props) => {
+    let variantSetInfo = props.inputs.variantSetInfo;
+
+    let varinatSetXQTLEvidnc = [];
+    for(let indx in variantSetInfo){
+      let variantInfoObj = variantSetInfo[indx];
+      const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
+      
+      let tempObj = {
+        'caid': variantInfoObj.entId,
+        'xQTL_Evidence': []
+      };
+
+      if(response.data.ld != null &&  response.data.ld.xqtlEvidence != null){
+        let evidenceReponse = reformatxQTLEvidences2(response.data.ld.xqtlEvidence);
+        tempObj.xQTL_Evidence = evidenceReponse;
+      }
+
+      varinatSetXQTLEvidnc.push(tempObj);
+    }
+    return varinatSetXQTLEvidnc;
+  }).story(props =>
+    "Get xQTL Evidence form Varinat Set."
   ).build()
 

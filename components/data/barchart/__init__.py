@@ -5,6 +5,7 @@ from scipy.stats import norm
 
 def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
     x = pd.DataFrame.from_records(x)
+    x['zscore'] = x['zscore'].astype(float)
 
     # Calculate p-values from z-scores
     x['pvalue'] = norm.sf(abs(x['zscore'])) * 2

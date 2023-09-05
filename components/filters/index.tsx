@@ -31,26 +31,14 @@ export const TopKScoredT = [
     .inputs({ scored: ScoredT })
     .output(ScoredT)
     .prompt(props => {
-      const topK = React.useCallback((scored: typeof props.inputs.scored, k: number) => {
-        scored.sort((a, b) =>
-          a.zscore === b.zscore ? 0
-          : a.zscore === 'inf' ? 1
-          : b.zscore === 'inf' ? -1
-          : a.zscore === '-inf' || a.zscore === 'nan' ? -1
-          : b.zscore === '-inf' || b.zscore === 'nan' ? 1
-          : a.zscore < b.zscore ? 1
-          : -1
-        )
-        return scored.slice(0, k)
-      }, [])
       return (
         <div className="flex flex-col gap-2">
           <div className="flex flex-row gap-2">
-            {[10, 20, 50].map(k =>
+            {[10, 20, 50, 100].map(k =>
               <button
                 key={k}
                 className={classNames('btn', {'btn-primary': props.output?.length === k, 'btn-secondary': props.output?.length !== k})}
-                onClick={() => {props.submit(topK(props.inputs.scored, k))}}
+                onClick={() => {props.submit(props.inputs.scored.slice(0, k))}}
               >Top {k}</button>
             )}
           </div>

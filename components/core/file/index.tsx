@@ -138,3 +138,180 @@ export const FileInput = MetaNode('FileInput')
     `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
   )
   .build()
+
+
+  export const MultiFileInputForCTD = MetaNode('MultiFileInputForCTD')
+  .meta({
+    label: 'CTD - Precalculations',
+    description: 'Upload Multiple Data Files for CTD',
+    icon: [input_icon],
+  })
+  .inputs()
+  .output(FileURL)
+  .prompt(props => { 
+    const { data: session } = useSessionWithId()
+    const output = React.useMemo(() => props.output || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.output])
+
+    const [geneListFile, setGeneListFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+    const geneListInputRef = React.useRef<HTMLInputElement>(null)
+    React.useEffect(() => {
+      setGeneListFile(output)
+    }, [output])
+
+    const [adjMatrixFile, setAdjMatrixFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+    const adjMatrixInputRef = React.useRef<HTMLInputElement>(null)
+    React.useEffect(() => {
+      setAdjMatrixFile(output)
+    }, [output])
+
+    return (
+      <div>
+        {!session || !session.user ? (
+          <div className="alert alert-warning shadow-lg block">
+            You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
+          </div>
+        ) : (
+          <form
+            className="my-2 inline-flex flex-col"
+            onSubmit={async (evt) => {
+              evt.preventDefault()
+              if (geneListFile.url && geneListFile.url === props.output?.url && geneListFile.filename && geneListFile.size &&
+                        adjMatrixFile.url && adjMatrixFile.url === props.output?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
+                props.submit({
+                  description: geneListFile.description,
+                  url: geneListFile.url,
+                  filename: geneListFile.filename,
+                  size: geneListFile.size,
+                })
+              } else {
+                const formData = new FormData(evt.currentTarget)
+
+                
+                for (const pair of formData.entries()) {
+                  console.log(`${pair[0]}, ${pair[1]}`);
+                }
+                /*
+                let rawDescription = formData.get('description');
+                let description = rawDescription === null ? undefined : rawDescription.toString();
+                let { file: [record] } = await clientUploadFile(formData);
+                props.submit({ description, ...record });*/
+              }
+            }}
+          >
+            <input
+              ref={geneListInputRef}
+              name="geneSetFile"
+              className={classNames('file-input file-input-lg', { 'hidden': geneListFile.url })}
+              onChange={evt => {
+                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
+                setGeneListFile(({ description, url: _ }) => ({ description, url }))
+              }}
+              type="file"
+              accept=".csv"
+            />
+            <div
+              className={classNames('inline-flex flex-row items-center gap-4', { 'hidden': !geneListFile.url })}
+              onClick={evt => {
+                evt.preventDefault()
+                if (geneListInputRef.current) {
+                  geneListInputRef.current.click()
+                }
+              }}
+            >
+              <button className="btn btn-lg">Choose Gene list File</button>
+              <span className="text-lg">{geneListFile.filename||geneListFile.url||'No file chosen'}</span>
+            </div>
+            <div className="bp4-input-group">
+              <input
+                type="text"
+                name="description"
+                className="bp4-input"
+                placeholder={`File description`}
+                onChange={evt => {setGeneListFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                value={geneListFile.description||''}
+              />
+            </div>
+            <div className="inline-flex flex-row">
+              <a
+                href="/api/components/core/file/example_geneSetCTD.csv"
+                download="example_geneSetCTD.csv"
+              >
+                <Bp4Button
+                    large
+                    text="Example"
+                    rightIcon="bring-data"
+                />
+              </a>
+            </div>
+
+
+      
+            <input
+              ref={adjMatrixInputRef}
+              name="adjMatrixFile"
+              className={classNames('file-input file-input-lg', { 'hidden': adjMatrixFile.url })}
+              onChange={evt => {
+                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
+                setAdjMatrixFile(({ description, url: _ }) => ({ description, url }))
+              }}
+              type="file"
+              accept=".csv"
+            />
+            <div
+              className={classNames('inline-flex flex-row items-center gap-4', { 'hidden': !adjMatrixFile.url })}
+              onClick={evt => {
+                evt.preventDefault()
+                if (adjMatrixInputRef.current) {
+                  adjMatrixInputRef.current.click()
+                }
+              }}
+            >
+              <button className="btn btn-lg">Choose Adj. Matrix File</button>
+              <span className="text-lg">{adjMatrixFile.filename||adjMatrixFile.url||'No file chosen'}</span>
+            </div>
+            <div className="bp4-input-group">
+              <input
+                type="text"
+                name="description"
+                className="bp4-input"
+                placeholder={`File description`}
+                onChange={evt => {setAdjMatrixFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                value={adjMatrixFile.description||''}
+              />
+            </div>
+            <div className="inline-flex flex-row">
+              <a
+                href="/api/components/core/file/example_geneSetCTD.csv"
+                download="example_geneSetCTD.csv"
+              >
+                <Bp4Button
+                    large
+                    text="Example"
+                    rightIcon="bring-data"
+                />
+              </a>
+            </div>
+
+
+
+
+
+            <Bp4Button
+                large
+                disabled={
+                  (geneListFile.url === undefined || (geneListFile.description === output.description && geneListFile.url === output.url)) ||
+                  (adjMatrixFile.url === undefined || (adjMatrixFile.description === output.description && adjMatrixFile.url === output.url))
+                }
+                type="submit"
+                text="Submit"
+                rightIcon="send-to-graph"
+            />
+          </form>
+        )}
+      </div> 
+    )
+  })
+  .story(props =>
+    `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
+  )
+  .build()

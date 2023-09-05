@@ -1,7 +1,8 @@
 import uuid5 from "@/utils/uuid"
+import packageJson from '@/package.json'
 
 const docker_tag = 'maayanlab/playbook-partnership'
-const version = 'c13'
+const version = packageJson.version
 const cwl = {
   "cwlVersion": "v1.2",
   "class": "CommandLineTool",

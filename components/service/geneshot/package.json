@@ -1,0 +1,10 @@
+{
+  "name": "@playbook-partnership/geneshot",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {},
+  "devDependencies": {}
+}

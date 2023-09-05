@@ -87,6 +87,8 @@ export * from "./service/ctd"
 components.push("service/ctd")
 export * from "./service/enrichr"
 components.push("service/enrichr")
+export * from "./service/geneshot"
+components.push("service/geneshot")
 export * from "./service/gtex"
 components.push("service/gtex")
 export * from "./service/hyposet"

@@ -1,8 +1,11 @@
 import { MetaNode } from '@/spec/metanode'
-import { ScoredTissues } from '@/components/core/input/scored'
-import { archs4_icon } from '@/icons'
+import { ScoredGenes, ScoredTissues } from '@/components/core/input/scored'
+import { archs4_icon, weighted_icon } from '@/icons'
 import { GeneTerm } from '@/components/core/input/term'
 import read_csv from '@/utils/csv'
+import { z } from 'zod'
+import { Cell, Column, Table } from '@/app/components/Table'
+import { downloadBlob } from '@/utils/download'
 
 async function archs4_tissue_expression({ search, species = 'human', type = 'tissue' }: { search: string, species?: string, type?: string }) {
   const params = new URLSearchParams()
@@ -36,3 +39,78 @@ export const ARCHS4TissueExpression = MetaNode('ARCHS4TissueExpression')
     `Median expression of ${props.inputs ? props.inputs.gene : 'the gene'} was obtained from ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`
   )
   .build()
+
+export const ARCHS4SignatureResults = MetaNode(`ARCHS4SignatureResults`)
+  .meta({
+    label: 'ARCHS4 Signature Search Results',
+    description: 'ARCHS4 Signatures Query Results',
+    icon: [archs4_icon, weighted_icon],
+  })
+  .codec(z.object({ samples: z.array(z.string()) }))
+  .view(results =>
+    <Table
+      height={500}
+      cellRendererDependencies={[results]}
+      numRows={results.samples.length}
+      enableGhostCells
+      enableFocusedCell
+      downloads={{
+        JSON: () => downloadBlob(new Blob([JSON.stringify(results)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+        CSV: () => downloadBlob(new Blob([
+          [
+            `Samples`,
+            ...results.samples
+          ].join('\n')
+        ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
+      }}
+    >
+      <Column
+        name="Samples"
+        cellRenderer={row => <Cell key={row+''}><a href={`https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${results.samples[row]}`}>{results.samples[row]}</a></Cell>}
+      />
+    </Table>
+  )
+  .build()
+
+export const ARCHS4SignatureSearchT = [
+  'Human', 'Mouse',
+].map(species => MetaNode(`ARCHS4SignatureSearch[${species}]`)
+  .meta({
+    label: `ARCHS4 Signature Search`,
+    description: `Query ARCHS4 ${species} Signatures`,
+    icon: [archs4_icon],
+  })
+  .inputs({ genes: ScoredGenes })
+  .output(ARCHS4SignatureResults)
+  .resolve(async (props) => {
+    const up: Record<string, true> = {}
+    const down: Record<string, true> = {}
+    props.inputs.genes.forEach(({ term, zscore }) => {
+      if ((typeof zscore === 'number' && zscore >= 1.645) || zscore === 'inf') up[term] = true
+      else if ((typeof zscore === 'number' && zscore <= -1.645) || zscore === '-inf') down[term] = true
+    })
+    const req = await fetch(`https://maayanlab.cloud/rookpy/signature`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 'geneset',
+        signatureName: 'playbook-workflow-builder.cloud input',
+        species: species.toLocaleLowerCase(),
+        upgenes: Object.keys(up),
+        downgenes: Object.keys(down),
+      }),
+    })
+    if (!req.ok) throw new Error(`ARCHS4 Signature Search Error: ${await req.text()}`)
+    return {
+      samples: z.object({
+        name: z.string(),
+        samples: z.array(z.number()),
+      }).parse(await req.json()).samples.map(sample => `GSM${sample}`)
+    }
+  })
+  .story(props => `Reversers and mimickers from GEO signatures were identified using ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`)
+  .build()
+)

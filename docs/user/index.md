@@ -7,7 +7,7 @@ This user guide is broken up into several documents describing different aspects
 - [Publishing Workfows as BioCompute Objects](./biocompute.md)
 - [Metabolomics GeneID User Guide](./geneidconv.md)
 - [Metabolomics MetGENE User Guide](./metgene.md)
-- [Using the Playbook with CAVATICA](./docs/user/cavatica.md)
+- [Using the Playbook with CAVATICA](./cavatica.md)
 - [Using the Playbook REST API](./api.md)
 
 Looking for the [Developer Guide](../index.md)?

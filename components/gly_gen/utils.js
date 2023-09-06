@@ -1,3 +1,5 @@
+// import * as fs from 'fs';
+
 async function resolveFilteredResult(cannonicalAccession) {
   const resolvedDetail = await fetch(`https://api.glygen.org/protein/detail/${cannonicalAccession}/`, {
     method: 'POST',
@@ -7,6 +9,7 @@ async function resolveFilteredResult(cannonicalAccession) {
     },
   });
   const intermediateResult = await resolvedDetail.json();
+  // fs.writeFileSync('intermediate_result.json', JSON.stringify(intermediateResult, null, 2));
   const filteredProteinName = intermediateResult.protein_names.filter(
     (name) => { 
       return(name.type === "recommended"); 
@@ -18,6 +21,7 @@ async function resolveFilteredResult(cannonicalAccession) {
   intermediateResult.species = intermediateResult.species[0];
   intermediateResult.protein_names = filteredProteinName[0];
   intermediateResult.species.taxid = intermediateResult.species.taxid.toString();
+  intermediateResult.glycosylation_protein = {glycosylation: intermediateResult.glycosylation?.some(item => 'glytoucan_ac' in item) || false};
   return intermediateResult;
 }
 

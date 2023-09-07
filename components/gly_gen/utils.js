@@ -21,7 +21,7 @@ async function resolveFilteredResult(cannonicalAccession) {
   intermediateResult.species = intermediateResult.species[0];
   intermediateResult.protein_names = filteredProteinName[0];
   intermediateResult.species.taxid = intermediateResult.species.taxid.toString();
-  intermediateResult.glycosylation_protein = {glycosylation: intermediateResult.glycosylation?.some(item => 'glytoucan_ac' in item) || false};
+  intermediateResult.glycoprotein = {glycosylation: intermediateResult.glycosylation?.some(item => 'glytoucan_ac' in item) || false};
   return intermediateResult;
 }
 

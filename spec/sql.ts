@@ -24,6 +24,7 @@ export type TypedSchema<T = {}> = {
   field_sql: {[K in keyof T]: string}
   schema_up: string
   schema_down: string
+  on_set_extra: [string, string, any][]
   js?: (db: any) => Promise<Array<{[K in keyof T]: Decoded<T[K]>}>>
 }
 export type TypedSchemaRecord<Schema> = Schema extends TypedSchema<infer T> ? {[K in keyof T]: Decoded<T[K]>} : never
@@ -36,6 +37,7 @@ export type TableSchema<T = {}> = {
   field_sql: {[K in keyof T]: string}
   field_extra_sql: {[K in keyof T]: string}
   extra_sql: string[]
+  on_set_extra: [string, string, any][]
 }
 
 /**
@@ -59,6 +61,7 @@ export class Table<T = {}> {
       field_sql: {},
       field_extra_sql: {},
       extra_sql: [],
+      on_set_extra: [],
     })
   }
   field<S extends string, D, E = D>(name: S, sql: string, extra_sql: string, type: z.ZodType<D> | Codec<D, E>, opts?: { primaryKey?: boolean, default?: () => D }) {
@@ -77,8 +80,14 @@ export class Table<T = {}> {
       extra_sql: [...this.t.extra_sql, extra_sql],
     })
   }
+  onSetExtra(key: string, value: string, js: any) {
+    return new Table({
+      ...this.t,
+      on_set_extra: [...this.t.on_set_extra, [key, value, js]],
+    })
+  }
   build() {
-    const { name, field_codecs, field_sql, field_extra_sql } = this.t
+    const { name, field_codecs, field_sql, field_extra_sql, on_set_extra } = this.t
     const field_pk = dict.items(this.t.field_pk).filter(({ value }) => !!value).map(({ key }) => key)
     if (field_pk.length <= 0) throw new Error(`Missing primary key on ${name}`)
     const field_default = dict.init(dict.items(this.t.field_default).filter(({ value }) => !!value))
@@ -96,7 +105,7 @@ export class Table<T = {}> {
     ].join('\n')
 
     const schema_down = `drop table ${JSON.stringify(this.t.name)};`
-    return { codec, name, field_sql, field_pk, field_default, field_codecs, schema_up, schema_down } as TypedSchema<T>
+    return { codec, name, field_sql, field_pk, field_default, field_codecs, schema_up, schema_down, on_set_extra } as TypedSchema<T>
   }
 }
 

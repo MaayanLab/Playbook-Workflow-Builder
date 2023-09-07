@@ -507,6 +507,15 @@ export default class FPPRG {
         })
       }
       this.processTable[process.id] = process
+    } else {
+      await this.db.objects.process.update({
+        where: {
+          id: process.id
+        },
+        data: {
+          id: process.id
+        }
+      })
     }
     return this.processTable[process.id] as Process
   }
@@ -634,6 +643,15 @@ export default class FPPRG {
         }
       })
       this.dataTable[data.id] = data
+    } else {
+      await this.db.objects.data.update({
+        where: {
+          id: data.id
+        },
+        data: {
+          id: data.id
+        }
+      })
     }
     return this.dataTable[data.id]
   }
@@ -760,6 +778,15 @@ export default class FPPRG {
         throw e
       }
       this.fplTable[fpl.id] = fpl
+    } else {
+      await this.db.objects.fpl.update({
+        where: {
+          id: fpl.id
+        },
+        data: {
+          id: fpl.id
+        }
+      })
     }
     return this.fplTable[fpl.id]
   }

@@ -1,16 +1,18 @@
 import { SQL, Table, View } from '@/spec/sql'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
-import { z_uuid } from '@/utils/zod'
+import { z_bigint_codec, z_uuid } from '@/utils/zod'
 
 export const data = Table.create('data')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())
   .field('value', 'varchar', 'not null', z.string())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
+  .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
   .build()
 
-export const data_trigger = SQL.create()
+export const data_notify = SQL.create()
   .up(`
     create trigger data_notify after insert on data
     for each row execute procedure notify_trigger('data');
@@ -25,9 +27,11 @@ export const process = Table.create('process')
   .field('type', 'varchar', 'not null', z.string())
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
+  .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
   .build()
 
-export const process_trigger = SQL.create()
+export const process_notify = SQL.create()
   .up(`
     create trigger process_notify after insert on process
     for each row execute procedure notify_trigger('process');
@@ -105,7 +109,7 @@ export const cell_metadata = Table.create('cell_metadata')
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 
-export const cell_metadata_trigger = SQL.create()
+export const cell_metadata_notify = SQL.create()
   .up(`
     create trigger cell_metadata_notify after insert on cell_metadata
     for each row execute procedure notify_trigger('cell_metadata');
@@ -124,7 +128,7 @@ export const playbook_metadata = Table.create('playbook_metadata')
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .build()
 
-export const playbook_metadata_trigger = SQL.create()
+export const playbook_metadata_notify = SQL.create()
   .up(`
     create trigger playbook_metadata_notify after insert on playbook_metadata
     for each row execute procedure notify_trigger('playbook_metadata');
@@ -141,9 +145,11 @@ export const fpl = Table.create('fpl')
   .field('playbook_metadata', 'uuid', 'references playbook_metadata ("id") on delete cascade', z_uuid().nullable())
   .field('cell_metadata', 'uuid', 'references cell_metadata ("id") on delete cascade', z_uuid().nullable())
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
+  .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
   .build()
 
-export const fpl_trigger = SQL.create()
+export const fpl_notify = SQL.create()
   .up(`
     create trigger fpl_notify after insert on fpl
     for each row execute procedure notify_trigger('fpl');

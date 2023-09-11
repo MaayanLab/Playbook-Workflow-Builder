@@ -117,5 +117,3 @@ export * from "./viz/kf_barplot"
 components.push("viz/kf_barplot")
 export * from "./viz/plotly"
 components.push("viz/plotly")
-export * from "./gly_gen"
-components.push("gly_gen")

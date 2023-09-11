@@ -117,7 +117,8 @@ export const GlyGenProtein = MetaNode('GGP')
 // .prompt(() => {
 // })
 .story(props =>
-  `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs ? props.inputs.gene.symbol : 'the gene'}.`
+  // TODO: re-write story sentence 
+  `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`
 )
 .build()
 

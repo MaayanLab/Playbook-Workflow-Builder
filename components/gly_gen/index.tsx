@@ -35,6 +35,9 @@ export const GlyGenProteinResponse = z.object({
       name: z.string(),
       common_name: z.string(),
       taxid: z.string(),
+    }),
+    glycoprotein: z.object({
+      glycosylation: z.boolean()
     })
   })
 
@@ -67,12 +70,13 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
   .view( data => (
     <div>
         <div>Gene Name: <b>{data.gene.name}</b></div>
+        <div>UniProtKB Accession: {data.uniprot.uniprot_canonical_ac}</div>
         <div>Gene location: Chromosome: {data.gene.locus.chromosome} ({data.gene.locus.start_pos} - {data.gene.locus.end_pos}, '{data.gene.locus.strand}' strand)</div>
         <div>UniProtKB ID: {data.uniprot.uniprot_id}</div>
-        <div>UniProtKB Accession: {data.uniprot.uniprot_canonical_ac}</div>
         <div>Protein Length: <b>{data.uniprot.length}</b></div>
         <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
         <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
+        <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
     </div>
   ))
   .build()
@@ -113,8 +117,10 @@ export const GlyGenProtein = MetaNode('GGP')
 // .prompt(() => {
 // })
 .story(props =>
-  `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs ? props.inputs.gene.symbol : 'the gene'}.`
+  // TODO: re-write story sentence to make sense with protein term input (previous gene value removed to prevent `npm run build` error)
+  `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`
 )
+
 .build()
 
 export const GlyGenProteinProduct = MetaNode('GGPP')

@@ -117,9 +117,10 @@ export const GlyGenProtein = MetaNode('GGP')
 // .prompt(() => {
 // })
 .story(props =>
-  // TODO: re-write story sentence 
+  // TODO: re-write story sentence to make sense with protein term input (previous gene value removed to prevent `npm run build` error)
   `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`
 )
+
 .build()
 
 export const GlyGenProteinProduct = MetaNode('GGPP')

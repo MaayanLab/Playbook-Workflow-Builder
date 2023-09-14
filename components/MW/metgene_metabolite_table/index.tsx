@@ -1,6 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
+import { FileDesURLC } from '../MetENP_on_MetSet'
 import { additional_info_icon, drug_icon } from '@/icons';
 
 const MetGeneMetObjC = z.object({
@@ -28,6 +29,13 @@ export const MetGeneMetObjArray2C = z.array(
 
 export type MetGeneMetObjArray2 = z.infer<typeof MetGeneMetObjArray2C>
 
+// Mano: 2023/08/01: To allow getting just the file URL (the file will have the actual 2D-array json content)
+// Schema for output from application of MetENP on a list of metabolites (MetaboliteSet)
+export const MGMetTableInfoC = z.object({
+  jsonfile: FileDesURLC,
+  contents: MetGeneMetObjArray2C
+})
+export type MGMetTableInfo = z.infer<typeof MGMetTableInfoC>
 
 // A unique name for your data type is used here
 export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
@@ -39,7 +47,8 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
-  .codec(MetGeneMetObjArray2C)
+  //.codec(MetGeneMetObjArray2C) // Mano: 2023/08/03: Original
+  .codec(MGMetTableInfoC)
   // react component rendering your data goes here
   .view(data => {
     const heading1 = "Gene"
@@ -48,10 +57,30 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
     const heading4 = "KEGG_REACTION_ID"
     const heading5 = "METSTAT_LINK"
 
+    const MaxRows2Show = 50;
+    const ng = data.contents.length;
+    const arrlen:number[] = data.contents.map(x=>x.length);
+    let arrlen_cumsum: number[] = [];  
+    arrlen.reduce( (prev, curr,i) =>  arrlen_cumsum[i] = prev + curr , 0 );
+    //console.log(arrlen); console.log(arrlen_cumsum);
+    //window.alert(arrlen); window.alert(arrlen_cumsum);
+
+    let isLessThanMax = (x: number) => x < MaxRows2Show;
+    //didn't work: let ng2show = arrlen_cumsum.findLastIndex(isLessThanMax); if(ng2show < 0) ng2show = 0; // Math.min(MaxRows2Show, ng);
+    let ng2show = 0; for(let ii = 0; ii < arrlen_cumsum.length; ii++){ ng2show = ii; if(arrlen_cumsum[ii] > MaxRows2Show) {break;}}
+    // Show up to the point, total numrows so far is about less than MaxRows2Show, OK to show it for next gene but no more
+
+    ng2show = ng2show + 1; // actual number rather than index
+    let ExtraText_if_more_rows = "";
+    if(ng2show < ng) ExtraText_if_more_rows = ` The tables for the first ${ng2show} genes are shown below.`;
+
+    // Below, data.contents is array of array of objects; trying to show at most 50 rows
     return (
       <div>
         <h2>MetGENE metabolites</h2>
-        {data.map((arrayVal:MetGeneMetObjArray, index:number) => (
+        <font color="#0000F0"><h3>Full table as a json file is available at <a href = {`${data.jsonfile.FileURL}`} target = "__blank">{data.jsonfile.FileDescription}</a>.
+        {ExtraText_if_more_rows}</h3></font>
+        {data.contents.slice(0, ng2show).map((arrayVal:MetGeneMetObjArray, index:number) => (
           <div key={index}>
 
             <table>

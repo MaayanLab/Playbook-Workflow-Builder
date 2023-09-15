@@ -61,7 +61,7 @@ export class PgDatabase implements DbDatabase {
       await self.boss.start()
       await self.subscriber.connect()
       await self.subscriber.listenTo('on_insert')
-      console.log('ready')
+      // console.log('ready')
     })(this).catch((error) => {
       console.error('Failed to initialize subscriber', error)
       process.exit(1)

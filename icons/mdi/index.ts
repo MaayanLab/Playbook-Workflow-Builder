@@ -1,5 +1,5 @@
-import { mdiApplicationExport } from '@mdi/js'; export const export_icon = { path: mdiImport, title: 'Export', size: 24 }
-import { mdiApplicationImport } from '@mdi/js'; export const import_icon = { path: mdiImport, title: 'Import', size: 24 }
+import { mdiApplicationExport } from '@mdi/js'; export const export_icon = { path: mdiApplicationExport, title: 'Export', size: 24 }
+import { mdiApplicationImport } from '@mdi/js'; export const import_icon = { path: mdiApplicationImport, title: 'Import', size: 24 }
 import { mdiArrowRight } from '@mdi/js'; export const rightarrow_icon = { path: mdiArrowRight, size: 24 }
 import { mdiBiohazard } from '@mdi/js'; export const tumor_icon = { path: mdiBiohazard, title: 'Tumor', size: 24 }
 import { mdiCameraMeteringMatrix } from '@mdi/js'; export const tissue_icon = { path: mdiCameraMeteringMatrix, title: 'Tissue', size: 24 }

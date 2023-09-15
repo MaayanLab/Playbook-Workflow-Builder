@@ -4,36 +4,37 @@ import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
+import { GraphPlot } from '@/components/viz/graph'
+import FormData from 'form-data'
 
 const CTDResponseInfoC = z.object({
-    "highlyConnectedGenes": z.any(),
-    "guiltyByAssociationGenes": z.any(),
-    "jsonGraph": z.object({
-      "nodes": z.array(z.object({
-        "name": z.string(),
-        "type": z.string()
-      })),
-      "interactions": z.array(z.object({
-        "source": z.string(),
-        "target": z.string()
-      })),
-    })
-});
+  "highlyConnectedGenes": z.any(),
+  "guiltyByAssociationGenes": z.any(),
+  "jsonGraph": z.object({
+    "nodes": z.array(z.object({
+      "id": z.string().optional(),
+      "name": z.string().optional(),
+      "type": z.string()
+    })),
+    "edges": z.any().optional(),
+    "interactions": z.array(z.object({
+      "source": z.string(),
+      "target": z.string()
+    })).optional(),
+  })
+})
 export type CTDResponseInfo = z.infer<typeof CTDResponseInfoC>
 
 export async function getCTDFileResponse(formData: any): Promise<CTDResponseInfo> {
-  const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/file`, {
+  const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/file`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
     body: formData
   })
   return await res.json()
 }
 
 export async function getCTDGenSetResponse(strValue: string): Promise<CTDResponseInfo> {
-  const res = await fetch(`http://5.161.50.225:8018/rest/playbook_ctd/ctd/geneList`, {
+  const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/geneList`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -60,6 +61,7 @@ export const CTDResponseInfo = MetaNode('CTDResponseInfo')
     )
   }).build()
 
+/* kegg is not used for now because of licencing issues
 export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
   .meta({
     label: `Perform CTD with Gene Set using KEGG`,
@@ -75,7 +77,7 @@ export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
     `CTD was performed with the gene set using KEGG.`
-  ).build()
+  ).build() */
 
 
 export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
@@ -97,6 +99,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
 
 
 // TODO: maybe a Gene Set From File can replace this?
+/* //kegg is not used for now because of licencing issues
 export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .meta({
     label: `Perform CTD with File using KEGG`,
@@ -114,7 +117,7 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
     return await getCTDFileResponse(formData);
   }).story(props =>
     `CTD was performed with the gene set using KEGG.`
-  ).build()
+  ).build()*/
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
@@ -191,9 +194,12 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     description: "CTD Graph Nodes"
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
-  .output(CTDGraph)
+  .output(GraphPlot)
   .resolve(async (props) => {
-    return props.inputs.ctdResponseInfo.jsonGraph;
+    return {
+      edges: props.inputs.ctdResponseInfo.jsonGraph.interactions || [],
+      nodes: props.inputs.ctdResponseInfo.jsonGraph.nodes.map(({ name, ...rest }) => ({ ...rest, id: name || '(no name)' })),
+    }
   }).story(props =>
     `Graph Nodes were extracted from the CTD output.`
   ).build()

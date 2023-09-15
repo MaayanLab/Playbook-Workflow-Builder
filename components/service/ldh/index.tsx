@@ -18,7 +18,7 @@ export const MyGeneInfoByTermC = z.object({
 })
 export type MyGeneInfoByTerm = z.infer<typeof MyGeneInfoByTermC>
 
-async function myGeneInfoByGeneTerm(geneTerm: string): Promise<MyGeneInfoByTerm> {
+export async function myGeneInfoFromLinkDataHub(geneTerm: string): Promise<MyGeneInfoByTerm> {
   const res = await fetch(`https://genboree.org/cfde-gene-dev/Gene/id/${encodeURIComponent(geneTerm)}`)
   return await res.json()
 }
@@ -33,7 +33,7 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
   .inputs({ geneInfo: GeneInfo })
   .output(RegulatoryElementSet)
   .resolve(async (props) => {
-    const response =  await myGeneInfoByGeneTerm(props.inputs.geneInfo.symbol);
+    const response =  await myGeneInfoFromLinkDataHub(props.inputs.geneInfo.symbol);
     if(response.data == null || response.data.ld == null){
       return {
         description: 'Regulatory Element set for gene is empty' ,

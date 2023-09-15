@@ -136,6 +136,9 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     const record = await this.findUnique({ where: update.where })
     if (record === null) return null
     Object.assign(record, JSON.parse(JSON.stringify(update.data)))
+    this.table.on_set_extra.forEach(([_k, _v, js]) => {
+      Object.assign(record, js(record))
+    })
     return record as TypedSchemaRecord<TypedSchema<T>>
   }
   upsert = async (upsert: Upsert<T>) => {

@@ -12,7 +12,7 @@ export type DbOptions<T extends {}> = {
 export type Db<T extends {}> = Omit<DbDatabase, 'objects'> & { objects: DbTables<T> }
 
 export default function create_database<T extends {[K in keyof T]: T[K]}>(options: DbOptions<T>): Db<T> {
-  console.log('creating db...')
+  // console.log('creating db...')
   if (options.connectionString) {
     const db = new PgDatabase(options.connectionString)
     const objects = dict.init(dict.items(options.schema).map(({ key, value }) => ({ key, value: new PgTable(value, db) })))

@@ -33,6 +33,7 @@
   ],
   "ts-node": {
     "require": [
+      "dotenv/config",
       "esm",
       "tsconfig-paths/register"
     ]

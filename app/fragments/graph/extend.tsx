@@ -9,6 +9,7 @@ import type { Metapath } from '@/app/fragments/metapath'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import pathWeights from '@/app/public/weights.json'
 import Head from 'next/head'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
@@ -33,6 +34,11 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
     })
     return selections
   }, [metapath, head])
+  const weights = React.useMemo(() => {
+    const key = ['Start', ...metapath.map(p => p.process.type)].slice(-2).join(' ')
+    const weights = pathWeights[key as keyof typeof pathWeights] || {}
+    return weights
+  }, [metapath])
   return (
     <>
       <Head>
@@ -50,6 +56,7 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
           dict.values(item.meta.tags || {})
             .flatMap(tagGroup => dict.items(tagGroup).filter(({ value }) => value).map(({ key }) => key)),
         ].join(' ')}
+        weights={weights}
       >{item => {
         // determine if multi-inputs are satisfiable
         const disabled = !array.all(

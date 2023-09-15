@@ -16,6 +16,7 @@
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "codegen:sql": "mkdir -p db/migrations && ts-node cli/build-sql.ts > db/migrations/00_init.sql",
     "codegen:table": "ts-node cli/build-table.ts > metanodes.tsv",
+    "codegen:analytics": "ts-node cli/dump-analytics.ts > analytics.tsv",
     "dev": "npx --workspace=app next dev",
     "dev:ssl": "concurrently \"npm run dev -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start:worker": "ts-node cli/resolve-process-worker.ts",

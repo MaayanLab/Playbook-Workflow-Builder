@@ -42,7 +42,7 @@ export class PgDatabase implements DbDatabase {
     this.subscriber.notifications.on('on_insert', async (rawPayload) => {
       const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
       const { table, operation, id } = payload
-      console.debug(`received on_insert from ${table}: ${id}`)
+      // console.debug(`received on_insert from ${table}: ${id}`)
       if (operation === 'INSERT') {
         this.notify(`insert:${table}`, { id })
       }
@@ -61,7 +61,7 @@ export class PgDatabase implements DbDatabase {
       await self.boss.start()
       await self.subscriber.connect()
       await self.subscriber.listenTo('on_insert')
-      console.log('ready')
+      // console.log('ready')
     })(this).catch((error) => {
       console.error('Failed to initialize subscriber', error)
       process.exit(1)
@@ -171,7 +171,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       with rows as (
         update ${JSON.stringify(this.table.name)} as tbl
-        set ${set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`).join(', ')}
+        set ${[
+          ...set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`),
+          ...this.table.on_set_extra.map(([key, value]) => `${key} = ${value}`),
+        ].join(', ')}
         where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning tbl.*
       ), assertion as (
@@ -191,7 +194,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       with rows as (
         update ${JSON.stringify(this.table.name)}
-        set ${set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`).join(', ')}
+        set ${[
+          ...set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`),
+        ...this.table.on_set_extra.map(([key, value]) => `${key} = ${value}`),
+        ].join(', ')}
         where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning 1
       ) select count(*) as count from rows;
@@ -214,7 +220,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
         ${insert_columns.map(col => `${JSON.stringify(col)} ${this.table.field_sql[col]}`).join(',')}
       )
       on conflict (${this.table.field_pk.map((key) => JSON.stringify(key)).join(',')})
-      do update set ${update_columns.map(col => `${JSON.stringify(col)} = EXCLUDED.${JSON.stringify(col)}`).join(',')}
+      do update set ${[
+        ...update_columns.map(col => `${JSON.stringify(col)} = EXCLUDED.${JSON.stringify(col)}`),
+        ...this.table.on_set_extra.map(([key, value]) => `${key} = EXCLUDED.${value}`),
+      ].join(',')}
       returning *;
     `)
     if (results.rowCount !== 1) throw new Error('Expected one got none')

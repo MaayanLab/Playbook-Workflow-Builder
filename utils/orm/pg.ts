@@ -42,7 +42,7 @@ export class PgDatabase implements DbDatabase {
     this.subscriber.notifications.on('on_insert', async (rawPayload) => {
       const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
       const { table, operation, id } = payload
-      console.debug(`received on_insert from ${table}: ${id}`)
+      // console.debug(`received on_insert from ${table}: ${id}`)
       if (operation === 'INSERT') {
         this.notify(`insert:${table}`, { id })
       }

@@ -22,7 +22,9 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   .resolve(async (props) => {
     var jsonArrayObject = []; // Added 2023/01/25
     const metName = props.inputs.metabolite
-    const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
+    //Original by Sumana: const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
+    // Mano: 2023/08/01: using 'match' instead of 'name' so that it can take even kegg_id
+    const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/match/${metName}/all`)    
     const res = await req.json()
 
     //return  res ; // older
@@ -55,8 +57,11 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     var jsonArrayObject = []
     //metNameSet.forEach(async metName => {
     for (let metName of metNameSet) {
-      const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
-      const res = await req.json()
+      //Original by Sumana: const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
+      // Mano: 2023/08/01: using 'match' instead of 'name' so that it can take even kegg_id
+      const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/match/${metName}/all`)
+
+    const res = await req.json()
 
       //console.log(res)
       // Mano: 2023/06/28: if res is null or [] (for metabolites like h+, CO2, H2O), it gets pushed as element and 
@@ -78,6 +83,6 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     //return props.inputs.input
   })
   .story(props =>
-    `The metabolites were then searched in the Metabolomics Workbench [REF] to extarct more information about the metabolites.`
+    `The metabolites were then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extarct more information about the metabolites.`
   )
   .build()

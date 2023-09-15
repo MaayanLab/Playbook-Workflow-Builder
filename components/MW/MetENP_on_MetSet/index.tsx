@@ -83,16 +83,19 @@ export const Call_MetENP_on_MetSet = MetaNode('Call_MetENP_on_MetSet')
   const output_format = "json"
   const method = "interaction_partners"
 
-  const metenp_api_url = "https://sc-cfdewebdev.sdsc.edu//MetENP/rest/";
+  //const metenp_api_url = "https://sc-cfdewebdev.sdsc.edu//MetENP/rest/";
+  const metenp_api_url = "https://bdcw.org//MetENP/rest/";
   const metenp_basic_param1 = "metclass/sub_class/updown_fillcolor/red__green__blue/enrich_stats/HG/no/1/";
   const sps_str = "sps/" + species_id + "/";
-  const metenp_basic_param2 = "padj/fdr/kegg_comp_path/FALSE/geneoption/TRUE/";
-  const PPI_optstr = "PPIopt/1_1000_400/";
+  // can set geneoption to FALSE as TRUE option can take a long time (> 10 mins fr RPE-> PPI -> Metgene metabolites)
+  const metenp_basic_param2 = "padj/fdr/kegg_comp_path/FALSE/geneoption/TRUE/"; // geneoption/TRUE
+  // If don't want PPI, set the first parameter to 0 below
+  const PPI_optstr = "PPIopt/1_1000_700/"; // "PPIopt/1_1000_700/";
   const location_optstr = "location/0/";
-  //const metlist_as_nlstr = props.inputs.mset.set.join("\n");
+  const metlist_as_nlstr = props.inputs.mset.set.join("\\n");
   
   // to test, can use a list of metabolites:
-  const metlist_as_nlstr = ["Acetic acid", "Glucose", "Fructose"].join("\\n"); // use \\n not just \n
+  //const metlist_as_nlstr = ["Acetic acid", "Glucose", "Fructose"].join("\\n"); // use \\n not just \n
  
   // List of metabolites should be separated by \n (actually \\n in terms of code) and 
   // triple encoded since the server seems to be decoding it twice before it goes into the REST php code.
@@ -101,7 +104,9 @@ export const Call_MetENP_on_MetSet = MetaNode('Call_MetENP_on_MetSet')
   
   const request_url = [metenp_api_url, metenp_basic_param1, sps_str, metenp_basic_param2, 
     PPI_optstr, location_optstr, metlist_optstr].join("");
-  
+
+  //console.log(request_url);
+
   const req = await fetch(request_url);
   const res = await req.json();
 

@@ -156,7 +156,7 @@ export const MGMetTable2MetSet_T = [
 .resolve(async (props) => {
   const arr2 = props.inputs.mt.contents;
 
-  var MetArr = []; // Mano: Added 2023/06/28
+  const MetArr = []; // Mano: Added 2023/06/28
 
   for (let i=0; i<arr2.length; i++) {
     for (let j=0; j<arr2[i].length; j++) {
@@ -175,8 +175,7 @@ export const MGMetTable2MetSet_T = [
   }
 
   // keep only unique metabolites
-  MetArr = [...new Set( MetArr )];
-  return {"description": `Metabolites (${id})`, "set": MetArr} ; // Added 2023/01/25
+  return {"description": `Metabolites (${id})`, "set": array.unique(MetArr)} ; // Added 2023/01/25
 })
 .story(props =>
   `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`

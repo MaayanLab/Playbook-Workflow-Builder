@@ -78,8 +78,9 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
     return (
       <div>
         <h2>MetGENE metabolites</h2>
-        <font color="#0000F0"><h3>Full table as a json file is available at <a href = {`${data.jsonfile.FileURL}`} target = "__blank">{data.jsonfile.FileDescription}</a>.
-        {ExtraText_if_more_rows}</h3></font>
+        <span style={{ color: "#0000F0" }}>
+          <h3>Full table as a json file is available at <a href={`${data.jsonfile.FileURL}`} target="__blank">{data.jsonfile.FileDescription}</a>. {ExtraText_if_more_rows}</h3>
+        </span>
         {data.contents.slice(0, ng2show).map((arrayVal:MetGeneMetObjArray, index:number) => (
           <div key={index}>
 

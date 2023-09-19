@@ -88,31 +88,24 @@ export const GlyGenProtein = MetaNode('GGP')
   icon: [glygen_icon],
   pagerank: 2,
 })
-.inputs({ protein: ProteinTerm })
+.inputs({ protein_uniprot_canonical_ac: ProteinTerm })
 .output(GlyGenProteinResponseNode)
 .resolve(async (props) => {
-  console.log("===> Got protein input %s", props.inputs.protein);
-  const id_request = await fetch('https://api.glyGen.org/protein/search/', {
+  console.log("===> Got protein input %s", props.inputs.protein_uniprot_canonical_ac);
+  const protein_response = await fetch(
+    'https://api.glyGen.org/protein/detail/'.concat(props.inputs.protein_uniprot_canonical_ac, '/'), 
+    {
     method: 'POST',
     headers: {
       accept: 'application/json',
      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ protein_name: props.inputs.protein }),
+    // body: JSON.stringify({ protein_name: props.inputs.protein }),
   })
-  const id = await id_request.json()
-  console.log("===> Got protein list %s", id);
-  const protein_response = await fetch('https://api.glyGen.org/protein/list/', {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ id: id['list_id'] }),
-    })
-  const searchResult = await protein_response.json()
-  const filteredResult = filterGlyGenResults(searchResult, 'protein', props.inputs.protein);
-  return filteredResult;
+  const protein = await protein_response.json()
+  // console.log("===> Got protein list %s", JSON.stringify(id));
+  // const filteredResult = filterGlyGenResults(searchResult, 'protein', props.inputs.protein);
+  return protein;
 })
 // .prompt(() => {
 // })

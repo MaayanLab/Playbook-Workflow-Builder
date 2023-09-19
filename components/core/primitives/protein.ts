@@ -19,14 +19,14 @@ export const Protein = {
   extra: {
     term: {
       meta: {
-        example: 'HGF',
+        example: 'P14210',
         pagerank: 7,
       },
       // autocomplete: useHarmonizomeGeneSuggestions,
     },
     set: {
       meta: {
-        example: { description: 'Example protein set', set: ['HGF', 'ADORA2A',] },
+        example: { description: 'Example protein set', set: ['P14210', 'P29274',] },
         pagerank: 6,
       },
     },

@@ -1,6 +1,6 @@
 // import * as fs from 'fs';
 
-async function resolveFilteredResult(cannonicalAccession) {
+export async function resolveFilteredResult(cannonicalAccession) {
   const resolvedDetail = await fetch(`https://api.glygen.org/protein/detail/${cannonicalAccession}/`, {
     method: 'POST',
     headers: {

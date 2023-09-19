@@ -4,7 +4,7 @@ import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon, protein_icon } from '@/icons'
 import { GeneTerm, ProteinTerm } from '@/components/core/input/term'
-import { filterGlyGenResults } from './utils'
+import { filterGlyGenResults, resolveFilteredResult } from './utils'
 import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
 import { filter } from '@/utils/dict'
 
@@ -92,20 +92,11 @@ export const GlyGenProtein = MetaNode('GGP')
 .output(GlyGenProteinResponseNode)
 .resolve(async (props) => {
   console.log("===> Got protein input %s", props.inputs.protein_uniprot_canonical_ac);
-  const protein_response = await fetch(
-    'https://api.glyGen.org/protein/detail/'.concat(props.inputs.protein_uniprot_canonical_ac, '/'), 
-    {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-     'Content-Type': 'application/json',
-    },
-    // body: JSON.stringify({ protein_name: props.inputs.protein }),
-  })
-  const protein = await protein_response.json()
+  const protein_response = await resolveFilteredResult(props.inputs.protein_uniprot_canonical_ac);
+  // const protein = await protein_response.json()
   // console.log("===> Got protein list %s", JSON.stringify(id));
   // const filteredResult = filterGlyGenResults(searchResult, 'protein', props.inputs.protein);
-  return protein;
+  return protein_response;
 })
 // .prompt(() => {
 // })

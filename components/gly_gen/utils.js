@@ -23,8 +23,22 @@ export async function resolveFilteredResult(cannonicalAccession) {
   intermediateResult.species.taxid = intermediateResult.species.taxid.toString();
   // Q96F25: false test case 
   // HGF: true test case
+  if (!intermediateResult.glycosylation) {
+    intermediateResult.glycoprotein.glycosylation_data = [];
+  } else {
+    intermediateResult.glycosylation = intermediateResult.glycosylation.map(tag => {
+      return {
+        ...tag,
+        residue: tag.residue || '',
+        site_category: tag.site_category || '',
+        type: tag.type || '',
+        glytoucan_ac: tag.glytoucan_ac || ''
+      };
+    });
+  }
   intermediateResult.glycoprotein = {
-    glycosylation: intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein'
+    glycosylation: intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein',
+    glycosylation_data: intermediateResult.glycosylation
   }
   return intermediateResult;
 }
@@ -51,3 +65,29 @@ export function filterGlyGenResults(result, prop_type, prop_name) {
     }
   }
 
+export function GlycosylationTable({glycosylationData, uniprot_canonical_ac}) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>UniProtKB Ac</th>
+          <th>Residue</th>
+          <th>Glycosylation Site Category</th>
+          <th>Glycosylation Type</th>
+          <th>GlyTouCan Ac</th>
+        </tr>
+      </thead>
+      <tbody>
+        {glycosylationData.map((entry, index) => (
+          <tr key = {index}>
+            <td>{uniprot_canonical_ac}</td>
+            <td>{entry.residue}</td>
+            <td>{entry.site_category}</td>
+            <td>{entry.type}</td>
+            <td>{entry.glytoucan_ac}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}

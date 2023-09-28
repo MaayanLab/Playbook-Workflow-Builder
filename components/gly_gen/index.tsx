@@ -4,9 +4,16 @@ import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon, protein_icon } from '@/icons'
 import { GeneTerm, ProteinTerm } from '@/components/core/input/term'
-import { filterGlyGenResults, resolveFilteredResult } from './utils'
+import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable } from './utils'
 import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
 import { filter } from '@/utils/dict'
+
+const GlycosylationEntry = z.object({
+  residue: z.string(),
+  site_category: z.string(),
+  type: z.string(),
+  glytoucan_ac: z.string()
+}); 
 
 export const GlyGenProteinResponse = z.object({
     gene: z.object({
@@ -37,7 +44,8 @@ export const GlyGenProteinResponse = z.object({
       taxid: z.string(),
     }),
     glycoprotein: z.object({
-      glycosylation: z.boolean()
+      glycosylation: z.boolean(),
+      glycosylation_data: z.array(GlycosylationEntry).optional()
     })
   })
 
@@ -77,6 +85,12 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
         <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
         <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
         <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
+        <div>{data.glycoprotein.glycosylation_data && data.glycoprotein.glycosylation_data.length > 0 && (
+          <GlycosylationTable
+            glycosylationData={data.glycoprotein.glycosylation_data}
+            uniprot_canonical_ac={data.uniprot.uniprot_canonical_ac}
+          />
+        )}</div>
     </div>
   ))
   .build()

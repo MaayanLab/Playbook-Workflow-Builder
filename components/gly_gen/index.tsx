@@ -45,7 +45,7 @@ export const GlyGenProteinResponse = z.object({
     }),
     glycoprotein: z.object({
       glycosylation: z.boolean(),
-      glycosylation_data: z.array(GlycosylationEntry).optional()
+      glycosylation_data: z.array(GlycosylationEntry)
     })
   })
 
@@ -85,7 +85,7 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
         <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
         <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
         <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
-        <div>{data.glycoprotein.glycosylation_data && data.glycoprotein.glycosylation_data.length > 0 && (
+        <div>{data.glycoprotein.glycosylation && data.glycoprotein.glycosylation_data.length > 0 && (
           <GlycosylationTable
             glycosylationData={data.glycoprotein.glycosylation_data}
             uniprot_canonical_ac={data.uniprot.uniprot_canonical_ac}

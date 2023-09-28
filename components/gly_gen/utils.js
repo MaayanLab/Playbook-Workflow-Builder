@@ -23,22 +23,17 @@ export async function resolveFilteredResult(cannonicalAccession) {
   intermediateResult.species.taxid = intermediateResult.species.taxid.toString();
   // Q96F25: false test case 
   // HGF: true test case
-  if (!intermediateResult.glycosylation) {
-    intermediateResult.glycoprotein.glycosylation_data = [];
-  } else {
-    intermediateResult.glycosylation = intermediateResult.glycosylation.map(tag => {
-      return {
-        ...tag,
-        residue: tag.residue || '',
-        site_category: tag.site_category || '',
-        type: tag.type || '',
-        glytoucan_ac: tag.glytoucan_ac || ''
-      };
-    });
-  }
+  const isGlycosylation = intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein';
+  const glycosylationData = intermediateResult.glycosylation ? intermediateResult.glycosylation.map(tag => ({
+    ...tag,
+    residue: tag.residue || '',
+    site_category: tag.site_category || '',
+    type: tag.type || '',
+    glytoucan_ac: tag.glytoucan_ac || ''
+  })) : [];
   intermediateResult.glycoprotein = {
-    glycosylation: intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein',
-    glycosylation_data: intermediateResult.glycosylation
+    glycosylation: isGlycosylation,
+    glycosylation_data: glycosylationData
   }
   return intermediateResult;
 }

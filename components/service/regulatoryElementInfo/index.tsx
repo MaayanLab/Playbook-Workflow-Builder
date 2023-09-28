@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
-import { GeneSet, VariantSet } from '@/components/core/input/set'
+import { GeneSet, RegulatoryElementSet, VariantSet } from '@/components/core/input/set'
 import { z } from 'zod'
 import { linkeddatahub_icon, datafile_icon } from '@/icons'
 import { Table, Cell, Column} from '@/app/components/Table'
@@ -195,4 +195,43 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
       </Table>
     )
   })
+  .build()
+
+export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFromRegElementTerm')
+  .meta({
+    label: 'Resolve Regulatory Element Set Info from Term',
+    description: 'Resolve Regulatory Element Set Info from term (id).',
+    icon: [linkeddatahub_icon],
+  })
+  .inputs({ regulatoryElementSet: RegulatoryElementSet })
+  .output(RegulatoryElementSetInfo)
+  .resolve(async (props) => {
+    let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
+    let response: MyRegulatoryElementSetInfo = [];
+    for(let i in regElemeIdsSet){
+      let rgId = regElemeIdsSet[i];
+      const rePositionData = await getRegElemPositionData(rgId);
+      let coordinates = null;
+      if(rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
+        coordinates = rePositionData.data.cCREQuery[0].coordinates;
+      }else{
+        coordinates = {
+            chromosome: "",
+            start: 0,
+            end: 0
+        };
+      }
+      let rgObj = {
+        entId: rgId,
+        ldhId: rgId,
+        entContent: {
+          coordinates: coordinates
+        }
+      }
+      response.push(rgObj);
+    }
+
+    return response;
+  })
+  .story(props => `Additional information about the regulatory elements was resolved.`)
   .build()

@@ -414,7 +414,6 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
   .output(AlleleSpecificEvidencesTable)
   .resolve(async (props) => {
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
-    console.log("Var CaId: "+varCaId)
     const response = await getGitDataHubVariantInfo(varCaId);
 
     var alleleSpecificEvidence: any = [];

@@ -70,5 +70,6 @@ export async function uploadFile(file: { url: string, size: number, sha256?: str
       },
     })
   }
-  return { url: file.url, filename: file.filename, sha256: file.sha256, size: file.size }
+  
+  return { url: file.url, filename: file.filename, sha256: file.sha256, size: file.size };
 }

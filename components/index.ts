@@ -81,6 +81,8 @@ export * from "./service/targetranger"
 components.push("service/targetranger")
 export * from "./service/variantinfo"
 components.push("service/variantinfo")
+export * from "./service/ctd"
+components.push("service/ctd")
 export * from "./viz/barplot"
 components.push("viz/barplot")
 export * from "./viz/bokeh"

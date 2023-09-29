@@ -7,8 +7,16 @@ import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
+import { Table, Cell, Column} from '@/app/components/Table'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+
+const fileURL_ObjC = z.object({
+  description: z.string().optional(),
+  url: z.string(),
+  filename: z.string(),
+  size: z.number(),
+});
 
 export const FileURL = MetaNode('FileURL')
   .meta({
@@ -16,12 +24,7 @@ export const FileURL = MetaNode('FileURL')
     description: 'URL to a File',
     icon: [file_icon],
   })
-  .codec(z.object({
-    description: z.string().optional(),
-    url: z.string(),
-    filename: z.string(),
-    size: z.number(),
-  }))
+  .codec(fileURL_ObjC)
   .view(({ url }) => (
     <div>
       <h2>File: {url}</h2>
@@ -64,11 +67,11 @@ export const FileInput = MetaNode('FileInput')
                   size: currentFile.size,
                 })
               } else {
-                const formData = new FormData(evt.currentTarget)
-                const rawDescription = formData.get('description')
-                const description = rawDescription === null ? undefined : rawDescription.toString()
-                const { file: [record] } = await clientUploadFile(formData)
-                props.submit({ description, ...record })
+                const formData = new FormData(evt.currentTarget);
+                const rawDescription = formData.get('description');
+                const description = rawDescription === null ? undefined : rawDescription.toString();
+                const { file: [record] } = await clientUploadFile(formData);
+                props.submit({ description, ...record });
               }
             }}
           >
@@ -100,7 +103,9 @@ export const FileInput = MetaNode('FileInput')
                 name="description"
                 className="bp4-input"
                 placeholder={`File description`}
-                onChange={evt => {setCurrentFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                onChange={evt => {
+                  setCurrentFile(({ description: _, url }) => ({ url, description: evt.target.value }))
+                }}
                 value={currentFile.description||''}
               />
             </div>
@@ -139,6 +144,43 @@ export const FileInput = MetaNode('FileInput')
   )
   .build()
 
+  // Multiple File input/submit Handlers
+  export const MultiFileURL = MetaNode('MultiFileURL')
+  .meta({
+    label: 'Multiple File URL',
+    description: 'URLs to multiple File',
+    icon: [file_icon],
+  })
+  .codec(z.array(fileURL_ObjC))
+  .view(fileURLs => {
+    return (
+      <Table
+      height={500}
+      cellRendererDependencies={[fileURLs]}
+      numRows={fileURLs.length}
+      enableGhostCells
+      enableFocusedCell
+      >
+      <Column
+        name="File Name"
+        cellRenderer={row => <Cell key={row+''}>{fileURLs[row].filename}</Cell>}
+      />
+      <Column
+        name="URL"
+        cellRenderer={row => <Cell key={row+''}>{fileURLs[row].url}</Cell>}
+      />
+      <Column
+        name="Size"
+        cellRenderer={row => <Cell key={row+''}>{fileURLs[row].size}</Cell>}
+      />
+      <Column
+        name="Description"
+        cellRenderer={row => <Cell key={row+''}>{fileURLs[row].description}</Cell>}
+      />
+      </Table>
+    )
+  })
+  .build()
 
   export const MultiFileInputForCTD = MetaNode('MultiFileInputForCTD')
   .meta({
@@ -147,23 +189,26 @@ export const FileInput = MetaNode('FileInput')
     icon: [input_icon],
   })
   .inputs()
-  .output(FileURL)
+  .output(MultiFileURL)
   .prompt(props => { 
     const { data: session } = useSessionWithId()
-    const output = React.useMemo(() => props.output || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.output])
 
     const [geneListFile, setGeneListFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
     const geneListInputRef = React.useRef<HTMLInputElement>(null)
-    React.useEffect(() => {
-      setGeneListFile(output)
-    }, [output])
 
     const [adjMatrixFile, setAdjMatrixFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
     const adjMatrixInputRef = React.useRef<HTMLInputElement>(null)
-    React.useEffect(() => {
-      setAdjMatrixFile(output)
-    }, [output])
 
+    const output = React.useMemo(() => props.output || 
+                                        [{ description: undefined, url: undefined, filename: undefined, size: undefined },
+                                         { description: undefined, url: undefined, filename: undefined, size: undefined }], 
+                                        [props.output])
+    React.useEffect(() => {
+      setGeneListFile(output[0])
+    }, [output[0]])
+    React.useEffect(() => {
+      setAdjMatrixFile(output[1])
+    }, [output[1]])
     return (
       <div>
         {!session || !session.user ? (
@@ -174,27 +219,47 @@ export const FileInput = MetaNode('FileInput')
           <form
             className="my-2 inline-flex flex-col"
             onSubmit={async (evt) => {
-              evt.preventDefault()
-              if (geneListFile.url && geneListFile.url === props.output?.url && geneListFile.filename && geneListFile.size &&
-                        adjMatrixFile.url && adjMatrixFile.url === props.output?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
-                props.submit({
-                  description: geneListFile.description,
-                  url: geneListFile.url,
-                  filename: geneListFile.filename,
-                  size: geneListFile.size,
-                })
-              } else {
+              evt.preventDefault();
+              if (props.output != null && geneListFile.url && geneListFile.url === props.output[0]?.url && geneListFile.filename && geneListFile.size &&
+                        adjMatrixFile.url && adjMatrixFile.url === props.output[1]?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
+                props.submit([{
+                                description: geneListFile.description,
+                                url: geneListFile.url,
+                                filename: geneListFile.filename,
+                                size: geneListFile.size,
+                              },
+                              {
+                                description: adjMatrixFile.description,
+                                url: adjMatrixFile.url,
+                                filename: adjMatrixFile.filename,
+                                size: adjMatrixFile.size,
+                              }]
+                )
+              }else{
                 const formData = new FormData(evt.currentTarget)
-
-                
-                for (const pair of formData.entries()) {
-                  console.log(`${pair[0]}, ${pair[1]}`);
-                }
+                formData.delete("description");
                 /*
-                let rawDescription = formData.get('description');
-                let description = rawDescription === null ? undefined : rawDescription.toString();
-                let { file: [record] } = await clientUploadFile(formData);
-                props.submit({ description, ...record });*/
+                let rawDescription = formData.getAll('description').toString();
+                formData.delete("description");
+                formData.set("description", rawDescription)
+                let description = rawDescription === null ? undefined : rawDescription.toString(); */ 
+                let response = await clientUploadFile(formData);   
+                const geneSetFileReposne = response.geneSetFile[0];
+                const adjMatrixFileReponse = response.adjMatrixFile[0];             
+
+                props.submit([{
+                    description: "Gene list file",
+                    url: geneSetFileReposne.url,
+                    filename: geneSetFileReposne.filename,
+                    size: geneSetFileReposne.size,
+                  },
+                  {
+                    description: "Adj. Matrix File",
+                    url: adjMatrixFileReponse.url,
+                    filename: adjMatrixFileReponse.filename,
+                    size: adjMatrixFileReponse.size,
+                  }]
+                )
               }
             }}
           >
@@ -203,11 +268,11 @@ export const FileInput = MetaNode('FileInput')
               name="geneSetFile"
               className={classNames('file-input file-input-lg', { 'hidden': geneListFile.url })}
               onChange={evt => {
-                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
-                setGeneListFile(({ description, url: _ }) => ({ description, url }))
+                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output[0].url          
+                setGeneListFile(({ description, url: _ }) => ({ description, url }));
               }}
               type="file"
-              accept=".csv"
+              accept=".csv,.txt"
             />
             <div
               className={classNames('inline-flex flex-row items-center gap-4', { 'hidden': !geneListFile.url })}
@@ -227,7 +292,9 @@ export const FileInput = MetaNode('FileInput')
                 name="description"
                 className="bp4-input"
                 placeholder={`File description`}
-                onChange={evt => {setGeneListFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                onChange={evt => {
+                  setGeneListFile(({ description: _, url }) => ({ url, description: evt.target.value }))
+                }}
                 value={geneListFile.description||''}
               />
             </div>
@@ -244,15 +311,14 @@ export const FileInput = MetaNode('FileInput')
               </a>
             </div>
 
-
       
             <input
               ref={adjMatrixInputRef}
               name="adjMatrixFile"
               className={classNames('file-input file-input-lg', { 'hidden': adjMatrixFile.url })}
               onChange={evt => {
-                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output.url
-                setAdjMatrixFile(({ description, url: _ }) => ({ description, url }))
+                const url = evt.currentTarget && evt.currentTarget.files && evt.currentTarget.files[0] ? evt.currentTarget.files[0].name : output[1].url
+                setAdjMatrixFile(({ description, url: _ }) => ({ description, url }));
               }}
               type="file"
               accept=".csv"
@@ -275,7 +341,9 @@ export const FileInput = MetaNode('FileInput')
                 name="description"
                 className="bp4-input"
                 placeholder={`File description`}
-                onChange={evt => {setAdjMatrixFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
+                onChange={evt => {
+                  setAdjMatrixFile(({ description: _, url }) => ({ url, description: evt.target.value }))
+                }}
                 value={adjMatrixFile.description||''}
               />
             </div>
@@ -292,15 +360,11 @@ export const FileInput = MetaNode('FileInput')
               </a>
             </div>
 
-
-
-
-
             <Bp4Button
                 large
-                disabled={
-                  (geneListFile.url === undefined || (geneListFile.description === output.description && geneListFile.url === output.url)) ||
-                  (adjMatrixFile.url === undefined || (adjMatrixFile.description === output.description && adjMatrixFile.url === output.url))
+                disabled={        
+                  (geneListFile.url === undefined || (geneListFile.description === output[0].description && geneListFile.url === output[0].url)) ||
+                  (adjMatrixFile.url === undefined || (adjMatrixFile.description === output[1].description && adjMatrixFile.url === output[1].url))
                 }
                 type="submit"
                 text="Submit"
@@ -312,6 +376,7 @@ export const FileInput = MetaNode('FileInput')
     )
   })
   .story(props =>
-    `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
+    //`Files: ${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
+    ""
   )
   .build()

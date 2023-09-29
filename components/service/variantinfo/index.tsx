@@ -6,12 +6,8 @@ import { VariantSet } from '@/components/core/input/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
-<<<<<<< HEAD
 import { getRegElemPositionData } from '@/components/service/regulatoryElementInfo'
-=======
 import { downloadBlob } from '@/utils/download'
-//import internal from 'stream'
->>>>>>> ctd_multi_file_upload
 
 let caIdRegex = "^(CA|ca)[0-9]";
 let rsIdRegex = "^(RS|rs)[0-9]";

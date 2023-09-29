@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from '@/components/core/file'
+import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from '@/components/core/input/ctd_input'
 import { GeneSet } from '@/components/core/input/set'
 import { GraphPlot } from '@/components/viz/graph'
 import { z } from 'zod'

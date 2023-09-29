@@ -27,6 +27,8 @@ export * from "./core/error"
 components.push("core/error")
 export * from "./core/file"
 components.push("core/file")
+export * from "./core/input/ctd_input"
+components.push("core/input/ctd_input")
 export * from "./core/input/scored"
 components.push("core/input/scored")
 export * from "./core/input/set"

@@ -1,0 +1,14 @@
+{
+  "name": "ctd_input",
+  "version": "1.0.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": "Miroslav Milinkov - Persida Team <miroslav.milinkov@persida-bio.com>",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21"
+  }
+}

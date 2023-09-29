@@ -74,7 +74,7 @@ export const FileInput = MetaNode('FileInput')
                 props.submit({ description, ...record });
               }
             }}
-          >
+          >          
             <input
               ref={fileInputRef}
               name="file"
@@ -263,6 +263,7 @@ export const FileInput = MetaNode('FileInput')
               }
             }}
           >
+            <p style={{ fontSize: "16px" }}><b>Select gene list file</b>, acceptable file types: <b>.csv, .txt</b></p>
             <input
               ref={geneListInputRef}
               name="geneSetFile"
@@ -283,7 +284,7 @@ export const FileInput = MetaNode('FileInput')
                 }
               }}
             >
-              <button className="btn btn-lg">Choose Gene list File</button>
+              <button className="btn btn-lg">Gene List File</button>
               <span className="text-lg">{geneListFile.filename||geneListFile.url||'No file chosen'}</span>
             </div>
             <div className="bp4-input-group">
@@ -311,7 +312,7 @@ export const FileInput = MetaNode('FileInput')
               </a>
             </div>
 
-      
+            <p style={{ fontSize: "16px", marginTop: "20px" }}><b>Select Adj. Matrix file</b>, acceptable file type: <b>.csv</b></p>
             <input
               ref={adjMatrixInputRef}
               name="adjMatrixFile"
@@ -332,7 +333,7 @@ export const FileInput = MetaNode('FileInput')
                 }
               }}
             >
-              <button className="btn btn-lg">Choose Adj. Matrix File</button>
+              <button className="btn btn-lg">Adj. Matrix File</button>
               <span className="text-lg">{adjMatrixFile.filename||adjMatrixFile.url||'No file chosen'}</span>
             </div>
             <div className="bp4-input-group">

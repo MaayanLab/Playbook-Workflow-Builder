@@ -7,8 +7,14 @@ import { FileURL } from '@/components/core/file'
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { fileFromStream } from  '@/components/core/file/api/upload'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
+import { downloadUrl } from '@/utils/download'
 import { datafile_icon } from '@/icons'
+import { Table, Cell, Column} from '@/app/components/Table'
+import dynamic from 'next/dynamic'
 import FormData from 'form-data'
+
+
+const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
 const CTDResponseC = z.object({
   "highlyConnectedGenes": z.any(),
@@ -56,17 +62,51 @@ export async function getCTDPrecalculationsResponse(formData): Promise<Readable>
   });
 }
 
+export const CTD_Precalculations_RData = MetaNode('CTD_Precalculations_RData')
+  .meta({
+    label: 'CTD_Precalculations_RData',
+    description: '',
+    icon: [datafile_icon]
+  })
+  .codec(
+    z.object({
+      url: z.string(),
+      filename: z.string(),
+    })
+  )
+  .view(props => {
+    return (
+      <Table
+      cellRendererDependencies={[1]}
+      numRows={1}
+      downloads={{
+        'URL': () => downloadUrl(props.url, props.filename)
+      }}
+      >
+      <Column
+        name="Filename"
+        cellRenderer={row => <Cell key={row+''}>{props.filename}</Cell>}
+      />
+      <Column
+        name="URL"
+        cellRenderer={row => <Cell key={row+''}>{props.url}</Cell>}
+      />
+      </Table>
+    )
+  }).build()
+
+
 export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
   .meta({
     label: `Execute_CTD_Precalculations`,
     description: "Execute CTD Precalculations using a custom geme list and ajd. matrix file in order to get am RData file for the final step."
   })
   .inputs({ multiFileURL: MultiFileURL })
-  .output(FileURL)
+  .output(CTD_Precalculations_RData)
   .resolve(async (props) => {
     let geneListFile = props.inputs.multiFileURL[0];
     let adjMatrixFile = props.inputs.multiFileURL[1];
-  
+
     const geneListFileReader: any = await fileAsStream(geneListFile);
     const adjMatrixFileReader: any = await fileAsStream(adjMatrixFile);
     const formData = new FormData();
@@ -76,25 +116,11 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     const respone = await getCTDPrecalculationsResponse(formData);
     if (!respone.ok) throw new Error(await respone.text)
     if (respone.body === null) throw new Error('An unexpected error occurred')
-    // create a new file object from a stream
-    //const file = await fileFromStream(respone.body, `derived.${"Custom_RData_file"}`)
-    //return file;
-
-    const formData2 = new FormData();
-    formData2.append('customRData', respone.body, "Custom_RData_file.RData");
-    let response = await clientUploadFile(formData2);   
-
-    const rDataFileReponse = response.customRData[0];           
-
-    props.inputs.multiFileURL.push({
-      description: "RData file",
-      url: rDataFileReponse.url,
-      filename: rDataFileReponse.filename,
-      size: rDataFileReponse.size,
-    });
-
-  }).story(props =>
-    `Execute CTD Precalculations using a custom geme list and ajd. matrix file in order to get am RData file for the final step.`
+    //create a new file object from a stream
+    const file = await fileFromStream(respone.body, `derived.${"customRDataFile.RData"}`)
+    return file;
+  }).story(props =>   
+    "The two files where send to the CTD API for precalculations."
   ).build()
 
 export const CTDResponseInfo = MetaNode('CTDResponseInfo')

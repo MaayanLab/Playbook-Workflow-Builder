@@ -6,6 +6,7 @@ import { VariantSet } from '@/components/core/input/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
+import { downloadBlob } from '@/utils/download'
 //import internal from 'stream'
 
 let caIdRegex = "^(CA|ca)[0-9]";
@@ -341,6 +342,9 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             numRows={alleleSpecificEvidence.length}
             enableGhostCells
             enableFocusedCell
+            downloads={{
+              JSON: () => downloadBlob(new Blob([JSON.stringify(alleleSpecificEvidence)], { type: 'application/json;charset=utf-8' }), 'data.json')
+            }}
           >
             <Column
               name="LDH Id"
@@ -485,6 +489,9 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
         numRows={xqtlEvidences.length}
         enableGhostCells
         enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(xqtlEvidences)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
       >
         <Column
           name="LHD Id"
@@ -560,6 +567,9 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
         numRows={sourcesList.length}
         enableGhostCells
         enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(sourcesList)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
       >
         <Column
           name="Data Base Name"
@@ -654,6 +664,9 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
         numRows={GeneAssociationsList.length}
         enableGhostCells
         enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(GeneAssociationsList)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
       >
         <Column
           name="Gene ID/Name"
@@ -787,6 +800,9 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       numRows={externalRecordsSet.length}
       enableGhostCells
       enableFocusedCell
+      downloads={{
+        JSON: () => downloadBlob(new Blob([JSON.stringify(externalRecordsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+      }}
       >
         <Column
           name="Varinat CId"
@@ -873,6 +889,9 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       numRows={geneAssociationsSet.length}
       enableGhostCells
       enableFocusedCell
+      downloads={{
+        JSON: () => downloadBlob(new Blob([JSON.stringify(geneAssociationsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+      }}
       >
         <Column
           name="Variant CId"

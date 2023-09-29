@@ -7,6 +7,7 @@ import { gene_icon, linkeddatahub_icon, mygeneinfo_icon, file_transfer_icon, dat
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { CTDResponseInfo, getCTDGenSetResponse, getCTDFileResponse } from  '@/components/service/ctd'
+import { downloadBlob } from '@/utils/download'
 import FormData from 'form-data'
 
 export const MyGeneInfoHitC = z.object({
@@ -131,7 +132,10 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
         cellRendererDependencies={[regulatoryElementSet]}
         numRows={regulatoryElementSet.length}
         enableGhostCells
-        enableFocusedCell>
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}>
         <Column
           name="Entity id"
           cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}

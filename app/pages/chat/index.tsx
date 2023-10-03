@@ -12,8 +12,8 @@ const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
 
 function Component({ state, setState, component }: {
-  state: Record<number, string>, setState: React.Dispatch<React.SetStateAction<Record<number, string>>>,
-  component: { id: number, inputs: Record<string, number>, type: string, description: string, data?: string },
+  state: Record<number, any>, setState: React.Dispatch<React.SetStateAction<Record<number, any>>>,
+  component: { id: number, inputs: Record<string, number>, type: string, description: string, data?: any },
 }) {
   const metanode = krg.getProcessNode(component.type)
   React.useEffect(() => {
@@ -26,7 +26,7 @@ function Component({ state, setState, component }: {
     if (dict.keys(metanode.inputs).some(arg => !(component.inputs[arg] in state))) return
     const formData = new FormData()
     dict.keys(metanode.inputs).forEach((arg) => {
-      formData.append(arg, state[component.inputs[arg]])
+      formData.append(arg, JSON.stringify(state[component.inputs[arg]]))
     })
     fetch(`/api/resolver/${metanode.spec}`, {
       method: 'POST',

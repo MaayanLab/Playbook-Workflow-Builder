@@ -8,13 +8,23 @@ import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable } from '
 import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
 import { filter } from '@/utils/dict'
 
+
+// -------- Schema Definitions -------- // 
+
+
+/**
+ * Zod definition for the glycan data 
+ */
 const GlycosylationEntry = z.object({
-  residue: z.string(),
+  site_lbl: z.string(),
   site_category: z.string(),
   type: z.string(),
   glytoucan_ac: z.string()
 }); 
 
+/*
+ * Zod definition for the overall glygen protein data  
+ */
 export const GlyGenProteinResponse = z.object({
     gene: z.object({
       name: z.string(),
@@ -33,11 +43,6 @@ export const GlyGenProteinResponse = z.object({
     protein_names: z.object({
       name: z.string()
     }),
-    // mass: z.object({
-    //   chemical_mass: z.string()
-    // }),
-    // refseq_ac: z.string(),
-    // refseq_name: z.string(),
     species: z.object({
       name: z.string(),
       common_name: z.string(),
@@ -49,25 +54,14 @@ export const GlyGenProteinResponse = z.object({
     })
   })
 
-// TODO - List API(s)
 
-export type GlyGenProteinResponseType = z.infer<typeof GlyGenProteinResponse>
-// export type ProteinResponseType = z.infer<typeof ProteinResponse>
+// -------- Data Metanodes -------- // 
 
-// export const ProteinResponseNode = MetaNode('Protein')
-//   .meta({
-//     label: 'Basic Protein',
-//     description: 'Protein primitive type sourced from the GlyGen server',
-//     icon: [protein_icon],
-//   })
-//   .codec(ProteinResponse)
-//   .view( () => (
-//     <div>
-//       Results: Pending
-//     </div>)
-//   )
-//   .build()
 
+/**
+ * Data metanode for the glygen api protein response, defines how the protein api response should 
+ * be rendered in the UI 
+ */
 export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
   .meta({
     label: 'GlyGen Protein Products',
@@ -85,42 +79,74 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
         <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
         <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
         <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
+        <br />
         <div>{data.glycoprotein.glycosylation && data.glycoprotein.glycosylation_data.length > 0 && (
           <GlycosylationTable
-            glycosylationData={data.glycoprotein.glycosylation_data}
-            uniprot_canonical_ac={data.uniprot.uniprot_canonical_ac}
+            glycosylationData={
+              data.glycoprotein.glycosylation_data.length > 5
+              ? data.glycoprotein.glycosylation_data.slice(0, 5)
+              : data.glycoprotein.glycosylation_data
+            }
+            isPreview={data.glycoprotein.glycosylation_data.length > 5}
           />
         )}</div>
     </div>
   ))
   .build()
 
+/**
+ * Data metanode for the glycan list from a protein response, defines how the glycan information 
+ * contained within the protein response json should be rendered in the UI
+ */
+export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
+  .meta({
+    label: 'Glycoprotein Glycan Response Products',
+    description: 'Glycan product records in GlyGen',
+    icon: [glygen_icon],
+  })
+  .codec(GlyGenProteinResponse)
+  .view( data => (
+    <div>
+      <div>UniProtKB Accession: <b>{data.uniprot.uniprot_canonical_ac}</b></div>
+      <br/>
+      <GlycosylationTable
+        glycosylationData={data.glycoprotein.glycosylation_data}
+      />
+    </div>
+  ))
+  .build()
+
+
+// -------- Process Metanodes (all resolver process metanodes) -------- // 
+
+
+/**
+ * Process metanode for searching by protein name for protein products 
+ */
 export const GlyGenProtein = MetaNode('GGP')
-.meta({
-  label: 'Search GlyGen by Protein Name for Protein Products',
-  description: 'Find protein product records in GlyGen for the gene',
-  icon: [glygen_icon],
-  pagerank: 2,
-})
-.inputs({ protein_uniprot_canonical_ac: ProteinTerm })
-.output(GlyGenProteinResponseNode)
-.resolve(async (props) => {
-  console.log("===> Got protein input %s", props.inputs.protein_uniprot_canonical_ac);
-  const protein_response = await resolveFilteredResult(props.inputs.protein_uniprot_canonical_ac);
-  // const protein = await protein_response.json()
-  // console.log("===> Got protein list %s", JSON.stringify(id));
-  // const filteredResult = filterGlyGenResults(searchResult, 'protein', props.inputs.protein);
-  return protein_response;
-})
-// .prompt(() => {
-// })
-.story(props =>
-  // TODO: re-write story sentence to make sense with protein term input (previous gene value removed to prevent `npm run build` error)
-  `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`
-)
+  .meta({
+    label: 'Search GlyGen by Protein Name for Protein Products',
+    description: 'Find protein product records in GlyGen for the gene',
+    icon: [glygen_icon],
+    pagerank: 2,
+  })
+  .inputs({ protein_uniprot_canonical_ac: ProteinTerm })
+  .output(GlyGenProteinResponseNode)
+  .resolve(async (props) => {
+    console.log("===> Got protein input %s", props.inputs.protein_uniprot_canonical_ac);
+    const protein_response = await resolveFilteredResult(props.inputs.protein_uniprot_canonical_ac);
+    return protein_response;
+  })
+  .story(props =>
+    // TODO: re-write story sentence to make sense with protein term input (previous gene value removed to prevent `npm run build` error)
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`
+  )
+  .build()
 
-.build()
-
+/**
+ * Process metanode for searching the glygen database by gene name for protein products 
+ * given a GeneInfo 
+ */
 export const GlyGenProteinProduct = MetaNode('GGPP')
   .meta({
     label: 'Search GlyGen by Gene Name for Protein Products',
@@ -135,7 +161,7 @@ export const GlyGenProteinProduct = MetaNode('GGPP')
       method: 'POST',
       headers: {
         accept: 'application/json',
-       'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ gene_name: props.inputs.gene.symbol }),
     })
@@ -152,14 +178,16 @@ export const GlyGenProteinProduct = MetaNode('GGPP')
     const filteredResult = filterGlyGenResults(searchResult, 'gene', props.inputs.gene.symbol);
     return filteredResult;
   })
-  // .prompt(() => {
-  // })
   .story(props =>
     `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs ? props.inputs.gene.symbol : 'the gene'}.`
   )
   .build()
 
-  export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
+/**
+ * Process metanode for searching the glygen database by gene name for protein products 
+ * given a GeneTerm 
+ */
+export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
   .meta({
     label: 'Search GlyGen for Protein Products',
     description: 'Find protein product records in GlyGen for the gene',
@@ -176,6 +204,26 @@ export const GlyGenProteinProduct = MetaNode('GGPP')
     `Next, Gene Info was resolved From the Gene Term "${props.inputs ? props.inputs.gene : 'the gene'}" via mygene.info.`
   )
   .build()
+
+/**
+ * Process metanode to extract the glycan information from the protein prodct 
+ */
+export const GlycanInformation = MetaNode('GlycanInformation')
+  .meta({
+    label: 'Get Glycan Data from GlyGen Protein Response',
+    description: 'Get the Glycan data from GlyGen protein product records',
+    icon: [glygen_icon],
+    pagerank: 2,
+  })
+  .inputs({ glygenProteinResponse: GlyGenProteinResponseNode })
+  .output(GlycanViewResponseNode)
+  .resolve(async (props) => {
+    return props.inputs.glygenProteinResponse;
+  })
+  .story( props => 
+    'The glycan data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.'
+  )
+  .build() 
 
   // ===================================== TODO ===================================== 
   // export const GlyGenProteinQuery = MetaNode('GlyGenProteinQuery')
@@ -217,3 +265,25 @@ export const GlyGenProteinProduct = MetaNode('GGPP')
   // )
   // .build()
 
+// export type GlyGenProteinResponseType = z.infer<typeof GlyGenProteinResponse>
+
+ // mass: z.object({
+    //   chemical_mass: z.string()
+    // }),
+    // refseq_ac: z.string(),
+    // refseq_name: z.string(),
+
+// export type ProteinResponseType = z.infer<typeof ProteinResponse>
+// export const ProteinResponseNode = MetaNode('Protein')
+//   .meta({
+//     label: 'Basic Protein',
+//     description: 'Protein primitive type sourced from the GlyGen server',
+//     icon: [protein_icon],
+//   })
+//   .codec(ProteinResponse)
+//   .view( () => (
+//     <div>
+//       Results: Pending
+//     </div>)
+//   )
+//   .build()

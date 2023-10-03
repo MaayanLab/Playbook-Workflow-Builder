@@ -26,7 +26,7 @@ export async function resolveFilteredResult(cannonicalAccession) {
   const isGlycosylation = intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein';
   const glycosylationData = intermediateResult.glycosylation ? intermediateResult.glycosylation.map(tag => ({
     ...tag,
-    residue: tag.residue || '',
+    site_lbl: tag.site_lbl || '',
     site_category: tag.site_category || '',
     type: tag.type || '',
     glytoucan_ac: tag.glytoucan_ac || ''
@@ -60,29 +60,30 @@ export function filterGlyGenResults(result, prop_type, prop_name) {
     }
   }
 
-export function GlycosylationTable({glycosylationData, uniprot_canonical_ac}) {
+export function GlycosylationTable({ glycosylationData, isPreview = false }) {
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>UniProtKB Ac</th>
-          <th>Residue</th>
-          <th>Glycosylation Site Category</th>
-          <th>Glycosylation Type</th>
-          <th>GlyTouCan Ac</th>
-        </tr>
-      </thead>
-      <tbody>
-        {glycosylationData.map((entry, index) => (
-          <tr key = {index}>
-            <td>{uniprot_canonical_ac}</td>
-            <td>{entry.residue}</td>
-            <td>{entry.site_category}</td>
-            <td>{entry.type}</td>
-            <td>{entry.glytoucan_ac}</td>
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Residue</th>
+            <th>Glycosylation Site Category</th>
+            <th>Glycosylation Type</th>
+            <th>GlyTouCan Ac</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {glycosylationData.map((entry, index) => (
+            <tr key = {index}>
+              <td>{entry.site_lbl}</td>
+              <td>{entry.site_category}</td>
+              <td>{entry.type}</td>
+              <td>{entry.glytoucan_ac}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {isPreview && <div style={{ margintop: "10px", fontSynthesis: "italic" }}>*This is a preview of the full glycan data.</div>}
+    </div>
   )
 }

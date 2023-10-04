@@ -13,7 +13,7 @@ import { filter } from '@/utils/dict'
 
 
 /**
- * Zod definition for the glycan data 
+ * Zod definition for glycan data 
  */
 const GlycosylationEntry = z.object({
   site_lbl: z.string(),
@@ -69,29 +69,37 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
     icon: [glygen_icon],
   })
   .codec(GlyGenProteinResponse)
-  .view( data => (
-    <div>
-        <div>Gene Name: <b>{data.gene.name}</b></div>
-        <div>UniProtKB Accession: {data.uniprot.uniprot_canonical_ac}</div>
-        <div>Gene location: Chromosome: {data.gene.locus.chromosome} ({data.gene.locus.start_pos} - {data.gene.locus.end_pos}, '{data.gene.locus.strand}' strand)</div>
-        <div>UniProtKB ID: {data.uniprot.uniprot_id}</div>
-        <div>Protein Length: <b>{data.uniprot.length}</b></div>
-        <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
-        <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
-        <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
-        <br />
-        <div>{data.glycoprotein.glycosylation && data.glycoprotein.glycosylation_data.length > 0 && (
-          <GlycosylationTable
-            glycosylationData={
-              data.glycoprotein.glycosylation_data.length > 5
-              ? data.glycoprotein.glycosylation_data.slice(0, 5)
-              : data.glycoprotein.glycosylation_data
-            }
-            isPreview={data.glycoprotein.glycosylation_data.length > 5}
-          />
-        )}</div>
-    </div>
-  ))
+  .view( data => {
+    const glyGenLink = `http://www.glygen.org/protein/${data.uniprot.uniprot_canonical_ac}`
+
+    return (
+      <div>
+          <div>Gene Name: <b>{data.gene.name}</b></div>
+          <div>UniProtKB Accession:
+            <b>
+              <a href={glyGenLink} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.uniprot.uniprot_canonical_ac}</u></a>
+            </b>
+          </div>
+          <div>Gene location: Chromosome: {data.gene.locus.chromosome} ({data.gene.locus.start_pos} - {data.gene.locus.end_pos}, '{data.gene.locus.strand}' strand)</div>
+          <div>UniProtKB ID: {data.uniprot.uniprot_id}</div>
+          <div>Protein Length: <b>{data.uniprot.length}</b></div>
+          <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
+          <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
+          <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
+          <br />
+          <div>{data.glycoprotein.glycosylation && data.glycoprotein.glycosylation_data.length > 0 && (
+            <GlycosylationTable
+              glycosylationData={
+                data.glycoprotein.glycosylation_data.length > 5
+                ? data.glycoprotein.glycosylation_data.slice(0, 5)
+                : data.glycoprotein.glycosylation_data
+              }
+              isPreview={data.glycoprotein.glycosylation_data.length > 5}
+            />
+          )}</div>
+      </div>
+    )
+  })
   .build()
 
 /**
@@ -100,20 +108,47 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
  */
 export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
   .meta({
-    label: 'Glycoprotein Glycan Response Products',
+    label: 'Glycosylation Information for Glycoproteins',
     description: 'Glycan product records in GlyGen',
     icon: [glygen_icon],
   })
   .codec(GlyGenProteinResponse)
-  .view( data => (
-    <div>
-      <div>UniProtKB Accession: <b>{data.uniprot.uniprot_canonical_ac}</b></div>
-      <br/>
-      <GlycosylationTable
-        glycosylationData={data.glycoprotein.glycosylation_data}
-      />
-    </div>
-  ))
+  .view( data => {
+    const recordCount = data.glycoprotein.glycosylation_data.length
+    const emptyGlytoucanAcCount = data.glycoprotein.glycosylation_data.filter(entry => entry.glytoucan_ac === '').length
+    const glyGenLink = `http://www.glygen.org/protein/${data.uniprot.uniprot_canonical_ac}`
+
+    if (recordCount > 0) {
+      return (
+        <div>
+          <div>
+            UniProtKB Accession: 
+              <b>
+                <a href={glyGenLink} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.uniprot.uniprot_canonical_ac}</u></a>
+              </b>
+          </div>
+          <div>Total Records: <b>{data.glycoprotein.glycosylation_data.length}</b></div>
+          <div>Records Without GlyTouCan Accessions: <b>{emptyGlytoucanAcCount}</b></div>
+          <br/>
+          <GlycosylationTable
+            glycosylationData={data.glycoprotein.glycosylation_data}
+          />
+        </div>
+      )
+    } else {
+      return (
+        <div>
+          <div>
+            UniProtKB Accession: 
+                <b>
+                  <a href={glyGenLink} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.uniprot.uniprot_canonical_ac}</u></a>
+                </b>
+          </div>
+          <div><b>No Glycan Information to Display</b></div>
+        </div>
+      )
+    }
+  })
   .build()
 
 
@@ -210,8 +245,8 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
  */
 export const GlycanInformation = MetaNode('GlycanInformation')
   .meta({
-    label: 'Get Glycan Data from GlyGen Protein Response',
-    description: 'Get the Glycan data from GlyGen protein product records',
+    label: 'Get Glycan Data from GlyGen Protein Products',
+    description: 'Glycosylation Information for Glycoproteins',
     icon: [glygen_icon],
     pagerank: 2,
   })

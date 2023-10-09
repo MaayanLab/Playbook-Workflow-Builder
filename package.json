@@ -16,6 +16,7 @@
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "codegen:sql": "mkdir -p db/migrations && ts-node cli/build-sql.ts > db/migrations/00_init.sql",
     "codegen:table": "ts-node cli/build-table.ts > metanodes.tsv",
+    "codegen:random-paths": "ts-node cli/random-paths.ts | sort -u > random-paths.tsv",
     "codegen:analytics": "ts-node cli/dump-analytics.ts > analytics.tsv",
     "codegen:dsl": "ts-node cli/build-dsl.ts > dsl.d.ts",
     "codegen:embeddings": "ts-node -r esm -r tsconfig-paths/register cli/build-embeddings.ts > embeddings.tsv",

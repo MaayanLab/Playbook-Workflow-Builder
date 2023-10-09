@@ -102,9 +102,7 @@ export const FileInput = MetaNode('FileInput')
                 name="description"
                 className="bp4-input"
                 placeholder={`File description`}
-                onChange={evt => {
-                  setCurrentFile(({ description: _, url }) => ({ url, description: evt.target.value }))
-                }}
+                onChange={evt => {setCurrentFile(({ description: _, url }) => ({ url, description: evt.target.value }))}}
                 value={currentFile.description||''}
               />
             </div>

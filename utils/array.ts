@@ -46,3 +46,9 @@ export function any<T>(L: T[]) {
 export function all<T>(L: T[]) {
   return !L.some(el => !el)
 }
+
+export function findLast<T>(L: T[], predicate: (value: T, index: number, array: T[]) => boolean) {
+  return L.reduce((last, value, index) =>
+    predicate(value, index, L) ? value : last
+  , undefined as T | undefined)
+}

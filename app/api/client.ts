@@ -4,6 +4,8 @@
  * It is designed to be imported client-side.
  */
 import { APIInterface } from '@/spec/api'
+import type { ChatGPTPrompting as ChatGPTPrompting_ } from './v1/chat'
+export const ChatGPTPrompting = APIInterface<typeof ChatGPTPrompting_>("/api/v1/chat/gpt-prompting", "POST")
 import type { UserIntegrationsCAVATICA as UserIntegrationsCAVATICA_ } from './v1/user/integrations/cavatica'
 export const UserIntegrationsCAVATICA = APIInterface<typeof UserIntegrationsCAVATICA_>("/api/v1/user/integrations/cavatica", "GET")
 import type { UserIntegrationsCAVATICAUpdate as UserIntegrationsCAVATICAUpdate_ } from './v1/user/integrations/cavatica'

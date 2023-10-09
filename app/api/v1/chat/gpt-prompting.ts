@@ -1,20 +1,10 @@
-import krg from '@/app/krg'
-import handler from '@/utils/next-rest'
-import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
-import { UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
+import { API } from '@/spec/api'
 import { z } from 'zod'
+import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 import type { ProcessMetaNode } from '@/spec/metanode'
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-
-function strip(s: string) {
-  return s.replace(/^\s+/g, '').replace(/\s+$/g, '')
-}
+import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
+import { UnauthorizedError } from '@/spec/error'
 
 const OpenAICompletionsRequest = z.object({
   model: z.string(),
@@ -35,7 +25,7 @@ const OpenAICompletionsResponse = z.object({
   }))
 })
 
-async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', temperature = 0.0, ...kwargs }: Partial<z.TypeOf<typeof OpenAICompletionsRequest>>) {
+async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', temperature = 0.1, ...kwargs }: Partial<z.TypeOf<typeof OpenAICompletionsRequest>>) {
   console.debug(`send ${JSON.stringify(messages)}`)
   const req = await fetch(`https://api.openai.com/v1/chat/completions`, {
     method: 'POST',
@@ -62,9 +52,13 @@ function nodeDesc(node: ProcessMetaNode, { inputs, output }: { inputs?: Record<s
   return `${node.meta.label}: ${node.meta.description}`
 }
 
+function strip(s: string) {
+  return s.replace(/^\s+/g, '').replace(/\s+$/g, '')
+}
+
 type Component = { id: number, inputs?: Record<string, string>, data?: string, type: string, description: string }
 
-async function findAnswers(messages: { role: "user" | "system" | "assistant", content: string }[]) {
+async function findAnswers(messages: { role: string, content: string }[]) {
   // find all previous components from message history
   const previousComponents = messages.reduce((components, { role, content }) => {
     if (role !== 'assistant') return components
@@ -147,34 +141,34 @@ async function findAnswers(messages: { role: "user" | "system" | "assistant", co
   return { content, done: true }
 }
 
-const BodyType = z.object({
-  messages: z.array(z.object({
-    role: z.enum(['system', 'user', 'assistant']),
-    content: z.string(),
-  })),
-})
-
-export default handler(async (req, res) => {
-  const session = await getServerSessionWithId(req, res)
-  if (!session || !session.user || !process.env.OPENAI_API_KEY) throw new UnauthorizedError()
-  if (req.method === 'HEAD') {
-    res.status(200).end()
-    return
-  }
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
-  const body = BodyType.parse(await req.json())
-  const lastMessage = body.messages[body.messages.length-1]
-  if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
-  const newMessages: typeof body.messages = []
-  for (let i = 0; i < 2; i++) {
-    try {
-      const { content, done } = await findAnswers([...body.messages, ...newMessages])
-      newMessages.push({ role: 'assistant', content })
-      if (done) break
-    } catch (e) {
-      newMessages.push({ role: 'assistant', content: `Error: ${(e as any).toString()}` })
-      break
+export const ChatGPTPrompting = API('/api/v1/chat/gpt-prompting')
+  .query(z.object({}))
+  .body(z.object({
+    messages: z.array(z.object({
+      role: z.string(),
+      content: z.string(),
+    })),
+  }))
+  .call(async (inputs, req, res) => {
+    const session = await getServerSessionWithId(req, res)
+    if (!session || !session.user || !process.env.OPENAI_API_KEY) throw new UnauthorizedError()
+    if (req.method === 'HEAD') {
+      res.status(200).end()
+      return
     }
-  }
-  res.status(200).json(newMessages)
-})
+    const lastMessage = inputs.body.messages[inputs.body.messages.length-1]
+    if (lastMessage.role !== 'user') throw new Error('Unexpected user input')
+    const newMessages: typeof inputs.body.messages = []
+    for (let i = 0; i < 2; i++) {
+      try {
+        const { content, done } = await findAnswers([...inputs.body.messages, ...newMessages])
+        newMessages.push({ role: 'assistant', content })
+        if (done) break
+      } catch (e) {
+        newMessages.push({ role: 'assistant', content: `Error: ${(e as any).toString()}` })
+        break
+      }
+    }
+    return newMessages
+  })
+  .build()

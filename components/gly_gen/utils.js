@@ -83,7 +83,7 @@ export function GlycosylationTable({ glycosylationData, isPreview = false }) {
           ))}
         </tbody>
       </table>
-      {isPreview && <div style={{ margintop: "10px", fontSynthesis: "italic" }}>*This is a preview of the full glycan data.</div>}
+      {isPreview && <div style={{ margintop: "10px", fontSynthesis: "italic" }}>*This is a preview of the full glycosylation data data.</div>}
     </div>
   )
 }

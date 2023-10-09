@@ -106,10 +106,10 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
  * Data metanode for the glycan list from a protein response, defines how the glycan information 
  * contained within the protein response json should be rendered in the UI
  */
-export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
+export const GlycosylationViewResponseNode = MetaNode('GlycanViewResponse')
   .meta({
     label: 'Glycosylation Information for Glycoproteins',
-    description: 'Glycan product records in GlyGen',
+    description: 'Glycosylation product records in GlyGen',
     icon: [glygen_icon],
   })
   .codec(GlyGenProteinResponse)
@@ -144,7 +144,7 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
                   <a href={glyGenLink} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.uniprot.uniprot_canonical_ac}</u></a>
                 </b>
           </div>
-          <div><b>No Glycan Information to Display</b></div>
+          <div><b>No Glycosylation Information to Display</b></div>
         </div>
       )
     }
@@ -210,6 +210,7 @@ export const GlyGenProteinProduct = MetaNode('GGPP')
       body: JSON.stringify({ id: id['list_id'] }),
       })
     const searchResult = await protein_response.json()
+    console.log('here')
     const filteredResult = filterGlyGenResults(searchResult, 'gene', props.inputs.gene.symbol);
     return filteredResult;
   })
@@ -243,15 +244,15 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
 /**
  * Process metanode to extract the glycan information from the protein prodct 
  */
-export const GlycanInformation = MetaNode('GlycanInformation')
+export const GlycosylationInformation = MetaNode('GlycanInformation')
   .meta({
-    label: 'Get Glycan Data from GlyGen Protein Products',
+    label: 'Get Glycosylation Data from GlyGen Protein Products',
     description: 'Glycosylation Information for Glycoproteins',
     icon: [glygen_icon],
     pagerank: 2,
   })
   .inputs({ glygenProteinResponse: GlyGenProteinResponseNode })
-  .output(GlycanViewResponseNode)
+  .output(GlycosylationViewResponseNode)
   .resolve(async (props) => {
     return props.inputs.glygenProteinResponse;
   })

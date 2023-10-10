@@ -19,18 +19,22 @@ function randomChoice<T>(L: T[]): T {
   return L[Math.floor(Math.random() * L.length)]
 }
 
-for (let i = 0; i < 10000; i++) {
+for (let i = 0; i < 25000; i++) {
   const path = []
   const stories = []
+  const stack = []
   let head: ProcessMetaNode | undefined = undefined
   while (true) {
     head = randomChoice(krg.getNextProcess(head ? head.output.spec : undefined))
     if (!head) break
-    path.push(head.spec)
+    path.push(head)
     stories.push(head.story({}))
-    if (randomChoice(['continue', 'continue', 'continue', 'continue', 'stop']) === 'stop') break
+    const nextStep = randomChoice(['continue', 'continue', 'continue', 'continue', 'back', 'back', 'restart', 'stop', 'stop'])
+    if (nextStep === 'stop') break
+    if (nextStep === 'restart') head = undefined
+    if (nextStep === 'back') head = path[path.length-1]
   }
   if (path.length === 1) continue
   const story = stories.filter(story => !!story).join(' ')
-  console.log([story, '', ...path].join('\t'))
+  console.log([story, '', ...path.map(({ spec }) => spec)].join('\t'))
 }

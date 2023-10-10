@@ -30,6 +30,11 @@ export default function Chat() {
             <button className="btn btn-xl btn-primary">English -&gt; Workflow Transformer</button>
             </div>
           </Link>
+          <Link href="/chat/transformer-embed">
+            <div className="tooltip tooltip-bottom" data-tip="Works by translating english text into a PWB workflow.">
+            <button className="btn btn-xl btn-primary">English + GPT Embedding -&gt; Workflow Transformer</button>
+            </div>
+          </Link>
         </div>
       </main>
     </Layout>

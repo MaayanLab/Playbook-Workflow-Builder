@@ -2,6 +2,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import Link from 'next/link'
+import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
@@ -16,11 +17,10 @@ export default function Chat() {
           <p>Chat Mode is still in development, we're currently testing out several methods for obtaining responses. The buttons below allow you to test these different methods.</p>
         </div>
         {!data?.user?.id ?
-          <Link href="/api/auth/signin?redirect=/chat">
-            <button
-              className="btn btn-warning"
-            ><b>Please log in to use this feature</b></button>
-          </Link>
+          <button
+            className="btn btn-warning"
+            onClick={() => {Auth.signIn()}}
+          ><b>Please log in to use this feature</b></button>
           : null}
         <div className="flex flex-row flex-wrap justify-center place-items-center gap-6">
           <Link href="/chat/gpt-prompting">

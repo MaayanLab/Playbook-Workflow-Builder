@@ -43,10 +43,10 @@ export default function Layout({ children }: React.PropsWithChildren) {
                 </label>
                 <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
                   <li><Link href="/account">Settings</Link></li>
-                  <li><Link href="/api/auth/signout">Sign Out</Link></li>
+                  <li><button className="hover:underline" onClick={() => {Auth.signOut()}}>Sign Out</button></li>
                 </ul>
               </div>
-              : <Link href="/api/auth/signin"><button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white">Sign in</button></Link>}
+              : <button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white" onClick={() => {Auth.signIn()}}>Sign in</button>}
           </div>
         </div>
 
@@ -96,9 +96,9 @@ export default function Layout({ children }: React.PropsWithChildren) {
           {session && session.user ?
               <>
                 <li><Link href="/account">Settings</Link></li>
-                <li><Link href="/api/auth/signout">Sign Out</Link></li>
+                <li><button className="hover:underline" onClick={() => {Auth.signOut()}}>Sign Out</button></li>
               </>
-              : <li><Link href="/api/auth/signin">Sign in</Link></li>}
+              : <li><button className="hover:underline" onClick={() => {Auth.signIn()}}>Sign in</button></li>}
         </ul>
       </div>
     </div>

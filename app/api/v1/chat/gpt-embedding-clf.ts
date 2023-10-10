@@ -1,5 +1,4 @@
 import { API } from '@/spec/api'
-import * as tf from '@tensorflow/tfjs'
 import krg from '@/app/krg'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
 import { UnauthorizedError } from '@/spec/error'
@@ -7,8 +6,24 @@ import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
-import model from '@/app/extensions/ml/gpt-embedding-clf'
+import gptEmbeddingClfDef from '@/app/public/gpt-embedding-clf.json'
 import { mean } from '@/utils/math'
+
+async function gptEmbeddingClf({ embedding }: { embedding: number[] }) {
+  const req = await fetch(`${gptEmbeddingClfDef.url}:predict`, {
+    method: 'POST',
+    body: JSON.stringify({
+      instances: [embedding],
+    }),
+  })
+  const res = await req.json()
+  const { predictions: [predictions] } = z.object({ predictions: z.array(z.array(z.number())) }).parse(res)
+  const scores: Record<string, number> = {}
+  gptEmbeddingClfDef.vocab.forEach((workflow, i) => {
+    scores[workflow] = predictions[i]
+  })
+  return scores
+}
 
 const OpenAIEmbeddingsRequest = z.object({
   model: z.string(),
@@ -51,19 +66,11 @@ function nodeDesc(node: ProcessMetaNode, { inputs, output }: { inputs?: Record<s
 type Component = { id: number, inputs?: Record<string, number | number[]>, data?: string, type: string, description: string }
 
 async function findAnswers(messages: { role: string, content: string }[]) {
-  if (model.model === null || model.dims === null) throw new Error('Uninitialized')
   const lastMessage = array.findLast(messages, ({ role }) => role === 'user')
   if (!lastMessage) throw new Error('No user message')
   // obtain likelihood scores
   const [{ embedding }] = (await openaiEmbedding({ input: [lastMessage.content] })).data
-  const prediction_tensors = model.model.execute(tf.tensor2d([embedding])) as tf.Tensor<tf.Rank>
-  const prediction_data = await prediction_tensors.data()
-  const scores: Record<string, number> = {}
-  prediction_data.forEach((score, i) => {
-    const pred = (model.dims as string[])[i]
-    scores[pred] = score
-  })
-  console.log(scores)
+  const scores = await gptEmbeddingClf({ embedding })
   // find all previous components from message history
   const previousComponents = messages.reduce((components, { role, content }) => {
     if (role !== 'assistant') return components

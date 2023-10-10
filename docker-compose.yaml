@@ -156,6 +156,19 @@ services:
     volumes:
     - ./:/app
     logging: *default-logging
+  # ML features
+  tensorflow:
+    image: tensorflow/serving
+    deploy:
+      replicas: 0
+    command:
+    - --model_config_file=/models/models.config
+    environment:
+    - MODEL_NAME=transformer
+    ports:
+    - 8501:8501
+    volumes:
+    - ./data/tensorflow:/models
 volumes:
   pwb-pg:
     x-kubernetes:

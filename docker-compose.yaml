@@ -138,13 +138,9 @@ services:
     logging: *default-logging
   # ML features
   tensorflow:
-    image: tensorflow/serving
+    image: maayanlab/tensorflow-serving
     deploy:
       replicas: 0
-    command:
-    - --model_config_file=/models/models.config
-    environment:
-    - MODEL_NAME=transformer
     ports:
     - 8501:8501
     volumes:

@@ -8,6 +8,8 @@ import type { ChatGPTEmbeddingCLF as ChatGPTEmbeddingCLF_ } from './v1/chat'
 export const ChatGPTEmbeddingCLF = APIInterface<typeof ChatGPTEmbeddingCLF_>("/api/v1/chat/gpt-embedding-clf", "POST")
 import type { ChatGPTPrompting as ChatGPTPrompting_ } from './v1/chat'
 export const ChatGPTPrompting = APIInterface<typeof ChatGPTPrompting_>("/api/v1/chat/gpt-prompting", "POST")
+import type { ChatTransformerEmbed as ChatTransformerEmbed_ } from './v1/chat'
+export const ChatTransformerEmbed = APIInterface<typeof ChatTransformerEmbed_>("/api/v1/chat/transformer-embed", "POST")
 import type { ChatTransformer as ChatTransformer_ } from './v1/chat'
 export const ChatTransformer = APIInterface<typeof ChatTransformer_>("/api/v1/chat/transformer", "POST")
 import type { UserIntegrationsCAVATICA as UserIntegrationsCAVATICA_ } from './v1/user/integrations/cavatica'

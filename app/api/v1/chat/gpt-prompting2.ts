@@ -75,6 +75,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
     return [...components, JSON.parse(m[1])]
   }, [] as Component[])
   const relevantMessages = messages.reduce((M, { role, content }) => {
+    if (role === 'assistant') return M
     const m = /```(component|suggestions)\n(.+)\n```/gm.exec(content)
     if (m) return M
     return [...M, { role, content }]
@@ -133,9 +134,8 @@ async function findAnswers(messages: { role: string, content: string }[]) {
             ` /* an id corresponding to a "next" component above */ "id": number,`,
             ` /* part of the user's messages relevant to the component */ "term": string }`,
             `const Response: {`,
-            ` /* response to the user with your thoughts */ "response": string`,
-            ` /* the best choice(s) for the possible next steps to accomplish the user's instructions (preferrably one, max 3, avoid choices introducing redundancy) */ "choice": Step | Step[]`,
-            ` /* is this additional step likely to satisfy all of the user's current instructions? */ "satisfy": boolean } =`,
+            ` /* response to the user with your thoughts */ "response": string,`,
+            ` /* at most the best 3 good choices for the possible next step to accomplish the user's instructions */ "choices": Step[] } =`,
           ].join('\n'),
         },
       ]
@@ -145,18 +145,16 @@ async function findAnswers(messages: { role: string, content: string }[]) {
       const m = /\{.+\}/gms.exec(content)
       const contentParsed = z.object({
         response: z.string(),
-        choice: z.union([z.object({ id: z.number(), term: z.string() }), z.array(z.object({ id: z.number(), term: z.string() }))]).transform(choice => Array.isArray(choice) ? choice : [choice]),
-        satisfy: z.boolean()
+        choices: z.union([z.object({ id: z.number(), term: z.string() }), z.array(z.object({ id: z.number(), term: z.string() }))]).transform(choice => Array.isArray(choice) ? choice : [choice]),
       }).parse(JSON.parse(m ? m[0] : ''))
-      const possibleComponents = contentParsed.choice.map(possibility => {
-        const component = nextComponents[possibility.id]
+      const possibleComponents = contentParsed.choices.map(choice => {
+        const component = nextComponents[choice.id]
         if (component.type.includes('Input')) {
-          Object.assign(component, {data: possibility.term})
+          Object.assign(component, {data: choice.term})
         }
         return component
       })
       if (contentParsed.response) {
-        relevantMessages.push({ role: 'assistant', content: contentParsed.response })
         results.push({ role: 'assistant', content: contentParsed.response })
       }
       if (possibleComponents.length === 1) {
@@ -167,9 +165,6 @@ async function findAnswers(messages: { role: string, content: string }[]) {
         results.push({ role: 'assistant', content: '```suggestions\n' + JSON.stringify(possibleComponents) + '\n```' })
         break
       } else {
-        break
-      }
-      if (contentParsed.satisfy) {
         break
       }
     } catch (e) {

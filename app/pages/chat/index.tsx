@@ -51,6 +51,13 @@ export default function Chat() {
             </button>
             </div>
           </Link>
+          <Link href="/chat/decoder">
+            <div className="tooltip tooltip-bottom" data-tip="Works by generating a PWB workflow with self-attention contextualized by a GPT Embedding.">
+            <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>
+              GPT Embedding -&gt; Workflow Transformer
+            </button>
+            </div>
+          </Link>
         </div>
       </main>
     </Layout>

@@ -4,6 +4,8 @@
  * It is designed to be imported client-side.
  */
 import { APIInterface } from '@/spec/api'
+import type { ChatDecoder as ChatDecoder_ } from './v1/chat'
+export const ChatDecoder = APIInterface<typeof ChatDecoder_>("/api/v1/chat/decoder", "POST")
 import type { ChatGPTEmbeddingCLF as ChatGPTEmbeddingCLF_ } from './v1/chat'
 export const ChatGPTEmbeddingCLF = APIInterface<typeof ChatGPTEmbeddingCLF_>("/api/v1/chat/gpt-embedding-clf", "POST")
 import type { ChatGPTPrompting as ChatGPTPrompting_ } from './v1/chat'

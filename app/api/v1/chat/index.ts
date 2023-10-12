@@ -1,5 +1,6 @@
 export * from './decoder'
 export * from './gpt-embedding-clf'
 export * from './gpt-prompting'
+export * from './gpt-prompting2'
 export * from './transformer-embed'
 export * from './transformer'

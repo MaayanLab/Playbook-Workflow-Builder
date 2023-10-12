@@ -7,7 +7,7 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
 import { mean } from '@/utils/math'
-import transformerEmbedDef from '@/app/public/transformer-embed.json'
+import transformerEmbedDef from '@/app/public/chat/transformer-embed.json'
 
 const OpenAIEmbeddingsRequest = z.object({
   model: z.string(),

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
-import gptEmbeddingClfDef from '@/app/public/gpt-embedding-clf.json'
+import gptEmbeddingClfDef from '@/app/public/chat/gpt-embedding-clf.json'
 import { mean } from '@/utils/math'
 
 async function gptEmbeddingClf({ embedding }: { embedding: number[] }) {

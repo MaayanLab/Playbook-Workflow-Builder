@@ -7,7 +7,7 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
 import { mean } from '@/utils/math'
-import transformerDef from '@/app/public/transformer.json'
+import transformerDef from '@/app/public/chat/transformer.json'
 
 async function transformer({ text, workflow }: { text: string, workflow: string[] }) {
   const req = await fetch(`${transformerDef.url}:predict`, {

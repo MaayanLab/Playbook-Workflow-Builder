@@ -30,6 +30,13 @@ export default function Chat() {
               </button>
             </div>
           </Link>
+          <Link href="/chat/gpt-prompting2">
+            <div className="tooltip tooltip-bottom" data-tip="Works through prompts to OpenAI's completions endpoint.">
+              <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>
+                GPT Few-shot Prompting 2
+              </button>
+            </div>
+          </Link>
           <Link href="/chat/gpt-embedding-clf">
             <div className="tooltip tooltip-bottom" data-tip="Works by prioritizing workflow steps based on your prompt's GPT Embedding.">
               <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>

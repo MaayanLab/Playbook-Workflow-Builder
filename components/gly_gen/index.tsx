@@ -13,7 +13,7 @@ import { filter } from '@/utils/dict'
 
 
 /**
- * Zod definition for glycan data 
+ * Zod definition for glycosylation data 
  */
 const GlycosylationEntry = z.object({
   site_lbl: z.string(),
@@ -103,10 +103,10 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
   .build()
 
 /**
- * Data metanode for the glycan list from a protein response, defines how the glycan information 
- * contained within the protein response json should be rendered in the UI
+ * Data metanode for the glycosylation list from a protein response, defines how the glycosylation 
+ * information contained within the protein response json should be rendered in the UI
  */
-export const GlycosylationViewResponseNode = MetaNode('GlycanViewResponse')
+export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse')
   .meta({
     label: 'Glycosylation Information for Glycoproteins',
     description: 'Glycosylation product records in GlyGen',
@@ -242,9 +242,9 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
   .build()
 
 /**
- * Process metanode to extract the glycan information from the protein prodct 
+ * Process metanode to extract the glycosylation information from the protein prodct 
  */
-export const GlycosylationInformation = MetaNode('GlycanInformation')
+export const GlycosylationInformation = MetaNode('GlycosylationInformation')
   .meta({
     label: 'Get Glycosylation Data from GlyGen Protein Products',
     description: 'Glycosylation Information for Glycoproteins',
@@ -257,7 +257,7 @@ export const GlycosylationInformation = MetaNode('GlycanInformation')
     return props.inputs.glygenProteinResponse;
   })
   .story( props => 
-    'The glycan data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.'
+    'The glycosylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.'
   )
   .build() 
 

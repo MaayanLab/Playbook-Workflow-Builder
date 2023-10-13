@@ -11,7 +11,7 @@ import { protein_icon } from '@/icons'
 //   return { items, error }
 // }
 
-export const glycan = {
+export const Glycan = {
   name: 'glycan',
   label: 'Glycan',
   icon: [protein_icon],

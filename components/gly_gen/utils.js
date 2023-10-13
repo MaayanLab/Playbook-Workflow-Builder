@@ -23,8 +23,17 @@ export async function resolveFilteredResult(cannonicalAccession) {
   intermediateResult.species.taxid = intermediateResult.species.taxid.toString();
   // Q96F25: false test case 
   // HGF: true test case
+  const isGlycosylation = intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein';
+  const glycosylationData = intermediateResult.glycosylation ? intermediateResult.glycosylation.map(tag => ({
+    ...tag,
+    site_lbl: tag.site_lbl || '',
+    site_category: tag.site_category || '',
+    type: tag.type || '',
+    glytoucan_ac: tag.glytoucan_ac || ''
+  })) : [];
   intermediateResult.glycoprotein = {
-    glycosylation: intermediateResult.keywords && intermediateResult.keywords[0] === 'glycoprotein'
+    glycosylation: isGlycosylation,
+    glycosylation_data: glycosylationData
   }
   return intermediateResult;
 }
@@ -51,3 +60,30 @@ export function filterGlyGenResults(result, prop_type, prop_name) {
     }
   }
 
+export function GlycosylationTable({ glycosylationData, isPreview = false }) {
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Residue</th>
+            <th>Glycosylation Site Category</th>
+            <th>Glycosylation Type</th>
+            <th>GlyTouCan Ac</th>
+          </tr>
+        </thead>
+        <tbody>
+          {glycosylationData.map((entry, index) => (
+            <tr key = {index}>
+              <td>{entry.site_lbl}</td>
+              <td>{entry.site_category}</td>
+              <td>{entry.type}</td>
+              <td>{entry.glytoucan_ac}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {isPreview && <div style={{ margintop: "10px", fontSynthesis: "italic" }}>*This is a preview of the full glycosylation data data.</div>}
+    </div>
+  )
+}

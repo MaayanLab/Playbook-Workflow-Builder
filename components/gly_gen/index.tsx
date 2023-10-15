@@ -174,6 +174,10 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
       <div>GlyTouCan Accession: <b>{data.glytoucan.glytoucan_ac}</b></div>
       <div>Monoisotopic Mass: <b>{data.mass} Da</b></div>
       <div>Monoisotopic Mass-pMe (Da): <b>{data.mass_pme} Da</b></div>
+      <div>
+        Glycan Image: 
+        <img src={`https://api.glygen.org/glycan/image/${data.glytoucan.glytoucan_ac}/`} alt='Glycan Image'/>
+      </div>
     </div>
   ))
   .build()
@@ -302,6 +306,7 @@ export const GlycanInformation = MetaNode('GlycanInformation')
   .output(GlycanViewResponseNode)
   .resolve(async (props) => {
     console.log("===> Got glycan input %s", props.inputs.glycan);
+    // get glycan data 
     const detail_response = await fetch(`https://api.glygen.org/glycan/detail/${props.inputs.glycan}`, {
       method: 'POST',
       headers: {
@@ -311,7 +316,7 @@ export const GlycanInformation = MetaNode('GlycanInformation')
       body: JSON.stringify({ glytoucan_ac: props.inputs.glycan })
     })
     const glycan_data = await detail_response.json();
-    return glycan_data 
+    return glycan_data
   })
   .story(props => 
     'placeholder'

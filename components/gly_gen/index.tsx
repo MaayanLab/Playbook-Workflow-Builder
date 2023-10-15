@@ -4,7 +4,7 @@ import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon, protein_icon } from '@/icons'
 import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
-import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable } from './utils'
+import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef } from './utils'
 import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
 import { filter } from '@/utils/dict'
 
@@ -62,7 +62,24 @@ export const GlycanResponse = z.object({
     glytoucan_ac: z.string()
   }),
   mass: z.number(),
-  mass_pme: z.number()
+  mass_pme: z.number(),
+  classification: z.array(
+    z.object({
+      type: z.object({
+        name: z.string()
+      }),
+      subtype: z.object({
+        name: z.string()
+      })
+    })
+  ),
+  crossref: z.array(
+    z.object({
+      id: z.string(),
+      url: z.string().optional(),
+      database: z.string()
+    })
+  )
 })
 
 
@@ -174,6 +191,12 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
       <div>GlyTouCan Accession: <b>{data.glytoucan.glytoucan_ac}</b></div>
       <div>Monoisotopic Mass: <b>{data.mass} Da</b></div>
       <div>Monoisotopic Mass-pMe (Da): <b>{data.mass_pme} Da</b></div>
+      <div>
+        Glycan Type / Glycan Subtype: <b><GlycanClassification classification={data.classification}/></b>
+      </div>
+      <div>
+        <GlycanCrossRef crossref={data.crossref}/>
+      </div>
       <div>
         Glycan Image: 
         <img src={`https://api.glygen.org/glycan/image/${data.glytoucan.glytoucan_ac}/`} alt='Glycan Image'/>

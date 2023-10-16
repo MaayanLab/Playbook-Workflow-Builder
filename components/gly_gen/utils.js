@@ -119,7 +119,3 @@ export function GlycanCrossRef({ crossref }) {
   ) 
 
 }
-
-/*return pubMedCrossRefs.map(entry => {
-    `<a href="${entry.url}">${entry.database}: ${entry.id}</a>`
-  }).join(' | ')*/

@@ -5,8 +5,9 @@ import { GeneSet, RegulatoryElementSet, VariantSet } from '@/components/core/inp
 import { z } from 'zod'
 import { linkeddatahub_icon, datafile_icon } from '@/icons'
 import { Table, Cell, Column} from '@/app/components/Table'
+import { downloadBlob } from '@/utils/download'
 
-export const MyRegulatoryElementC = z.object({
+export const RegulatoryElementInfoC = z.object({
   data: z.object({
     entId: z.string(),
     entType: z.string(),
@@ -34,7 +35,7 @@ export const MyRegulatoryElementC = z.object({
   })
 })
 
-export type MyRegulatoryElement = z.infer<typeof MyRegulatoryElementC>
+export type RegulatoryElementInfo = z.infer<typeof RegulatoryElementInfoC>
 
 export const RE_PositionalDataC = z.object({
   data: z.object({
@@ -55,13 +56,13 @@ export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
     description: 'Regulatory Element resolver',
     icon: [linkeddatahub_icon],
   })
-  .codec(MyRegulatoryElementC)
+  .codec(RegulatoryElementInfoC)
   .view(regElem => (
-    <div> {regElem.data.entId} {regElem.data.entType}<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
+    <div> {regElem.data.entId} Regulatory Element<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
   ))
   .build()
 
-export async function myRegElemInfo_query(regElemId: string): Promise<MyRegulatoryElement> {
+export async function myRegElemInfo_query(regElemId: string): Promise<RegulatoryElementInfo> {
   const res = await fetch(`https://genboree.org/cfde-gene-dev/RegulatoryElement/id/${encodeURIComponent(regElemId)}`)
   return await res.json()
 }
@@ -144,20 +145,21 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
   .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
   .build()
 
-const MyRegulatoryElement = z.object({
+const MyRegulatoryElementC = z.object({
   entId: z.string(),
   ldhId: z.string(),
   entContent: z.object({
-    coordinates: z.object({
+    coordinates: z.object({    
       chromosome: z.string(),
       end: z.any(),
       start: z.any()
     })
   })
 })
+export type MyRegulatoryElement = z.infer<typeof MyRegulatoryElementC>
 
 export const MyRegulatoryElementSetInfoC = z.array(
-  MyRegulatoryElement
+  MyRegulatoryElementC
 )
 export type MyRegulatoryElementSetInfo = z.infer<typeof MyRegulatoryElementSetInfoC>
 
@@ -175,7 +177,10 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
         cellRendererDependencies={[regulatoryElementSet]}
         numRows={regulatoryElementSet.length}
         enableGhostCells
-        enableFocusedCell>
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}>
         <Column
           name="Entity id"
           cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}

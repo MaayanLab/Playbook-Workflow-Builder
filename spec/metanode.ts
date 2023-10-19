@@ -119,6 +119,11 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   kind: 'process'
   inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
   output: ExtractKey<T, 'output'>
+  story(props: {
+    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+    step?: number,
+  }): string
 }
 
 export type StatusUpdate = {

@@ -17,7 +17,7 @@ export default function CAVATICAButton({ session_id }: { session_id?: string }) 
   return (
     <>
       <button
-        className="bp4-button bp4-minimal z-20"
+        className="bp5-button bp5-minimal z-20"
         disabled={!userSession.data?.user}
         onClick={async () => {
           if (!userIntegrations?.cavatica_api_key) {

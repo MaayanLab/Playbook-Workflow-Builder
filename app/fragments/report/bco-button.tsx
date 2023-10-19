@@ -4,11 +4,11 @@ import useSWRMutation from 'swr/mutation'
 import { biocompute_icon } from '@/icons'
 import { fetcherPOST } from '@/utils/next-rest-fetcher'
 
-const Bp4Popover = dynamic(() => import('@blueprintjs/popover2').then(({ Popover2 }) => Popover2))
-const Bp4Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
-const Bp4MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
-const Bp4Spinner = dynamic(() => import('@blueprintjs/core').then(({ Spinner }) => Spinner))
-const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
+const Bp5Popover = dynamic(() => import('@blueprintjs/core').then(({ Popover }) => Popover))
+const Bp5Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
+const Bp5MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
+const Bp5Spinner = dynamic(() => import('@blueprintjs/core').then(({ Spinner }) => Spinner))
+const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function BCOButton({ session_id, id, metadata, disabled }: { session_id?: string, id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
@@ -21,21 +21,21 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
     }
   }, [error])
   if (!id) return null
-  else if (isMutating) return <Bp4Spinner className="inline-block" size={20} />
+  else if (isMutating) return <Bp5Spinner className="inline-block" size={20} />
   return (
     <>
-      <Bp4Popover
+      <Bp5Popover
         className={disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
         disabled={disabled}
         content={
-          <Bp4Menu>
+          <Bp5Menu>
             <a href={`/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`} download={`${metadata.title.replace(/ /g, '-')}-bco.json`}>
-              <Bp4MenuItem
+              <Bp5MenuItem
                 icon="document"
                 text="Download BCO"
               />
             </a>
-            <Bp4MenuItem
+            <Bp5MenuItem
               icon="send-to"
               text="Draft in BioCompute Portal"
               onClick={async (evt) => {
@@ -44,7 +44,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
                 })
               }}
             />
-          </Bp4Menu>
+          </Bp5Menu>
         }
         placement="bottom"
       >
@@ -53,8 +53,8 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
           className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
           title={disabled ? 'Save to Create BCO' : 'Create BCO'}
         />
-      </Bp4Popover>
-      <Bp4Alert
+      </Bp5Popover>
+      <Bp5Alert
         confirmButtonText="Okay"
         icon="error"
         intent="danger"
@@ -66,7 +66,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
       >
         An error ocurred while attempting to register the BCO.
         Please try again later.
-      </Bp4Alert>
+      </Bp5Alert>
     </>
   )
 }

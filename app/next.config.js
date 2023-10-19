@@ -1,3 +1,4 @@
+console.log('!!!!!!!!!! ENOWORKSPACES error can be safely ignored !!!!!!!!!!')
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.NEXT_ANALYZE === 'true',
 })

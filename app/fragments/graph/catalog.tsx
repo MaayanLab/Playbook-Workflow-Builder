@@ -135,7 +135,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                 <div className="ml-2 mb-4">
                   {dict.keys(group_values[group])
                     .map(value => (
-                      <label key={value} className="bp4-control bp4-switch prose prose-sm">
+                      <label key={value} className="bp5-control bp5-switch prose prose-sm">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -160,7 +160,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                             setFilters(_filters)
                           }}
                         />
-                        <span className="bp4-control-indicator"></span>
+                        <span className="bp5-control-indicator"></span>
                         {value} <span className="whitespace-nowrap">[{
                         (group_values_filtered[group]||{})[value] === group_values[group][value] ? (
                           group_values[group][value]

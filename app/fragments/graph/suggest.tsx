@@ -32,18 +32,18 @@ const Suggestion = MetaNode('Suggestion')
   }))
   .view(suggestion => (
     <div>
-      <div className="bp4-card">
-        <h4 className="bp4-heading">{suggestion.name}</h4>
-        <p className="bp4-text-large">{suggestion.description}</p>
-        <div className="bp4-callout">
-          <h5 className="bp4-heading">Author</h5>
+      <div className="bp5-card">
+        <h4 className="bp5-heading">{suggestion.name}</h4>
+        <p className="bp5-text-large">{suggestion.description}</p>
+        <div className="bp5-callout">
+          <h5 className="bp5-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div>
         {/* <br />
-        <h5 className="bp4-heading"><i>Comments</i></h5>
-        <div className="bp4-callout">
-          <p className="bp4-text-large">My comment is important</p>
-          <h5 className="bp4-heading">Author</h5>
+        <h5 className="bp5-heading"><i>Comments</i></h5>
+        <div className="bp5-callout">
+          <p className="bp5-text-large">My comment is important</p>
+          <h5 className="bp5-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div> */}
       </div>

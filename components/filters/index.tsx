@@ -220,7 +220,7 @@ export const SetFromScoredT = [
               cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
             />
           </Table>
-          <button className="bp4-button bp4-large" onClick={async () => {
+          <button className="bp5-button bp5-large" onClick={async () => {
             props.submit({
               description: props.inputs.set.description ? `Filtered ${props.inputs.set.description}` : undefined,
               set: props.inputs.set.set.filter((item) => !selected[item])

@@ -12,7 +12,7 @@ import Link from 'next/link'
 import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
+const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 export default function Suggestions() {
   const router = useRouter()
@@ -21,7 +21,7 @@ export default function Suggestions() {
   const { trigger: deleteSuggestion, isMutating } = useSWRMutation(() => suggestionToDelete ? `/api/db/user/suggestions/${suggestionToDelete.id}/delete` : null, fetcherPOST)
   return (
     <>
-      <h3 className="bp4-heading">Suggestions</h3>
+      <h3 className="bp5-heading">Suggestions</h3>
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {suggestions ? (
         <div className="overflow-x-auto">
@@ -79,7 +79,7 @@ export default function Suggestions() {
           </table>
         </div>
       ) : null}
-      <Bp4Alert
+      <Bp5Alert
         cancelButtonText="Cancel"
         confirmButtonText="Delete suggestion"
         icon="delete"
@@ -99,7 +99,7 @@ export default function Suggestions() {
       >
         Are you sure you want to delete {suggestionToDelete?.name} suggestioned at {suggestionToDelete?.created.toString()}?
         After clicking Delete Suggestion, your suggestion will be subject to deletion and <b>cannot be restored</b>.<br />
-      </Bp4Alert>
+      </Bp5Alert>
     </>
   )
 }

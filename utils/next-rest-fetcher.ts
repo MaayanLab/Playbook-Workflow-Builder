@@ -18,11 +18,11 @@ export default async function fetcher<T>(...args: Parameters<typeof fetch>): Pro
   }
 }
 
-export async function fetcherGET<T>(input: RequestInfo | URL) {
+export async function fetcherGET<T>(input: NodeJS.fetch.RequestInfo | URL) {
   return await fetcher<T>(input, { method: 'GET' })
 }
 
-export async function fetcherPOST<A, R>(input: RequestInfo | URL, { arg: body }: { arg?: A }) {
+export async function fetcherPOST<A, R>(input: NodeJS.fetch.RequestInfo | URL, { arg: body }: { arg?: A }) {
   return await fetcher<R>(input, {
     headers: {
       'Content-Type': 'application/json',

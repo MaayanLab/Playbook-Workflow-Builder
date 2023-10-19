@@ -32,7 +32,7 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
           />
           : <>
           <div className="mb-4">
-            <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
+            <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
             <p className="prose text-justify">{storyText}</p>
             <p className="prose text-sm text-justify whitespace-pre-line">{storyCitations}</p>
           </div>

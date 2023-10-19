@@ -24,7 +24,7 @@ export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, que
   }, fetcherGET<O>, opts)
 }
 
-export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O, B>, query: Partial<Q> = {}, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>> = {} as { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B }>>) {
+export function useAPIMutation<Q extends {}, O, B>(route: APIRouteInterface<Q, O, B>, query: Partial<Q> = {}, { base = '', ...opts }: { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B } | undefined>> = {} as { base?: string } & FParamO<typeof useSWRMutation<O, any, string, { query?: Partial<Q>, body?: B } | undefined>>) {
   return useSWRMutation(route.path, (_key: string, { arg = {} }: { arg?: { query?: Partial<Q>, body?: B } }) => {
     let path = route.path
     const searchParams = new URLSearchParams()

@@ -7,11 +7,11 @@ export default function ThemeToggle() {
     if (theme === 'dark') {
       document.getElementsByTagName('html')[0].setAttribute('data-theme', 'dark')
       document.getElementsByTagName('html')[0].classList.add('dark')
-      document.getElementsByTagName('html')[0].classList.add('bp4-dark')
+      document.getElementsByTagName('html')[0].classList.add('bp5-dark')
       return () => {
         document.getElementsByTagName('html')[0].setAttribute('data-theme', 'light')
         document.getElementsByTagName('html')[0].classList.remove('dark')
-        document.getElementsByTagName('html')[0].classList.remove('bp4-dark')
+        document.getElementsByTagName('html')[0].classList.remove('bp5-dark')
       }
     }
   }, [theme])

@@ -26,7 +26,6 @@ const OpenAICompletionsResponse = z.object({
 })
 
 async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', temperature = 0.1, ...kwargs }: Partial<z.TypeOf<typeof OpenAICompletionsRequest>>) {
-  console.debug(`send ${JSON.stringify(messages)}`)
   const req = await fetch(`https://api.openai.com/v1/chat/completions`, {
     method: 'POST',
     headers: {
@@ -36,16 +35,16 @@ async function openaiCompletions({ messages = [], model = 'gpt-3.5-turbo', tempe
     body: JSON.stringify({ messages, model, temperature, ...kwargs }),
   })
   const res = await req.json()
-  console.debug(`recv ${JSON.stringify(res)}`)
   return OpenAICompletionsResponse.parse(res)
 }
 
-function nodeDesc(node: ProcessMetaNode, { inputs, output }: { inputs?: Record<string, unknown>, output?: string }) {
+function nodeDesc(node: ProcessMetaNode, { inputs, output, step }: { inputs?: Record<string, unknown>, output?: string, step?: number }) {
   if (inputs !== undefined && node.story !== undefined) {
     try {
       return `${node.meta.label}: ${node.meta.description}. ${node.story({
         inputs: inputs !== undefined ? inputs : {},
         output,
+        step,
       })}`
     } catch (e) {}
   }
@@ -58,28 +57,24 @@ function strip(s: string) {
 
 type Component = { id: number, inputs?: Record<string, string>, data?: string, type: string, description: string }
 
-function story(components: Component[]) {
-  return components.map(component => {
-    const componentProc = krg.getProcessNode(component.type)
-    // todo include inputs
-    return componentProc.story({})
-  }).join(' ')
-}
-
 async function findAnswers(messages: { role: string, content: string }[]) {
   // find all previous components from message history
-  const previousComponents = messages.reduce((components, { role, content }) => {
-    if (role !== 'assistant') return components
-    const m = /```component\n(.+)\n```/gm.exec(content)
-    if (!m) return components
-    return [...components, JSON.parse(m[1])]
+  const previousComponents: Component[] = []
+  const relevantMessages: { role: string, content: string }[] = []
+  messages.forEach(({ role, content }) => {
+    if (role === 'assistant') {
+      const m = /```(component|suggestions)\n(.+)\n```/gm.exec(content)
+      if (m) {
+        if (m[1] === 'component') {
+          const component: Component = JSON.parse(m[2])
+          previousComponents.push(component)
+          relevantMessages.push({ role, content: JSON.stringify({choices:[component]}) })
+        }
+      }
+    } else {
+      relevantMessages.push({ role, content })
+    }
   }, [] as Component[])
-  const relevantMessages = messages.reduce((M, { role, content }) => {
-    if (role === 'assistant') return M
-    const m = /```(component|suggestions)\n(.+)\n```/gm.exec(content)
-    if (m) return M
-    return [...M, { role, content }]
-  }, [] as {role: string, content: string}[])
   const ctx = { maxId: Math.max(0, ...previousComponents.map(component => component.id)) }
 
   const results: { role: 'assistant', content: string }[] = []
@@ -94,7 +89,6 @@ async function findAnswers(messages: { role: string, content: string }[]) {
         return krg.getNextProcess(componentProc.output.spec)
           .filter(proc => proc.spec !== componentProc.spec)
           .map(proc => {
-            console.log(`${ctx.maxId} ${componentProc.spec} => ${componentProc.output.spec} => ${proc.spec}`)
             // todo use the same approach here as elsewhere to capture multi-inputs properly
             const inputs = {} as Record<string, unknown>
             const inputValues = {} as Record<string, unknown>
@@ -108,7 +102,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
                 inputValues[key] = component.data
               }
             })
-            return { id: ++ctx.maxId, inputs, type: proc.spec, description: nodeDesc(proc, { inputs: inputValues }) }
+            return { id: ++ctx.maxId, inputs, type: proc.spec, description: nodeDesc(proc, { step: previousComponents.length, inputs: inputValues }) }
           })
       })
     ].map(value => ({ key: value.id, value })))
@@ -118,24 +112,19 @@ async function findAnswers(messages: { role: string, content: string }[]) {
         {
           role: 'user',
           content: [
-            ...(previousComponents.length > 0 ? [
-              'The current workflow description is:\n',
-              '```',
-              story(previousComponents),
-              '```',
-            ] : []),
-            'Considering my messages up to this point, and the following potential next workflow components:',
+            `The following are potential ${previousComponents.length > 0 ? 'next workflow components' : 'first steps'}:`,
             '```json',
             JSON.stringify(Object.values(nextComponents).map(({ type: _, ...component }) => component)),
             '```',
-            'Respond with only a JSON serialized document which satisfies the typescript type:',
+            'Considering our current conversation, respond with only a JSON serialized document which satisfies the typescript type:',
             '```ts',
             `type Step = {`,
-            ` /* an id corresponding to a "next" component above */ "id": number,`,
+            ` /* an id corresponding to a component above */ "id": number,`,
             ` /* part of the user's messages relevant to the component */ "term": string }`,
             `const Response: {`,
-            ` /* response to the user with your thoughts */ "response": string,`,
-            ` /* at most the best 3 good choices for the possible next step to accomplish the user's instructions */ "choices": Step[] } =`,
+            ` /* think about how the available choices factor into the complete workflow */ "thoughts": string,`,
+            ` /* 0-3 good choices for the possible next step to accomplish the user's instructions */ "choices": Step[],`,
+            ` /* assuming we take the steps in "choices", what remains from "thoughts" to do */ "remaining"?: string } =`,
           ].join('\n'),
         },
       ]
@@ -144,8 +133,9 @@ async function findAnswers(messages: { role: string, content: string }[]) {
     try {
       const m = /\{.+\}/gms.exec(content)
       const contentParsed = z.object({
-        response: z.string(),
+        thoughts: z.string(),
         choices: z.union([z.object({ id: z.number(), term: z.string() }), z.array(z.object({ id: z.number(), term: z.string() }))]).transform(choice => Array.isArray(choice) ? choice : [choice]),
+        remaining: z.string().optional(),
       }).parse(JSON.parse(m ? m[0] : ''))
       const possibleComponents = contentParsed.choices.map(choice => {
         const component = nextComponents[choice.id]
@@ -154,17 +144,18 @@ async function findAnswers(messages: { role: string, content: string }[]) {
         }
         return component
       })
-      if (contentParsed.response) {
-        results.push({ role: 'assistant', content: contentParsed.response })
-      }
       if (possibleComponents.length === 1) {
         const [possibleComponent] = possibleComponents
         previousComponents.push(possibleComponent)
+        relevantMessages.push({ role: 'assistant', content: JSON.stringify({choices:[possibleComponent]}) })
         results.push({ role: 'assistant', content: '```component\n' + JSON.stringify(possibleComponent) + '\n```' })
       } else if (possibleComponents.length > 1) {
         results.push({ role: 'assistant', content: '```suggestions\n' + JSON.stringify(possibleComponents) + '\n```' })
         break
       } else {
+        break
+      }
+      if (!contentParsed.remaining) {
         break
       }
     } catch (e) {

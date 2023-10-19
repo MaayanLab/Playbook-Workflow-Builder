@@ -139,8 +139,9 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
     )
   })
   .story(props =>
-    props.output ? `The workflow starts with selecting ${props.output} as the search term.`
-    : `The workflow starts with selecting a search term.`
+    props.step === 0 ?
+      `The workflow starts with selecting ${props.output ? `${props.output} as the` : `a`} as the ${T.label.toLowerCase()} search term.`
+    : `Then ${props.output ? `${props.output}` : `another`} was chosen as a ${T.label.toLowerCase()} search term.`
   )
   .build()
 

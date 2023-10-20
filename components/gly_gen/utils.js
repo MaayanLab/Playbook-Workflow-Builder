@@ -87,3 +87,35 @@ export function GlycosylationTable({ glycosylationData, isPreview = false }) {
     </div>
   )
 }
+
+export function GlycanClassification({ classification }) {
+  return (
+    classification.map(entry => 
+      `${entry.type.name} / ${entry.subtype.name}`
+    ).join(' | ')
+  )
+}
+
+export function GlycanCrossRef({ crossref }) {
+  const pubMedCrossRefs = crossref.filter(entry => 
+    ['PubChem Compound', 'PubChem Substance'].includes(entry.database) && entry.url
+  )
+
+  if (pubMedCrossRefs.length === 0) {
+    return null
+  }
+
+  return (
+    <div>
+      {pubMedCrossRefs.map(entry => (
+        <div key={entry.id}>
+          <b>{entry.database}: </b>
+          <a href={entry.url} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}>
+            <u style={{color: 'blue'}}>{entry.id}</u>
+          </a>
+        </div>
+      ))}
+    </div>
+  ) 
+
+}

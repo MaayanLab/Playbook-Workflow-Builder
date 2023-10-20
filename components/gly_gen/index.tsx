@@ -3,8 +3,8 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon, protein_icon } from '@/icons'
-import { GeneTerm, ProteinTerm } from '@/components/core/input/term'
-import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable } from './utils'
+import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
+import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef } from './utils'
 import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
 import { filter } from '@/utils/dict'
 
@@ -53,6 +53,34 @@ export const GlyGenProteinResponse = z.object({
       glycosylation_data: z.array(GlycosylationEntry)
     })
   })
+
+/**
+ * Zod definition for glycan data 
+ */
+export const GlycanResponse = z.object({
+  glytoucan: z.object({
+    glytoucan_ac: z.string()
+  }),
+  mass: z.number(),
+  mass_pme: z.number(),
+  classification: z.array(
+    z.object({
+      type: z.object({
+        name: z.string()
+      }),
+      subtype: z.object({
+        name: z.string()
+      })
+    })
+  ),
+  crossref: z.array(
+    z.object({
+      id: z.string(),
+      url: z.string().optional(),
+      database: z.string()
+    })
+  )
+})
 
 
 // -------- Data Metanodes -------- // 
@@ -148,6 +176,40 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
         </div>
       )
     }
+  })
+  .build()
+
+export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
+  .meta({
+    label: 'Glycan information',
+    description: 'Glycan information from GlyGen'
+    // icon: []
+  })
+  .codec(GlycanResponse)
+  .view(data => {
+    const glyGenLink = `http://www.glygen.org/glycan/${data.glytoucan.glytoucan_ac}`
+
+    return (
+      <div>
+        <div>GlyTouCan Accession: 
+          <b>
+            <a href={glyGenLink} target='_blank' rel='noopener nonreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.glytoucan.glytoucan_ac}</u></a>
+          </b>
+        </div>
+        <div>Monoisotopic Mass: <b>{data.mass} Da</b></div>
+        <div>Monoisotopic Mass-pMe (Da): <b>{data.mass_pme} Da</b></div>
+        <div>
+          Glycan Type / Glycan Subtype: <b><GlycanClassification classification={data.classification}/></b>
+        </div>
+        <div>
+          <GlycanCrossRef crossref={data.crossref}/>
+        </div>
+        <div>
+          Glycan Image: 
+          <img src={`https://api.glygen.org/glycan/image/${data.glytoucan.glytoucan_ac}/`} alt='Glycan Image'/>
+        </div>
+      </div>
+    )
   })
   .build()
 
@@ -247,7 +309,7 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
 export const GlycosylationInformation = MetaNode('GlycosylationInformation')
   .meta({
     label: 'Get Glycosylation Data from GlyGen Protein Products',
-    description: 'Glycosylation Information for Glycoproteins',
+    description: 'Glycosylation information for Glycoproteins',
     icon: [glygen_icon],
     pagerank: 2,
   })
@@ -260,6 +322,37 @@ export const GlycosylationInformation = MetaNode('GlycosylationInformation')
     'The glycosylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.'
   )
   .build() 
+
+/**
+ * Process metanode to search GlyGen for for Glycan details given a Glytoucan Accession
+ */
+export const GlycanInformation = MetaNode('GlycanInformation')
+  .meta({
+    label: 'Search GlyGen by GlyTouCan Accession',
+    description: 'Search for Glycan information',
+    // icon: []
+    pagerank: 2
+  })
+  .inputs({ glycan: GlycanTerm })
+  .output(GlycanViewResponseNode)
+  .resolve(async (props) => {
+    console.log("===> Got glycan input %s", props.inputs.glycan);
+    // get glycan data 
+    const detail_response = await fetch(`https://api.glygen.org/glycan/detail/${props.inputs.glycan}`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ glytoucan_ac: props.inputs.glycan })
+    })
+    const glycan_data = await detail_response.json();
+    return glycan_data
+  })
+  .story(props => 
+    'placeholder'
+  )
+  .build()
 
   // ===================================== TODO ===================================== 
   // export const GlyGenProteinQuery = MetaNode('GlyGenProteinQuery')

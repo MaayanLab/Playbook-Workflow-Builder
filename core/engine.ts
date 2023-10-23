@@ -4,6 +4,7 @@ import * as dict from '@/utils/dict'
 import { z } from 'zod'
 import * as array from '@/utils/array'
 import { UnboundError, TimeoutError } from '@/spec/error'
+import { StatusUpdate } from '@/spec/metanode'
 
 const JobC = z.object({ data: z.object({ id: z.string() }) })
 
@@ -50,7 +51,10 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
     if (metaProcess === undefined) throw new Error('Unrecognized process')
     const props = {
       data: instanceProcess.data,
-      inputs: await decode_complete_process_inputs(krg, instanceProcess)
+      inputs: await decode_complete_process_inputs(krg, instanceProcess),
+      notify: (update: StatusUpdate) => {
+        console.debug(JSON.stringify({ id: instanceProcess.id, type: instanceProcess.type, update }))
+      },
     }
     if ('prompt' in metaProcess) {
       console.debug(`Output comes from data`)

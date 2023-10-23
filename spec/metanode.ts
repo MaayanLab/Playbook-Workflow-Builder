@@ -44,6 +44,8 @@ export type InternalIdentifiableMetaNode = {
     pagerank?: number,
     // categorized tags for metanode filtering
     tags?: Record<string, Record<string, number>>,
+    // a estimate for how long this usually takes in milliseconds
+    durationEstimate?: number,
     // package.json
     version?: string,
     author?: string,
@@ -120,12 +122,26 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   }): string
 }
 
+export type StatusUpdate = {
+  type: 'progress',
+  percent: number,
+} | {
+  type: 'info',
+  message: string,
+} | {
+  type: 'warning',
+  message: string,
+}
+
 /**
  * A ResolveMetaNode is a ProcessMetaNode that operates without user input, a "pure" function.
  */
 export type ResolveMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T> & {
   resolve(props: {
-    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    /* The inputs to this process */
+    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>},
+    /* Use in long-running processes to keep the user updated */
+    notify(status: StatusUpdate): void,
   }): Promise<DataMetaNodeData<ExtractKey<T, 'output'>>>
 }
 

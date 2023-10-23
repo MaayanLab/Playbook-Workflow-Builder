@@ -58,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (Array.isArray(processNode.inputs[i])) inputs[i] = inputs_i
       else inputs[i] = one(inputs_i)
     }
-    const output = await processNode.resolve({ inputs })
+    const output = await processNode.resolve({ inputs, notify: (update) => {} })
     res.status(200).json(processNode.output.codec.encode(output))
   } catch (e) {
     console.error(e)

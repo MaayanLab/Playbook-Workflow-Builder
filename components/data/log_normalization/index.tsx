@@ -16,6 +16,7 @@ export const LogNormalizeGeneCountMatrix = MetaNode('LogNormalizeGeneCountMatrix
   .resolve(async (props) => await python(
     'components.data.log_normalization.log_normalize_gene_count_matrix',
     { kargs: [props.inputs.matrix]  },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then log2 transformed.`

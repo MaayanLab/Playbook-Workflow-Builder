@@ -51,6 +51,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   .resolve(async (props) => await python(
     'components.data.gene_count_matrix.gene_count_matrix',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`
@@ -68,6 +69,7 @@ export const Transpose = MetaNode('Transpose')
   .resolve(async (props) => await python(
     'components.data.gene_count_matrix.transpose',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then transposed.`

@@ -15,7 +15,8 @@ export const LimmaVoom = MetaNode('Limma-Voom')
   .output(GeneSignature)
   .resolve(async (props) => await python(
     'components.data.limma_voom.limma_voom_from_matrix',
-    { kargs: [props.inputs.anndata]}
+    { kargs: [props.inputs.anndata] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The AnnData file was then analyzed using differential expression by Limma-Voom [\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}].`

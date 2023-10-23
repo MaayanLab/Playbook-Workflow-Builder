@@ -18,6 +18,7 @@ export const VolcanoPlot = MetaNode('VolcanoPlot')
   .resolve(async (props) => await python(
     'components.data.volcanoplot.createvolcano',
     { kargs: [props.inputs.sig]  },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The data in the differential expression table was then visualized as a volcano plot.`

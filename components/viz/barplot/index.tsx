@@ -16,6 +16,7 @@ export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, Sco
     .resolve(async (props) => await python(
       'components.viz.barplot.barplot',
       { kargs: [props.inputs.terms], kwargs: { terms: ScoredT.meta.label } },
+      message => props.notify({ type: 'info', message }),
     ))
     .story(props =>
       `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`

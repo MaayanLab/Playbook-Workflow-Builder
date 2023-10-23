@@ -80,6 +80,7 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
     return await python(
       'components.service.kf.main',
       { kargs: [props.inputs.gene_info.ensembl?.gene]},
+      message => props.notify({ type: 'info', message }),
     )
   })
   .story(props => `Gene expression in tumors for ${props.inputs ? props.inputs.gene_info.symbol : 'the gene'} were queried from the Open Pediatric Cancer Atlas API [\\ref{doi:10.1016/j.xgen.2023.100340}].`)

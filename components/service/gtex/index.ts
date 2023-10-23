@@ -18,6 +18,7 @@ export const GTExTissueExpression = MetaNode('GTExTissueExpression')
     return await python(
       'components.service.gtex.gtex_gene_expression',
       { kargs: [props.inputs.gene_info.ensembl?.gene || props.inputs.gene_info.symbol], kwargs: { datasetId: 'gtex_v8' } },
+      message => props.notify({ type: 'info', message }),
     )
   })
   .story(props =>

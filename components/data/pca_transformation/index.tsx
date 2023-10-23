@@ -14,7 +14,8 @@ export const PCABokehPlotFromGeneCountMatrix = MetaNode('PCABokehPlotFromGeneCou
   .output(BokehPlot)
   .resolve(async (props) => await python(
       'components.data.pca_transformation.pca_transformation',
-    { kargs: [props.inputs.matrix]  },
+    { kargs: [props.inputs.matrix] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then visualized as a PCA plot${''/* [FIGURE]*/}.`

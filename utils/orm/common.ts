@@ -49,8 +49,8 @@ export interface DbDatabase {
   listen: (cb: (evt: string, data: unknown) => void) => () => void
 
   // boss
-  send: (queue: string, work: unknown) => Promise<void>
-  work: (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => Promise<() => void>
+  send: (queue: string, work: { id: string, priority?: number }) => Promise<void>
+  work: (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => Promise<() => void>
 }
 
 export type DbTables<T> = {[K in keyof T]: DbTable<T[K] extends {} ? T[K] : never>}

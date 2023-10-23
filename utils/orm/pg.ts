@@ -84,11 +84,11 @@ export class PgDatabase implements DbDatabase {
     }
   }
 
-  send = async (queue: string, work: unknown) => {
-    await this.boss.send(queue, work as any)
+  send = async (queue: string, work: { id: string, priority?: number }) => {
+    await this.boss.send(queue, { id: work.id }, { singletonKey: work.id, priority: work.priority ?? 0 })
   }
 
-  work = async (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => {
+  work = async (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => {
     await this.boss.work(queue, opts as any, cb)
     return () => {
       this.boss.stop().catch(error => console.error(error))

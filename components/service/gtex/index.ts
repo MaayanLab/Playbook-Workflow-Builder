@@ -31,7 +31,7 @@ export const GTExTissueExpressionFromGene = MetaNode('GTExTissueExpressionFromGe
   .output(GTExTissueExpression.output)
   .resolve(async (props) => {
     const gene_info = await GeneInfoFromGeneTerm.resolve(props)
-    return await GTExTissueExpression.resolve({ inputs: { gene_info } })
+    return await GTExTissueExpression.resolve({ ...props, inputs: { gene_info } })
   })
   .story(props =>
     `Median expression of ${props.inputs ? props.inputs.gene : 'the gene'} was obtained from the GTEx Portal [\\ref{doi:10.1038/ng.2653}] using the portal's API.`

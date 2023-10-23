@@ -82,7 +82,7 @@ export const ProteinProductInformationFromGene = MetaNode('ProteinProductInforma
   .output(GlyGenResponseNode)
   .resolve(async (props) => {
     const gene = await GeneInfoFromGeneTerm.resolve(props)
-    return await ProteinProductInformation.resolve({ inputs: { gene } })
+    return await ProteinProductInformation.resolve({ ...props, inputs: { gene } })
   })
   .story(props =>
     `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs ? props.inputs.gene : 'the gene'}.`

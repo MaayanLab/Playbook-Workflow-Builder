@@ -7,6 +7,7 @@ import * as array from '@/utils/array'
 import type { FPL } from "@/core/FPPRG"
 import { decode_complete_process_inputs, decode_complete_process_output } from "@/core/engine"
 import extractCitations from "@/utils/citations"
+import packageJson from '@/package.json'
 
 type BCO = z.infer<typeof IEE2791schema>
 type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
@@ -65,7 +66,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     provenance_domain: {
       embargo: {}, // ?
       name: props.metadata?.title || 'Playbook',
-      version: '1.0',
+      version: packageJson.version,
       license: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
       derived_from: `${process.env.PUBLIC_URL}/report/${fullFPL[fullFPL.length - 1].id}`,
       contributors: [],

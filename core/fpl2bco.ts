@@ -106,10 +106,10 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
         ],
       })),
     },
-    parametric_domain: dict.values(processLookup).filter(({ node }) => node.data !== null).map(({ index, node, metanode }) => ({
+    parametric_domain: dict.values(processLookup).filter(({ node }) => node.data !== null && node.data?.value).map(({ index, node, metanode }) => ({
       step: `${index+1}`,
       param: 'stdin',
-      value: node.data ? JSON.stringify(node.data.value) : '',
+      value: JSON.stringify(node.data?.value),
     })),
     execution_domain: {
       // TODO: load prereqs from steps in use (?)

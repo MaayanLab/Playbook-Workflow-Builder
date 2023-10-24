@@ -8,7 +8,6 @@ from components.viz.bokeh import interactive_circle_plot
 
 def tsne_transformation(gene_count_matrix: GeneCountMatrix):
   df = anndata_from_file(gene_count_matrix)
-  df = df.transpose()
 
   # t-SNE
   sc.pp.pca(df)

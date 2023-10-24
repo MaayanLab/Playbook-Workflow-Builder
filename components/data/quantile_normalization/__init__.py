@@ -6,7 +6,7 @@ def quantile_normalize_gene_count_matrix(m: GeneCountMatrix):
   df = anndata_from_file(m)
 
   # quantile normalize
-  df.X = qnorm.quantile_normalize(df.X, axis=1)
+  df.X = qnorm.quantile_normalize(df.X, axis=0)
 
   with upsert_file('.h5ad') as f:
     df.write_h5ad(f.file)

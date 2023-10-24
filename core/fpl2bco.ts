@@ -29,6 +29,13 @@ type Author = {
   orcid?: string,
 }
 
+function parseMetaNodeAuthor(author: string) {
+  const m = /^(.+?)\s*(<(.+?)>)?$/.exec(author)
+  if (m === null) return { name: author }
+  const [_0, name, _2, email] = m
+  return { name, email }
+}
+
 export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<BCO> {
   const fullFPL = props.fpl.resolve()
   const processLookup = dict.init(
@@ -85,7 +92,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       pipeline_steps: dict.values(processLookup).map(({ index, node, metanode }) => ({
         name: metanode.meta.label,
         description: metanode.meta.description,
-        // version: metanode.meta.version,
+        version: metanode.meta.version,
         step_number: index + 1,
         prerequisite: dict.values(node.inputs).map(input => processLookup[input.id]).map(inputProcess => ({
           name: `Output of step ${inputProcess.index+1}`,
@@ -159,13 +166,25 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     },
     // TODO error_domain
   }
+  const current_authors = new Set()
   if (props.author) {
+    current_authors.add(props.author.name)
     baseBCO.provenance_domain.contributors.push({
       ...props.author,
       contribution: ['authoredBy'],
     })
   }
-  // TODO: include contributors based on edges in use
+  dict.values(processLookup).forEach(({ metanode }) => {
+    if (metanode.meta.author) {
+      const author = parseMetaNodeAuthor(metanode.meta.author)
+      if (current_authors.has(author.name)) return
+      current_authors.add(author.name)
+      baseBCO.provenance_domain.contributors.push({
+        ...author,
+        contribution: ['contributedBy'],
+      })
+    }
+  })
   return {
     spec_version: 'https://w3id.org/ieee/ieee-2791-schema/2791object.json',
     etag: sha256(baseBCO),

@@ -238,3 +238,18 @@ MetaNode.createProcess = (spec: string) => {
   console.warn('Using Legacy MetaNode.createProcess(), please use MetaNode() instead')
   return MetaNode(spec)
 }
+
+export function MetaNodesFromExports(exports: Record<string, MetaNode[] | MetaNode | unknown>) {
+  const metanodes: MetaNode[] = []
+  for (const key in exports) {
+    const value = exports[key]
+    const valueArray = Array.isArray(value) ? value : [value]
+    for (const value of valueArray) {
+      if (typeof value === 'object' && value !== null && 'spec' in value) {
+        const metanode = value as MetaNode
+        metanodes.push(metanode)
+      }
+    }
+  }
+  return metanodes
+}

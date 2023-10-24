@@ -5,7 +5,7 @@ import useSWRImmutable from 'swr/immutable'
 import fetcher from '@/utils/next-rest-fetcher'
 import useSWRMap from '@/utils/swr-map'
 import * as dict from '@/utils/dict'
-import { Error as ErrorComponent } from '@/components'
+import { Error as ErrorComponent } from '@/components/core/error'
 
 export type Metapath = ReturnType<FPL['toJSON']>
 

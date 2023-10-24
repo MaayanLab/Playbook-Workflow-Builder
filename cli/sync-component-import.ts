@@ -9,12 +9,16 @@ const components = glob.sync(path.join(base, '**', 'package.json').split(path.se
 components.sort()
 
 fs.writeFileSync(path.join(base, 'index.ts'), [
+  `import { MetaNode, MetaNodesFromExports } from "@/spec/metanode"`,
   `export const components: string[] = []`,
+  `export const metanodes: MetaNode[] = []`,
   ...components
     .flatMap(component => {
       const componentPath = path.relative(base, component)
+      const componentSlug = componentPath.replaceAll(/[/-]/g, '_')
       return [
-        `export * from ${JSON.stringify(`./${componentPath}`)}`,
+        `import * as ${componentSlug} from ${JSON.stringify(`./${componentPath}`)}`,
+        `metanodes.push(...MetaNodesFromExports(${componentSlug}))`,
         `components.push(${JSON.stringify(componentPath)})`,
       ]
     }),

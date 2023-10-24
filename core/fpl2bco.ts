@@ -67,7 +67,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       name: props.metadata?.title || 'Playbook',
       version: '1.0',
       license: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-      derived_from: 'NA',
+      derived_from: `${process.env.PUBLIC_URL}/report/${fullFPL[fullFPL.length - 1].id}`,
       contributors: [],
       review: [],
       created: toBCOTimeString(), // TODO: datetime

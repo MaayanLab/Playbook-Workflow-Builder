@@ -2,188 +2,250 @@ import { MetaNode, MetaNodesFromExports } from "@/spec/metanode"
 export const components: string[] = []
 export const metanodes: MetaNode[] = []
 import * as MW_ConvertedGeneID from "./MW/ConvertedGeneID"
-metanodes.push(...MetaNodesFromExports(MW_ConvertedGeneID))
+import MW_ConvertedGeneID_packageJson from "./MW/ConvertedGeneID/package.json"
+metanodes.push(...MetaNodesFromExports(MW_ConvertedGeneID, MW_ConvertedGeneID_packageJson))
 components.push("MW/ConvertedGeneID")
 import * as MW_MetENP_on_MetSet from "./MW/MetENP_on_MetSet"
-metanodes.push(...MetaNodesFromExports(MW_MetENP_on_MetSet))
+import MW_MetENP_on_MetSet_packageJson from "./MW/MetENP_on_MetSet/package.json"
+metanodes.push(...MetaNodesFromExports(MW_MetENP_on_MetSet, MW_MetENP_on_MetSet_packageJson))
 components.push("MW/MetENP_on_MetSet")
 import * as MW_PPI_StringDB from "./MW/PPI_StringDB"
-metanodes.push(...MetaNodesFromExports(MW_PPI_StringDB))
+import MW_PPI_StringDB_packageJson from "./MW/PPI_StringDB/package.json"
+metanodes.push(...MetaNodesFromExports(MW_PPI_StringDB, MW_PPI_StringDB_packageJson))
 components.push("MW/PPI_StringDB")
 import * as MW_geneidconv from "./MW/geneidconv"
-metanodes.push(...MetaNodesFromExports(MW_geneidconv))
+import MW_geneidconv_packageJson from "./MW/geneidconv/package.json"
+metanodes.push(...MetaNodesFromExports(MW_geneidconv, MW_geneidconv_packageJson))
 components.push("MW/geneidconv")
 import * as MW_metaboliteInfo from "./MW/metaboliteInfo"
-metanodes.push(...MetaNodesFromExports(MW_metaboliteInfo))
+import MW_metaboliteInfo_packageJson from "./MW/metaboliteInfo/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metaboliteInfo, MW_metaboliteInfo_packageJson))
 components.push("MW/metaboliteInfo")
 import * as MW_metabolite_summary from "./MW/metabolite_summary"
-metanodes.push(...MetaNodesFromExports(MW_metabolite_summary))
+import MW_metabolite_summary_packageJson from "./MW/metabolite_summary/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metabolite_summary, MW_metabolite_summary_packageJson))
 components.push("MW/metabolite_summary")
 import * as MW_metgene_metabolite_table from "./MW/metgene_metabolite_table"
-metanodes.push(...MetaNodesFromExports(MW_metgene_metabolite_table))
+import MW_metgene_metabolite_table_packageJson from "./MW/metgene_metabolite_table/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_metabolite_table, MW_metgene_metabolite_table_packageJson))
 components.push("MW/metgene_metabolite_table")
 import * as MW_metgene_metabolites from "./MW/metgene_metabolites"
-metanodes.push(...MetaNodesFromExports(MW_metgene_metabolites))
+import MW_metgene_metabolites_packageJson from "./MW/metgene_metabolites/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_metabolites, MW_metgene_metabolites_packageJson))
 components.push("MW/metgene_metabolites")
 import * as MW_metgene_rxn_table from "./MW/metgene_rxn_table"
-metanodes.push(...MetaNodesFromExports(MW_metgene_rxn_table))
+import MW_metgene_rxn_table_packageJson from "./MW/metgene_rxn_table/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_rxn_table, MW_metgene_rxn_table_packageJson))
 components.push("MW/metgene_rxn_table")
 import * as MW_metgene_rxns from "./MW/metgene_rxns"
-metanodes.push(...MetaNodesFromExports(MW_metgene_rxns))
+import MW_metgene_rxns_packageJson from "./MW/metgene_rxns/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_rxns, MW_metgene_rxns_packageJson))
 components.push("MW/metgene_rxns")
 import * as MW_metgene_studies from "./MW/metgene_studies"
-metanodes.push(...MetaNodesFromExports(MW_metgene_studies))
+import MW_metgene_studies_packageJson from "./MW/metgene_studies/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_studies, MW_metgene_studies_packageJson))
 components.push("MW/metgene_studies")
 import * as MW_metgene_study_table from "./MW/metgene_study_table"
-metanodes.push(...MetaNodesFromExports(MW_metgene_study_table))
+import MW_metgene_study_table_packageJson from "./MW/metgene_study_table/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_study_table, MW_metgene_study_table_packageJson))
 components.push("MW/metgene_study_table")
 import * as MW_metgene_summary from "./MW/metgene_summary"
-metanodes.push(...MetaNodesFromExports(MW_metgene_summary))
+import MW_metgene_summary_packageJson from "./MW/metgene_summary/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_summary, MW_metgene_summary_packageJson))
 components.push("MW/metgene_summary")
 import * as MW_metgene_summary_table from "./MW/metgene_summary_table"
-metanodes.push(...MetaNodesFromExports(MW_metgene_summary_table))
+import MW_metgene_summary_table_packageJson from "./MW/metgene_summary_table/package.json"
+metanodes.push(...MetaNodesFromExports(MW_metgene_summary_table, MW_metgene_summary_table_packageJson))
 components.push("MW/metgene_summary_table")
 import * as core_error from "./core/error"
-metanodes.push(...MetaNodesFromExports(core_error))
+import core_error_packageJson from "./core/error/package.json"
+metanodes.push(...MetaNodesFromExports(core_error, core_error_packageJson))
 components.push("core/error")
 import * as core_file from "./core/file"
-metanodes.push(...MetaNodesFromExports(core_file))
+import core_file_packageJson from "./core/file/package.json"
+metanodes.push(...MetaNodesFromExports(core_file, core_file_packageJson))
 components.push("core/file")
 import * as core_input_scored from "./core/input/scored"
-metanodes.push(...MetaNodesFromExports(core_input_scored))
+import core_input_scored_packageJson from "./core/input/scored/package.json"
+metanodes.push(...MetaNodesFromExports(core_input_scored, core_input_scored_packageJson))
 components.push("core/input/scored")
 import * as core_input_set from "./core/input/set"
-metanodes.push(...MetaNodesFromExports(core_input_set))
+import core_input_set_packageJson from "./core/input/set/package.json"
+metanodes.push(...MetaNodesFromExports(core_input_set, core_input_set_packageJson))
 components.push("core/input/set")
 import * as core_input_term from "./core/input/term"
-metanodes.push(...MetaNodesFromExports(core_input_term))
+import core_input_term_packageJson from "./core/input/term/package.json"
+metanodes.push(...MetaNodesFromExports(core_input_term, core_input_term_packageJson))
 components.push("core/input/term")
 import * as data_anndata from "./data/anndata"
-metanodes.push(...MetaNodesFromExports(data_anndata))
+import data_anndata_packageJson from "./data/anndata/package.json"
+metanodes.push(...MetaNodesFromExports(data_anndata, data_anndata_packageJson))
 components.push("data/anndata")
 import * as data_barchart from "./data/barchart"
-metanodes.push(...MetaNodesFromExports(data_barchart))
+import data_barchart_packageJson from "./data/barchart/package.json"
+metanodes.push(...MetaNodesFromExports(data_barchart, data_barchart_packageJson))
 components.push("data/barchart")
 import * as data_characteristic_direction from "./data/characteristic_direction"
-metanodes.push(...MetaNodesFromExports(data_characteristic_direction))
+import data_characteristic_direction_packageJson from "./data/characteristic_direction/package.json"
+metanodes.push(...MetaNodesFromExports(data_characteristic_direction, data_characteristic_direction_packageJson))
 components.push("data/characteristic_direction")
 import * as data_drug_matrix_transpose from "./data/drug_matrix_transpose"
-metanodes.push(...MetaNodesFromExports(data_drug_matrix_transpose))
+import data_drug_matrix_transpose_packageJson from "./data/drug_matrix_transpose/package.json"
+metanodes.push(...MetaNodesFromExports(data_drug_matrix_transpose, data_drug_matrix_transpose_packageJson))
 components.push("data/drug_matrix_transpose")
 import * as data_gene_count_matrix from "./data/gene_count_matrix"
-metanodes.push(...MetaNodesFromExports(data_gene_count_matrix))
+import data_gene_count_matrix_packageJson from "./data/gene_count_matrix/package.json"
+metanodes.push(...MetaNodesFromExports(data_gene_count_matrix, data_gene_count_matrix_packageJson))
 components.push("data/gene_count_matrix")
 import * as data_gene_matrix_transpose from "./data/gene_matrix_transpose"
-metanodes.push(...MetaNodesFromExports(data_gene_matrix_transpose))
+import data_gene_matrix_transpose_packageJson from "./data/gene_matrix_transpose/package.json"
+metanodes.push(...MetaNodesFromExports(data_gene_matrix_transpose, data_gene_matrix_transpose_packageJson))
 components.push("data/gene_matrix_transpose")
 import * as data_gene_signature from "./data/gene_signature"
-metanodes.push(...MetaNodesFromExports(data_gene_signature))
+import data_gene_signature_packageJson from "./data/gene_signature/package.json"
+metanodes.push(...MetaNodesFromExports(data_gene_signature, data_gene_signature_packageJson))
 components.push("data/gene_signature")
 import * as data_label from "./data/label"
-metanodes.push(...MetaNodesFromExports(data_label))
+import data_label_packageJson from "./data/label/package.json"
+metanodes.push(...MetaNodesFromExports(data_label, data_label_packageJson))
 components.push("data/label")
 import * as data_librarysize from "./data/librarysize"
-metanodes.push(...MetaNodesFromExports(data_librarysize))
+import data_librarysize_packageJson from "./data/librarysize/package.json"
+metanodes.push(...MetaNodesFromExports(data_librarysize, data_librarysize_packageJson))
 components.push("data/librarysize")
 import * as data_limma_voom from "./data/limma_voom"
-metanodes.push(...MetaNodesFromExports(data_limma_voom))
+import data_limma_voom_packageJson from "./data/limma_voom/package.json"
+metanodes.push(...MetaNodesFromExports(data_limma_voom, data_limma_voom_packageJson))
 components.push("data/limma_voom")
 import * as data_log_normalization from "./data/log_normalization"
-metanodes.push(...MetaNodesFromExports(data_log_normalization))
+import data_log_normalization_packageJson from "./data/log_normalization/package.json"
+metanodes.push(...MetaNodesFromExports(data_log_normalization, data_log_normalization_packageJson))
 components.push("data/log_normalization")
 import * as data_metadata_matrix from "./data/metadata_matrix"
-metanodes.push(...MetaNodesFromExports(data_metadata_matrix))
+import data_metadata_matrix_packageJson from "./data/metadata_matrix/package.json"
+metanodes.push(...MetaNodesFromExports(data_metadata_matrix, data_metadata_matrix_packageJson))
 components.push("data/metadata_matrix")
 import * as data_pca_transformation from "./data/pca_transformation"
-metanodes.push(...MetaNodesFromExports(data_pca_transformation))
+import data_pca_transformation_packageJson from "./data/pca_transformation/package.json"
+metanodes.push(...MetaNodesFromExports(data_pca_transformation, data_pca_transformation_packageJson))
 components.push("data/pca_transformation")
 import * as data_pcagraph from "./data/pcagraph"
-metanodes.push(...MetaNodesFromExports(data_pcagraph))
+import data_pcagraph_packageJson from "./data/pcagraph/package.json"
+metanodes.push(...MetaNodesFromExports(data_pcagraph, data_pcagraph_packageJson))
 components.push("data/pcagraph")
 import * as data_quantile_normalization from "./data/quantile_normalization"
-metanodes.push(...MetaNodesFromExports(data_quantile_normalization))
+import data_quantile_normalization_packageJson from "./data/quantile_normalization/package.json"
+metanodes.push(...MetaNodesFromExports(data_quantile_normalization, data_quantile_normalization_packageJson))
 components.push("data/quantile_normalization")
 import * as data_tsne_transformation from "./data/tsne_transformation"
-metanodes.push(...MetaNodesFromExports(data_tsne_transformation))
+import data_tsne_transformation_packageJson from "./data/tsne_transformation/package.json"
+metanodes.push(...MetaNodesFromExports(data_tsne_transformation, data_tsne_transformation_packageJson))
 components.push("data/tsne_transformation")
 import * as data_umap_transformation from "./data/umap_transformation"
-metanodes.push(...MetaNodesFromExports(data_umap_transformation))
+import data_umap_transformation_packageJson from "./data/umap_transformation/package.json"
+metanodes.push(...MetaNodesFromExports(data_umap_transformation, data_umap_transformation_packageJson))
 components.push("data/umap_transformation")
 import * as data_volcanoplot from "./data/volcanoplot"
-metanodes.push(...MetaNodesFromExports(data_volcanoplot))
+import data_volcanoplot_packageJson from "./data/volcanoplot/package.json"
+metanodes.push(...MetaNodesFromExports(data_volcanoplot, data_volcanoplot_packageJson))
 components.push("data/volcanoplot")
 import * as data_z_score_normalization from "./data/z_score_normalization"
-metanodes.push(...MetaNodesFromExports(data_z_score_normalization))
+import data_z_score_normalization_packageJson from "./data/z_score_normalization/package.json"
+metanodes.push(...MetaNodesFromExports(data_z_score_normalization, data_z_score_normalization_packageJson))
 components.push("data/z_score_normalization")
 import * as filters from "./filters"
-metanodes.push(...MetaNodesFromExports(filters))
+import filters_packageJson from "./filters/package.json"
+metanodes.push(...MetaNodesFromExports(filters, filters_packageJson))
 components.push("filters")
 import * as gly_gen from "./gly_gen"
-metanodes.push(...MetaNodesFromExports(gly_gen))
+import gly_gen_packageJson from "./gly_gen/package.json"
+metanodes.push(...MetaNodesFromExports(gly_gen, gly_gen_packageJson))
 components.push("gly_gen")
 import * as lincs_l1000_reverse_search from "./lincs/l1000-reverse-search"
-metanodes.push(...MetaNodesFromExports(lincs_l1000_reverse_search))
+import lincs_l1000_reverse_search_packageJson from "./lincs/l1000-reverse-search/package.json"
+metanodes.push(...MetaNodesFromExports(lincs_l1000_reverse_search, lincs_l1000_reverse_search_packageJson))
 components.push("lincs/l1000-reverse-search")
 import * as service_archs4 from "./service/archs4"
-metanodes.push(...MetaNodesFromExports(service_archs4))
+import service_archs4_packageJson from "./service/archs4/package.json"
+metanodes.push(...MetaNodesFromExports(service_archs4, service_archs4_packageJson))
 components.push("service/archs4")
 import * as service_ctd from "./service/ctd"
-metanodes.push(...MetaNodesFromExports(service_ctd))
+import service_ctd_packageJson from "./service/ctd/package.json"
+metanodes.push(...MetaNodesFromExports(service_ctd, service_ctd_packageJson))
 components.push("service/ctd")
 import * as service_enrichr from "./service/enrichr"
-metanodes.push(...MetaNodesFromExports(service_enrichr))
+import service_enrichr_packageJson from "./service/enrichr/package.json"
+metanodes.push(...MetaNodesFromExports(service_enrichr, service_enrichr_packageJson))
 components.push("service/enrichr")
 import * as service_geneshot from "./service/geneshot"
-metanodes.push(...MetaNodesFromExports(service_geneshot))
+import service_geneshot_packageJson from "./service/geneshot/package.json"
+metanodes.push(...MetaNodesFromExports(service_geneshot, service_geneshot_packageJson))
 components.push("service/geneshot")
 import * as service_gtex from "./service/gtex"
-metanodes.push(...MetaNodesFromExports(service_gtex))
+import service_gtex_packageJson from "./service/gtex/package.json"
+metanodes.push(...MetaNodesFromExports(service_gtex, service_gtex_packageJson))
 components.push("service/gtex")
 import * as service_hyposet from "./service/hyposet"
-metanodes.push(...MetaNodesFromExports(service_hyposet))
+import service_hyposet_packageJson from "./service/hyposet/package.json"
+metanodes.push(...MetaNodesFromExports(service_hyposet, service_hyposet_packageJson))
 components.push("service/hyposet")
 import * as service_idg from "./service/idg"
-metanodes.push(...MetaNodesFromExports(service_idg))
+import service_idg_packageJson from "./service/idg/package.json"
+metanodes.push(...MetaNodesFromExports(service_idg, service_idg_packageJson))
 components.push("service/idg")
 import * as service_kf from "./service/kf"
-metanodes.push(...MetaNodesFromExports(service_kf))
+import service_kf_packageJson from "./service/kf/package.json"
+metanodes.push(...MetaNodesFromExports(service_kf, service_kf_packageJson))
 components.push("service/kf")
 import * as service_ldh from "./service/ldh"
-metanodes.push(...MetaNodesFromExports(service_ldh))
+import service_ldh_packageJson from "./service/ldh/package.json"
+metanodes.push(...MetaNodesFromExports(service_ldh, service_ldh_packageJson))
 components.push("service/ldh")
 import * as service_mygeneinfo from "./service/mygeneinfo"
-metanodes.push(...MetaNodesFromExports(service_mygeneinfo))
+import service_mygeneinfo_packageJson from "./service/mygeneinfo/package.json"
+metanodes.push(...MetaNodesFromExports(service_mygeneinfo, service_mygeneinfo_packageJson))
 components.push("service/mygeneinfo")
 import * as service_myvariantinfo from "./service/myvariantinfo"
-metanodes.push(...MetaNodesFromExports(service_myvariantinfo))
+import service_myvariantinfo_packageJson from "./service/myvariantinfo/package.json"
+metanodes.push(...MetaNodesFromExports(service_myvariantinfo, service_myvariantinfo_packageJson))
 components.push("service/myvariantinfo")
 import * as service_pubchem from "./service/pubchem"
-metanodes.push(...MetaNodesFromExports(service_pubchem))
+import service_pubchem_packageJson from "./service/pubchem/package.json"
+metanodes.push(...MetaNodesFromExports(service_pubchem, service_pubchem_packageJson))
 components.push("service/pubchem")
 import * as service_regulatoryElementInfo from "./service/regulatoryElementInfo"
-metanodes.push(...MetaNodesFromExports(service_regulatoryElementInfo))
+import service_regulatoryElementInfo_packageJson from "./service/regulatoryElementInfo/package.json"
+metanodes.push(...MetaNodesFromExports(service_regulatoryElementInfo, service_regulatoryElementInfo_packageJson))
 components.push("service/regulatoryElementInfo")
 import * as service_sigcom_lincs from "./service/sigcom-lincs"
-metanodes.push(...MetaNodesFromExports(service_sigcom_lincs))
+import service_sigcom_lincs_packageJson from "./service/sigcom-lincs/package.json"
+metanodes.push(...MetaNodesFromExports(service_sigcom_lincs, service_sigcom_lincs_packageJson))
 components.push("service/sigcom-lincs")
 import * as service_targetranger from "./service/targetranger"
-metanodes.push(...MetaNodesFromExports(service_targetranger))
+import service_targetranger_packageJson from "./service/targetranger/package.json"
+metanodes.push(...MetaNodesFromExports(service_targetranger, service_targetranger_packageJson))
 components.push("service/targetranger")
 import * as service_variantinfo from "./service/variantinfo"
-metanodes.push(...MetaNodesFromExports(service_variantinfo))
+import service_variantinfo_packageJson from "./service/variantinfo/package.json"
+metanodes.push(...MetaNodesFromExports(service_variantinfo, service_variantinfo_packageJson))
 components.push("service/variantinfo")
 import * as viz_barplot from "./viz/barplot"
-metanodes.push(...MetaNodesFromExports(viz_barplot))
+import viz_barplot_packageJson from "./viz/barplot/package.json"
+metanodes.push(...MetaNodesFromExports(viz_barplot, viz_barplot_packageJson))
 components.push("viz/barplot")
 import * as viz_bokeh from "./viz/bokeh"
-metanodes.push(...MetaNodesFromExports(viz_bokeh))
+import viz_bokeh_packageJson from "./viz/bokeh/package.json"
+metanodes.push(...MetaNodesFromExports(viz_bokeh, viz_bokeh_packageJson))
 components.push("viz/bokeh")
 import * as viz_graph from "./viz/graph"
-metanodes.push(...MetaNodesFromExports(viz_graph))
+import viz_graph_packageJson from "./viz/graph/package.json"
+metanodes.push(...MetaNodesFromExports(viz_graph, viz_graph_packageJson))
 components.push("viz/graph")
 import * as viz_kf_barplot from "./viz/kf_barplot"
-metanodes.push(...MetaNodesFromExports(viz_kf_barplot))
+import viz_kf_barplot_packageJson from "./viz/kf_barplot/package.json"
+metanodes.push(...MetaNodesFromExports(viz_kf_barplot, viz_kf_barplot_packageJson))
 components.push("viz/kf_barplot")
 import * as viz_plotly from "./viz/plotly"
-metanodes.push(...MetaNodesFromExports(viz_plotly))
+import viz_plotly_packageJson from "./viz/plotly/package.json"
+metanodes.push(...MetaNodesFromExports(viz_plotly, viz_plotly_packageJson))
 components.push("viz/plotly")

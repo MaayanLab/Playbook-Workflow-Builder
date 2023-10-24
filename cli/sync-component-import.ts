@@ -18,7 +18,8 @@ fs.writeFileSync(path.join(base, 'index.ts'), [
       const componentSlug = componentPath.replaceAll(/[/-]/g, '_')
       return [
         `import * as ${componentSlug} from ${JSON.stringify(`./${componentPath}`)}`,
-        `metanodes.push(...MetaNodesFromExports(${componentSlug}))`,
+        `import ${componentSlug}_packageJson from ${JSON.stringify(`./${componentPath}/package.json`)}`,
+        `metanodes.push(...MetaNodesFromExports(${componentSlug}, ${componentSlug}_packageJson))`,
         `components.push(${JSON.stringify(componentPath)})`,
       ]
     }),

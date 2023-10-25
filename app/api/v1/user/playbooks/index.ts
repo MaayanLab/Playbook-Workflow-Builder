@@ -89,7 +89,7 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
     limit: z.number().optional(),
   }))
   .call(async (props, req, res) => {
-    const search = props.query.search
+    const search = props.query.search?.toLowerCase()
     const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
     const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
     const skip = props.query.skip ?? 0
@@ -106,8 +106,8 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
       take: limit,
     })
     if (search) playbooks = playbooks.filter(playbook =>
-      (playbook.title||'').includes(search)
-      || (playbook.description||'').includes(search)
+      (playbook.title||'').toLowerCase().includes(search)
+      || (playbook.description||'').toLowerCase().includes(search)
     )
     if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
     if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))

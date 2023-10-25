@@ -15,7 +15,6 @@ publicPlaybooks.forEach(playbook => {
   playbook_tsvectors[playbook.id] = tsvector([
     playbook.label,
     playbook.description,
-    playbook.published,
     ...playbook.inputs.flatMap(input => [
       input.meta.label,
       input.meta.description,

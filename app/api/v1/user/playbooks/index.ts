@@ -89,7 +89,7 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
     limit: z.number().optional(),
   }))
   .call(async (props, req, res) => {
-    const search = props.query.search?.toLowerCase()
+    const search = props.query.search
     const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
     const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
     const skip = props.query.skip ?? 0
@@ -105,12 +105,19 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
       skip,
       take: limit,
     })
-    if (search) playbooks = playbooks.filter(playbook =>
-      (playbook.title||'').toLowerCase().includes(search)
-      || (playbook.description||'').toLowerCase().includes(search)
-    )
     if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
     if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
+    if (search) {
+      const search_tsvector = tsvector(search)
+      const search_scores = dict.init(playbooks.map(playbook => {
+        const playbook_tsvector = tsvector([
+          playbook.title || '',
+          playbook.description || '',
+        ].join(' '))
+        return { key: playbook.id, value: search_tsvector.intersect(playbook_tsvector).size }
+      }))
+      playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
+    }
     return playbooks
   })
   .build()

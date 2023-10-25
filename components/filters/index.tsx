@@ -257,7 +257,9 @@ export const ReduceMultiScoredT = [
               values[term].push(zscore)
             }
           }))
-        return dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.mean(value) }))
+        const results = dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.mean(value) }))
+        results.sort((a, b) => b.zscore - a.zscore)
+        return results
       })
       .story(props => `Mean scores were computed.`)
       .build(),
@@ -277,7 +279,9 @@ export const ReduceMultiScoredT = [
             values[term].push(zscore)
           }
         }))
-        return dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.absmax(value) }))
+        const results = dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.absmax(value) }))
+        results.sort((a, b) => b.zscore - a.zscore)
+        return results
       })
       .story(props => `Max scores were computed.`)
       .build(),

@@ -15,7 +15,6 @@ publicPlaybooks.forEach(playbook => {
   playbook_tsvectors[playbook.id] = tsvector([
     playbook.label,
     playbook.description,
-    playbook.published,
     ...playbook.inputs.flatMap(input => [
       input.meta.label,
       input.meta.description,
@@ -106,12 +105,19 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
       skip,
       take: limit,
     })
-    if (search) playbooks = playbooks.filter(playbook =>
-      (playbook.title||'').includes(search)
-      || (playbook.description||'').includes(search)
-    )
     if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
     if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
+    if (search) {
+      const search_tsvector = tsvector(search)
+      const search_scores = dict.init(playbooks.map(playbook => {
+        const playbook_tsvector = tsvector([
+          playbook.title || '',
+          playbook.description || '',
+        ].join(' '))
+        return { key: playbook.id, value: search_tsvector.intersect(playbook_tsvector).size }
+      }))
+      playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
+    }
     return playbooks
   })
   .build()

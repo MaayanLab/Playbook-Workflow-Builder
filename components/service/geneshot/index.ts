@@ -39,7 +39,7 @@ async function geneshot_term_search(body: { rif: 'generif' | 'autorif', term: st
   return output
 }
 
-export const GeneshotTermSearch = [
+export const GeneshotTermSearchT = [
   { rc: 'generif', label: 'GeneRIF', icon: [] } as const,
   { rc: 'autorif', label: 'AutoRIF', icon: [] } as const,
 ].flatMap(({ rc, label, icon }) =>
@@ -50,7 +50,7 @@ export const GeneshotTermSearch = [
     { T: Pathway, TermT: PathwayTerm },
     { T: Phenotype, TermT: PhenotypeTerm },
     { T: Tissue, TermT: TissueTerm },
-  ].map(({ T, TermT }) => [
+  ].flatMap(({ T, TermT }) => [
     MetaNode(`GeneshotTermSearch[${T.name}, ${rc}]`)
       .meta({
         label: `Search PubMed for Gene Co-Mentions with ${label}`,

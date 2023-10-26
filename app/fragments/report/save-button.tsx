@@ -14,7 +14,7 @@ export default function SaveButton({ userPlaybook, toggleSave, updateRequired }:
   return (
     <>
       <button
-        className="bp4-button bp4-minimal"
+        className="bp5-button bp5-minimal"
         disabled={disabled}
         onClick={() => { toggleSave() }}
       >

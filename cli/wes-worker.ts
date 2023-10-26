@@ -29,6 +29,7 @@ process.env.UFS_STORAGE = JSON.stringify({
       "cls": "ufs.impl.sbfs.SBFS",
       "auth_token": auth_token,
       "api_endpoint": "https://cavatica-api.sbgenomics.com",
+      "drs_endpoint": "drs://cavatica-ga4gh-api.sbgenomics.com",
       "ttl": 60,
     },
   },

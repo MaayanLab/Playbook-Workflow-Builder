@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { start_icon, restart_icon } from '@/icons'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
+const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 export default function RestartButton({ session_id }: { session_id?: string }) {
   const router = useRouter()
@@ -17,7 +17,7 @@ export default function RestartButton({ session_id }: { session_id?: string }) {
   return (
     <>
       <button
-        className="bp4-button bp4-minimal"
+        className="bp5-button bp5-minimal"
         disabled={disabled}
         onClick={evt => {
           if (evt.shiftKey) {
@@ -29,7 +29,7 @@ export default function RestartButton({ session_id }: { session_id?: string }) {
       >
         <Icon icon={restart_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
       </button>
-      <Bp4Alert
+      <Bp5Alert
         cancelButtonText="Cancel"
         confirmButtonText="Restart"
         icon="reset"
@@ -49,7 +49,7 @@ export default function RestartButton({ session_id }: { session_id?: string }) {
         <p className="prose">
           <b>Tip:</b> Hold shift when clicking to skip this confirmation.
         </p>
-      </Bp4Alert>
+      </Bp5Alert>
     </>
   )
 }

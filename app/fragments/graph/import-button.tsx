@@ -39,7 +39,7 @@ export default function ImportButton({ session_id }: { session_id?: string }) {
           }
         }}
       />
-      <label htmlFor="import-button" className="bp4-button bp4-minimal">
+      <label htmlFor="import-button" className="bp5-button bp5-minimal">
         <Icon
           icon={import_icon}
           className="fill-black dark:fill-white"

@@ -11,7 +11,7 @@ export default function Playbooks() {
   const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, {})
   return (
     <>
-      <h3 className="bp4-heading">Playbooks</h3>
+      <h3 className="bp5-heading">Playbooks</h3>
       <div className="overflow-x-auto">
         <table className="table table-compact w-full text-black dark:text-white">
           <thead>

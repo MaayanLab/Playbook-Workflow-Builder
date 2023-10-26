@@ -1,25 +1,16 @@
-import {
-  GeneCountMatrix,
-  DrugTerm,
-  GeneSet,
-  GeneTerm,
-  PhenotypeTerm,
-  ScoredTissues,
-  Supervenn,
-  ScoredDrugs,
-  ScoredGenes,
-  MetgeneMetaboliteTable,
-  VariantSet,
-  LINCSL1000ReverseSearchDashboard,
-  MetGeneSummary,
-  GlyGenResponseNode,
-  MetGeneRxnTable,
-  GeneSignature,
-  VariantTerm,
-  PlotlyPlot,
-  RegulatoryElementSet,
-  MetGeneStudyTable,
-} from '@/components'
+import { MetgeneMetaboliteTable } from '@/components/MW/metgene_metabolite_table'
+import { MetGeneRxnTable } from '@/components/MW/metgene_rxn_table'
+import { MetGeneStudyTable } from '@/components/MW/metgene_study_table'
+import { MetGeneSummary } from '@/components/MW/metgene_summary'
+import { ScoredDrugs, ScoredGenes, ScoredTissues } from '@/components/core/input/scored'
+import { GeneSet, RegulatoryElementSet, VariantSet } from '@/components/core/input/set'
+import { DrugTerm, GeneTerm, PhenotypeTerm, VariantTerm } from '@/components/core/input/term'
+import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
+import { GeneSignature } from '@/components/data/gene_signature'
+import { GlyGenResponseNode } from '@/components/gly_gen'
+import { LINCSL1000ReverseSearchDashboard } from '@/components/lincs/l1000-reverse-search'
+import { Supervenn } from '@/components/service/hyposet'
+import { PlotlyPlot } from '@/components/viz/plotly'
 
 const playbooks = [
   {

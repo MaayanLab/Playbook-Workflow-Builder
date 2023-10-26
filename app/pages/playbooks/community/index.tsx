@@ -108,11 +108,11 @@ export default function CommunityPlaybooks() {
             </div>
           </div>
         </div>
-        <div className="bp4-input-group">
-          <span className="bp4-icon bp4-icon-search" />
+        <div className="bp5-input-group">
+          <span className="bp5-icon bp5-icon-search" />
           <input
             type="search"
-            className="bp4-input"
+            className="bp5-input"
             placeholder="Search playbooks by title, description, and more"
             value={search}
             onChange={evt => {
@@ -224,7 +224,7 @@ export default function CommunityPlaybooks() {
                   <p><b>Published</b>: {playbook.created.toString()}</p>
                   <p><b>Authors</b>:<br /><UserIdentity user={playbook.user} /></p>
                   <p><b>Description</b>: {playbook.description}</p>
-                  <Link href={`/report/${playbook.playbook}`}><button className="bp4-button bp4-large">Launch</button></Link>
+                  <Link href={`/report/${playbook.playbook}`}><button className="bp5-button bp5-large">Launch</button></Link>
                 </div>
               </div>
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>

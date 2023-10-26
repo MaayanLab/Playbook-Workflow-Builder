@@ -11,7 +11,7 @@ import { file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
 
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const GMT = MetaNode(`GMT`)
   .meta({
@@ -158,7 +158,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={terms[row]}
-              placeholder={`Gene set from path ${row}`}
+              editableTextProps={{placeholder: `Gene set from path ${row}`}}
               onChange={value => setTerms(terms => ({ ...terms, [row]: value }))}
             />}
           />
@@ -167,7 +167,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={descriptions[row]}
-              placeholder={`Some optional description`}
+              editableTextProps={{placeholder: `Some optional description`}}
               onChange={value => setDescriptions(descriptions => ({ ...descriptions, [row]: value }))}
             />}
           />
@@ -176,7 +176,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].set.join('\t')}</Cell>}
           />
         </Table>
-        <Bp4Button
+        <Bp5Button
           large
           type="submit"
           text="Submit"

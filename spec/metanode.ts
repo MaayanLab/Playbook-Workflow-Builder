@@ -44,6 +44,10 @@ export type InternalIdentifiableMetaNode = {
     pagerank?: number,
     // categorized tags for metanode filtering
     tags?: Record<string, Record<string, number>>,
+    // package.json
+    version?: string,
+    author?: string,
+    license?: string,
   }
 }
 
@@ -237,4 +241,22 @@ MetaNode.createData = (spec: string) => {
 MetaNode.createProcess = (spec: string) => {
   console.warn('Using Legacy MetaNode.createProcess(), please use MetaNode() instead')
   return MetaNode(spec)
+}
+
+export function MetaNodesFromExports(exports: Record<string, MetaNode[] | MetaNode | unknown>, packageJson: { version: string, license: string, author: string }) {
+  const metanodes: MetaNode[] = []
+  for (const key in exports) {
+    const value = exports[key]
+    const valueArray = Array.isArray(value) ? value : [value]
+    for (const value of valueArray) {
+      if (typeof value === 'object' && value !== null && 'spec' in value) {
+        const metanode = value as MetaNode
+        if (!metanode.meta.version) metanode.meta.version = packageJson.version
+        if (!metanode.meta.license) metanode.meta.license = packageJson.license
+        if (!metanode.meta.author) metanode.meta.author = packageJson.author
+        metanodes.push(metanode)
+      }
+    }
+  }
+  return metanodes
 }

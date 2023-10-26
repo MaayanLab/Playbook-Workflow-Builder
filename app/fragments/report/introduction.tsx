@@ -33,11 +33,11 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
       <Head>
         <title>Playbook Report{playbookMetadata.title ? `: ${playbookMetadata.title}` : null}</title>
       </Head>
-      <div className="flex-grow flex-shrink bp4-card p-0">
+      <div className="flex-grow flex-shrink bp5-card p-0">
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} className="fill-black dark:fill-white" />
-            <h2 className="bp4-heading">
+            <h2 className="bp5-heading">
               <EditableText
                 placeholder="Playbook title"
                 value={playbookMetadata?.title || ''}
@@ -95,12 +95,12 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
         {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
           <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`}>
-            <button className="bp4-button bp4-minimal">
+            <button className="bp5-button bp5-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
           <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
-            <button className="bp4-button bp4-minimal">
+            <button className="bp5-button bp5-minimal">
               <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
           </Link>
@@ -109,7 +109,7 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
             userPlaybook={userPlaybook}
             updateRequired={updateRequired}
           />
-          <button className="bp4-button bp4-minimal" disabled={!userPlaybook} onClick={() => {togglePublic()}}>
+          <button className="bp5-button bp5-minimal" disabled={!userPlaybook} onClick={() => {togglePublic()}}>
             <Icon
               icon={share_icon}
               className={!userPlaybook ? 'fill-gray-400' : userPlaybook.public ? 'fill-green-500' : 'fill-black dark:fill-white'}

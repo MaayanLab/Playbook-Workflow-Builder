@@ -20,7 +20,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head 
       <input type="checkbox" defaultChecked={true} />
       <div className="collapse-title flex flex-row gap-2">
         <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
-        <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
+        <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
       </div>
       {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">

@@ -12,7 +12,7 @@ import { delete_icon, fork_icon } from '@/icons'
 import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
+const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 function humanSize(size: number) {
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -36,7 +36,7 @@ export default function Uploads() {
   const { trigger: deleteUpload, isMutating } = useSWRMutation(() => uploadToDelete ? `/api/db/user/uploads/${uploadToDelete.id}/delete` : null, fetcherPOST)
   return (
     <>
-      <h3 className="bp4-heading">Uploads</h3>
+      <h3 className="bp5-heading">Uploads</h3>
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">
@@ -122,7 +122,7 @@ export default function Uploads() {
           </table>
         </div>
       ) : null}
-      <Bp4Alert
+      <Bp5Alert
         cancelButtonText="Cancel"
         confirmButtonText="Delete Upload"
         icon="delete"
@@ -142,7 +142,7 @@ export default function Uploads() {
       >
         Are you sure you want to delete {uploadToDelete?.filename} uploaded at {uploadToDelete?.created.toString()}?
         After clicking Delete Upload, your upload will be subject to deletion and <b>cannot be restored</b>.<br />
-      </Bp4Alert>
+      </Bp5Alert>
     </>
   )
 }

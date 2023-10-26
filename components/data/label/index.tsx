@@ -116,7 +116,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
             </tbody>
           </table>
         </div>
-        <button className="bp4-button bp4-large" onClick={async () => {
+        <button className="bp5-button bp5-large" onClick={async () => {
           props.submit(
             await trigger({
               file: matrix,

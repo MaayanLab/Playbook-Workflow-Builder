@@ -17,7 +17,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
   return (
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
-        <h2 className="bp4-heading">{processNode.meta.label || processNode.spec}</h2>
+        <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
         <p className="prose">{storyText}</p>
         <p className="prose text-sm">{storyCitations}</p>
       </div>

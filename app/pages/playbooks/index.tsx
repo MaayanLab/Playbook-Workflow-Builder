@@ -134,7 +134,7 @@ export default function Playbooks() {
     >
       {showTitle ? <span className={classNames('prose prose-sm', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span> : null}
       {dataSource in dataSourceIcons ?
-        <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} />
+        <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} alt={dataSource} />
         : null}
     </button>
   ), [dataSourceFilters, setDataSourceFilters])
@@ -211,11 +211,11 @@ export default function Playbooks() {
             </div>
           </div>
         </div>
-        <div className="bp4-input-group">
-          <span className="bp4-icon bp4-icon-search" />
+        <div className="bp5-input-group">
+          <span className="bp5-icon bp5-icon-search" />
           <input
             type="search"
-            className="bp4-input"
+            className="bp5-input"
             placeholder="Search playbooks by title, description, and more"
             value={search}
             onChange={evt => {
@@ -343,7 +343,7 @@ export default function Playbooks() {
                       <p><b>Published</b>: {playbook.published}</p>
                       <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
                       <p><b>Description</b>: {playbook.description}</p>
-                      <Link href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp4-button bp4-large">Launch</button></Link>
+                      <Link href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp5-button bp5-large">Launch</button></Link>
                     </div>
                   </div>
                   <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>

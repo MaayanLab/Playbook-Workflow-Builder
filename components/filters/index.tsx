@@ -220,7 +220,7 @@ export const SetFromScoredT = [
               cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
             />
           </Table>
-          <button className="bp4-button bp4-large" onClick={async () => {
+          <button className="bp5-button bp5-large" onClick={async () => {
             props.submit({
               description: props.inputs.set.description ? `Filtered ${props.inputs.set.description}` : undefined,
               set: props.inputs.set.set.filter((item) => !selected[item])
@@ -257,7 +257,9 @@ export const ReduceMultiScoredT = [
               values[term].push(zscore)
             }
           }))
-        return dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.mean(value) }))
+        const results = dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.mean(value) }))
+        results.sort((a, b) => b.zscore - a.zscore)
+        return results
       })
       .story(props => `Mean scores were computed.`)
       .build(),
@@ -277,7 +279,9 @@ export const ReduceMultiScoredT = [
             values[term].push(zscore)
           }
         }))
-        return dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.absmax(value) }))
+        const results = dict.items(values).map(({ key, value }) => ({ term: key, zscore: math.absmax(value) }))
+        results.sort((a, b) => b.zscore - a.zscore)
+        return results
       })
       .story(props => `Max scores were computed.`)
       .build(),

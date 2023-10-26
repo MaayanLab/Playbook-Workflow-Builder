@@ -40,23 +40,23 @@ def anndata_from_file(file: File):
       return ad.read_h5ad(fr)
   elif file['filename'].endswith('.csv'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter=',')
+      return ad.read_text(fr, delimiter=',').transpose()
   elif file['filename'].endswith('.tsv'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter='\t')
+      return ad.read_text(fr, delimiter='\t').transpose()
   elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter=None)
+      return ad.read_text(fr, delimiter=None).transpose()
   elif file['filename'].endswith('.xlsx'):
     with file_as_path(file, 'r') as fr:
-      return ad.read_excel(fr)
+      return ad.read_excel(fr).transpose()
   elif file['filename'].endswith('.gctx'):
     return anndata_from_gctx(file)
   elif file['filename'].endswith('.gct'):
     return anndata_from_gct(file)
   elif file['filename'].endswith('.h5'):
     with file_as_path(file, 'r') as fr:
-      return ad.read_hdf(fr)
+      return ad.read_hdf(fr).transpose()
   else:
     raise NotImplementedError
 
@@ -72,6 +72,8 @@ def gene_count_matrix(file: File) -> GeneCountMatrix:
   for visualization. If the file is invalid, reading it will fail.
   '''
   d = anndata_from_file(file)
+  # we want to see the gene count matrix preview in transposed form
+  d = d.transpose()
   if d.shape[0] >= 10:
     top = 5
     bottom = 5

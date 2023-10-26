@@ -5,12 +5,12 @@ import useSWRImmutable from 'swr/immutable'
 import fetcher from '@/utils/next-rest-fetcher'
 import useSWRMap from '@/utils/swr-map'
 import * as dict from '@/utils/dict'
-import { Error as ErrorComponent } from '@/components'
+import { Error as ErrorComponent } from '@/components/core/error'
 
 export type Metapath = ReturnType<FPL['toJSON']>
 
 /**
- * Retreive output from the API, decode and return
+ * Retrieve output from the API, decode and return
  */
 export function useMetapathOutput({ session_id, krg, head }: { session_id?: string, krg: KRG, head: Metapath }) {
   const { data: rawOutput, isLoading, error, mutate } = useSWRImmutable(() => head ? `${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.id}/output` : undefined)
@@ -28,7 +28,7 @@ export function useMetapathOutput({ session_id, krg, head }: { session_id?: stri
 }
 
 /**
- * Retreive inputs to this process from outputs of its inputs
+ * Retrieve inputs to this process from outputs of its inputs
  *  We rely on SWR to help us de-duplicate these requests
  */
 export function useMetapathInputs({ session_id, krg, head }: { session_id?: string, krg: KRG, head: Metapath }) {

@@ -10,7 +10,7 @@ import dynamic from 'next/dynamic'
 import Head from 'next/head'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
-const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
+const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 function Graph<
   N extends { id: string, x?: number, y?: number },
@@ -206,7 +206,7 @@ export default function Explore() {
           }, `/explore/${array.unique([...path, node.id]).join('/')}`, { shallow: true })
         }}
       />
-      <Bp4Alert
+      <Bp5Alert
         confirmButtonText="Okay"
         icon="info-sign"
         intent="primary"
@@ -225,7 +225,7 @@ export default function Explore() {
           <br /><br />
           Click a circle to add supported operations which can be applied to that datatype to the graph.
         </p>
-      </Bp4Alert>
+      </Bp5Alert>
     </Layout>
   )
 }

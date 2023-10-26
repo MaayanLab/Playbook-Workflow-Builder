@@ -10,7 +10,7 @@ import { clientUploadFile } from  '@/components/core/file/api/upload/client'
 import { clientFetchFile } from  '@/components/core/file/api/fetch/client'
 import { clientLoadExample } from  '@/components/core/file/api/example.h5ad/client'
 
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const FileC = z.object({
   description: z.string().optional().nullable(),
@@ -127,10 +127,10 @@ export const FileInput = MetaNode('FileInput')
                 </div>
               </div>
               <div className={classNames({ 'hidden': tab !== 'url' })}>
-                <div className="bp4-input-group">
+                <div className="bp5-input-group">
                   <input
                     type="text"
-                    className="bp4-input w-full"
+                    className="bp5-input w-full"
                     placeholder="e.g. drs://somehost/id"
                     value={currentFile.url}
                     onChange={evt => {
@@ -140,18 +140,18 @@ export const FileInput = MetaNode('FileInput')
                 </div>
               </div>
             </div>
-            <div className="bp4-input-group">
+            <div className="bp5-input-group">
               <input
                 type="text"
                 name="description"
-                className="bp4-input"
+                className="bp5-input"
                 placeholder={`File description`}
                 onChange={evt => {setCurrentFile(({ description: _, ...file }) => ({ ...file, description: evt.target.value }))}}
                 value={currentFile.description||''}
               />
             </div>
             <div className="inline-flex flex-row">
-              <Bp4Button
+              <Bp5Button
                 large
                 text="Example"
                 rightIcon="bring-data"
@@ -159,7 +159,7 @@ export const FileInput = MetaNode('FileInput')
                   props.submit(await clientLoadExample())
                 }}
               />
-              <Bp4Button
+              <Bp5Button
                 large
                 disabled={
                   currentFile.url === undefined

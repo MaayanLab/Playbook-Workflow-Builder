@@ -19,3 +19,9 @@ export function absmax([first, ...arr]: number[]) {
   }
   return max
 }
+
+export function mean_std(arr: number[]) {
+  const mu = mean(arr)
+  const std = Math.sqrt(sum(arr.map(v => Math.pow(v - mu, 2))) / arr.length)
+  return { mu, std }
+}

@@ -2,6 +2,14 @@ FROM node:latest as base
 RUN echo "Installing git..." && apt-get -y update && apt-get -y install git && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
+FROM base as prepare_system
+RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
+ENV PYTHON_BIN="python3"
+
+FROM prepare_system as prepare_r
+COPY cli/setup.R /app/setup.R
+RUN echo "Running setup.R..." && R -e "source('/app/setup.R')" && rm /app/setup.R
+
 FROM base as prepare_src
 COPY . /app
 
@@ -30,14 +38,6 @@ RUN npm run codegen:requirements \
 FROM prepare_src as prepare_build
 COPY --from=prepare_npm_i /app /app
 RUN echo "Building app..." && LANDING_PAGE=/graph/extend PUBLIC_URL=https://playbook-workflow-builder.cloud npm run build
-
-FROM base as prepare_system
-RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
-ENV PYTHON_BIN="python3"
-
-FROM prepare_system as prepare_r
-COPY cli/setup.R /app/setup.R
-RUN echo "Running setup.R..." && R -e "source('/app/setup.R')" && rm /app/setup.R
 
 FROM prepare_system as prepare_python
 COPY --from=prepare_requirements_txt_complete /app /app

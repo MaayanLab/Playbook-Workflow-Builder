@@ -24,14 +24,20 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
-    "downlevelIteration": true
+    "jsx": "react-jsx"
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
   ],
+  "ts-node": {
+    "require": [
+      "dotenv/config",
+      "esm",
+      "tsconfig-paths/register"
+    ]
+  },
   "exclude": [
     "node_modules"
   ]

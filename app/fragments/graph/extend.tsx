@@ -1,3 +1,4 @@
+import React from 'react'
 import dynamic from 'next/dynamic'
 import { NextRouter, useRouter } from 'next/router'
 import type KRG from '@/core/KRG'
@@ -8,6 +9,7 @@ import type { Metapath } from '@/app/fragments/metapath'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import pathWeights from '@/app/public/weights.json'
 import Head from 'next/head'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
@@ -15,10 +17,28 @@ const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
-export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
+export default function Extend({ session_id, krg, id, head, metapath }: { session_id?: string, krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  const selections = dict.init(metapath.map(item => ({ key: item.process.id, value: { process: item.process, processNode: krg.getProcessNode(item.process.type) } })))
+  const selections = React.useMemo(() => {
+    // we'll use leaf nodes of the metapath + the current selected node as the selections
+    const selections: Record<string, { process: Metapath["process"], processNode: ProcessMetaNode }> = {}
+    ;[...metapath, head].forEach(item => {
+      if (item === undefined) return
+      // add this to the selections
+      selections[item.process.id] = { process: item.process, processNode: krg.getProcessNode(item.process.type) }
+      // if a selection previously registered is a parent of this selection, remove it from selections
+      dict.values(item.process.inputs).forEach(k => {
+        if (k.id in selections) delete selections[k.id]
+      })
+    })
+    return selections
+  }, [metapath, head])
+  const weights = React.useMemo(() => {
+    const key = ['Start', ...metapath.map(p => p.process.type)].slice(-2).join(' ')
+    const weights = pathWeights[key as keyof typeof pathWeights] || {}
+    return weights
+  }, [metapath])
   return (
     <>
       <Head>
@@ -36,6 +56,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
           dict.values(item.meta.tags || {})
             .flatMap(tagGroup => dict.items(tagGroup).filter(({ value }) => value).map(({ key }) => key)),
         ].join(' ')}
+        weights={weights}
       >{item => {
         // determine if multi-inputs are satisfiable
         const disabled = !array.all(
@@ -74,7 +95,10 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
                     inputs[arg] = { id: selection.process.id }
                   }
                 })
-                const req = await fetch(`/api/db/fpl/${id}/extend`, {
+                const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/extend`, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
                   method: 'POST',
                   body: JSON.stringify({
                     type: item.spec,
@@ -82,7 +106,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
                   })
                 })
                 const res = z.string().parse(await req.json())
-                router.push(`/graph/${res}`)
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res}`)
               }
             }}
           >
@@ -104,8 +128,8 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
               <Icon title={null} icon={rightarrow_icon} />
               <Icon title={item.output.meta.label} icon={item.output.meta.icon || variable_icon} />
             </div>
-            <h5 className="bp4-heading">{item.meta.label || ''}</h5>
-            <p className="bp4-text-small">{item.meta.description || ''}</p>
+            <h5 className="text-lg font-bold">{item.meta.label || ''}</h5>
+            <p className="text-sm">{item.meta.description || ''}</p>
           </Card>
         )
       }}</Catalog>

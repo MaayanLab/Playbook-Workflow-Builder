@@ -104,8 +104,9 @@ export const GetRegElementInfoFromRegElementTerm = MetaNode('GetRegElementInfoFr
       };
     }
     return response;
-  })
-  .build()
+  }).story(
+    props => `Resolve Regulatory Element info from variant term with MyVariantInfo`
+  ).build()
 
 export const GetRegElementSetInfoFromRegElementTerm = MetaNode('GetRegElementSetInfoFromRegElementTerm')
   .meta({
@@ -142,8 +143,9 @@ export const GetRegElementSetInfoFromRegElementTerm = MetaNode('GetRegElementSet
     }
 
     return response;
-  })
-  .build()
+  }).story(
+    props => `Resolve Regulatory Element Set Info from term (id).`
+  ).build()
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
   .meta({
@@ -159,8 +161,9 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
       set: geneNames
     };
     return geneSet;
-  })
-  .build()
+  }).story(
+    props => ``
+  ).build()
 
 export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRegulatoryElementInfo')
   .meta({
@@ -176,5 +179,6 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
       set: variantNames
     };
     return variantSet;
-  })
-  .build()
+  }).story(
+    props => `Get Linked Variants For Regulatory Element Info`
+  ).build()

@@ -317,6 +317,18 @@ CREATE VIEW public.process_complete AS
 
 
 --
+-- Name: proxy_session; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.proxy_session (
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    run_id character varying,
+    state character varying
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -377,6 +389,17 @@ CREATE TABLE public."user" (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     image character varying,
     name character varying
+);
+
+
+--
+-- Name: user_integrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_integrations (
+    cavatica_api_key character varying,
+    cavatica_default_project character varying,
+    id uuid NOT NULL
 );
 
 
@@ -529,6 +552,14 @@ ALTER TABLE ONLY public.process
 
 
 --
+-- Name: proxy_session proxy_session_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proxy_session
+    ADD CONSTRAINT proxy_session_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: resolved resolved_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -566,6 +597,14 @@ ALTER TABLE ONLY public.suggestion
 
 ALTER TABLE ONLY public.upload
     ADD CONSTRAINT upload_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_integrations user_integrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_integrations
+    ADD CONSTRAINT user_integrations_pkey PRIMARY KEY (id);
 
 
 --
@@ -799,6 +838,14 @@ ALTER TABLE ONLY public.session
 
 ALTER TABLE ONLY public.suggestion
     ADD CONSTRAINT suggestion_user_fkey FOREIGN KEY ("user") REFERENCES public."user"(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_integrations user_integrations_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_integrations
+    ADD CONSTRAINT user_integrations_id_fkey FOREIGN KEY (id) REFERENCES public."user"(id) ON DELETE CASCADE;
 
 
 --

@@ -3,15 +3,17 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { additional_info_icon } from '@/icons';
 
+// Mano: 2023/08/01: adding more fields and making some optional
 const MetSummaryObjC = z.object({
-  name: z.string(),
-  pubchem_cid: z.string(),
-  inchi_key: z.string(),
-  exactmass: z.string(),
-  formula: z.string(),
-  super_class: z.string(),
-  main_class: z.string(),
-  sub_class: z.string(),
+  name: z.string().optional(),
+  refmet_name: z.string().optional(),
+  pubchem_cid: z.string().optional(),
+  inchi_key: z.string().optional(),
+  exactmass: z.string().optional(),
+  formula: z.string().optional(),
+  super_class: z.string().optional(),
+  main_class: z.string().optional(),
+  sub_class: z.string().optional(),
 });
 
 export type  MetSummaryObj = z.infer<typeof  MetSummaryObjC>
@@ -43,18 +45,20 @@ export const MetaboliteSummary = MetaNode('MetaboliteSummary')
         <h2>Metabolite Summary</h2>
         <table>
           <th> Name </th>
-          <th> PubChem ID</th>
+          <th> RefMet Name </th>
+          <th> PubChem CID</th>
           <th> Exact Mass</th>
-          <th> Fromula </th>
+          <th> Formula </th>
           <th> Super class </th>
           <th> Main class </th>
           <th> Sub class </th>
           <th> InChI</th>
         {data.map((val: MetSummaryObj, i: number) => {
-
+            //window.alert(val); // console.log(val) // //window.alert(dataobj[0]);
             return (
               <tr key={i}>
                 <td>{val.name}</td>
+                <td>{val.refmet_name}</td>
                 <td>{val.pubchem_cid}</td>
                 <td>{val.exactmass}</td>
                 <td>{val.formula}</td>

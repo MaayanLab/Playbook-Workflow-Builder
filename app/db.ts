@@ -9,6 +9,8 @@ export default cache('db', () => create_database({
     account: schema.account,
     session: schema.session,
     verification_token: schema.verification_token,
+    user_integrations: schema.user_integrations,
+    proxy_session: schema.proxy_session,
     suggestion: schema.suggestion,
     data: schema.data,
     process: schema.process,

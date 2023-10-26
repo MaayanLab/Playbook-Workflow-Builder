@@ -39,11 +39,11 @@ export const GMT = MetaNode(`GMT`)
           cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key.toString()}</Cell>}
         />
         <Column
-          name="Descrition"
+          name="Description"
           cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.description||''}</Cell>}
         />
         <Column
-          name="Geneset"
+          name="Gene Set"
           cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.set.join('\t')}</Cell>}
         />
       </Table>
@@ -63,11 +63,12 @@ export const GMTFromFile = MetaNode('GMTFromFile')
     'components.data.gene_matrix_transpose.load_gene_matrix_transpose',
     { kargs: [props.inputs.file] },
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene matrix transpose.`)
   .build()
 
 export const GMTUnion = MetaNode('GMTUnion')
   .meta({
-    label: `Compute Union Geneset`,
+    label: `Compute Union Gene Set`,
     description: 'Find the union set of all genes in the GMT'
   })
   .inputs({ gmt: GMT })
@@ -82,7 +83,7 @@ export const GMTUnion = MetaNode('GMTUnion')
 
 export const GMTIntersection = MetaNode('GMTIntersection')
   .meta({
-    label: `Compute Intersection Geneset`,
+    label: `Compute Intersection Gene Set`,
     description: 'Find the intersecting set of all genes in the GMT'
   })
   .inputs({ gmt: GMT })
@@ -97,7 +98,7 @@ export const GMTIntersection = MetaNode('GMTIntersection')
 
 export const GMTConsensus = MetaNode('GMTConsensus')
   .meta({
-    label: `Compute Consensus Geneset`,
+    label: `Compute Consensus Gene Set`,
     description: 'Find genes which appear in more than one set'
   })
   .inputs({ gmt: GMT })
@@ -123,7 +124,7 @@ export const GMTConsensus = MetaNode('GMTConsensus')
 
 export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .meta({
-    label: `Assemble GMT from Genesets`,
+    label: `Assemble GMT from Gene Sets`,
     description: 'Group multiple independently generated gene sets into a single GMT'
   })
   .inputs({ genesets: [GeneSet] })
@@ -157,12 +158,12 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={terms[row]}
-              placeholder={`Geneset from path ${row}`}
+              placeholder={`Gene set from path ${row}`}
               onChange={value => setTerms(terms => ({ ...terms, [row]: value }))}
             />}
           />
           <Column
-            name="Descrition"
+            name="Description"
             cellRenderer={row => <EditableCell
               key={row+''}
               value={descriptions[row]}
@@ -171,7 +172,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             />}
           />
           <Column
-            name="Geneset"
+            name="Gene Set"
             cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].set.join('\t')}</Cell>}
           />
         </Table>

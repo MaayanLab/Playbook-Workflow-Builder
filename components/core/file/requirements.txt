@@ -1,2 +1,4 @@
+aiohttp
 fsspec
 requests
+ufs @ git+https://github.com/MaayanLab/ufs.git@v0.1.2

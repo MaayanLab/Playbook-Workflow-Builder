@@ -13,7 +13,7 @@ Meta nodes, or Playbook components, are implemented by defining the semantic des
 
 1. The first metanode is a prompt process which obtains a gene set from the user.
 2. The second metanode is a data type of the type gene set with a view for reviewing and downloading the gene set.
-3. The third metanode is a resolver process which submits the geneset to enrichr to perform enrichment analyis.
+3. The third metanode is a resolver process which submits the gene set to enrichr to perform enrichment analyis.
 4. The forth metanode is a high level object representing results from Enrichr, a gene set enrichment analysis tool. Additional resolvers could be devised to fine-tune these results for downstream analysis.
 
 ### Knowledge Resolution Graph (KRG) Database
@@ -32,3 +32,7 @@ Below we provide some justifications for the approach described above.
 ![An image illustrating how a knowledge graph can be derived from a knowledge resolution graph path](./figures/krgp-to-kg.svg)
 
 Through building a KRG we can construct classic KGs based on any given path or Playbook through the KRG once concrete information is resolved. These knowledge graphs are federated and can be re-computed to receive more up to date information or augmented information.
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

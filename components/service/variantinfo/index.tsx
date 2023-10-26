@@ -267,8 +267,9 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
     const response = await getAlleleRegistryVariantInfo(varCaId);
     response.entId = varCaId;
     return response;
-  })
-  .build()
+  }).story(props =>
+    `Resolve variant info (Allele registry API) from variant term with MyVariantInfo`
+  ).build()
   
   export const VariantSetInfo = MetaNode('VariantSetInfo')
   .meta({
@@ -318,7 +319,7 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
 export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
   .meta({
     label: 'Resolve Reg. Element from Var. Info',
-    description: 'GetRegulatoryElementsForThisVariant',
+    description: 'Get a list of Regulatory Elements linked to this Variant',
   })
   .inputs({ variant: VariantTerm })
   .output(RegulatoryElementTerm)
@@ -330,8 +331,9 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
       return response.data.ldFor.RegulatoryElement[0].entId;
     }
     return "N/A";
-  })
-  .build()
+  }).story(props =>
+    `Get a list of Regulatory Elements linked to this Variant`
+  ).build()
 
 export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTable')
   .meta({
@@ -469,7 +471,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
 export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpecificEvidencesForThisVariant')
   .meta({
     label: 'Resolve Allele Specific Evidences from Var. Info',
-    description: 'GetAlleleSpecificEvidencesForThisVariant',
+    description: 'Get Allele Specific Evidences For This Variant, data is from the GitDataHub API.',
   })
   .inputs({ variant: VariantTerm })
   .output(AlleleSpecificEvidencesTable)
@@ -481,8 +483,9 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
       alleleSpecificEvidencesList = response.data.ld.AlleleSpecificEvidence;
     }
     return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
-  })
-  .build()
+  }).story(props =>
+    `Get Allele Specific Evidences For This Variant, data is from the GitDataHub API.`
+  ).build()
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
@@ -588,8 +591,9 @@ export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDa
     }
     
     return response;
-  })
-  .build()
+  }).story(props =>
+    `Resolve xQTL Evidence Data for Variant Info Data`
+  ).build()
 
 export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExternalRecordsTable')
   .meta({
@@ -675,7 +679,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
     label: 'Resolve Allele Registry External Records for Variant',
-    description: 'GetAlleleRegistryExternalRecordsForVariant',
+    description: 'Get Allele Registry External Records for this Variant, data is from  Allele Registry API.',
   })
   .inputs({ variant: VariantTerm  })
   .output(AlleleRegistryExternalRecordsTable)
@@ -688,7 +692,9 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
       reponse = processExternalRecords(variantInfoObj);
     }
     return reponse;
-}).build()
+}).story(props =>
+  `Get Allele Registry External Records for this Variant, data is from  Allele Registry API.`
+).build()
 
   export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .meta({

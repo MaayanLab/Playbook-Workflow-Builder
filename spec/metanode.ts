@@ -18,6 +18,10 @@ import type { MaybeArray, ExtractKey, Ensure } from '@/utils/types'
 import type { Icon } from '@/icons'
 import type { StaticImageData } from 'next/image'
 
+function identity<T>(value: T): T {
+  return value
+}
+
 /**
  * The broadest type parameter for an IdentifiableMetaNode
  */
@@ -106,8 +110,8 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   kind: 'process'
   inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
   output: ExtractKey<T, 'output'>
-  story?(props: {
-    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+  story(props: {
+    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
   }): string
 }
@@ -129,7 +133,8 @@ export type PromptMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T>
   prompt(props: {
     inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-    submit: (output: DataMetaNodeData<ExtractKey<T, 'output'>>) => void
+    submit: (output: DataMetaNodeData<ExtractKey<T, 'output'>>) => void,
+    session_id?: string,
   }): React.ReactElement
 }
 
@@ -157,7 +162,7 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
       /**
        * A codec or zod specification for validating the data type for a DataMetaNode
        */
-      codec: <DATA extends InternalDataMetaNode['data']>(codec: DataMetaNode<{ data: DATA }>['codec'] | z.ZodType<DATA> = { encode: JSON.stringify, decode: JSON.parse } as DataMetaNode<{ data: DATA }>['codec']) =>
+      codec: <DATA extends InternalDataMetaNode['data']>(codec: DataMetaNode<{ data: DATA }>['codec'] | z.ZodType<DATA> = { encode: identity, decode: identity } as DataMetaNode<{ data: DATA }>['codec']) =>
       ({
         /**
          * A view function for rendering the DataMetaNode using React
@@ -188,11 +193,6 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
           resolve: (resolve: ResolveMetaNode<{ inputs: INPUTS, output: OUTPUT }>['resolve']) =>
           ({
             /**
-             * Build a ResolveMetaNode
-             * @deprecated add a story handler
-             */
-            build: () => ({ spec, meta, kind: 'process', inputs, output, resolve }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
-            /**
              * Describe this metanode's story
              */
             story: (story: ResolveMetaNode<{ inputs: INPUTS, output: OUTPUT }>['story']) => ({
@@ -208,11 +208,6 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
            */
           prompt: (prompt: PromptMetaNode<{ inputs: INPUTS, output: OUTPUT }>['prompt']) =>
           ({
-            /**
-             * Build a ProcessMetaNode
-             * @deprecated add a story handler
-             */
-            build: () => ({ spec, meta, kind: 'process', inputs, output, prompt }) as PromptMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
             /**
              * Describe this metanode's story
              */

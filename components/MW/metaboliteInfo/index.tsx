@@ -1,8 +1,9 @@
 import { MetaNode } from '@/spec/metanode'
 import { MetaboliteTerm } from '@/components/core/input/term'
 import { MetaboliteSet } from '@/components/core/input/set'
-import { MetaboliteSummary } from '../metabolite_summary'
+import { MetaboliteSummary } from '@/components/MW/metabolite_summary'
 import { metabolomicsworkbench_icon } from '@/icons'
+
 // A unique name for your resolver is used here
 export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   // Human readble descriptors about this node should go here
@@ -21,7 +22,9 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   .resolve(async (props) => {
     var jsonArrayObject = []; // Added 2023/01/25
     const metName = props.inputs.metabolite
-    const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
+    //Original by Sumana: const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
+    // Mano: 2023/08/01: using 'match' instead of 'name' so that it can take even kegg_id
+    const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/match/${metName}/all`)    
     const res = await req.json()
 
     //return  res ; // older
@@ -39,7 +42,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
 export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'Metabolite set information',
+    label: 'Extract metabolite set information',
     description: 'Extract information for a set of metabolites',
   })
   // This should be a mapping from argument name to argument type
@@ -54,10 +57,24 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     var jsonArrayObject = []
     //metNameSet.forEach(async metName => {
     for (let metName of metNameSet) {
-      const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
-      const res = await req.json()
+      //Original by Sumana: const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/name/${metName}/all`)
+      // Mano: 2023/08/01: using 'match' instead of 'name' so that it can take even kegg_id
+      const req = await fetch(`https://www.metabolomicsworkbench.org/rest/refmet/match/${metName}/all`)
+
+    const res = await req.json()
+
       //console.log(res)
-      jsonArrayObject.push(res)
+      // Mano: 2023/06/28: if res is null or [] (for metabolites like h+, CO2, H2O), it gets pushed as element and 
+      // creates issue in viewing/rendering MetaboliteSummary in the file ../metabolite_summary/index.tsx
+      // If so, may be just create dummy object with only metName
+      const res_dummy = {        name: metName,        pubchem_cid: "",        inchi_key: "",
+        exactmass: "",        formula: "",        super_class: "",        main_class: "",        sub_class: "",
+      }
+      if(!Array.isArray(res)){ // if(Array.isArray(res) && res.length == 0)
+        jsonArrayObject.push(res)
+      } else{
+        jsonArrayObject.push(res_dummy)
+      }
     }
 
     //await console.log(jsonArrayObject)
@@ -66,6 +83,6 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     //return props.inputs.input
   })
   .story(props =>
-    `The metabolites were then searched in the Metabolomics Workbench [REF] to extarct more information about the metabolites.`
+    `The metabolites were then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extarct more information about the metabolites.`
   )
   .build()

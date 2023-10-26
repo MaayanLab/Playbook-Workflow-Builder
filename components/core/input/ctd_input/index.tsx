@@ -8,7 +8,7 @@ import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
 import { clientUploadFile } from  '@/components/core/file/api/upload/client'
 import { Table, Cell, Column} from '@/app/components/Table'
-import { fileURL_ObjC } from  '@/components/core/file/'
+import { FileC } from  '@/components/core/file/'
 
 const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -18,7 +18,7 @@ export const CTDPrecalculationsFileURLs = MetaNode('CTDPrecalculationsFileURLs')
   description: 'URLs to the files for CTD Precalculations API call',
   icon: [file_icon],
 })
-.codec(z.array(fileURL_ObjC))
+.codec(z.array(FileC))
 .view(fileURLs => {
   return (
     <Table
@@ -60,10 +60,10 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
 .prompt(props => { 
   const { data: session } = useSessionWithId()
 
-  const [geneListFile, setGeneListFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+  const [geneListFile, setGeneListFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const geneListInputRef = React.useRef<HTMLInputElement>(null)
 
-  const [adjMatrixFile, setAdjMatrixFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+  const [adjMatrixFile, setAdjMatrixFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const adjMatrixInputRef = React.useRef<HTMLInputElement>(null)
 
   const output = React.useMemo(() => props.output || 
@@ -87,8 +87,9 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
           className="my-2 inline-flex flex-col"
           onSubmit={async (evt) => {
             evt.preventDefault();
-            if (props.output != null && geneListFile.url && geneListFile.url === props.output[0]?.url && geneListFile.filename && geneListFile.size &&
-                      adjMatrixFile.url && adjMatrixFile.url === props.output[1]?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
+            if (props.output != null && 
+                geneListFile.url && geneListFile.url === props.output[0]?.url && geneListFile.filename && geneListFile.size &&
+                adjMatrixFile.url && adjMatrixFile.url === props.output[1]?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
               props.submit([{
                               description: geneListFile.description,
                               url: geneListFile.url,
@@ -252,7 +253,7 @@ export const CTDUseCustomMatrixFileURLs = MetaNode('CTDUseCustomMatrixFileURLs')
   description: 'URLs to the files for CTD Cusotm Matrix Use API call',
   icon: [file_icon],
 })
-.codec(z.array(fileURL_ObjC))
+.codec(z.array(FileC))
 .view(fileURLs => {
   return (
     <Table
@@ -295,13 +296,13 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
 .prompt(props => { 
   const { data: session } = useSessionWithId()
 
-  const [geneListFile, setGeneListFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+  const [geneListFile, setGeneListFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const geneListInputRef = React.useRef<HTMLInputElement>(null)
 
-  const [adjMatrixFile, setAdjMatrixFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+  const [adjMatrixFile, setAdjMatrixFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const adjMatrixInputRef = React.useRef<HTMLInputElement>(null)
 
-  const [rDataFile, setRDataFileFile] = React.useState<{ description?: string, url?: string, filename?: string, size?: number }>({})
+  const [rDataFile, setRDataFileFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const rDataInputRef = React.useRef<HTMLInputElement>(null)
 
   const output = React.useMemo(() => props.output || 

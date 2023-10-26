@@ -1,31 +1,41 @@
+import typing
 import numpy as np
 import pandas as pd
-from components.core.file import file_as_path, file_as_stream
+from components.core.file import File, file_as_path, file_as_stream
 
-def signature_from_path(path):
+class Signature(File, typing.TypedDict):
+  shape: typing.Tuple[int, int]
+  index: typing.List[str]
+  columns: typing.List[str]
+  values: typing.List[typing.List[typing.Union[int, typing.Literal['nan'], typing.Literal['inf'], typing.Literal['-inf']]]]
+  ellipses: typing.Tuple[typing.Union[int, None], typing.Union[int, None]]
+
+def signature_from_file(file: File):
   ''' Read from a bunch of different formats, get a metadata table
   '''
-  if path.endswith('.csv'):
-    with file_as_stream(path, 'r') as fr:
-      return pd.read_csv(fr, index_col=0)
-  elif path.endswith('.tsv'):
-    with file_as_stream(path, 'r') as fr:
-      return pd.read_csv(fr, sep='\t', index_col=0)
-  elif path.endswith('.txt') or path.endswith('.tab') or path.endswith('.data'):
-    with file_as_stream(path, 'r') as fr:
-      return pd.read_csv(fr, sep=None, index_col=0, engine='python')
-  elif path.endswith('.xlsx'):
-    with file_as_path(path, 'r') as fr:
-      return pd.read_excel(fr, index_col=0)
+  if file['filename'].endswith('.csv'):
+    with file_as_stream(file, 'r') as fr:
+      df = pd.read_csv(fr, index_col=0)
+  elif file['filename'].endswith('.tsv'):
+    with file_as_stream(file, 'r') as fr:
+      df = pd.read_csv(fr, sep='\t', index_col=0)
+  elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
+    with file_as_stream(file, 'r') as fr:
+      df = pd.read_csv(fr, sep=None, index_col=0, engine='python')
+  elif file['filename'].endswith('.xlsx'):
+    with file_as_path(file, 'r') as fr:
+      df = pd.read_excel(fr, index_col=0)
   else:
     raise NotImplementedError
+  assert set(df.columns.tolist()) & { 'Pval', 'AdjPval', 'LogFC' }
+  return df
 
 def np_jsonifyable(x):
   x_ = x.astype('object')
   return x_.tolist()
 
-def gene_signature(url):
-  d = signature_from_path(url)
+def gene_signature(file: File) -> Signature:
+  d = signature_from_file(file)
   if d.shape[0] >= 10:
     top = 5
     bottom = 5
@@ -46,7 +56,7 @@ def gene_signature(url):
     None,
   ]
   return dict(
-    url=url,
+    file,
     shape=d.shape,
     index=index,
     columns=columns,
@@ -54,32 +64,62 @@ def gene_signature(url):
     ellipses=ellipses,
   )
 
-def gmt_from_sig(sig):
-  d = signature_from_path(sig['url'])
-  col = d.columns[0]
-  comparison = col.split('vs.')[0].strip() + ' vs. ' + col.split('vs.')[1].split(':')[0].strip()
-  up_250 = d.sort_values(by=col, ascending=False)[:250].index.tolist()
-  down_250 = d.sort_values(by=col, ascending=True)[:250].index.tolist()
+def resonable_geneset_threshold(d, up_down=False):
+  ''' Maybe this should be manually specified by the user but for now we try several sane choices
+  and pick the one which results in a geneset >0 but closest to 250 up/down genes.
+  '''
+  candidates = [
+    (abs(n_up - 250) + abs(n_down - 250), col, thresh)
+    for col, thresh in [('Pval', 0.05),('Pval', 0.01),('Pval', 0.001),('AdjPval', 0.05),('AdjPval', 0.01),('AdjPval', 0.001)]
+    for n_up, n_down in ((((d['LogFC']>0) & (d[col]<thresh)).sum(), ((d['LogFC']<0) & (d[col]<thresh)).sum()),)
+    if ((n_up > 0 and n_down > 0) if up_down else (n_up+n_down)>0)
+  ]
+  if not candidates:
+    return ('Pval', 0.05)
+  _, col, thresh = min(candidates)
+  return col, thresh
+
+def gmt_from_sig(sig: Signature):
+  d = signature_from_file(sig).sort_values('Pval', ascending=True)
+  col, thresh = resonable_geneset_threshold(d, up_down=True)
+  up = d[(d['LogFC'] > 0) & (d[col] < thresh)].index.tolist()
+  down = d[(d['LogFC'] < 0) & (d[col] < thresh)].index.tolist()
   return {
-    f'{comparison} Up Genes': {
-      'description': f'Top 250 up genes for {comparison}',
-      'set': up_250
+    f"{sig['description']} Up Genes": {
+      'description': f"Significant up genes for the {sig['description']}",
+      'set': up
     },
-    f'{comparison} Down Genes': {
-      'description': f'Top 250 down genes for {comparison}',
-      'set': down_250
+    f"{sig['description']} Down Genes": {
+      'description': f"Significant down genes for the {sig['description']}",
+      'set': down
     }
   }
 
-def geneset_from_sig(sig, direction):
-  d = signature_from_path(sig['url'])
-  col = d.columns[0]
-  comparison = col.split('vs.')[0].strip() + ' vs. ' + col.split('vs.')[1].split(':')[0].strip()
+def geneset_from_sig(sig: Signature, direction):
+  d = signature_from_file(sig).sort_values('Pval', ascending=True)
+  col, thresh = resonable_geneset_threshold(d, up_down=True)
   if direction == 'up':
-    top_250 = d.sort_values(by=col, ascending=False)[:250].index.tolist()
+    top = d[(d['LogFC'] > 0) & (d[col] < thresh)].index.tolist()
   else:
-    top_250 = d.sort_values(by=col, ascending=True)[:250].index.tolist()
+    top = d[(d['LogFC'] < 0) & (d[col] < thresh)].index.tolist()
   return {
-    'description': f'{direction.capitalize()} Genes {comparison}',
-    'set': top_250
+    'description': f"Significant {direction} genes from the {sig['description']}",
+    'set': top
   }
+
+def jsonifyable_float(x):
+  if np.isnan(x): return 'nan'
+  if np.isposinf(x): return 'inf'
+  if np.isneginf(x): return '-inf'
+  return x
+
+def scored_genes_from_sig(sig: Signature):
+  from scipy.stats import norm
+  d = signature_from_file(sig)
+  col, thresh = resonable_geneset_threshold(d)
+  d = d[d[col]<thresh]
+  zscores = pd.Series(np.sign(d['LogFC']) * norm.ppf(1-d[col]), index=d.index)
+  return [
+    dict(term=term, zscore=jsonifyable_float(zscore))
+    for term, zscore in zscores.to_dict().items()
+  ]

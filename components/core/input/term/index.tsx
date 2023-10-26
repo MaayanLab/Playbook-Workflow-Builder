@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/input/primitives'
+import { Gene, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
 

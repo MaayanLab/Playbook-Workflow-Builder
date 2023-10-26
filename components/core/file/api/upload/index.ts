@@ -7,6 +7,7 @@ import type { Writable, Readable } from 'stream'
 import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
 import { toReadable } from '@/utils/readable'
 import { fileAsStream } from '@/components/core/file/api/download'
+import python from '@/utils/python'
 
 function statsFromStream(reader: Readable, writer?: Writable) {
   return new Promise<{ sha256: string, size: number }>((resolve, reject) => {
@@ -36,16 +37,25 @@ export async function fileFromStream(reader_: Readable | ReadableStream<Uint8Arr
 
 export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>
 
-export async function uploadFile(file: { url: string, size: number, sha256?: string, filename: string }, session?: SessionWithId) {
-  if (!file.sha256) {
+export async function uploadFile(file: { url: string, size?: number, sha256?: string, filename: string }, session?: SessionWithId) {
+  if (!file.sha256 || !file.size) {
     const stats = await statsFromStream(await fileAsStream(file))
     file.sha256 = stats.sha256
-    if (file.size !== stats.size) {
-      file.size = stats.size
+    if (file.size !== undefined && file.size !== stats.size) {
       console.warn('mismatched filesize')
     }
+    file.size = stats.size
   }
-  // TODO: store it in fsspec
+  if (file.url.startsWith('file://')) {
+    const origFile = {...file}
+    file.url = `storage://${file.sha256}`
+    await python('components.core.file.file_move', {
+      kargs: [
+        origFile,
+        file
+      ],
+    })
+  }
   const upload = await db.objects.upload.upsert({
     where: {
       url: file.url,
@@ -57,18 +67,16 @@ export async function uploadFile(file: { url: string, size: number, sha256?: str
       size: file.size,
     },
   })
-  if (session && session.user && (session.user.id !== '00000000-0000-0000-0000-000000000000' || process.env.NODE_ENV === 'development')) {
-    await db.objects.user_upload.upsert({
-      where: {
-        user: session.user.id,
-        upload: upload.id,
-      },
-      create: {
-        user: session.user.id,
-        upload: upload.id,
-        filename: file.filename,
-      },
-    })
-  }
-  return { url: file.url, filename: file.filename, sha256: file.sha256, size: file.size }
+  const user_upload = await db.objects.user_upload.upsert({
+    where: {
+      user: session?.user?.id ?? null,
+      upload: upload.id,
+    },
+    create: {
+      user: session?.user?.id ?? null,
+      upload: upload.id,
+      filename: file.filename,
+    },
+  })
+  return { url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
 }

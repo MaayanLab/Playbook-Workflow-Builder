@@ -2,7 +2,7 @@ import { Decoded } from '@/spec/codec'
 import { TypedSchema } from '@/spec/sql'
 import * as pg from 'pg'
 import * as dict from '@/utils/dict'
-import { Create, DbDatabase, DbTable, Delete, Find, FindMany, Update, Upsert, Where } from './common'
+import { Create, DbDatabase, DbTable, Delete, Find, FindMany, OrderBy, Update, Upsert, WhereMany } from './common'
 import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/orm'
@@ -42,7 +42,7 @@ export class PgDatabase implements DbDatabase {
     this.subscriber.notifications.on('on_insert', async (rawPayload) => {
       const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
       const { table, operation, id } = payload
-      console.debug(`received on_insert from ${table}: ${id}`)
+      // console.debug(`received on_insert from ${table}: ${id}`)
       if (operation === 'INSERT') {
         this.notify(`insert:${table}`, { id })
       }
@@ -61,7 +61,7 @@ export class PgDatabase implements DbDatabase {
       await self.boss.start()
       await self.subscriber.connect()
       await self.subscriber.listenTo('on_insert')
-      console.log('ready')
+      // console.log('ready')
     })(this).catch((error) => {
       console.error('Failed to initialize subscriber', error)
       process.exit(1)
@@ -129,17 +129,37 @@ export class PgTable<T extends {}> implements DbTable<T> {
     else return this.table.codec.decode(results.rows[0])
   }
   findMany = async (find: FindMany<T> = {}) => {
-    const where: Where<T> = (find.where !== undefined) ? find.where : {}
-    const columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
+    const where: WhereMany<T> = (find.where !== undefined) ? find.where : {}
+    const where_columns = dict.keys(this.table.field_codecs).filter(col => col in where) as Array<keyof T>
+    const orderBy: OrderBy<T> = (find.orderBy !== undefined) ? find.orderBy : {}
+    const orderBy_columns = dict.keys(this.table.field_codecs).filter(col => col in orderBy) as Array<keyof T>
+    if (find.skip !== undefined && typeof find.skip !== 'number') throw new Error('Expected number for skip')
+    if (find.take !== undefined && typeof find.take !== 'number') throw new Error('Expected number for take')
     const results = await this.db.raw(subst => `
       select *
       from ${JSON.stringify(this.table.name)}
-      ${columns.length > 0 ?
-        `where ${columns
-          .map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(where[key] as Decoded<T[keyof T]>))}`)
+      ${where_columns.length > 0 ?
+        `where ${where_columns
+          .map(key => {
+            const value = where[key]
+            if (typeof value === 'object' && value !== null && 'in' in value) {
+              return `${JSON.stringify(key)} = any(${subst((value.in as Decoded<T[keyof T]>[]).map(this.table.field_codecs[key].encode))})`
+            } else {
+              return `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(value as Decoded<T[keyof T]>))}`
+            }
+          })
           .join(' and ')
         }`
-        : ''};
+        : ''}
+      ${orderBy_columns.length > 0 ?
+        `order by ${orderBy_columns
+          .map(key => `${JSON.stringify(key)} ${orderBy[key] === 'desc' ? 'desc' : 'asc'}`)
+          .join(', ')
+        }`
+        : ''}
+      ${find.take ? `limit ${find.take}` : ''}
+      ${find.skip ? `offset ${find.skip}` : ''}
+      ;
     `)
     return results.rows.map(row => this.table.codec.decode(row))
   }
@@ -151,7 +171,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       with rows as (
         update ${JSON.stringify(this.table.name)} as tbl
-        set ${set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`).join(', ')}
+        set ${[
+          ...set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`),
+          ...this.table.on_set_extra.map(([key, value]) => `${key} = ${value}`),
+        ].join(', ')}
         where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning tbl.*
       ), assertion as (
@@ -171,7 +194,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
     const results = await this.db.raw(subst => `
       with rows as (
         update ${JSON.stringify(this.table.name)}
-        set ${set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`).join(', ')}
+        set ${[
+          ...set_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode((update.data as any)[key]))}`),
+        ...this.table.on_set_extra.map(([key, value]) => `${key} = ${value}`),
+        ].join(', ')}
         where ${where_columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(update.where[key] as Decoded<T[keyof T]>))}`).join(' and ')}
         returning 1
       ) select count(*) as count from rows;
@@ -194,7 +220,10 @@ export class PgTable<T extends {}> implements DbTable<T> {
         ${insert_columns.map(col => `${JSON.stringify(col)} ${this.table.field_sql[col]}`).join(',')}
       )
       on conflict (${this.table.field_pk.map((key) => JSON.stringify(key)).join(',')})
-      do update set ${update_columns.map(col => `${JSON.stringify(col)} = EXCLUDED.${JSON.stringify(col)}`).join(',')}
+      do update set ${[
+        ...update_columns.map(col => `${JSON.stringify(col)} = EXCLUDED.${JSON.stringify(col)}`),
+        ...this.table.on_set_extra.map(([key, value]) => `${key} = EXCLUDED.${value}`),
+      ].join(',')}
       returning *;
     `)
     if (results.rowCount !== 1) throw new Error('Expected one got none')

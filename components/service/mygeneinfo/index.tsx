@@ -256,4 +256,6 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
     return await getCTDFileResponse(formData);
-  }).build()
+  }).story(props =>
+    `Get a CTD response for a file input for graph type string.`
+  ).build()

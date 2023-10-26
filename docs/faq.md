@@ -15,7 +15,7 @@ To avoid storing large files in the database or in memory we pass around pointer
 #  when reading sequentially, you can read it as a stream directly from
 #  wherever it is. it behaves like a file object
 from components.core.file import file_as_stream
-with file_as_stream(file['url']) as fh: # you get something like a file handle here
+with file_as_stream(file) as fh: # you get something like a file handle here
   for line in fh:
     print(line)
 
@@ -32,7 +32,7 @@ with upsert_file('.ext') as f:
   # f.file is a python file handler
   f.file.write('test')
 # after the context manager, f.url contains the uploaded file url
-return {'url': f.url}
+return f
 ```
 
 ### Access files from NodeJS-Implemented Resolvers
@@ -63,6 +63,7 @@ export const SomeFileOp = MetaNode('SomeFileOp')
     const file = await fileFromStream(res.body, `derived.${props.inputs.file.filename}`)
     return file
   })
+  .story(props => `The performed some operation on the file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''}.`)
   .build()
 ```
 
@@ -88,6 +89,7 @@ MetaNode('MyProcess')
       },
     })
   })
+  //...
 ```
 
 ## How can I add new icons to include in my components?
@@ -112,3 +114,7 @@ Note that the `Icon` type can be a list, the `<Icon>` react component in `app/co
 ## Something in my development environment isn't working
 
 We've Dockerized our dev environment, so if all else fails you should be able to use that given that you have `Docker` and `docker-compose` installed. It can be used with `docker-compose run dev`, in that shell you can execute any commands that weren't working.
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

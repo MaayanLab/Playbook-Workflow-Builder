@@ -15,17 +15,17 @@ import extractCitations from '@/utils/citations'
 /**
  * Attempt to compute the story for any given step
  */
-function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange: () => void }) {
+function StoryNode({ session_id, krg, head, onChange }: { session_id?: string, krg: KRG, head: Metapath, onChange: () => void }) {
   const processNode = krg.getProcessNode(head.process.type)
-  const { data: inputs } = useMetapathInputs(krg, head)
-  const { data: { output } } = useMetapathOutput(krg, head)
+  const { data: inputs, error: inputsError } = useMetapathInputs({ session_id, krg, head })
+  const { data: { output, outputNode }, error: outputError } = useMetapathOutput({ session_id, krg, head })
   const story = React.useMemo(() => {
-    if (!inputs || !processNode.story) return null
+    if (!processNode?.story) return null
     try {
       return <>
         {processNode.story({
-          inputs,
-          output,
+          inputs: !inputsError ? inputs : undefined,
+          output: !outputError && outputNode.spec !== 'Error' ? output : undefined,
         })}&nbsp;
       </>
     } catch (e) {
@@ -42,7 +42,7 @@ const StoryContext = React.createContext('')
  * We construct the story in a hidden element and sync changes to that element
  *  to a state variable which we expose through a context variable
  */
-export function StoryProvider({ children, metapath, krg }: React.PropsWithChildren<{ metapath: Metapath[], krg: KRG }>) {
+export function StoryProvider({ children, session_id, metapath, krg }: React.PropsWithChildren<{ session_id?: string, metapath: Metapath[], krg: KRG }>) {
   const ref = React.useRef<HTMLSpanElement>(null)
   const [story, setStory] = React.useState('')
   React.useEffect(() => {
@@ -55,7 +55,7 @@ export function StoryProvider({ children, metapath, krg }: React.PropsWithChildr
       </StoryContext.Provider>
       <span ref={ref} className="hidden">
         {(metapath||[]).map(head =>
-          <StoryNode key={head.id} krg={krg} head={head} onChange={() => {
+          <StoryNode key={head.id} session_id={session_id} krg={krg} head={head} onChange={() => {
             setStory(() => extractCitations(ref.current?.textContent || ''))
           }} />
         )}

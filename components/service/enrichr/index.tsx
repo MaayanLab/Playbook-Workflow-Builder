@@ -9,7 +9,7 @@ import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
-import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/input/primitives'
+import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import type { ValuesOf } from '@/utils/types'
 import { downloadBlob } from '@/utils/download'
@@ -81,6 +81,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
       .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
+      .story(props => `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.`)
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
@@ -91,6 +92,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
       .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
+      .story(props => `A GMT was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.`)
       .build(),
 
   ]
@@ -102,16 +104,23 @@ export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
     description: 'A gene set submitted to [Enrichr](https://maayanlab.cloud/Enrichr/)',
     icon: [enrichr_icon, gene_icon],
   })
-  .codec(z.object({
-    shortId: z.string(),
-    userListId: z.number(),
-  }))
+  .codec(z.union([
+    z.object({
+      empty: z.literal(true),
+    }),
+    z.object({
+      shortId: z.string(),
+      userListId: z.number(),
+    })
+  ]))
   .view(userlist => (
     <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
-      <iframe
-        className="flex-grow border-0"
-        src={`${enrichr_url}/enrich?dataset=${userlist.shortId}`}
-      />
+      {'empty' in userlist ? 
+        <div className="prose">Enrichment Analysis Cannot be Performed on Empty Set</div>
+        : <iframe
+          className="flex-grow border-0"
+          src={`${enrichr_url}/enrich?dataset=${userlist.shortId}`}
+        />}
     </div>
   ))
   .build()
@@ -143,6 +152,9 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .inputs({ geneset: GeneSet })
   .output(EnrichrEnrichmentAnalysis)
   .resolve(async (props) => {
+    if (props.inputs.geneset.set.length === 0) {
+      return { empty: true }
+    }
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
     formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
@@ -155,6 +167,9 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     }
     return await response.json()
   })
+  .story(props =>
+    `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+  )
   .build()
 
 const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: { shortId: string, userListId: number }) => {
@@ -194,7 +209,7 @@ backgrounds.map(bg => ({ bg, output }))
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
     .resolve(async (props) => {
-      return await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
+      return 'empty' in props.inputs.searchResults ? [] : await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
     .story(props =>
       `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
@@ -230,6 +245,9 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .inputs({ gene: GeneTerm })
   .output(EnrichrGeneSearchResults)
   .resolve(async (props) => props.inputs.gene)
+  .story(props =>
+    `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+  )
   .build()
 
 const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
@@ -314,6 +332,9 @@ export const EnrichrTermTSearch = [
     .inputs({ term: TermT })
     .output(EnrichrTermSearchResults)
     .resolve(async (props) => props.inputs.term)
+    .story(props =>
+      `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+    )
     .build()
 )
 

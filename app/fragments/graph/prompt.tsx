@@ -8,9 +8,9 @@ import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
 
-export default function Prompt({ krg, processNode, output, id, head, autoextend }: { krg: KRG, processNode: PromptMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
+export default function Prompt({ session_id, krg, processNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
-  const { data: inputs, error } = useMetapathInputs(krg, head)
+  const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
   const story = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const Component = processNode.prompt
@@ -21,13 +21,17 @@ export default function Prompt({ krg, processNode, output, id, head, autoextend 
         <p className="prose">{storyText}</p>
         <p className="prose text-sm">{storyCitations}</p>
       </div>
-      {error ? <div className="alert alert-error">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
+          session_id={session_id}
           inputs={inputs}
           output={output}
           submit={async (output) => {
-            const req = await fetch(`/api/db/fpl/${id}/rebase/${head.process.id}`, {
+            const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
+              headers: {
+                'Content-Type': 'application/json',
+              },
               method: 'POST',
               body: JSON.stringify({
                 type: head.process.type,
@@ -39,7 +43,7 @@ export default function Prompt({ krg, processNode, output, id, head, autoextend 
               })
             })
             const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
-            router.push(`/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
+            router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
         : <div>Waiting for input(s)</div>}

@@ -45,7 +45,7 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
     ], { env: { ...process.env } })
     let stdout = ''
     proc.stdout.on('data', (chunk: string) => { stdout += chunk })
-    proc.stderr.on('data', callback !== undefined ? callback : (chunk: string) => { console.warn(`[${pathspec}]: ${chunk}`) })
+    proc.stderr.on('data', callback !== undefined ? (chunk) => callback(chunk.toString()) : (chunk: string) => { console.warn(`[${pathspec}]: ${chunk.toString()}`) })
     proc.on('close', (code) => {
       if (code !== 0) {
         reject(new ProcessError(`[${pathspec}]: ${`Process exited with unexpected code ${code}`}`, code))

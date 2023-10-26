@@ -49,6 +49,7 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
   try {
     const metaProcess = krg.getProcessNode(instanceProcess.type)
     if (metaProcess === undefined) throw new Error('Unrecognized process')
+    console.debug(`Preparing ${metaProcess.spec}`)
     const props = {
       data: instanceProcess.data,
       inputs: await decode_complete_process_inputs(krg, instanceProcess),
@@ -57,16 +58,16 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
       },
     }
     if ('prompt' in metaProcess) {
-      console.debug(`Output comes from data`)
+      console.debug(`Processing prompt ${metaProcess.spec}`)
       return new Resolved(instanceProcess, instanceProcess.data)
     } else {
-      // TODO: add a timeout here
+      console.debug(`Processing resolver ${metaProcess.spec}`)
       const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
-      console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)}`)
       return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
     }
   } catch (e) {
     if (e instanceof TimeoutError) {
+      console.warn(e)
       throw e
     } else if (e instanceof UnboundError) {
       return new Resolved(instanceProcess, undefined)
@@ -89,13 +90,14 @@ export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
     console.debug(`checking ${processId}..`)
     // we fetch it from the db
     const instanceProcess = await db.getProcess(processId, true)
-    if (!instanceProcess) throw new Error(`Process '${processId}' not found`)
-    if (instanceProcess.resolved === undefined) {
-      console.debug(`resolving ${processId}..`)
+    if (!instanceProcess) {
+      console.error(`process '${processId}' not found`)
+    } else if (instanceProcess.resolved === undefined) {
+      console.debug(`resolving ${instanceProcess.type} (${processId})..`)
       const resolved = await resolve_process(krg, instanceProcess)
       // store the result in the db
       await db.upsertResolved(resolved)
-      console.debug(`completed ${processId}`)
+      console.debug(`completed ${instanceProcess.type} ${processId}`)
     }
   })
 }

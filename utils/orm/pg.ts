@@ -6,6 +6,7 @@ import { Create, DbDatabase, DbTable, Delete, Find, FindMany, OrderBy, Update, U
 import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/orm'
+import { z } from 'zod'
 
 /**
  * Easy prepared statement building.
@@ -93,6 +94,28 @@ export class PgDatabase implements DbDatabase {
     return () => {
       this.boss.stop().catch(error => console.error(error))
     }
+  }
+
+  jobs = async () => {
+    const results = await this.raw(subst => `
+      select
+        name,
+        priority,
+        data,
+        state,
+        createdon,
+        completedon
+      from pgboss.job
+      where data is not null
+    `)
+    return z.array(z.object({
+      name: z.string(),
+      priority: z.number(),
+      data: z.any(),
+      state: z.string(),
+      createdon: z.date(),
+      completedon: z.date().nullable(),
+    })).parse(results.rows)
   }
 }
 

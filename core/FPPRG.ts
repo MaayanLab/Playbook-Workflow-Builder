@@ -689,10 +689,10 @@ export default class FPPRG {
    * Like getResolved but if it's not in the db yet, request & wait for it
    */
   awaitResolved = async (id: string): Promise<Resolved> => {
-    const process = await this.getProcess(id)
-    if (!process) throw new Error('Not found')
     const resolved = await this.getResolved(id)
     if (!resolved) {
+      const process = await this.getProcess(id)
+      if (!process) throw new Error('Not found')
       await new Promise<void>(async (resolve, reject) => {
         const ctx = { resolved: false }
         const unsub = this.db.listen((evt, data) => {

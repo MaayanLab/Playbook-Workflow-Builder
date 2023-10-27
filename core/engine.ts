@@ -51,20 +51,16 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
     if (metaProcess === undefined) throw new Error('Unrecognized process')
     console.debug(`Preparing ${metaProcess.spec}`)
     const props = {
-      data: instanceProcess.data,
+      data: instanceProcess.data?.value,
       inputs: await decode_complete_process_inputs(krg, instanceProcess),
       notify: (update: StatusUpdate) => {
         console.debug(JSON.stringify({ id: instanceProcess.id, type: instanceProcess.type, update }))
       },
     }
-    if ('prompt' in metaProcess) {
-      console.debug(`Processing prompt ${metaProcess.spec}`)
-      return new Resolved(instanceProcess, instanceProcess.data)
-    } else {
-      console.debug(`Processing resolver ${metaProcess.spec}`)
-      const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
-      return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
-    }
+    console.debug(`Processing ${metaProcess.spec}`)
+    if ('prompt' in metaProcess && props.data === undefined) throw new UnboundError()
+    const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
+    return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
   } catch (e) {
     if (e instanceof TimeoutError) {
       console.warn(e)

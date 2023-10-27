@@ -26,9 +26,10 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
           session_id={session_id}
+          data={head.process.data?.value}
           inputs={inputs}
           output={output}
-          submit={async (output) => {
+          submit={async (data) => {
             const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
               headers: {
                 'Content-Type': 'application/json',
@@ -37,8 +38,8 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
               body: JSON.stringify({
                 type: head.process.type,
                 data: {
-                  type: processNode.output.spec,
-                  value: processNode.output.codec.encode(output),
+                  type: processNode.spec,
+                  value: processNode.codec.encode(data),
                 },
                 inputs: head.process.inputs,
               })

@@ -116,10 +116,6 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   kind: 'process'
   inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
   output: ExtractKey<T, 'output'>
-  story(props: {
-    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
-    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-  }): string
 }
 
 export type StatusUpdate = {
@@ -143,19 +139,43 @@ export type ResolveMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T
     /* Use in long-running processes to keep the user updated */
     notify(status: StatusUpdate): void,
   }): Promise<DataMetaNodeData<ExtractKey<T, 'output'>>>
+  story(props: {
+    /* The inputs to this process */
+    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    /* The output of this process */
+    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+  }): string
 }
 
 /**
  * A PromptMetaNode is a ProcessMetaNode that operates with user feedback, allowing users to
  *  inject information/decisions into the workflow.
  */
-export type PromptMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T> & {
+export type PromptMetaNode<T = InternalDataMetaNode & InternalProcessMetaNode> = BaseProcessMetaNode<T> & {
+  codec: Codec<ExtractKey<T, 'data'>>
   prompt(props: {
+    data?: ExtractKey<T, 'data'>,
     inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-    submit: (output: DataMetaNodeData<ExtractKey<T, 'output'>>) => void,
+    submit: (data: ExtractKey<T, 'data'>) => void,
     session_id?: string,
   }): React.ReactElement
+  resolve(props: {
+    /* The data configured in the prompt */
+    data: ExtractKey<T, 'data'>,
+    /* The inputs to this process */
+    inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>},
+    /* Use in long-running processes to keep the user updated */
+    notify(status: StatusUpdate): void,
+  }): Promise<DataMetaNodeData<ExtractKey<T, 'output'>>>
+  story(props: {
+    /* The data configured in the prompt */
+    data?: ExtractKey<T, 'data'>,
+    /* The inputs to this process */
+    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
+    /* The output of this process */
+    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+  }): string
 }
 
 /**
@@ -193,6 +213,42 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
            * Build a DataMetaNode
            */
           build: () => ({ spec, meta, kind: 'data', codec: 'parse' in codec ? codecFrom(codec) : codec, view }) as DataMetaNode<{ spec: ID, meta: META, data: DATA }>,
+        }),
+        /**
+         * The input(s) to this ProcessMetaNode, of the form
+         *  { argumentName: SomeAlreadyDefinedDataMetaNode, ... }
+         */
+        inputs: <INPUTS>(inputs: {[K in keyof INPUTS]: INPUTS[K] extends MaybeArray<DataMetaNode<infer _>> ? INPUTS[K] : never} = {} as {[K in keyof INPUTS]: INPUTS[K] extends MaybeArray<DataMetaNode<infer _>> ? INPUTS[K] : never}) =>
+        ({
+          /**
+           * The output of this ProcessMetaNode, an already defined DataMetaNode
+           */
+          output: <OUTPUT>(output: OUTPUT extends DataMetaNode<infer _> ? OUTPUT : never) =>
+          ({
+            /**
+             * Define the prompt function for building a PromptMetaNode -- this function uses the input arguments
+             *  to build a UI for prompting the user for information to create the output DataMetaNode.
+             */
+            prompt: (prompt: PromptMetaNode<{ data: DATA, inputs: INPUTS, output: OUTPUT }>['prompt']) =>
+            ({
+              /**
+               * Define the resolve function for building a ResolveMetaNode -- this function uses the input arguments
+               *  to resolve output matching the output DataMetaNode.
+               */
+              resolve: (resolve: PromptMetaNode<{ data: DATA, inputs: INPUTS, output: OUTPUT }>['resolve']) =>
+              ({
+                /**
+                 * Describe this metanode's story
+                 */
+                story: (story: PromptMetaNode<{ data: DATA, inputs: INPUTS, output: OUTPUT }>['story']) => ({
+                  /**
+                   * Build a ProcessMetaNode
+                   */
+                  build: () => ({ spec, meta, kind: 'process', codec: 'parse' in codec ? codecFrom(codec) : codec, inputs, output, prompt, resolve, story }) as PromptMetaNode<{ spec: ID, meta: META, data: DATA, inputs: INPUTS, output: OUTPUT }>,
+                })
+              })
+            })
+          })
         })
       }),
       /**
@@ -226,16 +282,16 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
            * Define the prompt function for building a PromptMetaNode -- this function uses the input arguments
            *  to build a UI for prompting the user for information to create the output DataMetaNode.
            */
-          prompt: (prompt: PromptMetaNode<{ inputs: INPUTS, output: OUTPUT }>['prompt']) =>
+          prompt: (prompt: PromptMetaNode<{ data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>['prompt']) =>
           ({
             /**
              * Describe this metanode's story
              */
-            story: (story: PromptMetaNode<{ inputs: INPUTS, output: OUTPUT }>['story']) => ({
+            story: (story: PromptMetaNode<{ data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>['story']) => ({
               /**
                * Build a ProcessMetaNode
                */
-              build: () => ({ spec, meta, kind: 'process', inputs, output, prompt, story }) as PromptMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
+              build: () => ({ spec, meta, kind: 'process', codec: output.codec, inputs, output, prompt, resolve: async (props) => { return props.data }, story }) as PromptMetaNode<{ spec: ID, meta: META, data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>,
             })
           })
         })

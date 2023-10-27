@@ -1,4 +1,5 @@
 import React from 'react'
+import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
 import { DrugSet, GeneSet } from '@/components/core/input/set'
 import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
@@ -28,6 +29,9 @@ export const TopKScoredT = [
       label: `Top ${ScoredT.meta.label}`,
       description: `Select the top ${ScoredT.meta.label}`,
     })
+    .codec(z.object({
+      k: z.number(),
+    }))
     .inputs({ scored: ScoredT })
     .output(ScoredT)
     .prompt(props => {
@@ -37,8 +41,8 @@ export const TopKScoredT = [
             {[10, 20, 50, 100].map(k =>
               <button
                 key={k}
-                className={classNames('btn', {'btn-primary': props.output?.length === k, 'btn-secondary': props.output?.length !== k})}
-                onClick={() => {props.submit(props.inputs.scored.slice(0, k))}}
+                className={classNames('btn', {'btn-primary': props.data?.k === k, 'btn-secondary': props.data?.k !== k})}
+                onClick={() => {props.submit({ k })}}
               >Top {k}</button>
             )}
           </div>
@@ -46,7 +50,10 @@ export const TopKScoredT = [
         </div>
       )
     })
-    .story(props => `The top ${props.output?.length || 'K'} ${ScoredT.meta.label} were selected.`)
+    .resolve(async (props) => {
+      return props.inputs.scored.slice(0, props.data.k)
+    })
+    .story(props => `The top ${props.data?.k || 'K'} ${ScoredT.meta.label} were selected.`)
     .build(),
   MetaNode(`OneScoredT[${ScoredT.spec}]`)
     .meta({

@@ -1,7 +1,7 @@
 import React from 'react'
 import { z } from 'zod'
 import { useRouter } from 'next/router'
-import { PromptMetaNode } from '@/spec/metanode'
+import { DataMetaNode, PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { func_icon } from '@/icons'
@@ -12,7 +12,7 @@ import { TimeoutError } from '@/spec/error'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Prompt({ session_id, krg, processNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, output: any, id: string, head: Metapath }) {
+export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
   const Component = processNode.prompt
@@ -23,8 +23,9 @@ export default function Prompt({ session_id, krg, processNode, output, id, head 
         <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
         <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
       </div>
-      {error  && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">
+        {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component
             session_id={session_id}

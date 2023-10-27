@@ -27,6 +27,7 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
             krg={krg}
             head={head}
             processNode={processNode}
+            outputNode={outputNode}
             output={output}
             autoextend={autoextend}
           />

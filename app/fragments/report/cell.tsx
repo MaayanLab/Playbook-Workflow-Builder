@@ -52,6 +52,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             krg={krg}
             head={head}
             processNode={processNode}
+            outputNode={outputNode}
             output={output}
           />
           : <div className="collapse collapse-arrow text-black dark:text-white">

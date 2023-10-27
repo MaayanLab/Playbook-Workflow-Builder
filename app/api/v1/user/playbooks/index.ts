@@ -202,7 +202,7 @@ export const UpdateUserPlaybook = API.post('/api/v1/user/playbooks/[id]/update')
     fpl = await fpprg.upsertFPL(fpl)
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) throw new UnauthorizedError()
-    const playbookInputs = fpl.resolve().map(cell => krg.getProcessNode(cell.process.type)).filter(node => 'prompt' in node).map(node => node.output.spec).join(', ')
+    const playbookInputs = fpl.resolve().map(cell => krg.getProcessNode(cell.process.type)).filter(node => 'prompt' in node && dict.isEmpty(node.inputs)).map(node => node.output.spec).join(', ')
     const playbookOutputs = fpl.resolve().filter(cell => cell.cell_metadata?.data_visible === true).map(cell => krg.getProcessNode(cell.process.type).output.spec).join(', ')
     await db.objects.user_playbook.delete({
       where: {

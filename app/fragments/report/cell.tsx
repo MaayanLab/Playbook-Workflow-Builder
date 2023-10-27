@@ -64,7 +64,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
           </div>
         </div>}
-        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !cellMetadata[head.id].data_visible })}>
+        <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !cellMetadata[head.id].data_visible })}>
           <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
             <button className="bp5-button bp5-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />

@@ -128,11 +128,15 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
     label: `Assemble DMT from Drug Sets`,
     description: 'Group multiple independently generated drug sets into a single DMT'
   })
+  .codec(z.object({
+    terms: z.record(z.number(), z.string()),
+    descriptions: z.record(z.number(), z.string()),
+  }))
   .inputs({ sets: [DrugSet] })
   .output(DMT)
   .prompt(props => {
-    const [terms, setTerms] = React.useState({} as Record<number, string>)
-    const [descriptions, setDescriptions] = React.useState({} as Record<number, string>)
+    const [terms, setTerms] = React.useState(props.data ? props.data.terms : {} as Record<number, string>)
+    const [descriptions, setDescriptions] = React.useState(props.data ? props.data.descriptions : {} as Record<number, string>)
     React.useEffect(() => {
       if (props.inputs) {
         setTerms(dict.init(array.arange(props.inputs.sets.length).map(key => ({ key, value: props.inputs.sets[key].description||'' }))))
@@ -182,19 +186,25 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={() => props.submit(
-            dict.init(
-              array.arange(props.inputs.sets.length)
-                .map(i => ({
-                  key: terms[i],
-                  value: {
-                    description: descriptions[i],
-                    set: props.inputs.sets[i].set,
-                  }
-                }))
-            ))}
+          onClick={() => props.submit({ terms, descriptions })}
         />
       </div>
+    )
+  })
+  .resolve(async (props) => {
+    const { terms, descriptions } = props.data
+    if (props.inputs.sets.length !== Object.keys(terms).length) {
+      throw new Error('Please confirm the terms')
+    }
+    return dict.init(
+      array.arange(props.inputs.sets.length)
+        .map(i => ({
+          key: terms[i],
+          value: {
+            description: descriptions[i],
+            set: props.inputs.sets[i].set,
+          }
+        }))
     )
   })
   .story(props =>

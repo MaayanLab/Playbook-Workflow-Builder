@@ -1,8 +1,9 @@
 import React from 'react'
 import { MetaNode } from "@/spec/metanode"
+import { z } from 'zod'
 import { AnnData } from '@/components/data/anndata'
 import { useClientMetadataFromFile } from './api/metadata/client'
-import { useClientUpdateMetadata } from './api/metadata/update/client'
+import { updateMetadataColumn } from './api/metadata/update'
 import classNames from 'classnames'
 
 export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
@@ -10,13 +11,13 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
     label: 'Manual Labeling of Samples',
     description: 'Manually label samples as either control or perturbation.',
   })
+  .codec(z.record(z.string(), z.record(z.string(), z.string())))
   .inputs({ matrix: AnnData })
   .output(AnnData)
   .prompt(props => {
     const matrix = props.output ? props.output : props.inputs.matrix
     const { data, isLoading } = useClientMetadataFromFile(matrix)
-    const { trigger } = useClientUpdateMetadata(matrix.url)
-    const [tableData, setTableData] = React.useState<Record<string, Record<string, string>>>({})
+    const [tableData, setTableData] = React.useState(props.data ? props.data : {} as Record<string, Record<string, string>>)
 
     React.useEffect(() => {
       if (!data) return
@@ -116,16 +117,17 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
             </tbody>
           </table>
         </div>
-        <button className="bp5-button bp5-large" onClick={async () => {
-          props.submit(
-            await trigger({
-              file: matrix,
-              data: tableData,
-            })
-          )
+        <button className="bp5-button bp5-large" onClick={() => {
+          props.submit(tableData)
         }}>Submit</button>
       </div>
     );
+  })
+  .resolve(async (props) => {
+    return await updateMetadataColumn({
+      file: props.inputs.matrix,
+      data: props.data,
+    })
   })
   .story(props =>
     'The samples were then labeled as either control or perturbation to allow for further analysis.'

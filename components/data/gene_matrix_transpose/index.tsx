@@ -128,11 +128,15 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
     label: `Assemble GMT from Gene Sets`,
     description: 'Group multiple independently generated gene sets into a single GMT'
   })
+  .codec(z.object({
+    terms: z.record(z.number(), z.string()),
+    descriptions: z.record(z.number(), z.string()),
+  }))
   .inputs({ genesets: [GeneSet] })
   .output(GMT)
   .prompt(props => {
-    const [terms, setTerms] = React.useState({} as Record<number, string>)
-    const [descriptions, setDescriptions] = React.useState({} as Record<number, string>)
+    const [terms, setTerms] = React.useState(props.data ? props.data.terms : {} as Record<number, string>)
+    const [descriptions, setDescriptions] = React.useState(props.data ? props.data.descriptions : {} as Record<number, string>)
     React.useEffect(() => {
       if (props.inputs) {
         setTerms(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
@@ -182,19 +186,25 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={() => props.submit(
-            dict.init(
-              array.arange(props.inputs.genesets.length)
-                .map(i => ({
-                  key: terms[i],
-                  value: {
-                    description: descriptions[i],
-                    set: props.inputs.genesets[i].set,
-                  }
-                }))
-            ))}
+          onClick={() => props.submit({ terms, descriptions })}
         />
       </div>
+    )
+  })
+  .resolve(async (props) => {
+    const { terms, descriptions } = props.data
+    if (props.inputs.genesets.length !== Object.keys(terms).length) {
+      throw new Error('Please confirm the terms')
+    }
+    return dict.init(
+      array.arange(props.inputs.genesets.length)
+        .map(i => ({
+          key: terms[i],
+          value: {
+            description: descriptions[i],
+            set: props.inputs.genesets[i].set,
+          }
+        }))
     )
   })
   .story(props =>

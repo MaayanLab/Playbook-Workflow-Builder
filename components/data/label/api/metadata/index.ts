@@ -9,12 +9,3 @@ export async function metadataFromFile(file: { url: string, size?: number, sha25
     kargs: [file],
   }) as Record<string, Record<string, string>>
 }
-
-export async function updateMetadataColumn(props: {
-  file: { url: string, size?: number, sha256?: string, filename: string }
-  data: Record<string, Record<string, string>>,
-}, session?: SessionWithId) {
-  return await python('components.data.label.update_anndata_metadata', {
-    kargs: [props.file, props.data],
-  })
-}

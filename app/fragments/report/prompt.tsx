@@ -8,6 +8,7 @@ import { func_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
+import { TimeoutError } from '@/spec/error'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -22,7 +23,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head 
         <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
         <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
       </div>
-      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error  && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component
@@ -48,7 +49,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head 
               router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.head}`, undefined, { shallow: true, scroll: false })
             }}
           />
-          : <div>Waiting for input(s)</div>}
+          : <div>Waiting for input</div>}
       </div>
     </div>
   )

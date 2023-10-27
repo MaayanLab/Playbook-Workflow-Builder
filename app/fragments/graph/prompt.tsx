@@ -7,6 +7,7 @@ import * as array from '@/utils/array'
 import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
+import { TimeoutError } from '@/spec/error'
 
 export default function Prompt({ session_id, krg, processNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
@@ -21,7 +22,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
         <p className="prose">{storyText}</p>
         <p className="prose text-sm">{storyCitations}</p>
       </div>
-      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
           session_id={session_id}
@@ -46,7 +47,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
             router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
-        : <div>Waiting for input(s)</div>}
+        : <div>Waiting for input</div>}
     </div>
   )
 }

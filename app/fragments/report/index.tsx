@@ -6,8 +6,8 @@ import krg from '@/app/krg'
 import { z } from 'zod'
 import { SWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
-import Head from 'next/head'
 import fetcher from '@/utils/next-rest-fetcher'
+import { MetapathProvider } from '@/app/fragments/metapath'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Cells = dynamic(() => import('@/app/fragments/report/cells'))
@@ -52,11 +52,18 @@ export default function App({ fallback }: { fallback: any }) {
     <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
         <main className="flex-grow container mx-auto py-4 flex flex-col">
-          <Cells
-            session_id={params?.session_id}
-            krg={krg}
-            id={params.id || ''}
-          />
+          {params.id ? 
+            <MetapathProvider
+              session_id={params?.session_id}
+              id={params.id}
+            >
+              <Cells
+                session_id={params?.session_id}
+                krg={krg}
+                id={params.id}
+              />
+            </MetapathProvider>
+          : <div className="alert alert-error">Page not found</div>}
         </main>
       </SWRConfig>
     </Layout>

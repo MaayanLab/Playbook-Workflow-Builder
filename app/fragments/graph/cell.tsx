@@ -10,7 +10,7 @@ const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
 export default function Cell({ session_id, krg, id, head, autoextend }: { session_id?: string, krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const processNode = krg.getProcessNode(head.process.type)
-  const { data: { output, outputNode }, error: outputError, mutate } = useMetapathOutput({ session_id, krg, head })
+  const { data: { output, outputNode }, error: outputError, mutate } = useMetapathOutput({ krg, head })
   const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const View = outputNode ? ({ output }: { output: any }) => outputNode.view(output) : undefined
@@ -50,7 +50,7 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
                 onClick={async (evt) => {
                   const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.id}/output/delete`, { method: 'POST' })
                   const res = await req.text()
-                  await mutate()
+                  mutate()
                 }}
               >Recompute</button>
           </div>

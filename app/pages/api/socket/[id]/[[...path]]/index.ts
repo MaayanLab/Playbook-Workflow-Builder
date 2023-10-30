@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { randomUUID } from "crypto"
 import getRawBody from 'raw-body'
 import { TimeoutError, UnauthorizedError } from "@/spec/error"
-import emitter from "@/app/emitter"
+import { emitter } from '@/app/extensions/socket/cavatica'
 import * as dict from '@/utils/dict'
 import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
 import db from '@/app/db'

@@ -53,7 +53,7 @@ fetch(`${url}/api/socket`).then(() => {
   const socket = io(url) // e.g. ws://localhost:3000
   socket.on('connect', () => {
     console.log(`Connected, joining ${session_id}...`)
-    socket.emit('join', session_id)
+    socket.emit('cavatica:join', session_id)
   })
   socket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: string }) => {
     console.log(JSON.stringify({ handle: { id, path, headers, method } }))
@@ -72,8 +72,9 @@ fetch(`${url}/api/socket`).then(() => {
       socket.emit(`http:recv`, { id, status, body: res, headers: responseHeaders })
     }
   })
-  socket.on('close', () => {
+  socket.on('cavatica:close', () => {
     console.log(`Room has closed, exiting...`)
+    socket.close()
     process.exit(0)
   })
 })

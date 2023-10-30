@@ -1,9 +1,9 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
-import type { Metapath } from '@/app/fragments/metapath'
+import { useMetapath, type Metapath } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
-import { useAPIMutation, useAPIQuery } from '@/core/api/client'
+import { useAPIMutation } from '@/core/api/client'
 import { UserPlaybook, UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
@@ -14,10 +14,8 @@ const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
 export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
   const router = useRouter()
-  const { data, error } = useAPIQuery(UserPlaybook, { id }, {
-    keepPreviousData: true,
-    base: session_id ? `/api/socket/${session_id}` : '',
-  })
+  const metapath = useMetapath()
+  const data = React.useMemo(() => metapath.fpl ? ({ metapath: metapath.fpl, userPlaybook: undefined }) : undefined, [metapath.fpl])
   const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
@@ -64,11 +62,11 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
   return (
     <div className="flex flex-col py-4 gap-2">
       <SessionStatus session_id={session_id}>
-        <StoryProvider session_id={session_id} krg={krg} metapath={data.metapath}>
+        <StoryProvider krg={krg} metapath={data.metapath}>
           <Introduction
             session_id={session_id}
             id={id}
-            error={error}
+            error={null}
             playbookMetadata={playbookMetadata}
             userPlaybook={userPlaybook}
             setPlaybookMetadata={setPlaybookMetadata}

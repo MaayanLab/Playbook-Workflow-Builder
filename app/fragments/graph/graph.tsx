@@ -1,9 +1,8 @@
 import React from 'react'
-import useSWRImmutable from 'swr/immutable'
 import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import type { Metapath } from '@/app/fragments/metapath'
+import { useMetapath, type Metapath } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
@@ -126,15 +125,14 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
 export default function Graph({ session_id, graph_id, node_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const krg = useKRG({ session_id })
-  const { data: metapath_, error } = useSWRImmutable<Array<Metapath>>(() => graph_id !== 'start' ? `${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${graph_id}` : undefined)
-  const metapath = metapath_ || []
+  const metapath = useMetapath().fpl ?? []
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>
       <SessionStatus session_id={session_id}>
         <div className="flex w-auto items-center justify-center">
           <Breadcrumbs
-            graph={buildBreadcrumbGraph({ node_id, metapath, extend, suggest, head, krg })}
+            graph={buildBreadcrumbGraph({ node_id, metapath: metapath, extend, suggest, head, krg })}
             onclick={(_evt, id) => {
               if (id === 'extend') {
                 router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
@@ -150,7 +148,6 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
           <ReportButton session_id={session_id} graph_id={graph_id} />
         </div>
         <main className="flex-grow flex flex-col">
-          {error ? <div>{error}</div> : null}
           {suggest ?
             <Suggest session_id={session_id} krg={krg} id={graph_id} head={head} />
             : extend ?
@@ -158,7 +155,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
               : node_id === 'start' ?
                 <Home />
                 : head ?
-                  <StoryProvider session_id={session_id} krg={krg} metapath={metapathToHead(metapath, head)}>
+                  <StoryProvider krg={krg} metapath={metapathToHead(metapath, head)}>
                     <Cell session_id={session_id} krg={krg} id={graph_id} head={head} autoextend />
                   </StoryProvider>
                   : null}

@@ -45,7 +45,7 @@ export async function decode_complete_process_output(krg: KRG, instanceProcess: 
  * Given an instanceProcess, "resolve" its output, this is typically done
  *  by executing it, though prompts are implicitly identity functions.
  */
-export async function resolve_process(krg: KRG, instanceProcess: Process) {
+export async function resolve_process(krg: KRG, instanceProcess: Process, notify: (update: StatusUpdate) => void) {
   try {
     const metaProcess = krg.getProcessNode(instanceProcess.type)
     if (metaProcess === undefined) throw new Error('Unrecognized process')
@@ -53,9 +53,7 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
     const props = {
       data: instanceProcess.data?.value,
       inputs: await decode_complete_process_inputs(krg, instanceProcess),
-      notify: (update: StatusUpdate) => {
-        console.debug(JSON.stringify({ id: instanceProcess.id, type: instanceProcess.type, update }))
-      },
+      notify,
     }
     console.debug(`Processing ${metaProcess.spec}`)
     if ('prompt' in metaProcess && props.data === undefined) throw new UnboundError()
@@ -90,7 +88,10 @@ export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
       console.error(`process '${processId}' not found`)
     } else if (instanceProcess.resolved === undefined) {
       console.debug(`resolving ${instanceProcess.type} (${processId})..`)
-      const resolved = await resolve_process(krg, instanceProcess)
+      const resolved = await resolve_process(krg, instanceProcess, (update) => {
+        // broadcast partial updates through the db
+        db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, JSON.stringify(update))
+      })
       // store the result in the db
       await db.upsertResolved(resolved)
       console.debug(`completed ${instanceProcess.type} ${processId}`)

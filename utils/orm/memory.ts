@@ -6,21 +6,27 @@ import { Find, Create, Delete, Update, DbTable, FindMany, Upsert, DbDatabase } f
 
 export class MemoryDatabase implements DbDatabase {
   public objects: any
-  private listeners: Record<number, (evt: string, data: unknown) => void> = {}
+  private listeners: Record<string, Record<number, (data: unknown) => void>> = {}
   private active: Record<string, Promise<void>> = {}
   private id = 0
 
   constructor(public data: Record<string, Record<string, Record<string, unknown>>> = {}) {}
 
-  listen = (cb: (evt: string, data: unknown) => void) => {
+  listen = <T>(evt: string, cb: (data: T) => void) => {
     const id = this.id++
-    this.listeners[id] = cb
-    return () => {delete this.listeners[id]}
+    if (!(evt in this.listeners)) {this.listeners[evt] = {}}
+    this.listeners[evt][id] = cb as (data: unknown) => void
+    return () => {
+      delete this.listeners[evt][id]
+      if (dict.isEmpty(this.listeners[evt])) {
+        delete this.listeners[evt]
+      }
+    }
   }
 
-  notify = async (evt: string, data: unknown) => {
-    for (const listener of dict.values(this.listeners)) {
-      listener(evt, data)
+  notify = <T>(evt: string, data: T) => {
+    for (const listener of dict.values(this.listeners[evt] ?? {})) {
+      listener(data)
     }
   }
 
@@ -29,14 +35,12 @@ export class MemoryDatabase implements DbDatabase {
   }
 
   work = async (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => {
-    return this.listen(async (evt, data) => {
-      if (evt === `boss:${queue}`) {
-        const { id } = z.object({ id: z.string() }).parse(data)
-        if (!(id in this.active)) {
-          this.active[id] = cb({ data: { id } }).finally(() => { delete this.active[id] })
-        }
-        return await this.active[id]
+    return this.listen(`boss:${queue}`, async (data) => {
+      const { id } = z.object({ id: z.string() }).parse(data)
+      if (!(id in this.active)) {
+        this.active[id] = cb({ data: { id } }).finally(() => { delete this.active[id] })
       }
+      return await this.active[id]
     })
   }
 }

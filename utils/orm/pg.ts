@@ -29,7 +29,7 @@ function prepare(statement_builder: (subst: (value: any) => string) => string) {
 
 export class PgDatabase implements DbDatabase {
   public objects: any
-  private listeners: Record<number, (evt: string, data: unknown) => void> = {}
+  private listeners: Record<string, Record<number, (data: unknown) => void>> = {}
   private id = 0
   private subscriber: Subscriber
   private pool: pg.Pool
@@ -40,14 +40,6 @@ export class PgDatabase implements DbDatabase {
     this.subscriber = createSubscriber({ connectionString })
     this.boss = new PgBoss(connectionString)
     this.boss.on('error', error => console.error(error))
-    this.subscriber.notifications.on('on_insert', async (rawPayload) => {
-      const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
-      const { table, operation, id } = payload
-      // console.debug(`received on_insert from ${table}: ${id}`)
-      if (operation === 'INSERT') {
-        this.notify(`insert:${table}`, { id })
-      }
-    })
     this.subscriber.events.on('error', (error) => {
       console.error("Fatal database connection error:", error)
       process.exit(1)
@@ -61,7 +53,14 @@ export class PgDatabase implements DbDatabase {
     ;(async (self) => {
       await self.boss.start()
       await self.subscriber.connect()
-      await self.subscriber.listenTo('on_insert')
+      this.listen('distributed:on_insert', async (rawPayload) => {
+        const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
+        const { table, operation, id } = payload
+        // console.debug(`received on_insert from ${table}: ${id}`)
+        if (operation === 'INSERT') {
+          this.notify(`insert:${table}`, { id })
+        }
+      })
       // console.log('ready')
     })(this).catch((error) => {
       console.error('Failed to initialize subscriber', error)
@@ -74,14 +73,33 @@ export class PgDatabase implements DbDatabase {
     return await this.pool.query(statement, vars)
   }
 
-  listen = (cb: (evt: string, data: unknown) => void) => {
+  listen = <T>(evt: string, cb: (data: T) => void) => {
     const id = this.id++
-    this.listeners[id] = cb
-    return () => {delete this.listeners[id]}
+    if (!(evt in this.listeners)) {
+      this.listeners[evt] = {}
+      if (evt.startsWith('distributed:')) {
+        const dbEvt = evt.slice(evt.indexOf(':')+1)
+        this.subscriber.listenTo(dbEvt)
+        this.subscriber.notifications.on(dbEvt, (rawPayload) => {
+          this.notify(evt, rawPayload)
+        })
+      }
+    }
+    this.listeners[evt][id] = cb as (data: unknown) => void
+    return () => {
+      delete this.listeners[evt][id]
+      if (dict.isEmpty(this.listeners[evt])) {
+        delete this.listeners[evt]
+        if (evt.startsWith('distributed:')) {
+          const dbEvt = evt.slice(evt.indexOf(':'))
+          this.subscriber.unlisten(dbEvt)
+        }
+      }
+    }
   }
-  protected notify = async (evt: string, data: unknown) => {
-    for (const listener of dict.values(this.listeners)) {
-      listener(evt, data)
+  notify = <T>(evt: string, data: T) => {
+    for (const listener of dict.values(this.listeners[evt] ?? {})) {
+      listener(data)
     }
   }
 

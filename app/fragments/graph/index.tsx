@@ -1,6 +1,5 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import Head from 'next/head'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
 import krg from '@/app/krg'
@@ -110,11 +109,8 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
   return (
     <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
-        <main className="flex-grow container mx-auto py-4 flex flex-col">
-          <MetapathProvider
-            session_id={params?.session_id}
-            id={graph_id}
-          >
+        <MetapathProvider session_id={params?.session_id}>
+          <main className="flex-grow container mx-auto py-4 flex flex-col">
             <Graph
               session_id={params?.session_id}
               graph_id={graph_id}
@@ -122,8 +118,8 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
               extend={extend}
               suggest={suggest}
             />
-          </MetapathProvider>
-        </main>
+          </main>
+        </MetapathProvider>
       </SWRConfig>
     </Layout>
   )

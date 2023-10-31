@@ -11,7 +11,7 @@ import { TimeoutError } from '@/spec/error'
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
-  const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
+  const { data: inputs, error } = useMetapathInputs({ krg, head })
   const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const Component = processNode.prompt

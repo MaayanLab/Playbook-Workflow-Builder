@@ -51,20 +51,17 @@ export default function App({ fallback }: { fallback: any }) {
   return (
     <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
-        <main className="flex-grow container mx-auto py-4 flex flex-col">
-          {params.id ? 
-            <MetapathProvider
-              session_id={params?.session_id}
-              id={params.id}
-            >
+        <MetapathProvider session_id={params?.session_id}>
+          <main className="flex-grow container mx-auto py-4 flex flex-col">
+            {params.id ? 
               <Cells
                 session_id={params?.session_id}
                 krg={krg}
                 id={params.id}
               />
-            </MetapathProvider>
-          : <div className="alert alert-error">Page not found</div>}
-        </main>
+              : <div className="alert alert-error">Page not found</div>}
+          </main>
+        </MetapathProvider>
       </SWRConfig>
     </Layout>
   )

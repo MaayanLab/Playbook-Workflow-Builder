@@ -46,7 +46,8 @@ export interface DbDatabase {
   objects: any
 
   // subscriber
-  listen: (cb: (evt: string, data: unknown) => void) => () => void
+  listen: <T>(evt: string, cb: (data: T) => void) => () => void
+  notify: <T>(evt: string, value: T) => void
 
   // boss
   send: (queue: string, work: { id: string, priority?: number }) => Promise<void>

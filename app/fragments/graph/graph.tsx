@@ -2,7 +2,7 @@ import React from 'react'
 import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import { useMetapath, type Metapath } from '@/app/fragments/metapath'
+import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import type KRG from '@/core/KRG'
 import Link from 'next/link'
@@ -125,7 +125,7 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
 export default function Graph({ session_id, graph_id, node_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const krg = useKRG({ session_id })
-  const metapath = useMetapath().fpl ?? []
+  const { data: metapath = [] } = useFPL(graph_id)
   const head = metapath.filter(({ id }) => id === node_id)[0]
   return (
     <>

@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
-import { useMetapath, type Metapath } from '@/app/fragments/metapath'
+import { useMetapath, type Metapath, useFPL } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import { useAPIMutation } from '@/core/api/client'
 import { UserPlaybook, UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
@@ -14,8 +14,8 @@ const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
 export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
   const router = useRouter()
-  const metapath = useMetapath()
-  const data = React.useMemo(() => metapath.fpl ? ({ metapath: metapath.fpl, userPlaybook: undefined }) : undefined, [metapath.fpl])
+  const { data: metapath } = useFPL(id)
+  const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook: undefined }) : undefined, [metapath])
   const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })

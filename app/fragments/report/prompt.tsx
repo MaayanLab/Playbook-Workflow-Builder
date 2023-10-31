@@ -15,7 +15,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
-  const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
+  const { data: inputs, error } = useMetapathInputs({ krg, head })
   const { nodeStories } = useStory()
   const data = React.useMemo(() => {
     // invalidate data if it no longer matches the codec

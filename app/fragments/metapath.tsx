@@ -1,29 +1,28 @@
 import React from 'react'
-import type { FPL, Resolved } from '@/core/FPPRG'
-import { Map } from 'immutable'
+import type { FPL } from '@/core/FPPRG'
 import type KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 import { io } from 'socket.io-client'
-import promise_cache from '@/utils/promise_cache'
-import useSWR from 'swr'
-import type { StatusUpdate } from '@/spec/metanode'
+import cache from '@/utils/cache'
+import { Readable, derived, readable } from '@/utils/store'
+import { useReadable, usePromise } from '@/utils/hooks'
+import type { ResolvedLifecycle } from '@/app/extensions/socket/fpprg'
 
 export type Metapath = ReturnType<FPL['toJSON']>
-type ResolvedJSON = ReturnType<Resolved['toJSON']>
 
 const MetapathContext = React.createContext({
-  fetchFPL: (id: string, force?: boolean) => Promise.reject<Metapath[]>('Uninitialized'),
-  fetchResolved: (id: string, force?: boolean) => Promise.reject<ResolvedJSON>('Uninitialized'),
+  fetchFPL: (id: string) => Promise.reject<Metapath[]>('Uninitialized'),
+  fetchResolved: (id: string) => Promise.reject<Readable<ResolvedLifecycle> & { refresh: () => void }>('Uninitialized'),
 })
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
-  const fetchSocket = React.useCallback(promise_cache(async (session_id) => {
-    await fetch(`${session_id ? `/api/${session_id}` : ''}/api/socket`)
+  const fetchSocket = React.useMemo(async () => {
+    await fetch(`${props.session_id ? `/api/${props.session_id}` : ''}/api/socket`)
     return io()
-  }), [])
-  const fetchFPL = React.useCallback(promise_cache(async (id) => {
+  }, [props.session_id])
+  const fetchFPL = React.useCallback(cache(async (id) => {
     if (id === 'start') return []
-    const socket = await fetchSocket(props.session_id ?? '')
+    const socket = await fetchSocket
     const ret = new Promise<Metapath[]>((resolve, reject) => {
       socket.once(`fpprg:fpl:${id}`, (ret: { error: any } | Metapath[]) => {
         if ('error' in ret) {
@@ -35,29 +34,19 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
     })
     socket.emit('fpprg:fpl', id)
     return await ret
-  }), [props.session_id])
-  const fetchResolved = React.useCallback(promise_cache(async (id) => {
-    const socket = await fetchSocket(props.session_id ?? '')
-    const ret = new Promise<ResolvedJSON>((resolve, reject) => {
-      socket.once(`fpprg:resolved:${id}`, (ret: { error: any } | ResolvedJSON) => {
-        if ('error' in ret) {
-          reject(ret.error)
-        } else {
-          resolve(ret)
-        }
+  }), [fetchSocket])
+  const fetchResolved = React.useCallback(cache(async (id) => {
+    const socket = await fetchSocket
+    const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => {
+      socket.on(`fpprg:resolved:${id}`, value => {
+        console.log(`recvd ${JSON.stringify(value)}`)
+        set(value)
       })
+      socket.emit(`fpprg:resolved`, id)
+      return () => {socket.off(`fpprg:resolved:${id}`, set)}
     })
-    const listener = (update: StatusUpdate) => {
-      console.log(JSON.stringify({ [id]: update }))
-    }
-    socket.on(`fpprg:resolved:${id}:status`, listener)
-    socket.emit('fpprg:resolved', id)
-    try {
-      return await ret
-    } finally {
-      socket.off(`fpprg:resolved:${id}:status`, listener)
-    }
-  }), [props.session_id])
+    return { subscribe, refresh: () => {socket.emit(`fpprg:resolved`, id)} }
+  }), [fetchSocket])
   return (
     <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>
       {props.children}
@@ -71,23 +60,55 @@ export function useMetapath() {
 
 export function useFPL(id: string) {
   const metapath = useMetapath()
-  const { mutate, ...swr } = useSWR(id, metapath.fetchFPL, { shouldRetryOnError: false })
-  return { ...swr, mutate: async () => {await metapath.fetchFPL(id, true)} }
+  const fpl = React.useMemo(() => metapath.fetchFPL(id), [id])
+  return usePromise(fpl)
 }
 
 export function useResolved(id: string) {
   const metapath = useMetapath()
-  const { mutate, ...swr } = useSWR(id, metapath.fetchResolved, { shouldRetryOnError: false })
-  return { ...swr, mutate: async () => {await metapath.fetchResolved(id, true)} }
+  const { data: store } = usePromise(metapath.fetchResolved(id))
+  const data = useReadable(store)
+  return { data, mutate: () => { store?.refresh() } }
 }
 
 /**
  * Retrieve output from the API, decode and return
  */
 export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
-  const { data, error, isLoading, mutate } = useResolved(head.process.id)
-  const outputNode = React.useMemo(() => data?.data ? krg.getDataNode(data.data.type) : krg.getProcessNode(head.process.type).output, [data])
-  const output = React.useMemo(() => data?.data === null ? null : data?.data.value, [data])
+  const { data: resolved, mutate } = useResolved(head.process.id)
+  const { output, outputNode, isLoading, error } = React.useMemo(() => {
+    if (!resolved) {
+      return {
+        output: undefined,
+        outputNode: krg.getProcessNode(head.process.type).output,
+        isLoading: true,
+        error: undefined,
+      }
+    }
+    if (resolved.type !== 'resolved') {
+      return {
+        output: undefined,
+        outputNode: krg.getProcessNode(head.process.type).output,
+        isLoading: resolved.type === 'resolving',
+        error: resolved.type === 'error' ? resolved.error : undefined,
+      }
+    }
+    if (resolved.data.data !== null) {
+      return {
+        output: resolved.data.data.value,
+        outputNode: krg.getDataNode(resolved.data.data.type),
+        isLoading: false,
+        error: undefined,
+      }
+    } else {
+      return {
+        output: null,
+        outputNode: krg.getProcessNode(head.process.type).output,
+        isLoading: false,
+        error: undefined,
+      }
+    }
+  }, [resolved])
   return { data: { output, outputNode }, error, isLoading, mutate }
 }
 
@@ -97,27 +118,20 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
  */
 export function useMetapathInputs({ krg, head }: { krg: KRG, head: Metapath }) {
   const metapath = useMetapath()
-  const [inputs, setInputs] = React.useState(Map<string, Map<string, any>>())
-  React.useEffect(() => {
-    setInputs(inputs => inputs.clear().set(head.process.id, Map()))
-    dict.items(head.process.inputs)
-      .forEach(({ key, value }) => {
-        metapath.fetchResolved(value.id)
-          .then(resolved => {
-            setInputs(inputs => inputs.setIn([head.process.id, key], resolved.data))
-          })
-          .catch(error =>
-            setInputs(inputs => inputs.setIn([head.process.id, key], { type: 'Error', value: error }))
-          )
-      })
-  }, [head])
-  const { error, isLoading } = React.useMemo(() =>
-    inputs.get(head.id, Map())
-      .valueSeq()
-      .reduce(({ error, isLoading }, value: { type: string, data: any }) => ({
-        error: value.type === 'Error' ? value.data : error,
-        isLoading: isLoading || (value === undefined),
-      }), { error: undefined as any, isLoading: true }),
-  [head, inputs])
-  return { data: inputs.get(head.process.id)?.toJS(), error, isLoading }
+  const promise = React.useMemo(() => {
+    const keys = dict.sortedKeys(head.process.inputs)
+    return Promise.all(keys.map(key => metapath.fetchResolved(head.process.inputs[key].id)))
+      .then(values => dict.init(values.map((value, i) => ({ key: keys[i], value }))))
+  }, [metapath, head])
+  const { data: stores, error } = usePromise(promise)
+  const store = React.useMemo(() => {
+    if (!stores) return
+    const keys = dict.sortedKeys(stores)
+    return derived(
+      keys.map(key => stores[key]),
+      (values) => dict.init(values.map((value, i) => ({ key: keys[i], value: value.type === 'resolved' ? value.data.data?.value : undefined }))),
+    )
+  }, [stores, head.process.id])
+  const data = useReadable(store)
+  return { data, error }
 }

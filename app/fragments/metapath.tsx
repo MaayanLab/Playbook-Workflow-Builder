@@ -11,8 +11,8 @@ export type Metapath = ReturnType<FPL['toJSON']>
 type ResolvedJSON = ReturnType<Resolved['toJSON']>
 
 const MetapathContext = React.createContext({
-  fetchFPL: (id: string) => Promise.reject<Metapath[]>('Uninitialized'),
-  fetchResolved: (id: string) => Promise.reject<ResolvedJSON>('Uninitialized'),
+  fetchFPL: (id: string, force?: boolean) => Promise.reject<Metapath[]>('Uninitialized'),
+  fetchResolved: (id: string, force?: boolean) => Promise.reject<ResolvedJSON>('Uninitialized'),
 })
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
@@ -62,12 +62,14 @@ export function useMetapath() {
 
 export function useFPL(id: string) {
   const metapath = useMetapath()
-  return useSWR(id, metapath.fetchFPL)
+  const { mutate, ...swr } = useSWR(id, metapath.fetchFPL, { shouldRetryOnError: false })
+  return { ...swr, mutate: async () => {await metapath.fetchFPL(id, true)} }
 }
 
 export function useResolved(id: string) {
   const metapath = useMetapath()
-  return useSWR(id, metapath.fetchResolved)
+  const { mutate, ...swr } = useSWR(id, metapath.fetchResolved, { shouldRetryOnError: false })
+  return { ...swr, mutate: async () => {await metapath.fetchResolved(id, true)} }
 }
 
 /**

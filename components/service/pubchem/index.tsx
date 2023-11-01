@@ -32,5 +32,5 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
       message => props.notify({ type: 'info', message }),
     )
   )
-  .story(props => `The drugs was filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].`)
+  .story(props => `The drugs were filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].`)
   .build()

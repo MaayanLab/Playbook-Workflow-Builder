@@ -3,6 +3,20 @@ import fpprg from '@/app/fpprg'
 import { TimeoutError } from '@/spec/error'
 import { Resolved } from '@/core/FPPRG'
 import db from '@/app/db'
+import { StatusUpdate } from '@/spec/metanode'
+
+export type ResolvedJSON = ReturnType<Resolved['toJSON']>
+export type ResolvedLifecycle = {
+  type: 'error',
+  error: string,
+} | {
+  type: 'resolving',
+  percent: number,
+  status: string,
+} | {
+  type: 'resolved',
+  data: ResolvedJSON
+}
 
 export function onSocketFPPRG(client: Socket) {
   client.on('fpprg:fpl', async (id: string) => {
@@ -14,9 +28,17 @@ export function onSocketFPPRG(client: Socket) {
     }
   })
   client.on('fpprg:resolved', async (id: string) => {
+    const status = {
+      type: 'resolving' as const,
+      percent: 0,
+      status: '',
+    }
     // forward partial resolution update to the client
-    const unsub = db.listen(`distributed:resolved:${id}:status`, (status: string) => {
-      client.emit(`fpprg:resolved:${id}:status`, JSON.parse(status))
+    const unsub = db.listen(`distributed:resolved:${id}:status`, (rawUpdate: string) => {
+      const update: StatusUpdate = JSON.parse(rawUpdate)
+      if (update.type === 'progress') status.percent = update.percent
+      else if (update.type === 'info') status.status += update.message
+      client.emit(`fpprg:resolved:${id}`, status)
     })
     // wait for it to be resolved
     let resolved: Resolved | undefined
@@ -25,7 +47,7 @@ export function onSocketFPPRG(client: Socket) {
         resolved = await fpprg.awaitResolved(id)
       } catch (e) {
         if (!(e instanceof TimeoutError)) {
-          client.emit(`fpprg:resolved:${id}`, { error: 'An unexpected error occurred' } )
+          client.emit(`fpprg:resolved:${id}`, { type: 'error', error: 'An unexpected error occurred' } )
           console.error(e)
           unsub()
           throw e
@@ -38,6 +60,9 @@ export function onSocketFPPRG(client: Socket) {
     }
     unsub()
     // send the resolved instance to the requesting user
-    client.emit(`fpprg:resolved:${resolved.id}`, resolved.toJSON())
+    client.emit(`fpprg:resolved:${resolved.id}`, {
+      type: 'resolved',
+      data: resolved.toJSON(),
+    })
   })
 }

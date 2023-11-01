@@ -113,6 +113,50 @@ export const TopKScoredT = [
     .build()
 ])
 
+export const SelectScoredT = [
+  { ScoredT: ScoredDiseases },
+  { ScoredT: ScoredDrugs },
+  { ScoredT: ScoredGenes },
+  { ScoredT: ScoredPathways },
+  { ScoredT: ScoredPhenotypes },
+  { ScoredT: ScoredTissues },
+].flatMap(({ ScoredT }) => [
+  MetaNode(`SelectFromScored[${ScoredT.spec}, up]`)
+    .meta({
+      label: `Up ${ScoredT.meta.label}`,
+      description: `Consider only up ${ScoredT.meta.label}`,
+    })
+    .inputs({ scored: ScoredT })
+    .output(ScoredT)
+    .resolve(async (props) => {
+      const scored = props.inputs.scored.filter(({ zscore }) => +zscore > 0)
+      scored.sort((a, b) => +b.zscore - +a.zscore)
+      return scored
+    })
+    .story(props =>
+      `Up ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`
+    )
+    .build(),
+  MetaNode(`SelectFromScored[${ScoredT.spec}, down]`)
+    .meta({
+      label: `Down ${ScoredT.meta.label}`,
+      description: `Consider only down ${ScoredT.meta.label}`,
+    })
+    .inputs({ scored: ScoredT })
+    .output(ScoredT)
+    .resolve(async (props) => {
+      const scored = props.inputs.scored
+        .filter(({ zscore }) => +zscore < 0)
+        .map(({ term, zscore }) => ({ term, zscore: -zscore }))
+      scored.sort((a, b) => +b.zscore - +a.zscore)
+      return scored
+    })
+    .story(props =>
+      `Down ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`
+    )
+    .build(),
+])
+
 export const SetFromScoredT = [
   { ScoredT: ScoredDrugs, SetT: DrugSet, TermT: DrugTerm, T: Drug, },
   { ScoredT: ScoredGenes, SetT: GeneSet, TermT: GeneTerm, T: Gene, },

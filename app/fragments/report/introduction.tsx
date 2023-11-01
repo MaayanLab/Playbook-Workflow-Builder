@@ -26,7 +26,7 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
   error: any
 }) {
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT({ session_id })
-  const story = useStory()
+  const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   return (
     <>

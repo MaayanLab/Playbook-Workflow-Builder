@@ -9,19 +9,24 @@ import dynamic from 'next/dynamic'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
 import { TimeoutError } from '@/spec/error'
+import { useStory } from '@/app/fragments/story'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
+  const { nodeStories } = useStory()
   const Component = processNode.prompt
   return (
     <div className="collapse collapse-arrow text-black dark:text-white">
       <input type="checkbox" defaultChecked={true} />
-      <div className="collapse-title flex flex-row gap-2">
-        <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
-        <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
+      <div className="collapse-title flex flex-col gap-2">
+        <div className="flex flex-row gap-2">
+          <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
+          <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
+        </div>
+        <p className="prose max-w-none">{nodeStories[head.id]}</p>
       </div>
       {error && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">

@@ -10,33 +10,32 @@ import React from 'react'
 import type KRG from '@/core/KRG'
 import type { Metapath } from '@/app/fragments/metapath'
 import { useMetapathInputs, useMetapathOutput } from '@/app/fragments/metapath'
+import * as dict from '@/utils/dict'
 import extractCitations from '@/utils/citations'
 
 /**
  * Attempt to compute the story for any given step
  */
-function StoryNode({ session_id, krg, head, onChange }: { session_id?: string, krg: KRG, head: Metapath, onChange: () => void }) {
+function StoryNode({ session_id, krg, head, onChange }: { session_id?: string, krg: KRG, head: Metapath, onChange: (story: string) => void }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: inputs, error: inputsError } = useMetapathInputs({ session_id, krg, head })
   const { data: { output, outputNode }, error: outputError } = useMetapathOutput({ session_id, krg, head })
   const story = React.useMemo(() => {
-    if (!processNode?.story) return null
+    if (!processNode?.story) return ''
     try {
-      return <>
-        {processNode.story({
-          inputs: !inputsError ? inputs : undefined,
-          output: !outputError && outputNode.spec !== 'Error' ? output : undefined,
-        })}&nbsp;
-      </>
+      return processNode.story({
+        inputs: !inputsError ? inputs : undefined,
+        output: !outputError && outputNode.spec !== 'Error' ? output : undefined,
+      }) + ' '
     } catch (e) {
-      return null
+      return ''
     }
   }, [inputs, processNode, output])
-  React.useEffect(onChange, [story])
+  React.useEffect(() => onChange(story), [story])
   return story
 }
 
-const StoryContext = React.createContext('')
+const StoryContext = React.createContext({ story: '', nodeStories: {} as Record<string, string> })
 
 /**
  * We construct the story in a hidden element and sync changes to that element
@@ -45,17 +44,32 @@ const StoryContext = React.createContext('')
 export function StoryProvider({ children, session_id, metapath, krg }: React.PropsWithChildren<{ session_id?: string, metapath: Metapath[], krg: KRG }>) {
   const ref = React.useRef<HTMLSpanElement>(null)
   const [story, setStory] = React.useState('')
-  React.useEffect(() => {
-    setStory(() => extractCitations(ref.current?.textContent || ''))
-  }, [ref, metapath])
+  const [rawNodeStories, setRawNodeStories] = React.useState({} as Record<string, string>)
+  const nodeStories = React.useMemo(() => {
+    const [_storyText, storyCitations] = story.split('\n\n')
+    const citationMap = dict.init(
+      (storyCitations || '').split('\n')
+        .map(citation => ({
+          value: `${citation.split('. ')[0]}`,
+          key: `\\ref{doi:${citation.split('doi:')[1]}}`
+        }))
+    )
+    return dict.init(dict.items(rawNodeStories).map(({ key, value }) => {
+      dict.items(citationMap).forEach(({ key: search, value: replace }) => {
+        value = value.replaceAll(search, replace)
+      })
+      return { key, value }
+    }))
+  }, [story])
   return (
     <>
-      <StoryContext.Provider value={story}>
+      <StoryContext.Provider value={{story, nodeStories}}>
         {children}
       </StoryContext.Provider>
       <span ref={ref} className="hidden">
         {(metapath||[]).map(head =>
-          <StoryNode key={head.id} session_id={session_id} krg={krg} head={head} onChange={() => {
+          <StoryNode key={head.id} session_id={session_id} krg={krg} head={head} onChange={(nodeStory) => {
+            setRawNodeStories(stories => ({ ...stories, [head.id]: nodeStory }))
             setStory(() => extractCitations(ref.current?.textContent || ''))
           }} />
         )}

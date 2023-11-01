@@ -6,6 +6,7 @@ import * as dict from '@/utils/dict'
 import { io } from 'socket.io-client'
 import promise_cache from '@/utils/promise_cache'
 import useSWR from 'swr'
+import type { StatusUpdate } from '@/spec/metanode'
 
 export type Metapath = ReturnType<FPL['toJSON']>
 type ResolvedJSON = ReturnType<Resolved['toJSON']>
@@ -46,8 +47,16 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
         }
       })
     })
+    const listener = (update: StatusUpdate) => {
+      console.log(JSON.stringify({ [id]: update }))
+    }
+    socket.on(`fpprg:resolved:${id}:status`, listener)
     socket.emit('fpprg:resolved', id)
-    return await ret
+    try {
+      return await ret
+    } finally {
+      socket.off(`fpprg:resolved:${id}:status`, listener)
+    }
   }), [props.session_id])
   return (
     <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>

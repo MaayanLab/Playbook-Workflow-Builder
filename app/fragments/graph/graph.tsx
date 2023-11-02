@@ -64,6 +64,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
           <Breadcrumbs>
             <DataBreadcrumb
               key="start"
+              index={0}
               id="start"
               label="Start"
               active={node_id === 'start' && !extend}
@@ -73,12 +74,13 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
                 router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== 'start' ? `/node/start` : ''}`, undefined, { shallow: true })
               }}
             />
-            {metapath.flatMap(step => {
+            {metapath.flatMap((step, i) => {
               const process = krg.getProcessNode(step.process.type)
               if (process === undefined) return []
               return [
                 <ProcessBreadcrumb
                   key={step.id}
+                  index={i*2+1}
                   id={step.id}
                   label={process.meta.label}
                   head={step}
@@ -91,6 +93,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
                 />,
                 <DataBreadcrumb
                   key={`${step.id}:${step.process.id}`}
+                  index={i*2+2}
                   id={`${step.id}:${step.process.id}`}
                   label={process.output.meta.label}
                   head={step}
@@ -105,6 +108,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
             })}
             <ProcessBreadcrumb
               key="extend"
+              index={metapath.length*2+1}
               id="extend"
               label="Extend"
               active={extend || suggest}

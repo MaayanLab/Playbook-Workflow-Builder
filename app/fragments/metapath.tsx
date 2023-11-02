@@ -76,11 +76,12 @@ export function useResolved(id?: string) {
  */
 export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
   const { data: resolved, mutate } = useResolved(head.process.id)
-  const { output, outputNode, isLoading, error } = React.useMemo(() => {
+  const { output, outputNode, isLoading, status, error } = React.useMemo(() => {
     if (!resolved) {
       return {
         output: undefined,
         outputNode: krg.getProcessNode(head.process.type).output,
+        status: undefined,
         isLoading: true,
         error: undefined,
       }
@@ -90,6 +91,7 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
         output: undefined,
         outputNode: krg.getProcessNode(head.process.type).output,
         isLoading: resolved.type === 'resolving',
+        status: resolved.type === 'resolving' ? resolved.status : undefined,
         error: resolved.type === 'error' ? resolved.error : undefined,
       }
     }
@@ -98,6 +100,7 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
         output: resolved.data.data.value,
         outputNode: krg.getDataNode(resolved.data.data.type),
         isLoading: false,
+        status: undefined,
         error: undefined,
       }
     } else {
@@ -105,11 +108,12 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
         output: null,
         outputNode: krg.getProcessNode(head.process.type).output,
         isLoading: false,
+        status: undefined,
         error: undefined,
       }
     }
   }, [resolved])
-  return { data: { output, outputNode }, error, isLoading, mutate }
+  return { data: { output, outputNode }, error, isLoading, status, mutate }
 }
 
 /**

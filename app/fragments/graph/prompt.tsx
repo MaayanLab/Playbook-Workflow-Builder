@@ -7,7 +7,6 @@ import * as array from '@/utils/array'
 import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
-import { TimeoutError } from '@/spec/error'
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
@@ -32,7 +31,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
         <p className="prose">{storyText}</p>
         <p className="prose text-sm">{storyCitations}</p>
       </div>
-      {error && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component

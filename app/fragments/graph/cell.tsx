@@ -1,6 +1,5 @@
 import React from 'react'
 import type KRG from '@/core/KRG'
-import { TimeoutError } from '@/spec/error'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import Head from 'next/head'
@@ -38,8 +37,8 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
             <p className="prose text-sm text-justify whitespace-pre-line">{storyCitations}</p>
           </div>
           <div className="flex-grow flex flex-col py-4">
-            {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error prose">{outputError.toString()}</div> : null}
-            {!outputNode ? <div className="prose">Loading...</div>
+            {outputError ? <div className="alert alert-error prose">{outputError.toString()}</div> : null}
+            {!outputNode ? <div>Loading...</div>
             : <>
                 {!View || output === undefined ? <div className="prose">Loading...</div>
                 : output === null ? <div className="prose">Waiting for input</div>

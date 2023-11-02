@@ -60,10 +60,10 @@ export async function resolve_process(krg: KRG, instanceProcess: Process, notify
     const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
     return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
   } catch (e) {
-    if (e instanceof TimeoutError) {
+    if (TimeoutError.isinstance(e)) {
       console.warn(e)
       throw e
-    } else if (e instanceof UnboundError) {
+    } else if (UnboundError.isinstance(e)) {
       return new Resolved(instanceProcess, undefined)
     } else {
       console.error(e)

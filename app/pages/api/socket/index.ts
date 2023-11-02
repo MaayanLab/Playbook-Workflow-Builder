@@ -11,10 +11,7 @@ export const config = {
 }
 
 export default function SocketHandler(req: any, res: any) {
-  if (res.socket.server.io) {
-    console.log('Socket is already running')
-  } else {
-    console.log('Socket is initializing')
+  if (!res.socket.server.io) {
     const io = new Server(res.socket.server, { transports: ['websocket'] })
     if ('pool' in db) {
       // if there would be multiple instances of the ui, this will ensure

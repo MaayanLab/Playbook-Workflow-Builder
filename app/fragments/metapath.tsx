@@ -39,7 +39,6 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
     const socket = await fetchSocket
     const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => {
       socket.on(`fpprg:resolved:${id}`, value => {
-        console.log(`recvd ${JSON.stringify(value)}`)
         set(value)
       })
       socket.emit(`fpprg:resolved`, id)

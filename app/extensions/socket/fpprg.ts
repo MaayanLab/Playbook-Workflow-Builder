@@ -46,8 +46,8 @@ export function onSocketFPPRG(client: Socket) {
       try {
         resolved = await fpprg.awaitResolved(id)
       } catch (e) {
-        if (!(e instanceof TimeoutError)) {
-          client.emit(`fpprg:resolved:${id}`, { type: 'error', error: 'An unexpected error occurred' } )
+        if (!TimeoutError.isinstance(e)) {
+          client.emit(`fpprg:resolved:${id}`, { type: 'error', error: (e as Error).toString() } )
           console.error(e)
           unsub()
           throw e

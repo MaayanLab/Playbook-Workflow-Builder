@@ -4,6 +4,7 @@ import * as dict from '@/utils/dict'
 
 export type BreadcrumbNode = {
   id: string,
+  index: number,
   parents?: string[],
   onClick?: React.MouseEventHandler<SVGGElement>,
 }
@@ -19,7 +20,7 @@ function layout(graph: Map<string, BreadcrumbNode>) {
   const C: Record<string, string[]> = {}
   if (graph.size === 0) return { P: {}, E: [], W: 0, H: 0 }
   const G = dict.init(
-    graph.valueSeq().toArray()
+    graph.valueSeq().sort((a, b) => a.index - b.index).toArray()
       .map((node) => {
         (node.parents??[]).forEach(pid => {
           if (!(pid in C)) C[pid] = []

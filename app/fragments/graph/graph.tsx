@@ -9,7 +9,8 @@ import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs').then(({ Breadcrumbs }) => Breadcrumbs))
-const Breadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ Breadcrumb }) => Breadcrumb))
+const DataBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ DataBreadcrumb }) => DataBreadcrumb))
+const ProcessBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ ProcessBreadcrumb }) => ProcessBreadcrumb))
 const Home = dynamic(() => import('@/app/fragments/playbook/home'))
 const Extend = dynamic(() => import('@/app/fragments/graph/extend'))
 const Suggest = dynamic(() => import('@/app/fragments/graph/suggest'))
@@ -61,12 +62,11 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
       <SessionStatus session_id={session_id}>
         <div className="flex w-auto items-center justify-center">
           <Breadcrumbs>
-            <Breadcrumb
+            <DataBreadcrumb
               key="start"
               id="start"
-              kind="data"
               label="Start"
-              color={node_id === 'start' ? '#B3CFFF' : 'lightgrey'}
+              active={node_id === 'start' && !extend}
               icon={[start_icon]}
               parents={[]}
               onClick={() => {
@@ -77,26 +77,24 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
               const process = krg.getProcessNode(step.process.type)
               if (process === undefined) return []
               return [
-                <Breadcrumb
+                <ProcessBreadcrumb
                   key={step.id}
                   id={step.id}
-                  kind={'process' as 'process'}
                   label={process.meta.label}
-                  color={step.id === node_id ? '#B3CFFF' : 'lightgrey'}
+                  head={step}
+                  active={false}
                   icon={process.meta.icon || [func_icon]}
                   parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
                   onClick={() => {
                     router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
                   }}
                 />,
-                <Breadcrumb
+                <DataBreadcrumb
                   key={`${step.id}:${step.process.id}`}
                   id={`${step.id}:${step.process.id}`}
-                  kind={'data' as 'data'}
                   label={process.output.meta.label}
-                  color={step.id === node_id ? '#B3CFFF'
-                    : 'prompt' in process && step.process.data?.value === undefined ? 'pink'
-                    : 'lightgrey'}
+                  head={step}
+                  active={step.id === node_id && !extend}
                   icon={process.output.meta.icon || [variable_icon]}
                   parents={[step.id]}
                   onClick={() => {
@@ -105,12 +103,11 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
                 />,
               ]
             })}
-            <Breadcrumb
+            <ProcessBreadcrumb
               key="extend"
               id="extend"
-              kind="process"
               label="Extend"
-              color={extend || suggest ? '#B3CFFF' : 'lightgrey'}
+              active={extend || suggest}
               icon={extend_icon}
               parents={[head ? `${head.id}:${head.process.id}` : `start`]}
               onClick={() => {

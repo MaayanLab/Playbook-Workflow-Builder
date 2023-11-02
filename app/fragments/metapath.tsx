@@ -64,9 +64,10 @@ export function useFPL(id: string) {
   return usePromise(fpl)
 }
 
-export function useResolved(id: string) {
+export function useResolved(id?: string) {
   const metapath = useMetapath()
-  const { data: store } = usePromise(metapath.fetchResolved(id))
+  const resolved = React.useMemo(() => id ? metapath.fetchResolved(id) : Promise.resolve(undefined), [id])
+  const { data: store } = usePromise(resolved)
   const data = useReadable(store)
   return { data, mutate: () => { store?.refresh() } }
 }

@@ -29,7 +29,7 @@ export function DataBreadcrumb(props: GraphPosition & BreadcrumbStyle & Breadcru
     >
       <circle
         fill={props.active ? '#B3CFFF'
-        : data?.type === 'error' ? '#ff0000'
+        : data?.type === 'error' || (data?.type === 'resolved' && data.data.data?.type === 'Error') ? '#ffbbbb'
         : 'lightgrey'}
         r={0.5}
         cx={0}

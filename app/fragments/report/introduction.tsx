@@ -50,73 +50,11 @@ export default function Introduction({
   const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const router = useRouter()
-  const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
-  const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   return (
     <>
       <Head>
         <title>Playbook Report{playbookMetadata.title ? `: ${playbookMetadata.title}` : null}</title>
       </Head>
-      <div className="sticky top-0 left-0 z-50 bg-white w-full">
-        <Breadcrumbs>
-          <DataBreadcrumb
-            key="start"
-            index={0}
-            id="start"
-            label="Start"
-            active={false}
-            icon={[start_icon]}
-            parents={[]}
-            onClick={() => {
-              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/start`, undefined, { shallow: true })
-            }}
-          />
-          {metapath.flatMap((step, i) => {
-            const process = krg.getProcessNode(step.process.type)
-            if (process === undefined) return []
-            return [
-              <ProcessBreadcrumb
-                key={step.id}
-                index={i * 2 + 1}
-                id={step.id}
-                label={process.meta.label}
-                head={step}
-                active={false}
-                icon={process.meta.icon || [func_icon]}
-                parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
-                onClick={() => {
-                  router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}${id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
-                }}
-              />,
-              <DataBreadcrumb
-                key={`${step.id}:${step.process.id}`}
-                index={i * 2 + 2}
-                id={`${step.id}:${step.process.id}`}
-                label={process.output.meta.label}
-                head={step}
-                active={false}
-                icon={process.output.meta.icon || [variable_icon]}
-                parents={[step.id]}
-                onClick={() => {
-                  router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}${id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
-                }}
-              />,
-            ]
-          })}
-          <ProcessBreadcrumb
-            key="extend"
-            index={metapath.length * 2 + 1}
-            id="extend"
-            label="Extend"
-            active={false}
-            icon={extend_icon}
-            parents={[head ? `${head.id}:${head.process.id}` : `start`]}
-            onClick={() => {
-              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/extend`, undefined, { shallow: true })
-            }}
-          />
-        </Breadcrumbs>
-      </div>
       <div className="flex-grow flex-shrink bp5-card p-0">
         {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="p-3">

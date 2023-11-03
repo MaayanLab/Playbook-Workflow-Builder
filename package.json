@@ -28,6 +28,7 @@
     "postversion": "docker push maayanlab/playbook-partnership:${npm_package_version}"
   },
   "dependencies": {
+    "@next/bundle-analyzer": "^13.4.19",
     "@blueprintjs/core": "^5.5.1",
     "@blueprintjs/icons": "^5.2.1",
     "@blueprintjs/select": "^5.0.16",

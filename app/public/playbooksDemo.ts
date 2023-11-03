@@ -7,7 +7,7 @@ import { GeneSet, RegulatoryElementSet, VariantSet } from '@/components/core/inp
 import { DrugTerm, GeneTerm, PhenotypeTerm, VariantTerm } from '@/components/core/input/term'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import { GeneSignature } from '@/components/data/gene_signature'
-import { GlyGenResponseNode } from '@/components/gly_gen'
+import { GlyGenProteinResponseNode } from '@/components/gly_gen'
 import { LINCSL1000ReverseSearchDashboard } from '@/components/lincs/l1000-reverse-search'
 import { Supervenn } from '@/components/service/hyposet'
 import { PlotlyPlot } from '@/components/viz/plotly'
@@ -436,7 +436,7 @@ The Metabolomics Workbench was used to identify associated metabolites and relev
       MetGeneRxnTable,
       MetgeneMetaboliteTable,
       VariantSet,
-      GlyGenResponseNode,
+      GlyGenProteinResponseNode,
     ],
   },
 ]

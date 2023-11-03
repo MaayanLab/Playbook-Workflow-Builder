@@ -4,7 +4,7 @@ import type { Session } from 'next-auth'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
 import ThemeToggle from '@/app/components/ThemeToggle'
-import { Waypoints } from '@/app/components/waypoint'
+import { Waypoint, Waypoints } from '@/app/components/waypoint'
 
 function UserAvatar({ session }: { session: Session | null }) {
   if (typeof session?.user?.image === 'string') {
@@ -29,6 +29,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
     <div className="drawer min-w-screen min-h-screen">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
       <Waypoints className="drawer-content flex flex-col">
+        <Waypoint id="top" />
         <div className="w-full navbar bg-primary gap-2">
           <div className="flex-grow flex-none">
             <div className="flex-none lg:hidden">
@@ -91,6 +92,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             </div>
           </div>
         </div>
+        <Waypoint id="bottom" />
       </Waypoints>
       <div className="drawer-side">
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label>

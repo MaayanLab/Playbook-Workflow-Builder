@@ -69,67 +69,67 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
   return (
     <div className="flex flex-col py-4 gap-2">
       <SessionStatus session_id={session_id}>
-        <div className="sticky top-0 left-0 z-50 bg-white w-full">
-          <Breadcrumbs>
-            <DataBreadcrumb
-              key="start"
-              index={0}
-              id="start"
-              label="Start"
-              active={waypoints.get('start')?.active !== false}
-              icon={[start_icon]}
-              parents={[]}
-              onClick={() => {
-                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/start`, undefined, { shallow: true })
-              }}
-            />
-            {metapath.flatMap((step, i) => {
-              const process = krg.getProcessNode(step.process.type)
-              if (process === undefined) return []
-              return [
-                <ProcessBreadcrumb
-                  key={step.id}
-                  index={i * 2 + 1}
-                  id={step.id}
-                  label={process.meta.label}
-                  head={step}
-                  active={false}
-                  icon={process.meta.icon || [func_icon]}
-                  parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
-                  onClick={() => {
-                    router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}${id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
-                  }}
-                />,
-                <DataBreadcrumb
-                  key={`${step.id}:${step.process.id}`}
-                  index={i * 2 + 2}
-                  id={`${step.id}:${step.process.id}`}
-                  label={process.output.meta.label}
-                  head={step}
-                  active={!!waypoints.get(step.id)?.active}
-                  icon={process.output.meta.icon || [variable_icon]}
-                  parents={[step.id]}
-                  onClick={() => {
-                    router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}${id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
-                  }}
-                />,
-              ]
-            })}
-            <ProcessBreadcrumb
-              key="extend"
-              index={metapath.length * 2 + 1}
-              id="extend"
-              label="Extend"
-              active={false}
-              icon={extend_icon}
-              parents={[head ? `${head.id}:${head.process.id}` : `start`]}
-              onClick={() => {
-                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/extend`, undefined, { shallow: true })
-              }}
-            />
-          </Breadcrumbs>
-        </div>
         <StoryProvider krg={krg} metapath={data.metapath}>
+          <div className="sticky top-0 left-0 z-50 bg-white w-full">
+            <Breadcrumbs>
+              <DataBreadcrumb
+                key="start"
+                index={0}
+                id="start"
+                label="Start"
+                active={waypoints.get('start')?.active !== false}
+                icon={[start_icon]}
+                parents={[]}
+                onClick={() => {
+                  waypoints.get('top')?.ref.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+                }}
+              />
+              {metapath.flatMap((step, i) => {
+                const process = krg.getProcessNode(step.process.type)
+                if (process === undefined) return []
+                return [
+                  <ProcessBreadcrumb
+                    key={step.id}
+                    index={i * 2 + 1}
+                    id={step.id}
+                    label={process.meta.label}
+                    head={step}
+                    active={false}
+                    icon={process.meta.icon || [func_icon]}
+                    parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
+                    onClick={() => {
+                      waypoints.get(`${step.id}:process`)?.ref.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+                    }}
+                  />,
+                  <DataBreadcrumb
+                    key={`${step.id}:${step.process.id}`}
+                    index={i * 2 + 2}
+                    id={`${step.id}:${step.process.id}`}
+                    label={process.output.meta.label}
+                    head={step}
+                    active={!!waypoints.get(`${step.id}:data`)?.active}
+                    icon={process.output.meta.icon || [variable_icon]}
+                    parents={[step.id]}
+                    onClick={() => {
+                      waypoints.get(`${step.id}:data`)?.ref.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+                    }}
+                  />,
+                ]
+              })}
+              <ProcessBreadcrumb
+                key="extend"
+                index={metapath.length * 2 + 1}
+                id="extend"
+                label="Extend"
+                active={false}
+                icon={extend_icon}
+                parents={[head ? `${head.id}:${head.process.id}` : `start`]}
+                onClick={() => {
+                  waypoints.get('bottom')?.ref.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
+                }}
+              />
+            </Breadcrumbs>
+          </div>
           <Waypoint id="start">
             <Introduction
               session_id={session_id}
@@ -186,19 +186,15 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
             />
           </Waypoint>
           {(data.metapath||[]).filter(head => head.id in cellMetadata).map(head => (
-            <Waypoint
+            <Cell
               key={`${head.id}-${cellMetadata[head.id]?.process_visible}-${cellMetadata[head.id]?.data_visible}`}
-              id={head.id}
-            >
-              <Cell
-                session_id={session_id}
-                krg={krg}
-                id={id}
-                head={head}
-                cellMetadata={cellMetadata}
-                setCellMetadata={setCellMetadata}
-              />
-            </Waypoint>
+              session_id={session_id}
+              krg={krg}
+              id={id}
+              head={head}
+              cellMetadata={cellMetadata}
+              setCellMetadata={setCellMetadata}
+            />
           ))}
         </StoryProvider>
       </SessionStatus>

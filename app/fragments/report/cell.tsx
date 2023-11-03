@@ -20,8 +20,8 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
   if (!processNode) return <div className="alert alert-error">Error: {head.process.type} does not exist</div>
   return (
     <>
-      <Waypoint id={`${head.id}:process`} style={{ scrollMarginTop: '6em' }}>
-        {!('prompt' in processNode) ? <div id={`${head.id}:process`} className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0" style={{ scrollMarginTop: '6em' }}>
+      <Waypoint id={`${head.id}:process`}>
+        {!('prompt' in processNode) ? <div id={`${head.id}:process`} className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0">
           <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={cellMetadata[head.id].process_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], process_visible: evt.target.checked, id: '' } }))}} />
             <div className="collapse-title flex flex-col gap-2">
@@ -52,7 +52,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
           </div>
         </div> : null}
       </Waypoint>
-      <Waypoint id={`${head.id}:data`} style={{ scrollMarginTop: '6em' }}>
+      <Waypoint id={`${head.id}:data`}>
         <div className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0">
           {'prompt' in processNode ?
             <Prompt

@@ -88,8 +88,8 @@ export function Breadcrumbs({ children }: React.PropsWithChildren<{}>) {
   const add = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => graph.set(node.id, node))}, [setGraph])
   const del = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => graph.delete(node.id))}, [setGraph])
   const pos = React.useCallback((node: BreadcrumbNode) => node.id in P ? { x: P[node.id].x, y: P[node.id].y } : undefined, [P])
-  let w = 1.5 * Math.max(2, W)
-  let h = 1.5 * Math.max(2, H)
+  let w = 1.5 * W - 0.5
+  let h = 1.5 * H + (H === 1 ? 0.5 : 0.25)
   return (
     <svg
       className="flex-grow"

@@ -197,6 +197,7 @@ export const ResolverName = MetaNode('ResolverName')
       // here we provide kargs and kwargs for the python function
       //  (i.e.  func(*kargs, **kwargs))
       { kargs: [props.inputs.input], kwargs: {} },
+      message => props.notify({ type: 'info', message }),
     )
   })
   .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)

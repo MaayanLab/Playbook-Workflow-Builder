@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET')  {
       res.status(200).json(await db.objects.suggestion.findMany())
     } else if (req.method === 'POST') {
-      const suggestion = BodyType.parse(JSON.parse(req.body))
+      const suggestion = BodyType.parse(req.body)
       // add the suggested KRG node(s)
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {

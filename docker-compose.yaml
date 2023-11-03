@@ -79,7 +79,7 @@ services:
   # the database is used by everything it can be provisioned with
   #  dbmate (`dbmate up`)
   pg:
-    image: postgres
+    image: postgres:15
     environment:
     - POSTGRES_DB=${POSTGRES_DB}
     - POSTGRES_USER=${POSTGRES_USER}

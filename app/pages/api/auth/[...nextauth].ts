@@ -9,7 +9,7 @@ import ORCIDProvider from '@/app/extensions/next-auth/orcid-provider'
 
 export type AuthOptions = typeof authOptions
 export type SessionWithId = {
-  user: Session['user'] & { id: string },
+  user?: Session['user'] & { id: string },
   expires: ISODateString,
 }
 

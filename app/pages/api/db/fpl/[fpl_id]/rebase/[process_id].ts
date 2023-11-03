@@ -16,7 +16,7 @@ export default handler(async (req, res) => {
   const { fpl_id, process_id } = QueryType.parse(req.query)
   const old_process = await fpprg.getProcess(process_id)
   if (old_process === undefined) throw new NotFoundError()
-  const new_process = await fpprg.resolveProcess(BodyType.parse(JSON.parse(req.body)))
+  const new_process = await fpprg.resolveProcess(BodyType.parse(req.body))
   const old_fpl = await fpprg.getFPL(fpl_id)
   if (old_fpl === undefined) throw new NotFoundError()
   const { rebased, head } = old_fpl.rebase(old_process, new_process)

@@ -14,7 +14,8 @@ export const TSNEBokehPlotFromGeneCountMatrix = MetaNode('TSNEBokehPlotFromGeneC
   .output(BokehPlot)
   .resolve(async (props) => await python(
       'components.data.tsne_transformation.tsne_transformation',
-    { kargs: [props.inputs.matrix]  },
+    { kargs: [props.inputs.matrix] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then visualized as a t-SNE plot${''/* [FIGURE]*/}.`

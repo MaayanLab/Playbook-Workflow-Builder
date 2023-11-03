@@ -185,7 +185,7 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
   .build()
 
 // A unique name for your resolver is used here
-export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI_Gene')
+export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
 // Human readble descriptors about this node should go here
 .meta({
   label: 'Fetch StringDB PPI',

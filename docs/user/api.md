@@ -39,7 +39,7 @@ API_KEY = ''
 import pathlib
 if not pathlib.Path('example.tsv').exists():
   import urllib.request
-  urllib.request.urlretreive(ENDPOINT + '/api/v1/components/core/file/example.tsv', filename='example.tsv')
+  urllib.request.urlretrieve(ENDPOINT + '/api/v1/components/core/file/example.tsv', filename='example.tsv')
 
 # upload file
 with open('example.tsv', 'r') as fr:

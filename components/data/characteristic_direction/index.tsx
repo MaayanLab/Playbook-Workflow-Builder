@@ -16,7 +16,8 @@ export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
   .output(GeneSignature)
   .resolve(async (props) => await python(
     'components.data.characteristic_direction.cd_from_matrix',
-    { kargs: [props.inputs.anndata]}
+    { kargs: [props.inputs.anndata] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `Characteristic direction [\\ref{doi:10.1186/1471-2105-15-79}] is applied to the input anndata${props.inputs && props.inputs.anndata.description ? ` containing ${props.inputs.anndata.description}` : ''}.`)
   .build()

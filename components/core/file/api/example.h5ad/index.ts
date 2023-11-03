@@ -3,8 +3,7 @@ import { uploadFile } from '@/components/core/file/api/upload'
 import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 
 export const exampleFile = path.resolve(
-  process.cwd(),
-  '..',
+  process.env.APP_ROOT as string,
   'components',
   'core',
   'file',
@@ -17,7 +16,7 @@ export type UploadExampleFileResponse = Awaited<ReturnType<typeof uploadExampleF
 
 export async function uploadExampleFile(session?: SessionWithId) {
   return await uploadFile({
-    url: `file://${exampleFile.split(path.sep).join(path.posix.sep)}`,
+    url: `${process.env.PUBLIC_URL}/api/v1/components/core/file/example.h5ad`,
     filename: 'example.h5ad',
   }, session)
 }

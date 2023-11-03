@@ -5,15 +5,15 @@ import useSWRImmutable from 'swr/immutable'
 import fetcher from '@/utils/next-rest-fetcher'
 import useSWRMap from '@/utils/swr-map'
 import * as dict from '@/utils/dict'
-import { Error as ErrorComponent } from '@/components'
+import { Error as ErrorComponent } from '@/components/core/error'
 
 export type Metapath = ReturnType<FPL['toJSON']>
 
 /**
- * Retreive output from the API, decode and return
+ * Retrieve output from the API, decode and return
  */
-export function useMetapathOutput(krg: KRG, head: Metapath) {
-  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutable(() => head ? `/api/db/process/${head.process.id}/output` : undefined)
+export function useMetapathOutput({ session_id, krg, head }: { session_id?: string, krg: KRG, head: Metapath }) {
+  const { data: rawOutput, isLoading, error, mutate } = useSWRImmutable(() => head ? `${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.id}/output` : undefined)
   const processNode = krg.getProcessNode(head.process.type)
   const outputNode = rawOutput ? krg.getDataNode(rawOutput.type) : processNode.output
   const { output, decodeError } = React.useMemo(() => {
@@ -24,16 +24,16 @@ export function useMetapathOutput(krg: KRG, head: Metapath) {
       return { data: { output: undefined, outputNode }, decodeError: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : e.toString() }
     }
   }, [rawOutput, outputNode])
-    return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
+  return { data: { output, outputNode }, error: error || decodeError, isLoading, mutate }
 }
 
 /**
- * Retreive inputs to this process from outputs of its inputs
+ * Retrieve inputs to this process from outputs of its inputs
  *  We rely on SWR to help us de-duplicate these requests
  */
-export function useMetapathInputs(krg: KRG, head: Metapath) {
+export function useMetapathInputs({ session_id, krg, head }: { session_id?: string, krg: KRG, head: Metapath }) {
   const { data: rawInputs, error, isLoading } = useSWRMap<{ type: string, value: any }>(
-    dict.values(head.process.inputs).map(({ id }) => `/api/db/process/${id}/output`),
+    dict.values(head.process.inputs).map(({ id }) => `${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${id}/output`),
     fetcher
   )
   const processNode = krg.getProcessNode(head.process.type)
@@ -49,7 +49,8 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
                 value: dict.items(head.process.inputs)
                   .filter(({ key: k }) => k.toString().startsWith(`${key}:`))
                   .map(({ value: { id } }) => {
-                    const output = rawInputs[`/api/db/process/${id}/output`]
+                    const output = rawInputs[`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${id}/output`]
+                    if (!output) throw new Error(`No output for ${id}`)
                     if (output.type === ErrorComponent.spec) {
                       throw new Error(ErrorComponent.codec.decode(output.value))
                     }
@@ -57,7 +58,8 @@ export function useMetapathInputs(krg: KRG, head: Metapath) {
                   })
               }
             } else {
-              const output = rawInputs[`/api/db/process/${head.process.inputs[key].id}/output`]
+              const output = rawInputs[`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.inputs[key].id}/output`]
+              if (!output) throw new Error(`No output for ${head.process.inputs[key].id}`)
               if (output.type === ErrorComponent.spec) {
                 throw new Error(ErrorComponent.codec.decode(output.value))
               }

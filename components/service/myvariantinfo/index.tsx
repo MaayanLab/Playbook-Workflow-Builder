@@ -101,7 +101,7 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
   .output(GeneTerm)
   .resolve(async (props) => {
     const info = await MyVariantInfoFromVariantTerm.resolve(props)
-    return await GeneTermFromMyVariantInfo.resolve({ inputs: { info }})
+    return await GeneTermFromMyVariantInfo.resolve({ ...props, inputs: { info } })
   })
   .story(props => `The closest gene to the variant was found using MyVariant.info [\\ref{doi:10.1093/bioinformatics/btac017}].`)
   .build()

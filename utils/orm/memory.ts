@@ -24,16 +24,16 @@ export class MemoryDatabase implements DbDatabase {
     }
   }
 
-  send = async (queue: string, work: unknown) => {
+  send = async (queue: string, work: { id: string, priority?: number }) => {
     this.notify(`boss:${queue}`, work)
   }
 
-  work = async (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => {
-    return this.listen(async (evt, data: unknown) => {
+  work = async (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => {
+    return this.listen(async (evt, data) => {
       if (evt === `boss:${queue}`) {
         const { id } = z.object({ id: z.string() }).parse(data)
         if (!(id in this.active)) {
-          this.active[id] = cb({ data }).finally(() => { delete this.active[id] })
+          this.active[id] = cb({ data: { id } }).finally(() => { delete this.active[id] })
         }
         return await this.active[id]
       }
@@ -64,7 +64,7 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
 
   create = async (create: Create<T>)=> {
     await this.ensureCreate()
-    const data = {...create.data}
+    const data = JSON.parse(JSON.stringify(create.data))
     dict.items(this.table.field_default)
       .forEach(({ key, value: field_default }) => {
         if (typeof field_default === 'function' && (!(key in data) || data[key] === undefined || data[key] === null)) {
@@ -93,7 +93,13 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
   findMany = async (find: FindMany<T> = {}) => {
     await this.ensureFind()
     const results = dict.values(this.db.data[this.table.name]).filter(record =>
-      find.where ? array.all(dict.items(find.where).map(({ key, value }) => record[key as string] === value)) : true
+      find.where ? array.all(dict.items(find.where).map(({ key, value }) => {
+        if (typeof value === 'object' && value !== null && 'in' in value) {
+          return (value.in as unknown[]).includes(record[key as string])
+        } else {
+          return record[key as string] === value
+        }
+      })) : true
     ) as Array<TypedSchemaRecord<TypedSchema<T>>>
     if (find.orderBy !== undefined) {
       results.sort((a, b) => {
@@ -129,7 +135,10 @@ export class MemoryTable<T extends {}> implements DbTable<T> {
     await this.ensureMutate()
     const record = await this.findUnique({ where: update.where })
     if (record === null) return null
-    Object.assign(record, update.data)
+    Object.assign(record, JSON.parse(JSON.stringify(update.data)))
+    this.table.on_set_extra.forEach(([_k, _v, js]) => {
+      Object.assign(record, js(record))
+    })
     return record as TypedSchemaRecord<TypedSchema<T>>
   }
   upsert = async (upsert: Upsert<T>) => {

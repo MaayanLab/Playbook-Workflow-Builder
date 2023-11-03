@@ -1,15 +1,19 @@
 from components.data.gene_count_matrix import anndata_from_file
-from components.data.metadata_matrix import metadata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
-from maayanlab_bioinformatics.dge import characteristic_direction, logfc_differential_expression
+from maayanlab_bioinformatics.dge import characteristic_direction
+from maayanlab_bioinformatics.dge import logfc_differential_expression
 import pandas as pd
 import scipy.stats
 
 # Function for computing signatures with characteristic direction
 def cd_signature(anndata):
-  col = anndata.obs.columns[0]
-  grp_ids = anndata.obs[col].unique()
+  if 'Type: Control or Perturbation' in anndata.obs.columns:
+    col = 'Type: Control or Perturbation'
+    grp_ids = ['Control', 'Perturbation']
+  else:
+    col = anndata.obs.columns[0]
+    grp_ids = anndata.obs[col].unique()
 
   ctrl_ids = anndata.obs[anndata.obs[col] == grp_ids[0]].index.tolist()
   ctrl_mask = [x in ctrl_ids for x in anndata.obs_names]

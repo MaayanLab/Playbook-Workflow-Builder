@@ -4,6 +4,7 @@ import type { TypedSchema, TypedSchemaRecord } from '@/spec/sql'
 export type Data<T> = {[K in keyof T]: Decoded<T[K]>}
 export type PartialData<T> = Partial<{[K in keyof T]?: Decoded<T[K]>}>
 export type Where<T> = Partial<{[K in keyof T]?: Decoded<T[K]>}>
+export type WhereMany<T> = Partial<{[K in keyof T]?: { in: Decoded<T[K]>[] } | Decoded<T[K]> }>
 export type OrderBy<T> = Partial<{[K in keyof T]?: 'asc' | 'desc'}>
 export type Find<T> = {
   select?: Partial<{[K in keyof T]?: boolean}>
@@ -11,7 +12,7 @@ export type Find<T> = {
 }
 export type FindMany<T> = {
   select?: Partial<{[K in keyof T]?: boolean}>
-  where?: Where<T>
+  where?: WhereMany<T>
   orderBy?: OrderBy<T>
   skip?: number
   take?: number
@@ -48,8 +49,8 @@ export interface DbDatabase {
   listen: (cb: (evt: string, data: unknown) => void) => () => void
 
   // boss
-  send: (queue: string, work: unknown) => Promise<void>
-  work: (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => Promise<() => void>
+  send: (queue: string, work: { id: string, priority?: number }) => Promise<void>
+  work: (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => Promise<() => void>
 }
 
 export type DbTables<T> = {[K in keyof T]: DbTable<T[K] extends {} ? T[K] : never>}

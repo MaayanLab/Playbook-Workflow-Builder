@@ -7,7 +7,6 @@ from components.viz.bokeh import interactive_circle_plot
 
 def umap_transformation(gene_count_matrix: GeneCountMatrix):
   df = anndata_from_file(gene_count_matrix)
-  df = df.transpose()
 
   # leiden coloring
   sc.pp.neighbors(df)

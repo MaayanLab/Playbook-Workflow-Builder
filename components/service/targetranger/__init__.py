@@ -12,12 +12,12 @@ def targetscreener(m: GeneCountMatrix, *, bg):
   '''
   d = anndata_from_file(m)
   # compute statistics which targetranger uses for the query
-  n = d.X.shape[1]
-  mean = d.X.mean(axis=1)
-  std = d.X.std(axis=1)
+  n = d.X.shape[0]
+  mean = d.X.mean(axis=0)
+  std = d.X.std(axis=0)
   genes = pd.DataFrame({
     gene: { 'mean': mean[i], 'std': std[i] }
-    for i, gene in enumerate(d.obs.index)
+    for i, gene in enumerate(d.var.index)
   })
   # submit to targetranger API
   req = requests.post(

@@ -1,3 +1,4 @@
+import jwtDecode from 'jwt-decode'
 import type { OAuthConfig, OAuthUserConfig } from "next-auth/providers"
 
 export default function ORCIDProvider<P extends { sub: string, given_name: string, family_name: string, }>(options: OAuthUserConfig<P>, db: any): OAuthConfig<P> {
@@ -11,6 +12,9 @@ export default function ORCIDProvider<P extends { sub: string, given_name: strin
     checks: ["pkce", "state"],
     async profile(profile, tokens) {
       // keep account up to date
+      if (tokens.id_token) {
+        Object.assign(tokens, { expires_at: jwtDecode<{exp: string}>(tokens.id_token).exp })
+      }
       // @ts-ignore
       await db.objects.account.update({
         where: {

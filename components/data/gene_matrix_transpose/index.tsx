@@ -11,7 +11,7 @@ import { file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
 
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const GMT = MetaNode(`GMT`)
   .meta({
@@ -62,6 +62,7 @@ export const GMTFromFile = MetaNode('GMTFromFile')
   .resolve(async (props) => await python(
     'components.data.gene_matrix_transpose.load_gene_matrix_transpose',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene matrix transpose.`)
   .build()
@@ -127,11 +128,15 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
     label: `Assemble GMT from Gene Sets`,
     description: 'Group multiple independently generated gene sets into a single GMT'
   })
+  .codec(z.object({
+    terms: z.record(z.number(), z.string()),
+    descriptions: z.record(z.number(), z.string()),
+  }))
   .inputs({ genesets: [GeneSet] })
   .output(GMT)
   .prompt(props => {
-    const [terms, setTerms] = React.useState({} as Record<number, string>)
-    const [descriptions, setDescriptions] = React.useState({} as Record<number, string>)
+    const [terms, setTerms] = React.useState(props.data ? props.data.terms : {} as Record<number, string>)
+    const [descriptions, setDescriptions] = React.useState(props.data ? props.data.descriptions : {} as Record<number, string>)
     React.useEffect(() => {
       if (props.inputs) {
         setTerms(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
@@ -158,7 +163,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={terms[row]}
-              placeholder={`Gene set from path ${row}`}
+              editableTextProps={{placeholder: `Gene set from path ${row}`}}
               onChange={value => setTerms(terms => ({ ...terms, [row]: value }))}
             />}
           />
@@ -167,7 +172,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={descriptions[row]}
-              placeholder={`Some optional description`}
+              editableTextProps={{placeholder: `Some optional description`}}
               onChange={value => setDescriptions(descriptions => ({ ...descriptions, [row]: value }))}
             />}
           />
@@ -176,24 +181,30 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].set.join('\t')}</Cell>}
           />
         </Table>
-        <Bp4Button
+        <Bp5Button
           large
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={() => props.submit(
-            dict.init(
-              array.arange(props.inputs.genesets.length)
-                .map(i => ({
-                  key: terms[i],
-                  value: {
-                    description: descriptions[i],
-                    set: props.inputs.genesets[i].set,
-                  }
-                }))
-            ))}
+          onClick={() => props.submit({ terms, descriptions })}
         />
       </div>
+    )
+  })
+  .resolve(async (props) => {
+    const { terms, descriptions } = props.data
+    if (props.inputs.genesets.length !== Object.keys(terms).length) {
+      throw new Error('Please confirm the terms')
+    }
+    return dict.init(
+      array.arange(props.inputs.genesets.length)
+        .map(i => ({
+          key: terms[i],
+          value: {
+            description: descriptions[i],
+            set: props.inputs.genesets[i].set,
+          }
+        }))
     )
   })
   .story(props =>

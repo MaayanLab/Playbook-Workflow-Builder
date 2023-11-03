@@ -296,7 +296,7 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
   .output(GlyGenProteinResponseNode)
   .resolve(async (props) => {
     const gene = await GeneInfoFromGeneTerm.resolve(props)
-    return await GlyGenProteinProduct.resolve({ inputs: { gene } })
+    return await GlyGenProteinProduct.resolve({ ...props, inputs: { gene } })
   })
   .story(props =>
     `Next, Gene Info was resolved From the Gene Term "${props.inputs ? props.inputs.gene : 'the gene'}" via mygene.info.`

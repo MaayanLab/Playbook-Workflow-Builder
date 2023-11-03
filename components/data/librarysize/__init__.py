@@ -1,14 +1,10 @@
-#loadlibraries
-import sys, os
 import json
 from components.data.gene_count_matrix import anndata_from_file
-import sys, os
 import plotly.graph_objs as go
 import pandas as pd
 import plotly.graph_objects as go
 
-# Assuming your gene count matrix is stored in a pandas DataFrame called 'gene_counts'
-# The columns represent samples and the rows represent genes
+# Code for making library size bar plot from gene count matrix
 
 def createlibrarysize(gene_count_matrix):
     
@@ -18,31 +14,43 @@ def createlibrarysize(gene_count_matrix):
     dataset = dataset.to_df()
     dataset = pd.DataFrame(dataset.values)
 
-    
-
     # Calculate the library sizes by summing the counts for each sample
     library_sizes = dataset.sum()
 
-    # Create a bar graph using Plotly
-    fig = go.Figure(data=go.Bar(x=cell_labels, y=library_sizes))
+    # Create a horizontal bar graph using Plotly
+    fig = go.Figure(data=go.Bar(y=cell_labels, x=library_sizes, orientation='h'))
 
     # Customize the graph layout
     fig.update_layout(
-        xaxis_title='Samples',
-        yaxis_title='Library Size',
-        title='Library Sizes of Samples'
-    )
-
-    # Add column labels as x-axis tick labels
-    text = ['<b>{}</b><br>'.format(label) for label in cell_labels]
-
-    fig.update_layout(
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(cell_labels))),
-            ticktext=list(text)
-        )
+        xaxis_title='Library Size',
+        yaxis_title='Samples',
+        title='Library Sizes of Samples',
     )
 
     return json.loads(fig.to_json())
 
+
+# Code for making library size bar plot from AnnData file
+
+def createlibrarysizefromanndata(anndata):
+    
+    # Read the AnnData file and create the AnnData object
+    dataset = anndata_from_file(anndata)
+    
+    # Access the row names (sample names) from the AnnData object's index
+    cell_labels = dataset.obs_names
+
+    # Calculate the library sizes by summing the counts for each sample (row)
+    library_sizes = dataset.X.sum(axis=1)
+
+    # Create a horizontal bar graph using Plotly
+    fig = go.Figure(data=go.Bar(y=cell_labels, x=library_sizes, orientation='h'))
+
+    # Customize the graph layout
+    fig.update_layout(
+        xaxis_title='Library Size',
+        yaxis_title='Samples',
+        title='Library Sizes of Samples',
+    )
+
+    return json.loads(fig.to_json())

@@ -1,11 +1,13 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { RegulatoryElementTerm } from '@/components/core/input/term'
-import { GeneSet, VariantSet } from '@/components/core/input/set'
+import { GeneSet, RegulatoryElementSet, VariantSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { linkeddatahub_icon } from '@/icons'
+import { linkeddatahub_icon, datafile_icon } from '@/icons'
+import { Table, Cell, Column} from '@/app/components/Table'
+import { downloadBlob } from '@/utils/download'
 
-export const MyRegulatoryElementC = z.object({
+export const RegulatoryElementInfoC = z.object({
   data: z.object({
     entId: z.string(),
     entType: z.string(),
@@ -33,7 +35,7 @@ export const MyRegulatoryElementC = z.object({
   })
 })
 
-export type MyRegulatoryElement = z.infer<typeof MyRegulatoryElementC>
+export type RegulatoryElementInfo = z.infer<typeof RegulatoryElementInfoC>
 
 export const RE_PositionalDataC = z.object({
   data: z.object({
@@ -54,13 +56,13 @@ export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
     description: 'Regulatory Element resolver',
     icon: [linkeddatahub_icon],
   })
-  .codec(MyRegulatoryElementC)
+  .codec(RegulatoryElementInfoC)
   .view(regElem => (
-    <div> {regElem.data.entId} {regElem.data.entType}<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
+    <div> {regElem.data.entId} Regulatory Element<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
   ))
   .build()
 
-export async function myRegElemInfo_query(regElemId: string): Promise<MyRegulatoryElement> {
+export async function myRegElemInfo_query(regElemId: string): Promise<RegulatoryElementInfo> {
   const res = await fetch(`https://genboree.org/cfde-gene-dev/RegulatoryElement/id/${encodeURIComponent(regElemId)}`)
   return await res.json()
 }
@@ -141,4 +143,100 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     return variantSet;
   })
   .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
+  .build()
+
+const MyRegulatoryElementC = z.object({
+  entId: z.string(),
+  ldhId: z.string(),
+  entContent: z.object({
+    coordinates: z.object({    
+      chromosome: z.string(),
+      end: z.any(),
+      start: z.any()
+    })
+  })
+})
+export type MyRegulatoryElement = z.infer<typeof MyRegulatoryElementC>
+
+export const MyRegulatoryElementSetInfoC = z.array(
+  MyRegulatoryElementC
+)
+export type MyRegulatoryElementSetInfo = z.infer<typeof MyRegulatoryElementSetInfoC>
+
+export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
+  .meta({
+    label: 'RegulatoryElementSetInfo',
+    description: '',
+    icon: [datafile_icon]
+  })
+  .codec(MyRegulatoryElementSetInfoC)
+  .view(regulatoryElementSet => {
+    return( 
+      <Table
+        height={500}
+        cellRendererDependencies={[regulatoryElementSet]}
+        numRows={regulatoryElementSet.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}>
+        <Column
+          name="Entity id"
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
+        />
+        <Column
+          name="Chromosome"
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.chromosome}</Cell>}
+        />
+        <Column
+          name="Start Pos."
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.start}</Cell>}
+        />
+        <Column
+          name="End Pos."
+          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.end}</Cell>}
+        />
+      </Table>
+    )
+  })
+  .build()
+
+export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFromRegElementTerm')
+  .meta({
+    label: 'Resolve Regulatory Element Set Info from Term',
+    description: 'Resolve Regulatory Element Set Info from term (id).',
+    icon: [linkeddatahub_icon],
+  })
+  .inputs({ regulatoryElementSet: RegulatoryElementSet })
+  .output(RegulatoryElementSetInfo)
+  .resolve(async (props) => {
+    let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
+    let response: MyRegulatoryElementSetInfo = [];
+    for(let i in regElemeIdsSet){
+      let rgId = regElemeIdsSet[i];
+      const rePositionData = await getRegElemPositionData(rgId);
+      let coordinates = null;
+      if(rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
+        coordinates = rePositionData.data.cCREQuery[0].coordinates;
+      }else{
+        coordinates = {
+            chromosome: "",
+            start: 0,
+            end: 0
+        };
+      }
+      let rgObj = {
+        entId: rgId,
+        ldhId: rgId,
+        entContent: {
+          coordinates: coordinates
+        }
+      }
+      response.push(rgObj);
+    }
+
+    return response;
+  })
+  .story(props => `Additional information about the regulatory elements was resolved.`)
   .build()

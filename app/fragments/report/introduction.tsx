@@ -118,6 +118,7 @@ export default function Introduction({
         </Breadcrumbs>
       </div>
       <div className="flex-grow flex-shrink bp5-card p-0">
+        {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} className="fill-black dark:fill-white" />
@@ -152,7 +153,7 @@ export default function Introduction({
               onClick={evt => {setPlaybookMetadata(({ summary, ...playbookMetadata }) => ({ ...playbookMetadata, summary: 'manual', id: '' }))}}
             >Manual Summary</button>
           </div>
-          <div className="prose">
+          <div className="prose max-w-full">
             {playbookMetadata.summary === 'auto' ?
               <>
                 <p className="prose-lg text-justify mt-1">{storyText}</p>
@@ -176,7 +177,6 @@ export default function Introduction({
               : null}
           </div>
         </div>
-        {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
           <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp5-button bp5-minimal">

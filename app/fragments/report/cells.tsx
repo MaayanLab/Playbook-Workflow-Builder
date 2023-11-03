@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
-import { useMetapath, type Metapath, useFPL } from '@/app/fragments/metapath'
+import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import { useAPIMutation } from '@/core/api/client'
 import { UserPlaybook, UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
@@ -58,7 +58,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     })))
     setUserPlaybook(data.userPlaybook)
   }, [data])
-  if (!data || !playbookMetadata) return null
+  if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
       <SessionStatus session_id={session_id}>
@@ -67,6 +67,8 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
             session_id={session_id}
             id={id}
             error={null}
+            krg={krg}
+            metapath={metapath}
             playbookMetadata={playbookMetadata}
             userPlaybook={userPlaybook}
             setPlaybookMetadata={setPlaybookMetadata}

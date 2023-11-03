@@ -53,13 +53,13 @@ export function Waypoints(props: React.PropsWithChildren<{ className?: string }>
   )
 }
 
-export function Waypoint(props: React.PropsWithChildren<{ id: string }>) {
+export function Waypoint({ id, children, ...props }: React.PropsWithChildren<{ id: string } & React.HTMLAttributes<HTMLDivElement>>) {
   const ref = React.useRef<HTMLDivElement>(null)
   const waypoints = React.useContext(WaypointsContext)
   React.useEffect(() => {
     if (ref.current === null) return
-    waypoints.set(props.id, ref.current)
-    return () => {waypoints.del(props.id)}
-  }, [props.id, ref])
-  return <div ref={ref}>{props.children}</div>
+    waypoints.set(id, ref.current)
+    return () => {waypoints.del(id)}
+  }, [id, ref])
+  return <div ref={ref} {...props}>{children}</div>
 }

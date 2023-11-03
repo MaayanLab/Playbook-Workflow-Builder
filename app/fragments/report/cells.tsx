@@ -7,6 +7,9 @@ import { useAPIMutation } from '@/core/api/client'
 import { UserPlaybook, UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
+import { Breadcrumbs } from '../breadcrumbs'
+import { DataBreadcrumb, ProcessBreadcrumb } from '../graph/breadcrumb'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -58,10 +61,72 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     })))
     setUserPlaybook(data.userPlaybook)
   }, [data])
+  const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
+  const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
       <SessionStatus session_id={session_id}>
+        <div className="sticky top-0 left-0 z-50 bg-white w-full">
+          <Breadcrumbs>
+            <DataBreadcrumb
+              key="start"
+              index={0}
+              id="start"
+              label="Start"
+              active={false}
+              icon={[start_icon]}
+              parents={[]}
+              onClick={() => {
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/start`, undefined, { shallow: true })
+              }}
+            />
+            {metapath.flatMap((step, i) => {
+              const process = krg.getProcessNode(step.process.type)
+              if (process === undefined) return []
+              return [
+                <ProcessBreadcrumb
+                  key={step.id}
+                  index={i * 2 + 1}
+                  id={step.id}
+                  label={process.meta.label}
+                  head={step}
+                  active={false}
+                  icon={process.meta.icon || [func_icon]}
+                  parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
+                  onClick={() => {
+                    router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}${id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
+                  }}
+                />,
+                <DataBreadcrumb
+                  key={`${step.id}:${step.process.id}`}
+                  index={i * 2 + 2}
+                  id={`${step.id}:${step.process.id}`}
+                  label={process.output.meta.label}
+                  head={step}
+                  active={false}
+                  icon={process.output.meta.icon || [variable_icon]}
+                  parents={[step.id]}
+                  onClick={() => {
+                    router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}${id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
+                  }}
+                />,
+              ]
+            })}
+            <ProcessBreadcrumb
+              key="extend"
+              index={metapath.length * 2 + 1}
+              id="extend"
+              label="Extend"
+              active={false}
+              icon={extend_icon}
+              parents={[head ? `${head.id}:${head.process.id}` : `start`]}
+              onClick={() => {
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/extend`, undefined, { shallow: true })
+              }}
+            />
+          </Breadcrumbs>
+        </div>
         <StoryProvider krg={krg} metapath={data.metapath}>
           <Introduction
             session_id={session_id}

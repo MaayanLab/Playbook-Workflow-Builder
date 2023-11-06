@@ -39,10 +39,12 @@ export default function CommunityPlaybooks() {
     if (playbooks) {
       playbooks.forEach(playbook => {
         (playbook.inputs||'').split(', ').forEach(input => {
-          allInputs[input] = krg.getDataNode(input) as DataMetaNode
+          const node = krg.getDataNode(input)
+          if (node) allInputs[input] = node
         });
         (playbook.outputs||'').split(', ').forEach(output => {
-          allOutputs[output] = krg.getDataNode(output) as DataMetaNode
+          const node = krg.getDataNode(output)
+          if (node) allOutputs[output] = node
         });
       })
     }
@@ -148,7 +150,7 @@ export default function CommunityPlaybooks() {
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row flex-wrap gap-2 justify-center">
-                    {(playbook.inputs||'').split(', ').map(spec => krg.getDataNode(spec)).map(input => (
+                    {(playbook.inputs||'').split(', ').map(spec => krg.getDataNode(spec)).filter(node => node !== undefined).map(input => (
                       <button
                         key={input.spec}
                         onClick={() => {
@@ -172,7 +174,7 @@ export default function CommunityPlaybooks() {
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Outputs</div>
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row flex-wrap gap-2 justify-center">
-                    {(playbook.outputs||'').split(', ').map(spec => krg.getDataNode(spec)).map(output => (
+                    {(playbook.outputs||'').split(', ').map(spec => krg.getDataNode(spec)).filter(node => node !== undefined).map(output => (
                       <button
                         key={output.spec}
                         onClick={() => {

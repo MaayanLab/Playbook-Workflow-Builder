@@ -484,6 +484,7 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
     return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
   })
   .story(props => `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`)
+  .build()
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
@@ -591,6 +592,7 @@ export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDa
     return response;
   })
   .story(props => `xQTL evidence data for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} was resolved.`)
+  .build()
 
 export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExternalRecordsTable')
   .meta({
@@ -643,35 +645,35 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .build()
 
-  function processExternalRecords(variantInfoObj: AlleleRegistryVariantInfo){
-    let alleleInfoExternalResources: AlleleRegistryExternalSourcesInfo= [];
-    let externalSources = variantInfoObj['externalRecords'];
-    for(let er in externalSources){
-      if(externalSources[er] != null){
+function processExternalRecords(variantInfoObj: AlleleRegistryVariantInfo){
+  let alleleInfoExternalResources: AlleleRegistryExternalSourcesInfo= [];
+  let externalSources = variantInfoObj['externalRecords'];
+  for(let er in externalSources){
+    if(externalSources[er] != null){
 
-        let extSources = externalSources[er];
-        for(let indxEs in extSources){
-          var es = extSources[indxEs];
-          if(es.id == null && es.rs != null){
-            es.id = es.rs.toString();
-          }else if(es.id == null && es.preferredName != null){
-            //for ClinVarAlleles
-            es.id = es.preferredName.toString();
-          }else if(es.id == null && es.variationId != null){
-            //ClinVarVariations
-            es.id = es.variationId.toString();
-          }
+      let extSources = externalSources[er];
+      for(let indxEs in extSources){
+        var es = extSources[indxEs];
+        if(es.id == null && es.rs != null){
+          es.id = es.rs.toString();
+        }else if(es.id == null && es.preferredName != null){
+          //for ClinVarAlleles
+          es.id = es.preferredName.toString();
+        }else if(es.id == null && es.variationId != null){
+          //ClinVarVariations
+          es.id = es.variationId.toString();
         }
-
-        let  externalResourcesTemp = {
-          name: er.toString(),
-          sources: extSources
-        };
-        alleleInfoExternalResources.push(externalResourcesTemp);
       }
+
+      let  externalResourcesTemp = {
+        name: er.toString(),
+        sources: extSources
+      };
+      alleleInfoExternalResources.push(externalResourcesTemp);
     }
-    return alleleInfoExternalResources;
   }
+  return alleleInfoExternalResources;
+}
 
 export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
@@ -693,7 +695,7 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   .story(props => `External records for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`)
   .build()
 
-  export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
+export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .meta({
     label: 'GeneAssociations_HG38',
     description: ''

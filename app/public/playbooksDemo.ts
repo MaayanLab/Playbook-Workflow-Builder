@@ -14,7 +14,7 @@ import { PlotlyPlot } from '@/components/viz/plotly'
 
 const playbooks = [
   {
-    id: '05ad5e67-e048-d46f-be6e-058dc6d40c77',
+    id: '6a7af61b-ef0a-7687-5d6e-02deeb253172',
     label: 'Use Case 1: Explain Drug-Drug Interactions',
     description: `Give two drugs and an adverse event that is known to be caused by the drug-drug interactions, I would like to know if there are overlapping genes between genes that are either up or down regulated by the drugs from LINCS and genes associated with the adverse event either based on GWAS, gene mentions in the literature, and genes associated with mouse and human phenotypes. I would like to also know if the overlap between these genes is statistically significant. I would also like to have the results visualized as a Venn diagram.`,
     gpt_summary: `To start the workflow, the search term "Inflammation" is selected. This is followed by selecting the search term "Penicillin" and then "Cortisol".
@@ -34,7 +34,7 @@ Here are the references for the sources used:
 4. Köhler, S. et al. The Human Phenotype Ontology in 2021. Nucleic Acids Research vol. 49 D1207–D1217 (2020). doi:10.1093/nar/gkaa1043
 5. Evangelista, J. E. et al. SigCom LINCS: data and metadata search engine for a million gene expression signatures. Nucleic Acids Research vol. 50 W697–W709 (2022). doi:10.1093/nar/gkac328`,
     published: 'July 26, 2023',
-    version: '1.0.0',
+    version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
@@ -55,7 +55,7 @@ Here are the references for the sources used:
     ],
   },
   {
-    id: 'fec7706b-eacc-aea6-e024-e0e5656d9921',
+    id: '3f27bcd3-a4a5-d7f8-358a-3652119a659f',
     label: 'Use Case 2: Explain MOAs of Side Effects for Approved Drugs',
     description: `For a side effect and a drug, I would like to know if there are genes from the LINCS L1000 experiments that are up or down-regulated by the drugs that are also known to be involved with the side effect based on literature co-mentions or GWAS. I would like to know if such overlap is statistically significant. I would also like the results to be visualized using a SuperVenn diagram.`,
     gpt_summary: `To start the workflow, the search term \"atrial fibrillation\" was selected. The matching terms from the MGI Mammalian Phenotype Level 4 2019 library and GWAS Catalog 2019 library were identified and assembled into gene sets. A consensus gene set was created by only keeping genes that appeared in at least two sets.
@@ -344,19 +344,18 @@ References:
     ],
   },
   {
-    id: 'c15bf01d-59bf-273b-dede-9179366f4966',
+    id: '9bad4205-70e2-7f8d-b151-8fbb11e58ea9',
     label: 'Use Case 10: Guilt by Association',
     description: `Given a set of genes, connect the dots (CTD) is performed against protein & pathway graphs to obtain a small subset of highly connected genes and those that are guilty by association.`,
     gpt_summary: `The workflow begins by creating a gene set from Example geneset. Then, CTD is performed on the gene set using STRING and KEGG. From the CTD output, a list of Highly Connected Genes is obtained, as well as a list of Guilty By Association Genes. This process is repeated, resulting in another list of Highly Connected Genes and another list of Guilty By Association Genes.`,
     published: 'July 26, 2023',
-    version: '1.0.0',
+    version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',
     dataSources: [
       'ClinGen',
       'STRING',
-      'KEGG',
     ],
     inputs: [
       GeneSet,
@@ -403,7 +402,7 @@ Here are the references for the sources mentioned:
   },
   // TODO: 12
   {
-    id: '548b6f81-e6d5-cabb-0284-2e2a749271b8',
+    id: '36be2a03-8779-8bbe-03de-523aef57ecd2',
     label: 'Use Case 13: Prioritizing Targets for Individual Cancer patients',
     description: `Given RNA-seq samples from a patient tumor, we screen for targets which are highly expressed in the tumor but lowly expressed across all healthy human tissues in GTEx. Detailed information about the the selected target are queried from several DCCs.`,
     gpt_summary: `The process began with the upload of a file, which was then parsed as an input gene count matrix. The next step involved identifying significantly over-expressed genes in comparison to normal tissue in GTEx, resulting in the selection of IMP3 for further investigation.
@@ -412,7 +411,7 @@ To identify drugs that down-regulate IMP3 expression, RNA-seq-like LINCS L1000 C
 
 The Metabolomics Workbench was used to identify associated metabolites and relevant reactions for IMP3. Regulatory elements were obtained from the Linked Data Hub. Lastly, the GlyGen database was searched to identify a relevant set of proteins originating from IMP3.`,
     published: 'Mar 30, 2023',
-    version: '1.0.0',
+    version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',

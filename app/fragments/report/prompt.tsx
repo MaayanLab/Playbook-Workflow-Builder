@@ -17,6 +17,16 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
   const { nodeStories } = useStory()
+  const data = React.useMemo(() => {
+    // invalidate data if it no longer matches the codec
+    //  which could happen if an older verison of the metanode
+    //  was used originally
+    try {
+      if (head.process.data !== null) {
+        return processNode.codec.decode(head.process.data.value)
+      }
+    } catch (e) {}
+  }, [head])
   const Component = processNode.prompt
   return (
     <div className="collapse collapse-arrow text-black dark:text-white">
@@ -34,7 +44,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component
             session_id={session_id}
-            data={head.process.data?.value}
+            data={data}
             inputs={inputs}
             output={output}
             submit={async (data) => {

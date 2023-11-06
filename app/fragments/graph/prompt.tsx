@@ -15,6 +15,16 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
   const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const Component = processNode.prompt
+  const data = React.useMemo(() => {
+    // invalidate data if it no longer matches the codec
+    //  which could happen if an older verison of the metanode
+    //  was used originally
+    try {
+      if (head.process.data !== null) {
+        return processNode.codec.decode(head.process.data.value)
+      }
+    } catch (e) {}
+  }, [head])
   return (
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
@@ -27,7 +37,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
           session_id={session_id}
-          data={head.process.data?.value}
+          data={data}
           inputs={inputs}
           output={output}
           submit={async (data) => {

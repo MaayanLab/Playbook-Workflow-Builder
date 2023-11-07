@@ -133,7 +133,20 @@ export function useMetapathInputs({ krg, head }: { krg: KRG, head: Metapath }) {
     const keys = dict.sortedKeys(stores)
     return derived(
       keys.map(key => stores[key]),
-      (values) => dict.init(values.map((value, i) => ({ key: keys[i], value: value.type === 'resolved' ? value.data.data?.value : undefined }))),
+      (values) => {
+        const inputs = {} as Record<string, any>
+        values.forEach((value, i) => {
+          const [k, ...rest] = keys[i].toString().split(':')
+          const v = value.type === 'resolved' ? value.data.data?.value : undefined
+          if (rest.length > 0) {
+            if (!(k in inputs)) inputs[k] = []
+            inputs[k].push(v)
+          } else {
+            inputs[k] = v
+          }
+        })
+        return inputs
+      },
     )
   }, [stores, head.process.id])
   const data = useReadable(store)

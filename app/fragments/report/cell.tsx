@@ -21,7 +21,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
   return (
     <>
       <Waypoint id={`${head.id}:process`}>
-        {!('prompt' in processNode) ? <div id={`${head.id}:process`} className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0">
+        {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0">
           <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={cellMetadata[head.id].process_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], process_visible: evt.target.checked, id: '' } }))}} />
             <div className="collapse-title flex flex-col gap-2">

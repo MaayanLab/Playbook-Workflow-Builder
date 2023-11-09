@@ -7,9 +7,7 @@ import { useStory } from '@/app/fragments/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
 import { Metapath } from '../metapath'
-import { useRouter } from 'next/router'
 import KRG from '@/core/KRG'
-import * as dict from '@/utils/dict'
 
 const SaveButton = dynamic(() => import('@/app/fragments/report/save-button'))
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
@@ -18,15 +16,9 @@ const ExportButton = dynamic(() => import('@/app/fragments/report/export-button'
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs').then(({ Breadcrumbs }) => Breadcrumbs))
-const DataBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ DataBreadcrumb }) => DataBreadcrumb))
-const ProcessBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ ProcessBreadcrumb }) => ProcessBreadcrumb))
-
 export default function Introduction({
   session_id,
   id,
-  krg,
-  metapath,
   userPlaybook,
   playbookMetadata,
   setPlaybookMetadata,
@@ -49,7 +41,6 @@ export default function Introduction({
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT({ session_id })
   const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
-  const router = useRouter()
   return (
     <>
       <Head>

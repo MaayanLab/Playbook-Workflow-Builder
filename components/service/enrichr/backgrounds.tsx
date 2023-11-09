@@ -252,6 +252,19 @@ export const Phenotype_backgrounds = [
     icon: [],
   },
   {
+    name: 'MGI_Mammalian_Phenotype_Level_4_2021',
+    label: 'MGI Mammalian Phenotype Level 4 2021',
+    termType: 'Phenotype',
+    termRe: /^(?<term>.+)$/,
+    termLabel: 'MGI Mammalian Phenotypes',
+    termAssociation: 'Associated with',
+    extra: {
+      organism: 'mouse',
+    },
+    ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
+    icon: [],
+  },
+  {
     name: 'MGI_Mammalian_Phenotype_Level_4_2019',
     label: 'MGI Mammalian Phenotype Level 4 2019',
     termType: 'Phenotype',

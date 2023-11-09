@@ -107,6 +107,7 @@ export const Pathway_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/75556}`,
     icon: [],
+    hidden: true,
   },
   {
     name: 'KEGG_2019_Human',
@@ -120,6 +121,7 @@ export const Pathway_backgrounds = [
     },
     ref: `\\ref{doi:10.1002/pro.3715}`,
     icon: [],
+    hidden: true,
   },
   {
     name: 'KEGG_2019_Mouse',
@@ -182,6 +184,7 @@ export const Pathway_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
     icon: [],
+    hidden: true,
   },
   {
     name: 'WikiPathways_2019_Mouse',
@@ -195,6 +198,7 @@ export const Pathway_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
     icon: [],
+    hidden: true,
   },
 ]
 
@@ -276,6 +280,7 @@ export const Phenotype_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
     icon: [],
+    hidden: true,
   },
 ]
 

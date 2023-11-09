@@ -64,7 +64,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
   }, [data])
   const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
   const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
-  const waypoints = useWaypoints()
+  const { waypoints, scrollTo } = useWaypoints()
   if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
@@ -81,7 +81,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                 icon={[start_icon]}
                 parents={[]}
                 onClick={() => {
-                  waypoints.get('top')?.ref.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+                  scrollTo('top')
                 }}
               />
               {metapath.flatMap((step, i) => {
@@ -98,7 +98,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                     icon={process.meta.icon || [func_icon]}
                     parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
                     onClick={() => {
-                      waypoints.get(`${step.id}:process`)?.ref.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+                      scrollTo(`${step.id}:process`)
                     }}
                   />,
                   <DataBreadcrumb
@@ -111,7 +111,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                     icon={process.output.meta.icon || [variable_icon]}
                     parents={[step.id]}
                     onClick={() => {
-                      waypoints.get(`${step.id}:data`)?.ref.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+                      scrollTo(`${step.id}:data`)
                     }}
                   />,
                 ]
@@ -125,7 +125,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                 icon={extend_icon}
                 parents={[head ? `${head.id}:${head.process.id}` : `start`]}
                 onClick={() => {
-                  waypoints.get('bottom')?.ref.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
+                  scrollTo(`bottom`)
                 }}
               />
             </Breadcrumbs>

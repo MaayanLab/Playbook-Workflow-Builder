@@ -40,6 +40,8 @@ export type InternalIdentifiableMetaNode = {
     color?: string,
     // an example value for a data metanode
     example?: any,
+    // whether or not this should be findable in extend mode (i.e. deprecated)s
+    hidden?: boolean,
     // an integer for metanode order tweaking
     pagerank?: number,
     // categorized tags for metanode filtering

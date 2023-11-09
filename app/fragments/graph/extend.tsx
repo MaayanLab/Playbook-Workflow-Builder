@@ -46,7 +46,7 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
       </Head>
       <Catalog<ProcessMetaNode & ({}|{ onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
         items={[
-          ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
+          ...krg.getNextProcess(processNode ? processNode.output.spec : '').filter(proc => proc.meta.hidden !== true),
           ...SuggestionEdges(processNode ? processNode.output : undefined),
         ]}
         serialize={item => [

@@ -89,6 +89,16 @@ export const Drug_backgrounds = [
 
 export const Pathway_backgrounds = [
   {
+    name: 'GO_Biological_Process_2023',
+    label: 'GO Biological Process 2023',
+    termType: 'BiologicalProcess',
+    termRe: /^(?<term>.+)\((?<xref>.+?)\)$/,
+    termLabel: 'GO Biological Processes',
+    termAssociation: 'Containing',
+    ref: `\\ref{doi:10.1038/75556}`,
+    icon: [],
+  },
+  {
     name: 'GO_Biological_Process_2021',
     label: 'GO Biological Process 2021',
     termType: 'BiologicalProcess',

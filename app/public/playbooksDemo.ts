@@ -402,7 +402,7 @@ Here are the references for the sources mentioned:
   },
   // TODO: 12
   {
-    id: '36be2a03-8779-8bbe-03de-523aef57ecd2',
+    id: '4d1fa785-255a-c61c-4a8f-b5ad5de0a2c2',
     label: 'Use Case 13: Prioritizing Targets for Individual Cancer patients',
     description: `Given RNA-seq samples from a patient tumor, we screen for targets which are highly expressed in the tumor but lowly expressed across all healthy human tissues in GTEx. Detailed information about the the selected target are queried from several DCCs.`,
     gpt_summary: `The process began with the upload of a file, which was then parsed as an input gene count matrix. The next step involved identifying significantly over-expressed genes in comparison to normal tissue in GTEx, resulting in the selection of IMP3 for further investigation.
@@ -411,7 +411,7 @@ To identify drugs that down-regulate IMP3 expression, RNA-seq-like LINCS L1000 C
 
 The Metabolomics Workbench was used to identify associated metabolites and relevant reactions for IMP3. Regulatory elements were obtained from the Linked Data Hub. Lastly, the GlyGen database was searched to identify a relevant set of proteins originating from IMP3.`,
     published: 'Mar 30, 2023',
-    version: '1.0.1',
+    version: '1.0.2',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',

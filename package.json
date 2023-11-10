@@ -1,6 +1,6 @@
 {
   "name": "playbook-partnership",
-  "version": "0.49.3",
+  "version": "0.49.4",
   "description": "A repository for the playbook partnership collaboration.",
   "private": true,
   "workspaces": [

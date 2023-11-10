@@ -290,7 +290,7 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
     return await GlyGenProteinProduct.resolve({ ...props, inputs: { gene } })
   })
   .story(props =>
-    `The GlyGen database \\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of protein products that originate from ${props.inputs ? props.inputs.gene : 'the gene'}.`
+    `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of protein products that originate from ${props.inputs ? props.inputs.gene : 'the gene'}.`
   )
   .build()
 
@@ -340,7 +340,7 @@ export const GlycanInformation = MetaNode('GlycanInformation')
     return glycan_data
   })
   .story(props => 
-    `The GlyGen database \\ref{doi:10.1093/glycob/cwz080} was searched to identify a information about ${props.inputs ? props.inputs.glycan : 'the glycan'}.`
+    `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a information about ${props.inputs ? props.inputs.glycan : 'the glycan'}.`
   )
   .build()
 

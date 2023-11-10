@@ -49,7 +49,7 @@ export const GlyGenProteinResponse = z.object({
       taxid: z.string(),
     }),
     glycoprotein: z.object({
-      glycosylation: z.boolean(),
+      glycosylation: z.boolean().optional(),
       glycosylation_data: z.array(GlycosylationEntry)
     })
   })

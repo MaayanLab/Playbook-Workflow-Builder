@@ -40,7 +40,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   }
   return {
     props: {
-      fallback,
+      fallback: JSON.parse(JSON.stringify(fallback)),
     }
   }
 }

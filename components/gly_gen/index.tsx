@@ -2,15 +2,11 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
-import { glygen_icon, protein_icon } from '@/icons'
+import { glygen_icon } from '@/icons'
 import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
 import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef } from './utils'
-import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
-import { filter } from '@/utils/dict'
-
 
 // -------- Schema Definitions -------- // 
-
 
 /**
  * Zod definition for glycosylation data 
@@ -84,7 +80,6 @@ export const GlycanResponse = z.object({
 
 
 // -------- Data Metanodes -------- // 
-
 
 /**
  * Data metanode for the glygen api protein response, defines how the protein api response should 
@@ -183,7 +178,6 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
   .meta({
     label: 'Glycan information',
     description: 'Glycan information from GlyGen'
-    // icon: []
   })
   .codec(GlycanResponse)
   .view(data => {
@@ -216,7 +210,6 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
 
 // -------- Process Metanodes (all resolver process metanodes) -------- // 
 
-
 /**
  * Process metanode for searching by protein name for protein products 
  */
@@ -230,7 +223,6 @@ export const GlyGenProtein = MetaNode('GGP')
   .inputs({ protein_uniprot_canonical_ac: ProteinTerm })
   .output(GlyGenProteinResponseNode)
   .resolve(async (props) => {
-    console.log("===> Got protein input %s", props.inputs.protein_uniprot_canonical_ac);
     const protein_response = await resolveFilteredResult(props.inputs.protein_uniprot_canonical_ac);
     return protein_response;
   })
@@ -272,7 +264,6 @@ export const GlyGenProteinProduct = MetaNode('GGPP')
       body: JSON.stringify({ id: id['list_id'] }),
       })
     const searchResult = await protein_response.json()
-    console.log('here')
     const filteredResult = filterGlyGenResults(searchResult, 'gene', props.inputs.gene.symbol);
     return filteredResult;
   })
@@ -299,7 +290,7 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
     return await GlyGenProteinProduct.resolve({ ...props, inputs: { gene } })
   })
   .story(props =>
-    `Next, Gene Info was resolved From the Gene Term "${props.inputs ? props.inputs.gene : 'the gene'}" via mygene.info.`
+    `The GlyGen database \\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of protein products that originate from ${props.inputs ? props.inputs.gene : 'the gene'}.`
   )
   .build()
 
@@ -336,7 +327,6 @@ export const GlycanInformation = MetaNode('GlycanInformation')
   .inputs({ glycan: GlycanTerm })
   .output(GlycanViewResponseNode)
   .resolve(async (props) => {
-    console.log("===> Got glycan input %s", props.inputs.glycan);
     // get glycan data 
     const detail_response = await fetch(`https://api.glygen.org/glycan/detail/${props.inputs.glycan}`, {
       method: 'POST',
@@ -350,7 +340,7 @@ export const GlycanInformation = MetaNode('GlycanInformation')
     return glycan_data
   })
   .story(props => 
-    'placeholder'
+    `The GlyGen database \\ref{doi:10.1093/glycob/cwz080} was searched to identify a information about ${props.inputs ? props.inputs.glycan : 'the glycan'}.`
   )
   .build()
 

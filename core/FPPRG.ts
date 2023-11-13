@@ -12,6 +12,7 @@
 
 import uuid from '@/utils/uuid'
 import * as dict from '@/utils/dict'
+import * as math from '@/utils/math'
 import { z } from 'zod'
 import { Db } from '@/utils/orm'
 import * as fpprgSchema from '@/db/fpprg'
@@ -26,6 +27,7 @@ import { TimeoutError } from '@/spec/error'
 export class Process {
   id: string
   resolved: Resolved | undefined = undefined
+  _dependencies: number | undefined = undefined
 
   constructor(
     /**
@@ -66,6 +68,18 @@ export class Process {
           .map(({ key, value }) => ({ key, value: { id: value.id } }))
       ),
     }
+  }
+
+  /**
+   * The number of inputs this process depends on,
+   *  this is a memoized recursive method across processes.
+   * Each process counts itself + the value for all of its inputs.
+   */
+  dependencies = async (): Promise<number> => {
+    if (this._dependencies === undefined) {
+      this._dependencies = math.sum(await Promise.all(dict.items(this.inputs).map(({ value }) => value.dependencies()))) + 1
+    }
+    return this._dependencies
   }
 
   /**
@@ -677,6 +691,8 @@ export default class FPPRG {
   awaitResolved = async (id: string): Promise<Resolved> => {
     const resolved = await this.getResolved(id)
     if (!resolved) {
+      const process = await this.getProcess(id)
+      if (!process) throw new Error('Not found')
       await new Promise<void>(async (resolve, reject) => {
         const ctx = { resolved: false }
         const unsub = this.db.listen((evt, data) => {
@@ -691,8 +707,8 @@ export default class FPPRG {
             }
           }
         })
-        console.debug(`awaiting ${id}`)
-        await this.db.send('work-queue', { id })
+        console.debug(`Awaiting ${process.type} (${id})`)
+        await this.db.send('work-queue', { id, priority: - (await process.dependencies()) })
         setTimeout(() => {
           if (!ctx.resolved) {
             ctx.resolved = true

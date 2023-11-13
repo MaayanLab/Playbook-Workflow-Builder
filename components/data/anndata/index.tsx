@@ -53,6 +53,7 @@ export const AnnDataFromFile = MetaNode('AnnDataFromFile')
   .resolve(async (props) => await python(
     'components.data.anndata.anndata',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`
@@ -70,6 +71,7 @@ export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFrom
   .resolve(async (props) => await python(
     'components.data.anndata.anndata_from_gene_count_matrix_and_metadata_matrix',
     { kargs: [props.inputs.gene_count_matrix, props.inputs.metadata_matrix] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `An AnnData file was prepared from the input data${props.inputs && props.inputs.gene_count_matrix.description ? ` containing ${props.inputs.gene_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`

@@ -165,7 +165,7 @@ export type MyRegulatoryElementSetInfo = z.infer<typeof MyRegulatoryElementSetIn
 
 export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
   .meta({
-    label: 'RegulatoryElementSetInfo',
+    label: 'Regulatory Element Set Info',
     description: '',
     icon: [datafile_icon]
   })

@@ -10,6 +10,7 @@ import { fileFromStream } from  '@/components/core/file/api/upload'
 import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
+import { NotFoundError } from '@/spec/error'
 
 const CTDResponseC = z.object({
   "highlyConnectedGenes": z.any(),
@@ -68,7 +69,7 @@ export async function getCTDUseCustomMatrix(formData): Promise<CTDResponse> {
 
 export const CTD_FileDownload = MetaNode('CTD_FileDownload')
   .meta({
-    label: 'CTD_FileDownload',
+    label: 'CTD File Download',
     description: '',
     icon: [datafile_icon]
   })
@@ -102,8 +103,8 @@ export const CTD_FileDownload = MetaNode('CTD_FileDownload')
 
 export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
   .meta({
-    label: `Execute_CTD_Precalculations`,
-    description: "Execute CTD Precalculations using a custom geme list and ajd. matrix file in order to get am RData file for the final step."
+    label: `CTD Precalculations With Custom Matrix`,
+    description: "Execute CTD Precalculations using a custom gene list and ajd. matrix file in order to create an RData file and get the final CTD response."
   })
   .inputs({ ctdPrecalculationsFileURLs: CTDPrecalculationsFileURLs })
   .output(CTD_FileDownload)
@@ -128,7 +129,7 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
 
   export const CTDResponseInfo = MetaNode('CTDResponseInfo')
   .meta({
-    label: 'CTDResponseInfo',
+    label: 'CTD Response Info',
     description: '',
     icon: [datafile_icon]
   })
@@ -145,8 +146,8 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
 
   export const CTD_UseCustomMatrix = MetaNode('CTD_UseCustomMatrix')
   .meta({
-    label: `CTD_UseCustomMatrix`,
-    description: "Execute CTD Precalculations using a custom geme list and ajd. matrix file in order to get am RData file for the final step."
+    label: `CTD Response With Custom Matrix`,
+    description: "Get CTD Reponse using a custom gene list, ajd. matrix file and RData file. Use the \"CTD Precalculations With Custom Matrix\" card to create the custom  RData file.!"
   })
   .inputs({ ctdUseCustomMatrixFileURLs: CTDUseCustomMatrixFileURLs })
   .output(CTDResponseInfo)
@@ -161,7 +162,13 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
     formData.append('customRData', rDataFileReader, rDataFile.filename);
 
-    return await getCTDUseCustomMatrix(formData);
+    let resposne = await getCTDUseCustomMatrix(formData);
+    if(resposne.guiltyByAssociationGenes == null || resposne.highlyConnectedGenes == null || resposne.jsonGraph == null){
+      throw new NotFoundError();
+    }
+    return resposne;
+
+
   }).story(props =>   
     "The three files where send to the CTD API for precalculations."
   ).build()
@@ -237,7 +244,7 @@ export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
 
 export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
-    label: `GeneSet_CTD_String`,
+    label: `CTD String For Gene Set`,
     description: "Get a CTD response for a set of genes for graph type string."
   })
   .inputs({ geneset: GeneSet })
@@ -247,7 +254,11 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
       "graphType": "string",
       "geneList": props.inputs.geneset.set
     }
-    return await getCTDGenSetResponse(JSON.stringify(requestBody));
+    let resposne = await getCTDGenSetResponse(JSON.stringify(requestBody));
+    if(resposne.guiltyByAssociationGenes == null || resposne.highlyConnectedGenes == null || resposne.jsonGraph == null){
+      throw new NotFoundError();
+    }
+    return resposne;
   }).story(props =>
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
@@ -272,7 +283,7 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
-    label: `GenesFile_CTD_String`,
+    label: `CTD String For Genes Set File`,
     description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
     icon: [file_transfer_icon]
   })
@@ -284,7 +295,11 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
-    return await getCTDFileResponse(formData);
+    let resposne = await getCTDFileResponse(formData);
+    if(resposne.guiltyByAssociationGenes == null || resposne.highlyConnectedGenes == null || resposne.jsonGraph == null){
+      throw new NotFoundError();
+    }
+    return resposne;
   })
   .story(props => ``)
   .build()

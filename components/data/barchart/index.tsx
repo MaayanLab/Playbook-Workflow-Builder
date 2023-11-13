@@ -16,6 +16,7 @@ export const BarChartsFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, S
     .resolve(async (props) => await python(
       'components.data.barchart.createbarchart',
       { kargs: [props.inputs.terms], kwargs: { terms: ScoredT.meta.label } },
+      message => props.notify({ type: 'info', message }),
     ))
     .story(props =>
       `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a bar chart was created${''/* [FIGURE]*/}.`

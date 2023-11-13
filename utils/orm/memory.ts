@@ -24,16 +24,16 @@ export class MemoryDatabase implements DbDatabase {
     }
   }
 
-  send = async (queue: string, work: unknown) => {
+  send = async (queue: string, work: { id: string, priority?: number }) => {
     this.notify(`boss:${queue}`, work)
   }
 
-  work = async (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => {
-    return this.listen(async (evt, data: unknown) => {
+  work = async (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => {
+    return this.listen(async (evt, data) => {
       if (evt === `boss:${queue}`) {
         const { id } = z.object({ id: z.string() }).parse(data)
         if (!(id in this.active)) {
-          this.active[id] = cb({ data }).finally(() => { delete this.active[id] })
+          this.active[id] = cb({ data: { id } }).finally(() => { delete this.active[id] })
         }
         return await this.active[id]
       }

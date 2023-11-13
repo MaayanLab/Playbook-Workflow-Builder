@@ -26,7 +26,7 @@ export class ProcessError extends Error {
  * @param script: of the form python_file.py:func_in_file
  * @param args: The kwargs to provide to the file
  */
-export default function python<T>(pathspec: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }): Promise<T> {
+export default function python<T>(pathspec: string, args: { kargs?: unknown[], kwargs?: Record<string, unknown> }, callback?: (data: string) => void): Promise<T> {
   if (typeof window !== 'undefined') throw new Error("python is server side only")
   const spawn = typeof window === 'undefined' ? (require('child_process') as typeof child_process_type).spawn : undefined
   const path = typeof window === 'undefined' ? require('path') as typeof path_type : undefined
@@ -44,16 +44,12 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
       pathspec,
     ], { env: { ...process.env } })
     let stdout = ''
-    let stderr = ''
     proc.stdout.on('data', (chunk: string) => { stdout += chunk })
-    proc.stderr.on('data', (chunk: string) => { stderr += chunk })
+    proc.stderr.on('data', callback !== undefined ? (chunk) => callback(chunk.toString()) : (chunk: string) => { console.warn(`[${pathspec}]: ${chunk.toString()}`) })
     proc.on('close', (code) => {
       if (code !== 0) {
-        reject(new ProcessError(`[${pathspec}]: ${stderr || `Process exited with unexpected code ${code}`}`, code))
+        reject(new ProcessError(`[${pathspec}]: ${`Process exited with unexpected code ${code}`}`, code))
       } else {
-        if (stderr) {
-          console.warn(`[${pathspec}]: ${stderr}`)
-        }
         try {
           resolve(JSON.parse(stdout))
         } catch (e) {

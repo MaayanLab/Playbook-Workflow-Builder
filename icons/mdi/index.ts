@@ -7,6 +7,7 @@ import { mdiChartBar } from '@mdi/js'; export const barchart_icon = { path: mdiC
 import { mdiChartBoxOutline } from '@mdi/js'; export const plot_icon = { path: mdiChartBoxOutline, title: 'Plot', size: 24 }
 import { mdiConnection } from '@mdi/js'; export const connection_icon = { path: mdiConnection, title: 'Connect', size: 24 }
 import { mdiDna } from '@mdi/js'; export const gene_icon = { path: mdiDna, title: 'Gene', size: 24 }
+import { mdiDolphin } from '@mdi/js'; export const protein_icon = { path: mdiDolphin, title: 'Protein', size: 24 }
 import { mdiDownloadBoxOutline } from '@mdi/js'; export const download_icon = { path: mdiDownloadBoxOutline, title: 'Download', size: 24 }
 import { mdiEmoticonCryOutline } from '@mdi/js'; export const disease_icon = { path: mdiEmoticonCryOutline, title: 'Disease', size: 24 }
 import { mdiFile } from '@mdi/js'; export const file_icon = { path: mdiFile, title: 'File', size: 24 }

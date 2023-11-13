@@ -370,6 +370,7 @@ export const EnrichrTermSearchT = [
       label: `Extract ${bg.termLabel} ${bg.termAssociation} the Term Search`,
       icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Terms from the ${bg.label} Library`,
+      hidden: 'hidden' in bg && bg.hidden === true,
     })
     .inputs({ searchResults: EnrichrTermSearchResults })
     .output(output)

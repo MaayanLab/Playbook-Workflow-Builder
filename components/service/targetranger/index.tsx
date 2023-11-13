@@ -21,6 +21,7 @@ export const TargtRangerScreenTargetsT = [
       return await python(
         'components.service.targetranger.targetscreener',
         { kargs: [props.inputs.input], kwargs: { bg } },
+        message => props.notify({ type: 'info', message }),
       )
     })
     .story(props => `Significantly over-expressed genes when compared to normal tissue in ${label} [${ref}] were identified.`)

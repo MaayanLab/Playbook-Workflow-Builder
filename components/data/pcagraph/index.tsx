@@ -17,7 +17,8 @@ export const PCAGraphWithNoMeta = MetaNode('PCAGraphWithoutMetadata')
   .output(PlotlyPlot)
   .resolve(async (props) => await python(
     'components.data.pcagraph.createpcanometa',
-    { kargs: [props.inputs.matrix]  },
+    { kargs: [props.inputs.matrix] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then visualized as a PCA plot.`
@@ -34,7 +35,8 @@ export const PCAGraphWithNoMeta = MetaNode('PCAGraphWithoutMetadata')
   .output(PlotlyPlot)
   .resolve(async (props) => await python(
     'components.data.pcagraph.createmetapcagraph',
-    { kargs: [props.inputs.anndata]  },
+    { kargs: [props.inputs.anndata] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The AnnData file was then visualized as a PCA graph.`

@@ -18,7 +18,8 @@ export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
   .output(PlotlyPlot)
   .resolve(async (props) => await python(
     'components.data.librarysize.createlibrarysize',
-    { kargs: [props.inputs.matrix]  },
+    { kargs: [props.inputs.matrix] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then visualized as a bar plot representing library sizes.`
@@ -39,6 +40,7 @@ export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
   .resolve(async (props) => await python(
     'components.data.librarysize.createlibrarysizefromanndata',
     { kargs: [props.inputs.anndata] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The AnnData file was then visualized as a bar plot representing library sizes.`

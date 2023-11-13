@@ -27,7 +27,7 @@ publicPlaybooks.forEach(playbook => {
   ].join(' '))
 })
 
-export const PublicPlaybooks = API('/api/v1/public/playbooks')
+export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
   .query(z.object({
     search: z.string().optional(),
     inputs: z.string().optional(),
@@ -80,7 +80,7 @@ export const PublicPlaybooks = API('/api/v1/public/playbooks')
   })
   .build()
 
-export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
+export const PublicUserPlaybooks = API.get('/api/v1/public/user/playbooks')
   .query(z.object({
     search: z.string().optional(),
     inputs: z.string().optional(),
@@ -122,7 +122,7 @@ export const PublicUserPlaybooks = API('/api/v1/public/user/playbooks')
   })
   .build()
 
-export const UserPlaybooks = API('/api/v1/user/playbooks')
+export const UserPlaybooks = API.get('/api/v1/user/playbooks')
   .query(z.object({
     skip: z.number().optional().transform(v => v ?? 0),
     limit: z.number().optional().transform(v => v ?? 50),
@@ -139,7 +139,7 @@ export const UserPlaybooks = API('/api/v1/user/playbooks')
   })
   .build()
 
-export const UserPlaybook = API('/api/v1/user/playbooks/[id]')
+export const UserPlaybook = API.get('/api/v1/user/playbooks/[id]')
   .query(z.object({
     id: z.string(),
   }))
@@ -178,7 +178,7 @@ export const UserPlaybook = API('/api/v1/user/playbooks/[id]')
   })
   .build()
 
-export const UpdateUserPlaybook = API('/api/v1/user/playbooks/[id]/update')
+export const UpdateUserPlaybook = API.post('/api/v1/user/playbooks/[id]/update')
   .query(z.object({
     id: z.string(),
   }))
@@ -202,7 +202,7 @@ export const UpdateUserPlaybook = API('/api/v1/user/playbooks/[id]/update')
     fpl = await fpprg.upsertFPL(fpl)
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) throw new UnauthorizedError()
-    const playbookInputs = fpl.resolve().map(cell => krg.getProcessNode(cell.process.type)).filter(node => 'prompt' in node).map(node => node.output.spec).join(', ')
+    const playbookInputs = fpl.resolve().map(cell => krg.getProcessNode(cell.process.type)).filter(node => 'prompt' in node && dict.isEmpty(node.inputs)).map(node => node.output.spec).join(', ')
     const playbookOutputs = fpl.resolve().filter(cell => cell.cell_metadata?.data_visible === true).map(cell => krg.getProcessNode(cell.process.type).output.spec).join(', ')
     await db.objects.user_playbook.delete({
       where: {
@@ -236,7 +236,7 @@ export const UpdateUserPlaybook = API('/api/v1/user/playbooks/[id]/update')
   })
   .build()
 
-export const PublishUserPlaybook = API('/api/v1/user/playbooks/[id]/publish')
+export const PublishUserPlaybook = API.post('/api/v1/user/playbooks/[id]/publish')
   .query(z.object({
     id: z.string(),
   }))
@@ -258,7 +258,7 @@ export const PublishUserPlaybook = API('/api/v1/user/playbooks/[id]/publish')
   })
   .build()
 
-export const DeleteUserPlaybook = API('/api/v1/user/playbooks/[id]/delete')
+export const DeleteUserPlaybook = API.post('/api/v1/user/playbooks/[id]/delete')
   .query(z.object({
     id: z.string(),
   }))

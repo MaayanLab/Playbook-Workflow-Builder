@@ -18,7 +18,7 @@ export default function App() {
     // the nodes we've selected in the apply process section
     selected: Record<number, boolean>,
     // all the nodes, their types, and data
-    nodes: Record<number, { id: number, type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown> } }>,
+    nodes: Record<number, { id: number, type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown>, data: string } }>,
   }>({
     latest: 0,
     current: 0,
@@ -30,7 +30,7 @@ export default function App() {
    * This is a helper for adding a new node, if the current node doesn't have a type (empty)
    *  we'll just replace that one, otherwise we create a new node, add it, select it, and make it current.
    */
-  const appendData = React.useCallback((add: { type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown> } }) => {
+  const appendData = React.useCallback((add: { type: string, data: string, prompt?: { type: string, inputs: Record<string, unknown>, data: string } }) => {
     setData(data => data.nodes[data.current].type ? ({ // our current node has data, add a new one
       ...data,
       latest: data.latest+1,
@@ -64,26 +64,65 @@ export default function App() {
     const promptNode = krg.getPromptNode(currentNode.prompt.type)
     const Prompt = promptNode.prompt
     promptNodeView = <Prompt
+      data={currentNode.prompt.data ? JSON.parse(currentNode.prompt.data) : undefined}
+      output={currentNode.data ? JSON.parse(currentNode.data) : undefined}
       inputs={currentNode.prompt.inputs}
-      submit={(output) => {
-        setData((data) => ({
-          ...data,
-          nodes: {
-            ...data.nodes,
-            [data.current]: {
-              ...data.nodes[data.current],
-              id: data.current,
-              type: promptNode.output.spec,
-              data: promptNode.output.codec.encode(output)
+      submit={async (promptData) => {
+        if (!currentNode.prompt) return
+        setData((data) => {
+          return {
+            ...data,
+            nodes: {
+              ...data.nodes,
+              [data.current]: {
+                ...data.nodes[data.current],
+                prompt: {
+                  ...data.nodes[data.current].prompt ?? { type: '', data: '', inputs: {} },
+                  data: JSON.stringify(promptNode.codec.encode(promptData)),
+                },
+              },
             },
-          },
-        }))
+          }
+        })
+        setLoading(() => true)
+        try {
+          const req = await fetch(`/api/resolver`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              spec: promptNode.spec,
+              data: promptNode.codec.encode(promptData),
+              inputs: currentNode.prompt.inputs,
+            }),
+          })
+          const res = JSON.stringify(await req.json())
+          setData(data => ({
+            ...data,
+            nodes: {
+              ...data.nodes,
+              [data.current]: {
+                ...data.nodes[data.current],
+                data: res,
+              },
+            },
+          }))
+        } catch (e) {
+          appendData({
+            type: 'Error',
+            data: JSON.stringify((e as Error).toString()),
+          })
+        } finally {
+          setLoading(() => false)
+        }
       }}
     />
   }
   if (currentNode.data && dataNode) {
     try {
-      dataNodeView = dataNode.view(dataNode.codec.decode(currentNode.data))
+      dataNodeView = dataNode.view(JSON.parse(currentNode.data))
     } catch (e) {
       dataNodeView = <div>Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
     }
@@ -117,16 +156,16 @@ export default function App() {
                   )}
                   onClick={async () => {
                     if ('prompt' in proc) {
-                      const inputs: Record<string, string | string[]> = {}
+                      const inputs: Record<string, unknown> = {}
                       dict.items(proc.inputs).forEach(({ key, value }) => {
                         if (Array.isArray(value)) {
                           inputs[key] = []
                           dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                            (inputs[key] as string[]).push(data.nodes[id].data)
+                            (inputs[key] as string[]).push(JSON.parse(data.nodes[id].data))
                           })
                         } else {
                           dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                            inputs[key] = data.nodes[id].data
+                            inputs[key] = JSON.parse(data.nodes[id].data)
                           })
                         }
                       })
@@ -136,28 +175,36 @@ export default function App() {
                         prompt: {
                           type: proc.spec,
                           inputs,
+                          data: '',
                         },
                       })
                     } else {
                       setLoading(() => true)
-                      const formData = new FormData()
+                      const inputs: Record<string, unknown> = {}
                       dict.items(proc.inputs).forEach(({ key, value }) => {
                         if (Array.isArray(value)) {
                           dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                            formData.append(key, JSON.stringify(data.nodes[id].data))
+                            inputs[key] = JSON.parse(data.nodes[id].data)
                           })
                         } else {
                           dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                            formData.append(key, JSON.stringify(data.nodes[id].data))
+                            inputs[key] = JSON.parse(data.nodes[id].data)
                           })
                         }
                       })
                       try {
-                        const req = await fetch(`/api/resolver/${proc.spec}`, {
+                        const req = await fetch(`/api/resolver`, {
                           method: 'POST',
-                          body: formData,
+                          headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            spec: proc.spec,
+                            inputs,
+                          }),
                         })
-                        const res = await req.json()
+                        const res = JSON.stringify(await req.json())
                         appendData({
                           type: req.status === 200 ? proc.output.spec : 'Error',
                           data: res,
@@ -165,7 +212,7 @@ export default function App() {
                       } catch (e) {
                         appendData({
                           type: 'Error',
-                          data: (e as Error).toString(),
+                          data: JSON.stringify((e as Error).toString()),
                         })
                       } finally {
                         setLoading(() => false)
@@ -180,16 +227,39 @@ export default function App() {
           </div>
         </div>
         <div className={styles.Data}>
-          <div className="prose">
-            <h2>Current Data</h2>
-          </div>
           <div style={{
             flex: '1 0 auto',
             height: 0,
             overflow: 'auto',
           }}>
+            {currentNode.prompt ? <>
+              <span className="prose"><h2>Current Prompt Data</h2></span>
+              <JsonEditor
+                value={currentNode.prompt.data}
+                onValueChange={value => {
+                  setData(data => ({ ...data,
+                    nodes: {
+                      ...data.nodes,
+                      [data.current]: {
+                        ...data.nodes[data.current],
+                        prompt: {
+                          ...data.nodes[data.current].prompt ?? { type: '', inputs: {} },
+                          data: value,
+                        },
+                      },
+                    },
+                  }))
+                }}
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  border: '1px solid black',
+                }}
+              />
+            </> : null}
+            <span className="prose"><h2>Current Output</h2></span>
             <JsonEditor
-              value={JSON.stringify(currentNode.data)}
+              value={currentNode.data}
               onValueChange={value => {
                 setData(data => ({ ...data,
                   nodes: {

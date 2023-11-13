@@ -1,4 +1,5 @@
 import React from 'react'
+import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
 import { DrugSet, GeneSet } from '@/components/core/input/set'
 import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
@@ -28,6 +29,9 @@ export const TopKScoredT = [
       label: `Top ${ScoredT.meta.label}`,
       description: `Select the top ${ScoredT.meta.label}`,
     })
+    .codec(z.object({
+      k: z.number(),
+    }))
     .inputs({ scored: ScoredT })
     .output(ScoredT)
     .prompt(props => {
@@ -37,8 +41,8 @@ export const TopKScoredT = [
             {[10, 20, 50, 100].map(k =>
               <button
                 key={k}
-                className={classNames('btn', {'btn-primary': props.output?.length === k, 'btn-secondary': props.output?.length !== k})}
-                onClick={() => {props.submit(props.inputs.scored.slice(0, k))}}
+                className={classNames('btn', {'btn-primary': props.data?.k === k, 'btn-secondary': props.data?.k !== k})}
+                onClick={() => {props.submit({ k })}}
               >Top {k}</button>
             )}
           </div>
@@ -46,28 +50,25 @@ export const TopKScoredT = [
         </div>
       )
     })
-    .story(props => `The top ${props.output?.length || 'K'} ${ScoredT.meta.label} were selected.`)
+    .resolve(async (props) => {
+      return props.inputs.scored.slice(0, props.data.k)
+    })
+    .story(props => `The top ${props.data?.k || 'K'} ${ScoredT.meta.label} were selected.`)
     .build(),
   MetaNode(`OneScoredT[${ScoredT.spec}]`)
     .meta({
       label: `Select One ${TermT.meta.label}`,
       description: `Select one ${TermT.meta.label}`,
     })
+    .codec(z.string())
     .inputs({ scored: ScoredT })
     .output(TermT)
     .prompt(props => {
       const scored = props.inputs.scored
-      const [selected, setSelected] = React.useState<number | undefined>()
+      const [selected, setSelected] = React.useState<string | undefined>(props.data)
       React.useEffect(() => {
         if (props.output !== undefined) {
-          const index = scored.findIndex(({ term }) => term === props.output)
-          if (index >= 0) {
-            setSelected(index)
-            return
-          }
-        }
-        if (scored.length > 0) {
-          setSelected(0)
+          setSelected(props.output)
         }
       }, [props.output, scored])
       return (
@@ -79,11 +80,11 @@ export const TopKScoredT = [
               <div
                 className="text-center block"
                 onClick={evt => {
-                  setSelected(row)
+                  setSelected(scored[row].term)
                   props.submit(scored[row].term)
                 }}
               >
-                <input type="radio" checked={selected === row} />
+                <input type="radio" checked={selected === scored[row].term} />
               </div>
             }
             numRows={scored.length}
@@ -102,8 +103,58 @@ export const TopKScoredT = [
         </div>
       )
     })
+    .resolve(async (props) => {
+      if (!props.inputs.scored.some(({ term }) => term === props.data)) {
+        throw new Error('Please select a gene from the table')
+      }
+      return props.data
+    })
     .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
     .build()
+])
+
+export const SelectScoredT = [
+  { ScoredT: ScoredDiseases },
+  { ScoredT: ScoredDrugs },
+  { ScoredT: ScoredGenes },
+  { ScoredT: ScoredPathways },
+  { ScoredT: ScoredPhenotypes },
+  { ScoredT: ScoredTissues },
+].flatMap(({ ScoredT }) => [
+  MetaNode(`SelectFromScored[${ScoredT.spec}, up]`)
+    .meta({
+      label: `Up ${ScoredT.meta.label}`,
+      description: `Consider only up ${ScoredT.meta.label}`,
+    })
+    .inputs({ scored: ScoredT })
+    .output(ScoredT)
+    .resolve(async (props) => {
+      const scored = props.inputs.scored.filter(({ zscore }) => +zscore > 0)
+      scored.sort((a, b) => +b.zscore - +a.zscore)
+      return scored
+    })
+    .story(props =>
+      `Up ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`
+    )
+    .build(),
+  MetaNode(`SelectFromScored[${ScoredT.spec}, down]`)
+    .meta({
+      label: `Down ${ScoredT.meta.label}`,
+      description: `Consider only down ${ScoredT.meta.label}`,
+    })
+    .inputs({ scored: ScoredT })
+    .output(ScoredT)
+    .resolve(async (props) => {
+      const scored = props.inputs.scored
+        .filter(({ zscore }) => +zscore < 0)
+        .map(({ term, zscore }) => ({ term, zscore: -zscore }))
+      scored.sort((a, b) => +b.zscore - +a.zscore)
+      return scored
+    })
+    .story(props =>
+      `Down ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`
+    )
+    .build(),
 ])
 
 export const SetFromScoredT = [
@@ -127,21 +178,15 @@ export const SetFromScoredT = [
       label: `Select One ${TermT.meta.label}`,
       description: `Select one ${TermT.meta.label}`,
     })
+    .codec(z.string())
     .inputs({ set: SetT })
     .output(TermT)
     .prompt(props => {
       const set = props.inputs.set.set
-      const [selected, setSelected] = React.useState<number | undefined>()
+      const [selected, setSelected] = React.useState<string | undefined>(props.data)
       React.useEffect(() => {
         if (props.output !== undefined) {
-          const index = set.findIndex((term) => term === props.output)
-          if (index >= 0) {
-            setSelected(index)
-            return
-          }
-        }
-        if (set.length > 0) {
-          setSelected(0)
+          setSelected(props.output)
         }
       }, [props.output, set])
       return (
@@ -153,11 +198,11 @@ export const SetFromScoredT = [
               <div
                 className="text-center block"
                 onClick={evt => {
-                  setSelected(row)
+                  setSelected(set[row])
                   props.submit(set[row])
                 }}
               >
-                <input type="radio" checked={selected === row} />
+                <input type="radio" checked={selected === set[row]} />
               </div>
             }
             numRows={set.length}
@@ -172,6 +217,12 @@ export const SetFromScoredT = [
         </div>
       )
     })
+    .resolve(async (props) => {
+      if (!props.inputs.set.set.some((term) => term === props.data)) {
+        throw new Error('Please select a gene from the table')
+      }
+      return props.data
+    })
     .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
     .build(),
   MetaNode(`SomeSetT[${SetT.spec}]`)
@@ -179,11 +230,12 @@ export const SetFromScoredT = [
       label: `Select Some ${pluralize(TermT.meta.label)}`,
       description: `Select some ${pluralize(TermT.meta.label)}`,
     })
+    .codec(z.record(z.string(), z.literal(true)))
     .inputs({ set: SetT })
     .output(SetT)
     .prompt(props => {
       const set = props.inputs.set.set
-      const [selected, setSelected] = React.useState({} as Record<string, true>)
+      const [selected, setSelected] = React.useState(props.data ? props.data : {} as Record<string, true>)
       React.useEffect(() => {
         if (props.output !== undefined) {
           const selected_ = {} as Record<string, true>
@@ -221,13 +273,21 @@ export const SetFromScoredT = [
             />
           </Table>
           <button className="bp5-button bp5-large" onClick={async () => {
-            props.submit({
-              description: props.inputs.set.description ? `Filtered ${props.inputs.set.description}` : undefined,
-              set: props.inputs.set.set.filter((item) => !selected[item])
-            })
+            props.submit(selected)
           }}>Submit</button>
         </div>
       )
+    })
+    .resolve(async (props) => {
+      const set = new Set()
+      props.inputs.set.set.forEach(item => set.add(item))
+      if (Object.keys(props.data).some(key => !set.has(key))) {
+        throw new Error('Please select genes from the table')
+      }
+      return {
+        description: props.inputs.set.description ? `Filtered ${props.inputs.set.description}` : undefined,
+        set: props.inputs.set.set.filter((item) => !props.data[item]),
+      }
     })
     .story(props => props.output ? `Some genes were selected for further investigation.` : '')
     .build(),

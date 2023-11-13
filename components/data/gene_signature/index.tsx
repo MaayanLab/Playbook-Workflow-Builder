@@ -55,6 +55,7 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
   .resolve(async (props) => await python(
     'components.data.gene_signature.gene_signature',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature.`)
   .build()
@@ -68,7 +69,8 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
   .output(GMT)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gmt_from_sig',
-    { kargs: [props.inputs.sig] }
+    { kargs: [props.inputs.sig] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'} was reformatted into gene matrix transpose format.`)
   .build()
@@ -113,6 +115,7 @@ export const ScoredGenesFromSignature = MetaNode('ScoredGenesFromSignature')
   .resolve(async (props) => await python(
     'components.data.gene_signature.scored_genes_from_sig',
     { kargs: [props.inputs.sig] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `Significant genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`)
   .build()

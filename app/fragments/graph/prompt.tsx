@@ -1,19 +1,30 @@
 import React from 'react'
 import { z } from 'zod'
 import { useRouter } from 'next/router'
-import { PromptMetaNode } from '@/spec/metanode'
+import { DataMetaNode, PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
+import { TimeoutError } from '@/spec/error'
 
-export default function Prompt({ session_id, krg, processNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
+export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
-  const story = useStory()
+  const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const Component = processNode.prompt
+  const data = React.useMemo(() => {
+    // invalidate data if it no longer matches the codec
+    //  which could happen if an older verison of the metanode
+    //  was used originally
+    try {
+      if (head.process.data !== null) {
+        return processNode.codec.decode(head.process.data.value)
+      }
+    } catch (e) {}
+  }, [head])
   return (
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
@@ -21,13 +32,15 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
         <p className="prose">{storyText}</p>
         <p className="prose text-sm">{storyCitations}</p>
       </div>
-      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
           session_id={session_id}
+          data={data}
           inputs={inputs}
           output={output}
-          submit={async (output) => {
+          submit={async (data) => {
             const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
               headers: {
                 'Content-Type': 'application/json',
@@ -36,8 +49,8 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
               body: JSON.stringify({
                 type: head.process.type,
                 data: {
-                  type: processNode.output.spec,
-                  value: processNode.output.codec.encode(output),
+                  type: processNode.spec,
+                  value: processNode.codec.encode(data),
                 },
                 inputs: head.process.inputs,
               })
@@ -46,7 +59,7 @@ export default function Prompt({ session_id, krg, processNode, output, id, head,
             router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
-        : <div>Waiting for input(s)</div>}
+        : <div>Waiting for input</div>}
     </div>
   )
 }

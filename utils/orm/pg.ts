@@ -6,6 +6,7 @@ import { Create, DbDatabase, DbTable, Delete, Find, FindMany, OrderBy, Update, U
 import PgBoss from 'pg-boss'
 import createSubscriber, { Subscriber } from 'pg-listen'
 import * as db from '@/db/orm'
+import { z } from 'zod'
 
 /**
  * Easy prepared statement building.
@@ -84,15 +85,37 @@ export class PgDatabase implements DbDatabase {
     }
   }
 
-  send = async (queue: string, work: unknown) => {
-    await this.boss.send(queue, work as any)
+  send = async (queue: string, work: { id: string, priority?: number }) => {
+    await this.boss.send(queue, { id: work.id }, { singletonKey: work.id, priority: work.priority ?? 0 })
   }
 
-  work = async (queue: string, opts: unknown, cb: (work: unknown) => Promise<void>) => {
+  work = async (queue: string, opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => {
     await this.boss.work(queue, opts as any, cb)
     return () => {
       this.boss.stop().catch(error => console.error(error))
     }
+  }
+
+  jobs = async () => {
+    const results = await this.raw(subst => `
+      select
+        name,
+        priority,
+        data,
+        state,
+        createdon,
+        completedon
+      from pgboss.job
+      where data is not null
+    `)
+    return z.array(z.object({
+      name: z.string(),
+      priority: z.number(),
+      data: z.any(),
+      state: z.string(),
+      createdon: z.date(),
+      completedon: z.date().nullable(),
+    })).parse(results.rows)
   }
 }
 

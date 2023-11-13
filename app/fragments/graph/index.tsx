@@ -94,7 +94,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   fallback[`/api/suggest`] = suggestions
   return {
     props: {
-      fallback,
+      fallback: JSON.parse(JSON.stringify(fallback)),
       extend,
       suggest,
     }

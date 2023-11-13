@@ -6,7 +6,7 @@ import db from '@/app/db'
 import emitter from '@/app/emitter'
 import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
 
-export const UserIntegrationsCAVATICA = API('/api/v1/user/integrations/cavatica')
+export const UserIntegrationsCAVATICA = API.get('/api/v1/user/integrations/cavatica')
   .query(z.object({}))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
@@ -28,7 +28,7 @@ export const UserIntegrationsCAVATICA = API('/api/v1/user/integrations/cavatica'
   })
   .build()
 
-export const UserIntegrationsCAVATICAUpdate = API('/api/v1/user/integrations/cavatica/update')
+export const UserIntegrationsCAVATICAUpdate = API.post('/api/v1/user/integrations/cavatica/update')
   .query(z.object({}))
   .body(z.object({
     cavatica_api_key: z.string(),
@@ -55,7 +55,7 @@ export const UserIntegrationsCAVATICAUpdate = API('/api/v1/user/integrations/cav
   })
   .build()
 
-export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cavatica/launch')
+export const UserIntegrationsCAVATICALaunch = API.post('/api/v1/user/integrations/cavatica/launch')
   .query(z.object({}))
   .body(z.object({}))
   .call(async (inputs, req, res) => {
@@ -98,7 +98,7 @@ export const UserIntegrationsCAVATICALaunch = API('/api/v1/user/integrations/cav
   })
   .build()
 
-export const UserIntegrationsCAVATICAStatus = API('/api/v1/user/integrations/cavatica/[session_id]/status')
+export const UserIntegrationsCAVATICAStatus = API.get('/api/v1/user/integrations/cavatica/[session_id]/status')
   .query(z.object({
     session_id: z.string(),
   }))
@@ -111,7 +111,7 @@ export const UserIntegrationsCAVATICAStatus = API('/api/v1/user/integrations/cav
   })
   .build()
 
-export const UserIntegrationsCAVATICADisconnect = API('/api/v1/user/integrations/cavatica/[session_id]/disconnect')
+export const UserIntegrationsCAVATICADisconnect = API.post('/api/v1/user/integrations/cavatica/[session_id]/disconnect')
   .query(z.object({
     session_id: z.string(),
   }))

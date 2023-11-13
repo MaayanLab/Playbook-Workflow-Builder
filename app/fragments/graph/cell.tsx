@@ -11,7 +11,7 @@ const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 export default function Cell({ session_id, krg, id, head, autoextend }: { session_id?: string, krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { output, outputNode }, error: outputError, mutate } = useMetapathOutput({ session_id, krg, head })
-  const story = useStory()
+  const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
   const View = outputNode ? ({ output }: { output: any }) => outputNode.view(output) : undefined
   return (
@@ -27,6 +27,7 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
             krg={krg}
             head={head}
             processNode={processNode}
+            outputNode={outputNode}
             output={output}
             autoextend={autoextend}
           />

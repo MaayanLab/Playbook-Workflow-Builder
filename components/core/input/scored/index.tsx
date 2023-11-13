@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
+import { Gene, Drug, Primative, Pathway, Phenotype, Tissue, Disease, Variant, RegulatoryElement } from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { weighted_icon } from '@/icons'
 import * as array from '@/utils/array'
@@ -66,3 +66,8 @@ export const ScoredGenes = Scored_T(Gene)
 export const ScoredPathways = Scored_T(Pathway)
 export const ScoredPhenotypes = Scored_T(Phenotype)
 export const ScoredTissues = Scored_T(Tissue)
+export const ScoredVariants = Scored_T(Variant)
+export const ScoredRegulatoryElement = Scored_T(RegulatoryElement)
+
+
+

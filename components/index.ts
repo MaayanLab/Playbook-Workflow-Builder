@@ -49,6 +49,8 @@ export * from "./data/gene_signature"
 components.push("data/gene_signature")
 export * from "./data/log_normalization"
 components.push("data/log_normalization")
+export * from "./data/metabolite_count_matrix"
+components.push("data/metabolite_count_matrix")
 export * from "./data/metadata_matrix"
 components.push("data/metadata_matrix")
 export * from "./data/pca_transformation"

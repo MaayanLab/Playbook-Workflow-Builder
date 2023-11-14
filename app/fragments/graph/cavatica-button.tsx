@@ -11,7 +11,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 export default function CAVATICAButton({ session_id }: { session_id?: string }) {
   const router = useRouter()
   const userSession = useSessionWithId()
-  const { data: userIntegrations } = useAPIQuery(UserIntegrationsCAVATICA, {})
+  const { data: userIntegrations } = useAPIQuery(UserIntegrationsCAVATICA, () => session_id ? {} : null)
   const { trigger: launchCAVATICA } = useAPIMutation(UserIntegrationsCAVATICALaunch, {})
   const { trigger: disconnectCAVATICA } = useAPIMutation(UserIntegrationsCAVATICADisconnect, { session_id })
   return (

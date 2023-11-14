@@ -203,7 +203,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
             </div>
             <div className="inline-flex flex-row">
               <a
-                href="/api/components/core/file/example_geneSetCTD.csv"
+                href="/api/v1/components/service/ctd/example_geneSetCTD.csv"
                 download="example_geneSetCTD.csv"
               >
                 <Bp4Button
@@ -384,7 +384,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
             </div>
             <div className="inline-flex flex-row">
               <a
-                href="/api/components/core/file/example_geneSetCTD.csv"
+                href="/api/v1/components/service/ctd/example_geneSetCTD.csv"
                 download="example_geneSetCTD.csv"
               >
                 <Bp4Button
@@ -433,7 +433,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
             </div>
             <div className="inline-flex flex-row">
               <a
-                href="/api/components/core/file/example_geneSetCTD.csv"
+                href="/api/v1/components/service/ctd/example_geneSetCTD.csv"
                 download="example_geneSetCTD.csv"
               >
                 <Bp4Button
@@ -483,7 +483,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
             </div>
             <div className="inline-flex flex-row">
               <a
-                href="/api/components/core/file/example_geneSetCTD.csv"
+                href="/api/v1/components/service/ctd/example_geneSetCTD.csv"
                 download="example_geneSetCTD.csv"
               >
                 <Bp4Button

@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { FileURL } from '@/components/core/file'
+import { FileURL, FileInput } from '@/components/core/file'
 import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
 import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
@@ -123,6 +123,32 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     return file;
   }).story(props =>   
     "The two files where send to the CTD API for precalculations."
+  ).build()
+
+  export const Execute_CTD_Precalculations_Hybrid = MetaNode('Execute_CTD_Precalculations_Hybrid')
+  .meta({
+    label: `CTD Precalculations - Gene Set & Adj. Matrix File Input`,
+    description: "Execute CTD Precalculations using a custom gene list and ajd. matrix file in order to create an RData file and get the final CTD response."
+  })
+  .inputs({ geneSet: GeneSet, file: FileURL})
+  .output(CTD_FileDownload)
+  .resolve(async (props) => {
+    let geneNamesList = props.inputs.geneSet.set;
+    let adjMatrixFile = props.inputs.file;
+    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
+
+    console.log("geneNamesList: "+JSON.stringify(geneNamesList))
+    console.log("file: "+adjMatrixFile.filename)
+
+    const formData = new FormData();
+    formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
+    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
+
+    const respone = await getCTDPrecalculationsResponse(formData);
+    const file = await uploadFile(await fileFromStream(respone, `derived.${"customRDataFile.RData"}`))
+    return file;
+  }).story(props =>   
+    "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
   ).build()
 
   export const CTDResponseInfo = MetaNode('CTDResponseInfo')

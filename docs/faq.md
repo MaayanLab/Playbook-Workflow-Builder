@@ -41,7 +41,7 @@ Please note only **resolvers** should be operating on files, *views* and *prompt
 
 ```tsx
 import { fileAsStream } from  '@/components/core/file/api/download'
-import { fileFromStream } from  '@/components/core/file/api/upload'
+import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
 import FormData from 'form-data'
 import axios from 'axios'
 
@@ -60,7 +60,7 @@ export const SomeFileOp = MetaNode('SomeFileOp')
       responseType: 'stream',
     })
     // create a new file object from a stream
-    const file = await fileFromStream(res.data, `derived.${props.inputs.file.filename}`)
+    const file = await uploadFile(await fileFromStream(res.data, `derived.${props.inputs.file.filename}`))
     return file
   })
   .story(props => `The performed some operation on the file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''}.`)

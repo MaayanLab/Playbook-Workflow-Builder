@@ -24,8 +24,8 @@
     "start:wes-worker": "NODE_ENV=production ts-node cli/wes-worker.ts",
     "start:ssl": "concurrently \"npm run start -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
     "start": "npx --workspace=app next start",
-    "version": "sed -E -i \"s#maayanlab/playbook-partnership:[0-9\\.]+#maayanlab/playbook-partnership:${npm_package_version}#g\" docker-compose.yaml && docker build -t maayanlab/playbook-partnership:${npm_package_version} .",
-    "postversion": "docker push maayanlab/playbook-partnership:${npm_package_version}"
+    "version": "ts-node cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
+    "postversion": "docker-compose push"
   },
   "dependencies": {
     "@blueprintjs/core": "^5.5.1",

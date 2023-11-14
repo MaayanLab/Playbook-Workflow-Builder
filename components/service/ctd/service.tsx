@@ -10,6 +10,8 @@ import { fileFromStream } from  '@/components/core/file/api/upload'
 import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
+import axios from 'axios'
+import { Readable } from 'stream'
 import { NotFoundError } from '@/spec/error'
 
 const CTDResponseC = z.object({
@@ -41,30 +43,29 @@ export async function getCTDGenSetResponse(strValue: string): Promise<CTDRespons
   return await res.json()
 }
 
-//@ts-ignore
-export async function getCTDFileResponse(formData): Promise<CTDResponse> {
-  const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/file`, {
-    method: 'POST',
-    body: formData
+export async function getCTDFileResponse(formData: FormData): Promise<CTDResponse> {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/file`, formData, {
+    headers: { ...formData.getHeaders() },
+    responseType: 'json',
   })
-  return await res.json()
+  return res.data
 }
 
-//@ts-ignore
-export async function getCTDPrecalculationsResponse(formData): Promise<Readable> {
-  return await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd/getCtdCustomMatrix`, {
-    method: 'POST',
-    body: formData
+export async function getCTDPrecalculationsResponse(formData: FormData): Promise<Readable> {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/getCtdCustomMatrix`, formData, {
+    headers: { ...formData.getHeaders() },
+    responseType: 'stream',
   });
+  if (res.status !== 200) throw new Error(await res.data.read())
+  return res.data
 }
 
-//@ts-ignore
-export async function getCTDUseCustomMatrix(formData): Promise<CTDResponse> {
-  const res = await fetch(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/useCustomMatrix`, {
-    method: 'POST',
-    body: formData
+export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResponse> {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/useCustomMatrix`, formData, {
+    headers: { ...formData.getHeaders() },
+    responseType: 'json',
   });
-  return await res.json()
+  return res.data
 }
 
 export const CTD_FileDownload = MetaNode('CTD_FileDownload')
@@ -111,17 +112,15 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
   .resolve(async (props) => {
     let { geneListFile, adjMatrixFile } = props.inputs.ctdPrecalculationsFileURLs;
 
-    const geneListFileReader: any = await fileAsStream(geneListFile);
-    const adjMatrixFileReader: any = await fileAsStream(adjMatrixFile);
+    const geneListFileReader = await fileAsStream(geneListFile);
+    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
     const formData = new FormData();
     formData.append('geneList', geneListFileReader, geneListFile.filename);
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
     const respone = await getCTDPrecalculationsResponse(formData);
-    if (!respone.ok) throw new Error(await respone.text)
-    if (respone.body === null) throw new Error('An unexpected error occurred')
     //create a new file object from a stream
-    const file = await fileFromStream(respone.body, `derived.${"customRDataFile.RData"}`)
+    const file = await fileFromStream(respone, `derived.${"customRDataFile.RData"}`)
     return file;
   }).story(props =>   
     "The two files where send to the CTD API for precalculations."
@@ -154,21 +153,15 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
   .resolve(async (props) => {
     let { geneListFile, adjMatrixFile, rDataFile } = props.inputs.ctdUseCustomMatrixFileURLs;
 
-    const geneListFileReader: any = await fileAsStream(geneListFile);
-    const adjMatrixFileReader: any = await fileAsStream(adjMatrixFile);
-    const rDataFileReader: any = await fileAsStream(rDataFile);
+    const geneListFileReader = await fileAsStream(geneListFile);
+    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
+    const rDataFileReader = await fileAsStream(rDataFile);
     const formData = new FormData();
     formData.append('csvGenesFile', geneListFileReader, geneListFile.filename);
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
     formData.append('customRData', rDataFileReader, rDataFile.filename);
 
-    let resposne = await getCTDUseCustomMatrix(formData);
-    if(resposne.guiltyByAssociationGenes == null || resposne.highlyConnectedGenes == null || resposne.jsonGraph == null){
-      throw new NotFoundError();
-    }
-    return resposne;
-
-
+    return await getCTDUseCustomMatrix(formData);
   }).story(props =>   
     "The three files where send to the CTD API for precalculations."
   ).build()
@@ -254,11 +247,7 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
       "graphType": "string",
       "geneList": props.inputs.geneset.set
     }
-    let resposne = await getCTDGenSetResponse(JSON.stringify(requestBody));
-    if(resposne.guiltyByAssociationGenes == null || resposne.highlyConnectedGenes == null || resposne.jsonGraph == null){
-      throw new NotFoundError();
-    }
-    return resposne;
+    return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
@@ -273,7 +262,7 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
   .inputs({ file: FileURL })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
-    const fileReader: any = await fileAsStream(props.inputs.file);
+    const fileReader = await fileAsStream(props.inputs.file);
 
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
@@ -290,16 +279,12 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .inputs({ file: FileURL })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
-    const fileReader: any = await fileAsStream(props.inputs.file);
+    const fileReader = await fileAsStream(props.inputs.file);
 
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
-    let resposne = await getCTDFileResponse(formData);
-    if(resposne.guiltyByAssociationGenes == null || resposne.highlyConnectedGenes == null || resposne.jsonGraph == null){
-      throw new NotFoundError();
-    }
-    return resposne;
+    return await getCTDFileResponse(formData);
   })
   .story(props => ``)
   .build()

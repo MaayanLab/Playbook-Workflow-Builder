@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { file_transfer_icon, datafile_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { GraphPlot } from '@/components/viz/graph'
-import { fileFromStream } from  '@/components/core/file/api/upload'
+import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
 import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
@@ -119,8 +119,7 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
     const respone = await getCTDPrecalculationsResponse(formData);
-    //create a new file object from a stream
-    const file = await fileFromStream(respone, `derived.${"customRDataFile.RData"}`)
+    const file = await uploadFile(await fileFromStream(respone, `derived.${"customRDataFile.RData"}`))
     return file;
   }).story(props =>   
     "The two files where send to the CTD API for precalculations."

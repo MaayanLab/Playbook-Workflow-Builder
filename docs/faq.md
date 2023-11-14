@@ -43,7 +43,6 @@ Please note only **resolvers** should be operating on files, *views* and *prompt
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
 import FormData from 'form-data'
-import axios from 'axios'
 
 export const SomeFileOp = MetaNode('SomeFileOp')
   .meta({ label: 'Some File Operation', description: 'Perform an operation' })
@@ -55,6 +54,7 @@ export const SomeFileOp = MetaNode('SomeFileOp')
     // send that file somewhere for processing
     const formData = new FormData()
     formData.append('file', fileReader, props.inputs.file.filename)
+    const { default: axios } = await import('axios')
     const res = await axios.post('https://example.com/upload', formData, {
       headers: { ...formData.getHeaders() },
       responseType: 'stream',

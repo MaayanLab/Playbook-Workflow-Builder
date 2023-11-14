@@ -10,7 +10,6 @@ import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
 import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
-import axios from 'axios'
 import { Readable } from 'stream'
 
 const CTDResponseC = z.object({
@@ -43,6 +42,7 @@ export async function getCTDGenSetResponse(strValue: string): Promise<CTDRespons
 }
 
 export async function getCTDFileResponse(formData: FormData): Promise<CTDResponse> {
+  const { default: axios } = await import('axios')
   const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/file`, formData, {
     headers: { ...formData.getHeaders() },
     responseType: 'json',
@@ -51,6 +51,7 @@ export async function getCTDFileResponse(formData: FormData): Promise<CTDRespons
 }
 
 export async function getCTDPrecalculationsResponse(formData: FormData): Promise<Readable> {
+  const { default: axios } = await import('axios')
   const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/getCtdCustomMatrix`, formData, {
     headers: { ...formData.getHeaders() },
     responseType: 'stream',
@@ -60,6 +61,7 @@ export async function getCTDPrecalculationsResponse(formData: FormData): Promise
 }
 
 export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResponse> {
+  const { default: axios } = await import('axios')
   const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/useCustomMatrix`, formData, {
     headers: { ...formData.getHeaders() },
     responseType: 'json',

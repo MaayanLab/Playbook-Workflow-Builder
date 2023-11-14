@@ -131,99 +131,104 @@ export default function App() {
     <Layout>
       <div className={styles.App}>
         <div className={styles.Process}>
-          <progress className="progress w-100" value={loading ? undefined : 0}></progress>
+          <progress className="progress w-100 h-6" value={loading ? undefined : 0}></progress>
           <div className="prose mb-2">
-            <h2>Apply Process</h2>
+            <h2>Extend From Selected Node(s)</h2>
           </div>
-          <div className="flex flex-col gap-1">
-            {krg.getNextProcess(currentNode.type).map(proc =>
-              <div key={proc.spec} className="whitespace-nowrap">
-                <button
-                  className={[
-                    dict.values(proc.inputs)
-                      .some((i) => array.ensureOne(i).spec === currentNode.type) ? 'font-bold' : '',
-                    'btn btn-sm btn-secondary rounded-sm',
-                  ].join(' ')}
-                  disabled={!array.all(
-                    // all inputs should be satisfiable
-                    dict.values(proc.inputs).map((value) => {
-                      if (Array.isArray(value)) {
-                        return dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).length > 1
-                      } else {
-                        return dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).length == 1
-                      }
-                    })
-                  )}
-                  onClick={async () => {
-                    if ('prompt' in proc) {
-                      const inputs: Record<string, unknown> = {}
-                      dict.items(proc.inputs).forEach(({ key, value }) => {
-                        if (Array.isArray(value)) {
-                          inputs[key] = []
-                          dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                            (inputs[key] as string[]).push(JSON.parse(data.nodes[id].data))
-                          })
-                        } else {
-                          dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                            inputs[key] = JSON.parse(data.nodes[id].data)
-                          })
-                        }
-                      })
-                      appendData({
-                        type: proc.output.spec,
-                        data: '',
-                        prompt: {
-                          type: proc.spec,
-                          inputs,
+          <div className="flex flex-col gap-1 overflow-auto">
+            {krg.getNextProcess(currentNode.type).map(proc => {
+              const disabled = !array.all(
+                // all inputs should be satisfiable
+                dict.values(proc.inputs).map((value) => {
+                  if (Array.isArray(value)) {
+                    return dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).length > 1
+                  } else {
+                    return dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).length == 1
+                  }
+                })
+              )
+              return (
+                <div key={proc.spec} className="whitespace-nowrap">
+                  <div className={classNames('inline-block', { 'tooltip': disabled })} data-tip="Shift+Click multi-inputs">
+                  <button
+                    className={[
+                      dict.values(proc.inputs)
+                        .some((i) => array.ensureOne(i).spec === currentNode.type) ? 'font-bold' : '',
+                      'btn btn-sm btn-secondary rounded-sm',
+                    ].join(' ')}
+                    disabled={disabled}
+                    onClick={async () => {
+                      if ('prompt' in proc) {
+                        const inputs: Record<string, unknown> = {}
+                        dict.items(proc.inputs).forEach(({ key, value }) => {
+                          if (Array.isArray(value)) {
+                            inputs[key] = []
+                            dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
+                              (inputs[key] as string[]).push(JSON.parse(data.nodes[id].data))
+                            })
+                          } else {
+                            dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
+                              inputs[key] = JSON.parse(data.nodes[id].data)
+                            })
+                          }
+                        })
+                        appendData({
+                          type: proc.output.spec,
                           data: '',
-                        },
-                      })
-                    } else {
-                      setLoading(() => true)
-                      const inputs: Record<string, unknown> = {}
-                      dict.items(proc.inputs).forEach(({ key, value }) => {
-                        if (Array.isArray(value)) {
-                          dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
-                            inputs[key] = JSON.parse(data.nodes[id].data)
-                          })
-                        } else {
-                          dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
-                            inputs[key] = JSON.parse(data.nodes[id].data)
-                          })
-                        }
-                      })
-                      try {
-                        const req = await fetch(`/api/resolver`, {
-                          method: 'POST',
-                          headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({
-                            spec: proc.spec,
+                          prompt: {
+                            type: proc.spec,
                             inputs,
-                          }),
+                            data: '',
+                          },
                         })
-                        const res = JSON.stringify(await req.json())
-                        appendData({
-                          type: req.status === 200 ? proc.output.spec : 'Error',
-                          data: res,
+                      } else {
+                        setLoading(() => true)
+                        const inputs: Record<string, unknown> = {}
+                        dict.items(proc.inputs).forEach(({ key, value }) => {
+                          if (Array.isArray(value)) {
+                            dict.keys(data.selected).filter(id => data.nodes[id].type === value[0].spec).forEach(id => {
+                              inputs[key] = JSON.parse(data.nodes[id].data)
+                            })
+                          } else {
+                            dict.keys(data.selected).filter(id => data.nodes[id].type === value.spec).forEach(id => {
+                              inputs[key] = JSON.parse(data.nodes[id].data)
+                            })
+                          }
                         })
-                      } catch (e) {
-                        appendData({
-                          type: 'Error',
-                          data: JSON.stringify((e as Error).toString()),
-                        })
-                      } finally {
-                        setLoading(() => false)
+                        try {
+                          const req = await fetch(`/api/resolver`, {
+                            method: 'POST',
+                            headers: {
+                              'Accept': 'application/json',
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              spec: proc.spec,
+                              inputs,
+                            }),
+                          })
+                          const res = JSON.stringify(await req.json())
+                          appendData({
+                            type: req.status === 200 ? proc.output.spec : 'Error',
+                            data: res,
+                          })
+                        } catch (e) {
+                          appendData({
+                            type: 'Error',
+                            data: JSON.stringify((e as Error).toString()),
+                          })
+                        } finally {
+                          setLoading(() => false)
+                        }
                       }
-                    }
-                  }}
-                >{proc.meta.label}</button>
-                <span> =&gt; </span>
-                <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
-              </div>
-            )}
+                    }}
+                  >{proc.meta.label}</button>
+                  </div>
+                  <span> =&gt; </span>
+                  <span className="btn btn-sm btn-secondary rounded-full">{proc.output.meta.label}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
         <div className={styles.Data}>
@@ -278,42 +283,28 @@ export default function App() {
               }}
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-row flex-wrap mt-1 gap-1">
+          <div className="flex flex-row flex-wrap gap-1">
+            <button
+              className={classNames('btn btn-sm rounded-md p-2', { 'btn-primary': !currentNode.type, 'btn-secondary': !!currentNode.type })}
+              onClick={() => {
+                appendData({ type: '', data: '' })
+              }}>Start</button>
+            {dict.values(data.nodes).filter(item => item.type).map((item) => (
               <button
-                className="btn btn-sm btn-secondary rounded-md p-2"
-                onClick={() => {
-                  setData(_ => ({
-                    latest: 0,
-                    current: 0,
-                    selected: { [0]: true },
-                    nodes: { [0]: { id: 0, type: '', data: '' } }
+                key={item.id}
+                className={classNames('btn btn-sm rounded-md px-2 whitespace-nowrap', { 'btn-primary': data.selected[item.id], 'btn-secondary': !data.selected[item.id]})}
+                onClick={evt => {
+                  setData(({ selected: { [item.id]: currentlySelected, ...selected }, ...data }) => ({
+                    ...data,
+                    current: item.id,
+                    selected: {
+                      ...(evt.shiftKey ? selected : {}),
+                      ...(evt.shiftKey && currentlySelected ? {} : { [item.id]: true }),
+                    },
                   }))
-                }}>Reset</button>
-              <button
-                className="btn btn-sm btn-secondary rounded-md p-2"
-                onClick={() => {
-                  appendData({ type: '', data: '' })
-                }}>Start</button>
-            </div>
-            <div className="flex flex-row flex-wrap gap-1">
-              {dict.values(data.nodes).filter(item => item.type).map((item) => (
-                <button
-                  key={item.id}
-                  className={classNames('btn btn-sm rounded-md px-2 whitespace-nowrap', { 'btn-primary': data.selected[item.id], 'btn-secondary': !data.selected[item.id]})}
-                  onClick={evt => {
-                    setData(({ selected: { [item.id]: currentlySelected, ...selected }, ...data }) => ({
-                      ...data,
-                      current: item.id,
-                      selected: {
-                        ...(evt.shiftKey ? selected : {}),
-                        ...(evt.shiftKey && currentlySelected ? {} : { [item.id]: true }),
-                      },
-                    }))
-                  }}
-                >{item.type}[{item.id}]</button>
-              ))}
-            </div>
+                }}
+              >{item.type}[{item.id}]</button>
+            ))}
           </div>
         </div>
         <div className={styles.View}>

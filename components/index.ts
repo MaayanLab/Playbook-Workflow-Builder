@@ -127,6 +127,10 @@ import * as data_log_normalization from "./data/log_normalization"
 import data_log_normalization_packageJson from "./data/log_normalization/package.json"
 metanodes.push(...MetaNodesFromExports(data_log_normalization, data_log_normalization_packageJson))
 components.push("data/log_normalization")
+import * as data_metabolite_count_matrix from "./data/metabolite_count_matrix"
+import data_metabolite_count_matrix_packageJson from "./data/metabolite_count_matrix/package.json"
+metanodes.push(...MetaNodesFromExports(data_metabolite_count_matrix, data_metabolite_count_matrix_packageJson))
+components.push("data/metabolite_count_matrix")
 import * as data_metadata_matrix from "./data/metadata_matrix"
 import data_metadata_matrix_packageJson from "./data/metadata_matrix/package.json"
 metanodes.push(...MetaNodesFromExports(data_metadata_matrix, data_metadata_matrix_packageJson))

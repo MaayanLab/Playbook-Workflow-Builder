@@ -1,7 +1,8 @@
-__pycache__
 .env
-.next
-/data
-Dockerfile
+.venv
+**/__pycache__
+**/.next
+**/node_modules
+analysis
+data
 docs
-node_modules

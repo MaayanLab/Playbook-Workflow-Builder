@@ -4,24 +4,23 @@ import * as Auth from 'next-auth/react'
 import useSWRMutation from 'swr/mutation'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'
+import { fetcherPOST } from '@/utils/next-rest-fetcher'
 
-const Bp4Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
-
-const poster = (endpoint: string, { arg }: { arg: any }) => fetch(endpoint, { method: 'POST', body: JSON.stringify(arg) }).then(res => res.json())
+const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 function DeleteAccount({ session }: { session: SessionWithId }) {
   const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
-  const { trigger: deleteUser, isMutating } = useSWRMutation('/api/db/user/delete', poster)
+  const { trigger: deleteUser, isMutating } = useSWRMutation('/api/db/user/delete', fetcherPOST)
   return (
     <>
-      <h3 className="bp4-heading text-red-600">Delete Account</h3>
+      <h3 className="bp5-heading text-red-600">Delete Account</h3>
       <progress className={classNames('progress w-full', { 'hidden': !isMutating })}></progress>
-      <Bp4Button
+      <Bp5Button
         intent="danger"
         onClick={() => setDeletionConfirmation(true)}
-      >Delete your account</Bp4Button>
-      <Bp4Alert
+      >Delete your account</Bp5Button>
+      <Bp5Alert
         cancelButtonText="Cancel"
         confirmButtonText="Delete Account"
         icon="delete"
@@ -31,13 +30,13 @@ function DeleteAccount({ session }: { session: SessionWithId }) {
         canOutsideClickCancel
         onCancel={() => {setDeletionConfirmation(false)}}
         onConfirm={() => {
-          deleteUser(undefined, { revalidate: false })
+          deleteUser()
             .then(() => Auth.signOut({ callbackUrl: '/' }))
         }}
       >
         Are you sure you want to delete your account?
         After clicking Delete Account, your account <b>and all associated content including uploads and saved graphs</b> will be subject to deletion and <b>cannot be restored</b>.<br />
-      </Bp4Alert>
+      </Bp5Alert>
     </>
   )
 }

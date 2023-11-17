@@ -14,7 +14,7 @@ export const RegulatoryElement = {
     },
     set: {
       meta: {
-        example: { description: 'Example regulatory-element set', set: ['EH38E2924876', 'EH12E1234567']},
+        example: { description: 'Example regulatory-element set', set: ['EH38E2744005','EH38E2744007','EH38E2744008','EH38E3926310','EH38E3926311','EH38E2744014','EH38E3926315','EH38E3926316']},
         pagerank: 6,
       }
     },

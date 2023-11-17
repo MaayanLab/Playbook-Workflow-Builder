@@ -4,6 +4,7 @@ import * as dict from '@/utils/dict'
 import { z } from 'zod'
 import * as array from '@/utils/array'
 import { UnboundError, TimeoutError } from '@/spec/error'
+import { StatusUpdate } from '@/spec/metanode'
 
 const JobC = z.object({ data: z.object({ id: z.string() }) })
 
@@ -48,27 +49,27 @@ export async function resolve_process(krg: KRG, instanceProcess: Process) {
   try {
     const metaProcess = krg.getProcessNode(instanceProcess.type)
     if (metaProcess === undefined) throw new Error('Unrecognized process')
+    console.debug(`Preparing ${metaProcess.spec}`)
     const props = {
-      data: instanceProcess.data,
-      inputs: await decode_complete_process_inputs(krg, instanceProcess)
+      data: instanceProcess.data?.value,
+      inputs: await decode_complete_process_inputs(krg, instanceProcess),
+      notify: (update: StatusUpdate) => {
+        console.debug(JSON.stringify({ id: instanceProcess.id, type: instanceProcess.type, update }))
+      },
     }
-    if ('prompt' in metaProcess) {
-      console.debug(`Output comes from data`)
-      return new Resolved(instanceProcess, instanceProcess.data)
-    } else {
-      // TODO: add a timeout here
-      const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
-      console.debug(`Calling action ${JSON.stringify(metaProcess.spec)} with props ${JSON.stringify(props)} of type ${JSON.stringify(metaProcess.inputs)}`)
-      return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
-    }
+    console.debug(`Processing ${metaProcess.spec}`)
+    if ('prompt' in metaProcess && props.data === undefined) throw new UnboundError()
+    const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
+    return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))
   } catch (e) {
     if (e instanceof TimeoutError) {
+      console.warn(e)
       throw e
     } else if (e instanceof UnboundError) {
       return new Resolved(instanceProcess, undefined)
     } else {
       console.error(e)
-      return new Resolved(instanceProcess, new Data('Error', JSON.stringify((e as Error).toString())))
+      return new Resolved(instanceProcess, new Data('Error', (e as Error).toString()))
     }
   }
 }
@@ -85,13 +86,14 @@ export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
     console.debug(`checking ${processId}..`)
     // we fetch it from the db
     const instanceProcess = await db.getProcess(processId, true)
-    if (!instanceProcess) throw new Error(`Process '${processId}' not found`)
-    if (instanceProcess.resolved === undefined) {
-      console.debug(`resolving ${processId}..`)
+    if (!instanceProcess) {
+      console.error(`process '${processId}' not found`)
+    } else if (instanceProcess.resolved === undefined) {
+      console.debug(`resolving ${instanceProcess.type} (${processId})..`)
       const resolved = await resolve_process(krg, instanceProcess)
       // store the result in the db
       await db.upsertResolved(resolved)
-      console.debug(`completed ${processId}`)
+      console.debug(`completed ${instanceProcess.type} ${processId}`)
     }
   })
 }

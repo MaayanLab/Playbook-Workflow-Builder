@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET')  {
       res.status(200).json(await db.objects.suggestion.findMany())
     } else if (req.method === 'POST') {
-      const suggestion = BodyType.parse(JSON.parse(req.body))
+      const suggestion = BodyType.parse(req.body)
       // add the suggested KRG node(s)
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {
@@ -46,7 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
         .inputs(suggestion.inputs ?
             dict.init(suggestion.inputs.split(',').map((spec, ind) =>
-              ({ key: ind.toString(), value: krg.getDataNode(spec) })))
+              ({ key: ind.toString(), value: krg.getDataNode(spec) }))
+              .filter(({ key, value }) => !!value))
             : {} as any)
         .output(OutputNode)
         .prompt((props) => {
@@ -55,6 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
           </div>
         })
+        .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)
         .build()
       krg.add(ProcessNode)
       await db.objects.suggestion.create({ data: suggestion })

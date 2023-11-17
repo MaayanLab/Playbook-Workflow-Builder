@@ -37,13 +37,17 @@ fs.writeFileSync(path.join(base, 'client.ts'), [
   ...apis
     .flatMap(api => {
       const apiPath = path.relative(base, api)
-      const apis = require(path.relative(__dirname, api))
-      return dict.items(apis).flatMap((kv) => {
-        const key = kv.key as string
-        const api = kv.value as APIRoute
+      return [
+        ...fs.readFileSync(path.join(api, 'index.ts')).toString().matchAll(
+          /export const (\w+) = API.(get|post)\(['"](.+?)['"]\)/g
+        )
+      ].flatMap((kv) => {
+        const key = kv[1] as string
+        const apiMethod = kv[2].toUpperCase()
+        const apiRoute = kv[3]
         return [
           `import type { ${key} as ${key}_ } from './${apiPath}'`,
-          `export const ${key} = APIInterface<typeof ${key}_>(${JSON.stringify(api.path)}, ${JSON.stringify(api.method)})`
+          `export const ${key} = APIInterface<typeof ${key}_>(${JSON.stringify(apiRoute)}, ${JSON.stringify(apiMethod)})`
         ]
       })
     }),

@@ -1,7 +1,7 @@
 export default function BioCompute() {
   return (
     <>
-      <h3 className="bp4-heading">BioCompute Integration</h3>
+      <h3 className="bp5-heading">BioCompute Integration</h3>
       <div className="hero">
         <div className="hero-content text-center">
           <div className="max-w-md">

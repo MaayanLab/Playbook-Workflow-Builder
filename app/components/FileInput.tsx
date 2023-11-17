@@ -3,7 +3,7 @@ import type { FileInputProps } from '@blueprintjs/core'
 import * as array from '@/utils/array'
 import dynamic from 'next/dynamic'
 
-const Bp4FileInput = dynamic(() => import('@blueprintjs/core').then(({ FileInput }) => FileInput))
+const Bp5FileInput = dynamic(() => import('@blueprintjs/core').then(({ FileInput }) => FileInput))
 
 export default function FileInput(props: FileInputProps) {
   const [currentFilename, setCurrentFilename] = React.useState<string | undefined>(undefined)
@@ -27,5 +27,5 @@ export default function FileInput(props: FileInputProps) {
   }
   if (!('text' in props)) props_.text = currentFilename
   if (!('hasSelection' in props)) props_.hasSelection = !!currentFilename
-  return <Bp4FileInput {...props_} />
+  return <Bp5FileInput {...props_} />
 }

@@ -3,12 +3,11 @@ import pandas as pd
 from bokeh.embed import json_item
 from sklearn.manifold import TSNE
 
-from components.data.gene_count_matrix import anndata_from_path
+from components.data.gene_count_matrix import GeneCountMatrix, anndata_from_file
 from components.viz.bokeh import interactive_circle_plot
 
-def tsne_transformation(gene_count_matrix):
-  df = anndata_from_path(gene_count_matrix['url'])
-  df = df.transpose()
+def tsne_transformation(gene_count_matrix: GeneCountMatrix):
+  df = anndata_from_file(gene_count_matrix)
 
   # t-SNE
   sc.pp.pca(df)

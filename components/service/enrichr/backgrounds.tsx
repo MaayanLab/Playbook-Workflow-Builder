@@ -89,6 +89,16 @@ export const Drug_backgrounds = [
 
 export const Pathway_backgrounds = [
   {
+    name: 'GO_Biological_Process_2023',
+    label: 'GO Biological Process 2023',
+    termType: 'BiologicalProcess',
+    termRe: /^(?<term>.+)\((?<xref>.+?)\)$/,
+    termLabel: 'GO Biological Processes',
+    termAssociation: 'Containing',
+    ref: `\\ref{doi:10.1038/75556}`,
+    icon: [],
+  },
+  {
     name: 'GO_Biological_Process_2021',
     label: 'GO Biological Process 2021',
     termType: 'BiologicalProcess',
@@ -97,6 +107,7 @@ export const Pathway_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/75556}`,
     icon: [],
+    hidden: true,
   },
   {
     name: 'KEGG_2019_Human',
@@ -110,6 +121,7 @@ export const Pathway_backgrounds = [
     },
     ref: `\\ref{doi:10.1002/pro.3715}`,
     icon: [],
+    hidden: true,
   },
   {
     name: 'KEGG_2019_Mouse',
@@ -172,6 +184,7 @@ export const Pathway_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
     icon: [],
+    hidden: true,
   },
   {
     name: 'WikiPathways_2019_Mouse',
@@ -185,6 +198,7 @@ export const Pathway_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
     icon: [],
+    hidden: true,
   },
 ]
 
@@ -242,6 +256,19 @@ export const Phenotype_backgrounds = [
     icon: [],
   },
   {
+    name: 'MGI_Mammalian_Phenotype_Level_4_2021',
+    label: 'MGI Mammalian Phenotype Level 4 2021',
+    termType: 'Phenotype',
+    termRe: /^(?<term>.+)$/,
+    termLabel: 'MGI Mammalian Phenotypes',
+    termAssociation: 'Associated with',
+    extra: {
+      organism: 'mouse',
+    },
+    ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
+    icon: [],
+  },
+  {
     name: 'MGI_Mammalian_Phenotype_Level_4_2019',
     label: 'MGI Mammalian Phenotype Level 4 2019',
     termType: 'Phenotype',
@@ -253,6 +280,7 @@ export const Phenotype_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
     icon: [],
+    hidden: true,
   },
 ]
 

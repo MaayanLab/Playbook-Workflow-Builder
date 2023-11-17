@@ -1,8 +1,9 @@
 import { MetaNode } from '@/spec/metanode'
 import { MetaboliteTerm } from '@/components/core/input/term'
 import { MetaboliteSet } from '@/components/core/input/set'
-import { MetaboliteSummary } from '../metabolite_summary'
+import { MetaboliteSummary } from '@/components/MW/metabolite_summary'
 import { metabolomicsworkbench_icon } from '@/icons'
+
 // A unique name for your resolver is used here
 export const MetaboliteInfo = MetaNode('MetaboliteInfo')
   // Human readble descriptors about this node should go here

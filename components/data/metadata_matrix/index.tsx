@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL } from '@/components/core/file'
+import { FileURL, FileC } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
 import { file_transfer_icon, metadata_file_icon } from '@/icons'
@@ -15,14 +15,13 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
     description: 'Class metadata for samples in a gene count matrix',
     icon: [metadata_file_icon],
   })
-  .codec(z.object({
-    url: z.string(),
+  .codec(FileC.merge(z.object({
     shape: z.tuple([z.number(), z.number()]),
     columns: z.array(z.string()),
     index: z.array(z.string()),
     values: z.array(z.array(z.string())),
     ellipses: z.tuple([z.union([z.number(), z.null()]), z.union([z.number(), z.null()])]),
-  }))
+  })))
   .view(props => {
     return (
       <div>
@@ -33,7 +32,7 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
           ellipses={props.ellipses}
           shape={props.shape}
           downloads={{
-            'URL': () => downloadUrl(props.url)
+            'URL': () => downloadUrl(props.url, props.filename)
           }}
         />
       </div>
@@ -51,7 +50,9 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .output(MetadataMatrix)
   .resolve(async (props) => await python(
     'components.data.metadata_matrix.metadata_matrix',
-    { kargs: [props.inputs.file.url] },
+    { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`)
   .build()
 

@@ -4,6 +4,7 @@ import Script from "next/script"
 import { useRuntimeConfig } from '@/app/fragments/config';
 
 function GA({ id }) {
+  const router = useRouter()
   React.useEffect(() => {
     window.dataLayer = window.dataLayer || [];
     function gtag(){window.dataLayer.push(arguments);}

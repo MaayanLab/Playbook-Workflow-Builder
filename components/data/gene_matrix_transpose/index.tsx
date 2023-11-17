@@ -11,7 +11,7 @@ import { file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
 
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const GMT = MetaNode(`GMT`)
   .meta({
@@ -39,11 +39,11 @@ export const GMT = MetaNode(`GMT`)
           cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key.toString()}</Cell>}
         />
         <Column
-          name="Descrition"
+          name="Description"
           cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.description||''}</Cell>}
         />
         <Column
-          name="Geneset"
+          name="Gene Set"
           cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.set.join('\t')}</Cell>}
         />
       </Table>
@@ -62,12 +62,14 @@ export const GMTFromFile = MetaNode('GMTFromFile')
   .resolve(async (props) => await python(
     'components.data.gene_matrix_transpose.load_gene_matrix_transpose',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
+  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene matrix transpose.`)
   .build()
 
 export const GMTUnion = MetaNode('GMTUnion')
   .meta({
-    label: `Compute Union Geneset`,
+    label: `Compute Union Gene Set`,
     description: 'Find the union set of all genes in the GMT'
   })
   .inputs({ gmt: GMT })
@@ -82,7 +84,7 @@ export const GMTUnion = MetaNode('GMTUnion')
 
 export const GMTIntersection = MetaNode('GMTIntersection')
   .meta({
-    label: `Compute Intersection Geneset`,
+    label: `Compute Intersection Gene Set`,
     description: 'Find the intersecting set of all genes in the GMT'
   })
   .inputs({ gmt: GMT })
@@ -97,7 +99,7 @@ export const GMTIntersection = MetaNode('GMTIntersection')
 
 export const GMTConsensus = MetaNode('GMTConsensus')
   .meta({
-    label: `Compute Consensus Geneset`,
+    label: `Compute Consensus Gene Set`,
     description: 'Find genes which appear in more than one set'
   })
   .inputs({ gmt: GMT })
@@ -123,26 +125,23 @@ export const GMTConsensus = MetaNode('GMTConsensus')
 
 export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .meta({
-    label: `Assemble GMT from Genesets`,
+    label: `Assemble GMT from Gene Sets`,
     description: 'Group multiple independently generated gene sets into a single GMT'
   })
+  .codec(z.object({
+    terms: z.record(z.union([z.string(), z.number()]).transform(key => +key), z.string()),
+    descriptions: z.record(z.union([z.string(), z.number()]).transform(key => +key), z.string()),
+  }))
   .inputs({ genesets: [GeneSet] })
   .output(GMT)
   .prompt(props => {
-    const [terms, setTerms] = React.useState({} as Record<number, string>)
-    const [descriptions, setDescriptions] = React.useState({} as Record<number, string>)
+    const [terms, setTerms] = React.useState(() => dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
+    const [descriptions, setDescriptions] = React.useState(() => dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: '' }))))
     React.useEffect(() => {
-      if (props.inputs) {
-        setTerms(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: props.inputs.genesets[key].description||'' }))))
-        setDescriptions(dict.init(array.arange(props.inputs.genesets.length).map(key => ({ key, value: '' }))))
-      }
-    }, [props.inputs])
-    React.useEffect(() => {
-      if (props.output) {
-        setTerms(dict.init(dict.keys(props.output).map((key, i) => ({ key: i, value: key }))))
-        setDescriptions(dict.init(dict.values(props.output).map(({ description }, i) => ({ key: i, value: description||'' }))))
-      }
-    }, [props.output])
+      if (!props.data) return
+      setTerms(props.data.terms ? props.data.terms : {} as Record<number, string>)
+      setDescriptions(props.data.descriptions ? props.data.descriptions : {} as Record<number, string>)
+    }, [props.data])
     return (
       <div>
         <Table
@@ -157,42 +156,48 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={terms[row]}
-              placeholder={`Geneset from path ${row}`}
+              editableTextProps={{placeholder: `Gene set from path ${row}`}}
               onChange={value => setTerms(terms => ({ ...terms, [row]: value }))}
             />}
           />
           <Column
-            name="Descrition"
+            name="Description"
             cellRenderer={row => <EditableCell
               key={row+''}
               value={descriptions[row]}
-              placeholder={`Some optional description`}
+              editableTextProps={{placeholder: `Some optional description`}}
               onChange={value => setDescriptions(descriptions => ({ ...descriptions, [row]: value }))}
             />}
           />
           <Column
-            name="Geneset"
+            name="Gene Set"
             cellRenderer={row => <Cell key={row+''}>{props.inputs.genesets[row].set.join('\t')}</Cell>}
           />
         </Table>
-        <Bp4Button
+        <Bp5Button
           large
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={() => props.submit(
-            dict.init(
-              array.arange(props.inputs.genesets.length)
-                .map(i => ({
-                  key: terms[i],
-                  value: {
-                    description: descriptions[i],
-                    set: props.inputs.genesets[i].set,
-                  }
-                }))
-            ))}
+          onClick={() => props.submit({ terms, descriptions })}
         />
       </div>
+    )
+  })
+  .resolve(async (props) => {
+    const { terms, descriptions } = props.data
+    if (props.inputs.genesets.length !== Object.keys(terms).length) {
+      throw new Error('Please confirm the terms')
+    }
+    return dict.init(
+      array.arange(props.inputs.genesets.length)
+        .map(i => ({
+          key: terms[i],
+          value: {
+            description: descriptions[i],
+            set: props.inputs.genesets[i].set,
+          }
+        }))
     )
   })
   .story(props =>

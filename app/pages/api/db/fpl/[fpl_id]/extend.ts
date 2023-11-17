@@ -14,7 +14,7 @@ export default handler(async (req, res) => {
   if (!fpprg) throw new ResponseCodedError(503, 'Not ready')
   if (req.method !== 'POST') throw new UnsupportedMethodError()
   const { fpl_id } = QueryType.parse(req.query)
-  const process = await fpprg.resolveProcess(BodyType.parse(JSON.parse(req.body)))
+  const process = await fpprg.resolveProcess(BodyType.parse(req.body))
   if (fpl_id === 'start') {
     const fpl = await fpprg.upsertFPL(new FPL(process))
     return res.status(200).json(fpl.id)

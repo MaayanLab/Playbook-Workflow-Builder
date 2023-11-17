@@ -25,5 +25,7 @@ export const MyPythonIdentity = MetaNode('MyPythonIdentity')
     // these kargs/kwargs are passed to the python function
     //  i.e. identity(*kargs, **kwargs)
     { kargs: [props.inputs.input], kwargs: {} },
+    message => props.notify({ type: 'info', message }),
   ))
+  .story(props => `The identity function is applied to${props.inputs ? ` ${props.inputs.input}` : ''}.`)
   .build()

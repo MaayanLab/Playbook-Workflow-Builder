@@ -12,7 +12,7 @@ export async function getServerSessionWithId(req: NextApiRequest, res: NextApiRe
         id: '00000000-0000-0000-0000-000000000000'
       },
       expires: (new Date(Date.now() + 1000*60*60*24)).toISOString(),
-    }
+    } as SessionWithId
   }
   return await getServerSession(req, res, authOptions)
 }

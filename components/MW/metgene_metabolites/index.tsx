@@ -1,13 +1,10 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
 import { GeneSet } from '@/components/core/input/set'
 import { MetgeneMetaboliteTable } from '../metgene_metabolite_table'
-import { MetGeneMetObj } from '../metgene_metabolite_table'
-import { MetGeneMetObjArray } from '../metgene_metabolite_table'
 import { MetaboliteSet } from '@/components/core/input/set'
 import { metgene_icon } from '@/icons'
-import { MetGeneSummary } from '../metgene_summary'
-import { string } from 'prop-types'
+import { MetGeneSummary } from '@/components/MW/metgene_summary'
+import * as array from '@/utils/array'
 
 
 // A unique name for your resolver is used here
@@ -47,15 +44,15 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
     return retobj;
   })
   .story(props =>
-    `${props.inputs.summary.gene} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
+    `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
   )
   .build()
 
 export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'MetGENE Metabolites with GeneSet',
-    description: 'Compute the MetGENE metabolites for a GeneSet',
+    label: 'MetGENE Metabolites with Gene Set',
+    description: 'Compute the MetGENE metabolites for a Gene Set',
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
@@ -96,7 +93,7 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     return retobj;
   })
   .story(props =>
-    `The geneset was then searched in the Metabolomics Workbench [Metabolomics Workbench, \\ref{https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
+    `The gene set was then searched in the Metabolomics Workbench [Metabolomics Workbench, \\ref{https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
   )
   .build()
 
@@ -130,7 +127,7 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     }
 
     // keep only unique metabolites
-    MetArr = [...new Set( MetArr )];
+    MetArr = array.unique(MetArr);
     return {"description": "", "set": MetArr} ; // Added 2023/01/25
   })
   .story(props =>
@@ -159,7 +156,7 @@ export const MGMetTable2MetSet_T = [
 .resolve(async (props) => {
   const arr2 = props.inputs.mt.contents;
 
-  var MetArr = []; // Mano: Added 2023/06/28
+  const MetArr = []; // Mano: Added 2023/06/28
 
   for (let i=0; i<arr2.length; i++) {
     for (let j=0; j<arr2[i].length; j++) {
@@ -178,8 +175,7 @@ export const MGMetTable2MetSet_T = [
   }
 
   // keep only unique metabolites
-  MetArr = [...new Set( MetArr )];
-  return {"description": `Metabolites (${id})`, "set": MetArr} ; // Added 2023/01/25
+  return {"description": `Metabolites (${id})`, "set": array.unique(MetArr)} ; // Added 2023/01/25
 })
 .story(props =>
   `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`

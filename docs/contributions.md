@@ -137,6 +137,7 @@ export const PromptName = MetaNode('PromptName')
       </div>
     )
   })
+  .story(props => `The start with a gene${props.output ? ` ${props.output}` : ''} from the user.`)
   .build()
 
 ```
@@ -166,6 +167,8 @@ export const ResolverName = MetaNode('ResolverName')
     // typically you'd do your data augmentation here, for example: fetching from an API
     return props.inputs.gene
   })
+  // here you describe the step as a sentence in a methods section, ideally with an applicable citation
+  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)
   .build()
 ```
 
@@ -194,8 +197,10 @@ export const ResolverName = MetaNode('ResolverName')
       // here we provide kargs and kwargs for the python function
       //  (i.e.  func(*kargs, **kwargs))
       { kargs: [props.inputs.input], kwargs: {} },
+      message => props.notify({ type: 'info', message }),
     )
   })
+  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)
   .build()
 
 ```
@@ -244,3 +249,7 @@ numpy
 
 ### Anything we missed?
 Let us know by [submitting an issue](https://github.com/nihc-cfde/playbook-partnership/issues)!
+
+## Learn More
+
+[Find other topics in the Playbook Workflow Builder Developer Guide](./index.md).

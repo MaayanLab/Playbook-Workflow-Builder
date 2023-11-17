@@ -6,10 +6,8 @@ import { GraphPlot } from '@/components/viz/graph'
 import { metabolomicsworkbench_icon } from '@/icons'
 import { z } from 'zod'
 import { additional_info_icon, gene_icon } from '@/icons'
-import { GetGeneSetIDConv } from '../ConvertedGeneID'
-
-//import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
-
+import * as array from '@/utils/array'
+import { GetGeneSetIDConv } from '@/components/MW/ConvertedGeneID'
 
 // How the schema validation works: https://codex.so/zod-validation-en
 
@@ -99,18 +97,12 @@ export function SimplifyStringDBedge(d:StringDBedge) {
   
 export function GetAllNodes_from_StringDBedgeArray(data:StringDBedgeArray) {
     // Given the list of edges in standard StringDB PPI format, extract the array of all nodes (unique)
-    let sources : string[] = Array.from(new Set( data.map(a => a.preferredName_A)));
-    let targets : string[] = Array.from(new Set( data.map(a => a.preferredName_B)));
-    let allnodes = [...new Set( sources.concat(targets) )] ;
-    return allnodes;
+    return array.unique(data.flatMap(a => [a.preferredName_A, a.preferredName_B]));
 }
 
 export function GetAllNodes_from_MyedgeArray(data:MyedgeArray) {
     // Given the list of edges in MyedgeArray, extract the array of all nodes (unique)
-    let sources : string[] = Array.from(new Set( data.map(a => a.SYMBOL_A)));
-    let targets : string[] = Array.from(new Set( data.map(a => a.SYMBOL_B)));
-    let allnodes = [...new Set( sources.concat(targets) )] ;
-    return allnodes;
+    return array.unique(data.flatMap(a => [a.SYMBOL_A, a.SYMBOL_B]));
 }
 
 export async function Format_StringDBedgeArray_for_GraphPlot(data:StringDBedgeArray, species_id:string = "hsa", geneid_type:string = "SYMBOL_OR_ALIAS") {
@@ -193,7 +185,7 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
   .build()
 
 // A unique name for your resolver is used here
-export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI_Gene')
+export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
 // Human readble descriptors about this node should go here
 .meta({
   label: 'Fetch StringDB PPI',
@@ -296,6 +288,6 @@ export const StringDBPPI_to_GraphPlot = MetaNode('StringDBPPI_to_GraphPlot')
   return GraphPlotObj;
 })
 .story(props =>
-  `For the Given StringDB PPI, the list of nodes (GeneSet) is generated.`
+  `For the Given StringDB PPI, the list of nodes (Gene Set) is generated.`
 )
 .build()

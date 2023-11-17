@@ -1,5 +1,7 @@
 import type { Adapter } from 'next-auth/adapters'
 import db from '@/app/db'
+import { user as userSchema } from '@/db/accounts'
+import { TypedSchemaRecord } from '@/spec/sql'
 
 export default function ORMAdapter(): Adapter {
   return {
@@ -27,15 +29,15 @@ export default function ORMAdapter(): Adapter {
       const user = (account !== null) ? await db.objects.user.findUnique({ where: { id: account.userId } }) : null
       return user
     },
-    updateUser: async (data) => {
+    updateUser: async (data_) => {
+      const data: Partial<TypedSchemaRecord<typeof userSchema>> = {}
+      if (data_.name !== undefined) data.name = data_.name ?? ''
+      if (data_.email !== undefined) data.email = data_.email
+      if (data_.emailVerified !== undefined) data.emailVerified = data_.emailVerified
+      if (data_.image !== undefined) data.image = data_.image ?? ''
       const user = await db.objects.user.update({
-        where: { id: data.id },
-        data: {
-          name: data.name ?? undefined,
-          email: data.email,
-          emailVerified: data.emailVerified ?? null,
-          image: data.image ?? undefined,
-        }
+        where: { id: data_.id },
+        data,
       })
       if (user === null) throw new Error('User not found')
       return user

@@ -25,14 +25,16 @@ In the Playbook Partnership, BioCompute is integrated into the framework of the 
 <p align="center">
   <img src="./figures/biocompute/figure1.png" width="350" title="Exporting a BCO from the Playbook Partnership Interactive Workflow Builder.">
 </p>
-Figure 1. Export BCO function on the Playbook Partnership Workflow Builder. The one-click button can achieve either BCO downloading or creating a draft on the BioCompute Portal
+
+**Figure 1**. Export BCO function on the Playbook Partnership Workflow Builder. The one-click button on the report can achieve either BCO downloading or creating a draft on the BioCompute Portal. For more information about building a report, see the [workflows user guide](./workflows.md).
 
 BioCompute is integrated in the Playbook Workflow where users can directly export BCOs into either a JSON file or export into BCO portal (https://biocomputeobject.org/). By selecting Draft in BioCompute Portal (Figure 1), a direct link would show up leading to the portal for further edits. On the BCO portal, users can easily modify, publish, track version, and exchange workflows (Figure 2). 
 
 <p align="center">
   <img src="./figures/biocompute/figure2.png" width="350" title="Published Objects vs. draft Objects.">
 </p>
-Figure 2. The DRAFT suffix indicates the BCO is still under draft status. Once the BCO is published, the version number is going to replace the DRAFT suffix. 
+
+**Figure 2**. The DRAFT suffix indicates the BCO is still under draft status. Once the BCO is published, the version number is going to replace the DRAFT suffix. 
 
 ## How to use BCO portal? 
 Visit https://biocomputeobject.org/ to get started with the BioCompute portal. If you have an account sign in by clicking on the ‘log in’ at the top right of the home page, if you do not have an account please click the ‘Don't have an account? Sign up here’ prompt on the sign in page to create an account. Select the BCO builder icon at the top right of the homepage to create a BCO from scratch. For more information regarding building a BCO on the BioCompute Portal, go to https://wiki.biocomputeobject.org/index.php?title=Buildbcos for details. If a BCO already exists, go to the BioCompute Object DB icon at the top right or the BioCompute DB Search card on the homepage to retrieve any drafts or published BCOs, for details, refer to https://wiki.biocomputeobject.org/index.php?title=Search. 

@@ -28,7 +28,7 @@ export const FileURL = MetaNode('FileURL')
   .codec(FileC)
   .view(({ url }) => (
     <div>
-      <h2>File: {url}</h2>
+      <h2 className="prose">File: {url}</h2>
     </div>
   ))
   .build()

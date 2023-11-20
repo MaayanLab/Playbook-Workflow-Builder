@@ -124,7 +124,7 @@ export default function App() {
     try {
       dataNodeView = dataNode.view(JSON.parse(currentNode.data))
     } catch (e) {
-      dataNodeView = <div>Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
+      dataNodeView = <div className="prose">Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
     }
   }
   return (

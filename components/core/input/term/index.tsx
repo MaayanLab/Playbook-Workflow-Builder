@@ -20,7 +20,7 @@ const Term_T = (T: Primative) => MetaNode(`Term[${T.name}]`)
   })
   .codec(z.string())
   .view(term => {
-    return <div>{T.label}: {term}</div>
+    return <div className="prose">{T.label}: {term}</div>
   })
   .build()
 

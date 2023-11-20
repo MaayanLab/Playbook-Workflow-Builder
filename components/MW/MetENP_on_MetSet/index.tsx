@@ -39,7 +39,7 @@ export const MetENP_MetSet = MetaNode('MetENP_MetSet')
     const dataobj = data.res; //const dataobj = [data][0];
 
     return(
-          <div>
+          <div className="prose">
             <table>
     <tr>
     <th>No.</th>

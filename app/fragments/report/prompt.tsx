@@ -66,7 +66,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
               router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.head}`, undefined, { shallow: true, scroll: false })
             }}
           />
-          : <div>Waiting for input</div>}
+          : <div className="prose">Waiting for input</div>}
       </div>
     </div>
   )

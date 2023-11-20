@@ -41,7 +41,7 @@ export const MetaboliteSummary = MetaNode('MetaboliteSummary')
     //var data1 = [data];
     return (
       //<div>{JSON.stringify(data)}</div>
-      <div>
+      <div className="prose">
         <h2>Metabolite Summary</h2>
         <table>
           <th> Name </th>

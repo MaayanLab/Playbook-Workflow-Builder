@@ -57,7 +57,7 @@ Here are the references for the sources used:
   {
     id: '3f27bcd3-a4a5-d7f8-358a-3652119a659f',
     label: 'Use Case 2: Explain MOAs of Side Effects for Approved Drugs',
-    description: `For a side effect and a drug, I would like to know if there are genes from the LINCS L1000 experiments that are up or down-regulated by the drugs that are also known to be involved with the side effect based on literature co-mentions or GWAS. I would like to know if such overlap is statistically significant. I would also like the results to be visualized using a SuperVenn diagram.`,
+    description: `For a side effect and a drug, find differentially expressed genes from the LINCS L1000 resource that are up- or down-regulated by the drug, and are also associated with the side-effect based on literature co-mentions or GWAS. If overlapping genes are found, compute whether such overlap is statistically significant and visualize the results with a supervenn diagram.`,
     gpt_summary: `To start the workflow, the search term \"atrial fibrillation\" was selected. The matching terms from the MGI Mammalian Phenotype Level 4 2019 library and GWAS Catalog 2019 library were identified and assembled into gene sets. A consensus gene set was created by only keeping genes that appeared in at least two sets.
 
 Similarly, for the search term \"Ibrutinib,\" the matching terms from the LINCS L1000 Chem Pert Consensus Sigs library were identified and assembled into gene sets. All the identified gene sets were combined into one gene set library.

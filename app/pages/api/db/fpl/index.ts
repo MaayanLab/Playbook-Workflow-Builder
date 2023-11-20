@@ -14,7 +14,7 @@ const BodyType = z.object({
 export default handler(async (req, res) => {
   if (req.method !== 'POST') throw new UnsupportedMethodError()
   // load the submitted processArray specification
-  const { workflow, metadata } = BodyType.parse(req.body)
+  const { data = {}, workflow, metadata } = BodyType.parse(req.body)
   // resolve the process array by walking through the specification, collecting instantiated processes
   const processArray: Process[] = []
   const processArrayLookup: Record<string|number, string> = {}
@@ -22,6 +22,11 @@ export default handler(async (req, res) => {
     if ('id' in el && 'type' in el) {
       // given both id and type makes this a 
       const { id, ...proc } = el
+      if (proc.data !== undefined) {
+        if ('id' in proc.data) {
+          proc.data = data[proc.data.id]
+        }
+      }
       if (proc.inputs !== undefined) {
         for (const k in proc.inputs) {
           if (!(proc.inputs[k].id in processArrayLookup)) throw new ResponseCodedError(400, `${proc.inputs[k].id} not found in preceeding graph`)

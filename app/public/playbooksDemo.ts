@@ -55,7 +55,7 @@ Here are the references for the sources used:
     ],
   },
   {
-    id: '3f27bcd3-a4a5-d7f8-358a-3652119a659f',
+    id: 'c4d40504-57b6-d48f-6d12-d47891e26f2d',
     label: 'Use Case 2: Explain MOAs of Side Effects for Approved Drugs',
     description: `For a side effect and a drug, find differentially expressed genes from the LINCS L1000 resource that are up- or down-regulated by the drug, and are also associated with the side-effect based on literature co-mentions or GWAS. If overlapping genes are found, compute whether such overlap is statistically significant and visualize the results with a supervenn diagram.`,
     gpt_summary: `To start the workflow, the search term \"atrial fibrillation\" was selected. The matching terms from the MGI Mammalian Phenotype Level 4 2019 library and GWAS Catalog 2019 library were identified and assembled into gene sets. A consensus gene set was created by only keeping genes that appeared in at least two sets.
@@ -67,7 +67,7 @@ Finally, a Supervenn diagram was used to visualize the collection of gene sets. 
 2. NHGRI-EBI GWAS Catalog
 3. SigCom LINCS.`,
     published: 'Mar 16, 2023',
-    version: '1.0.0',
+    version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
     license: 'CC-BY-NC-SA-4.0',

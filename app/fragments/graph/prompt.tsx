@@ -59,7 +59,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
             router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
-        : <div>Waiting for input</div>}
+        : <div className="prose">Waiting for input</div>}
     </div>
   )
 }

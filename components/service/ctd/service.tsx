@@ -136,7 +136,7 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
   .codec(CTDResponseC)
   .view(props => {
     return(
-      <div>
+      <div className="prose">
         <p>Highly Connected Genes num: {props.highlyConnectedGenes.length}</p>
         <p>Guilty By Association Genes num: {props.guiltyByAssociationGenes.length}</p>
         <p>Json Graph Nodes num: {props.jsonGraph.nodes.length}</p>

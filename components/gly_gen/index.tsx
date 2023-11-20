@@ -96,7 +96,7 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
     const glyGenLink = `http://www.glygen.org/protein/${data.uniprot.uniprot_canonical_ac}`
 
     return (
-      <div>
+      <div className="prose">
           <div>Gene Name: <b>{data.gene.name}</b></div>
           <div>UniProtKB Accession:
             <b>
@@ -143,7 +143,7 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
 
     if (recordCount > 0) {
       return (
-        <div>
+        <div className="prose">
           <div>
             UniProtKB Accession: 
               <b>
@@ -160,7 +160,7 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
       )
     } else {
       return (
-        <div>
+        <div className="prose">
           <div>
             UniProtKB Accession: 
                 <b>
@@ -184,7 +184,7 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
     const glyGenLink = `http://www.glygen.org/glycan/${data.glytoucan.glytoucan_ac}`
 
     return (
-      <div>
+      <div className="prose">
         <div>GlyTouCan Accession: 
           <b>
             <a href={glyGenLink} target='_blank' rel='noopener nonreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.glytoucan.glytoucan_ac}</u></a>

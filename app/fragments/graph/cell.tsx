@@ -39,10 +39,10 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
           </div>
           <div className="flex-grow flex flex-col py-4">
             {outputError && !(outputError instanceof TimeoutError) ? <div className="alert alert-error prose">{outputError.toString()}</div> : null}
-            {!outputNode ? <div>Loading...</div>
+            {!outputNode ? <div className="prose">Loading...</div>
             : <>
-                {!View || output === undefined ? <div>Loading...</div>
-                : output === null ? <div>Waiting for input</div>
+                {!View || output === undefined ? <div className="prose">Loading...</div>
+                : output === null ? <div className="prose">Waiting for input</div>
                 : <View output={output} />}
               </>}
               <button

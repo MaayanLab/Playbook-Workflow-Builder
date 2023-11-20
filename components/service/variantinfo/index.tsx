@@ -348,7 +348,6 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             cellRendererDependencies={[alleleSpecificEvidence]}
             numRows={alleleSpecificEvidence.length}
             enableGhostCells
-            enableFocusedCell
             downloads={{
               JSON: () => downloadBlob(new Blob([JSON.stringify(alleleSpecificEvidence)], { type: 'application/json;charset=utf-8' }), 'data.json')
             }}

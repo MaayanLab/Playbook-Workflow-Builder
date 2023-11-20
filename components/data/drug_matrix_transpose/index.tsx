@@ -149,7 +149,6 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
           cellRendererDependencies={[props.inputs.sets, terms, descriptions]}
           numRows={props.inputs.sets.length}
           enableGhostCells
-          enableFocusedCell
         >
           <Column
             name="Term"

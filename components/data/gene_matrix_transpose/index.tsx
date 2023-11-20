@@ -149,7 +149,6 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
           cellRendererDependencies={[props.inputs.genesets, terms, descriptions]}
           numRows={props.inputs.genesets.length}
           enableGhostCells
-          enableFocusedCell
         >
           <Column
             name="Term"

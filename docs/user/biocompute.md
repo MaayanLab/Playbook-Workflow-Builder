@@ -41,7 +41,7 @@ Visit https://biocomputeobject.org/ to get started with the BioCompute portal. I
 
 BioCompute Portal also supports prefix registration and permission control which means different organizations and individuals can register unique prefixes to organize BCOs more effectively. Owners of prefixes can manage personnel under the prefix group and permissions to each personnel. Refer to https://wiki.biocomputeobject.org/index.php?title=Prefix_registration for prefix and permission information. 
 
-BioCompute also provides API endpoint interactions via Swagger and BCODB Sandbox for users and developers. If prefers to create and publish BCOs via API endpoints, see more at https://wiki.biocomputeobject.org/index.php?title=Swagger_Usage and information about the Sandbox set up and usage can be found at https://wiki.biocomputeobject.org/index.php?title=BCODB_Sandbox. 
+BioCompute also provides API endpoint interactions via Swagger and BCODB Sandbox for users and developers. If you prefer to create and publish BCOs via API endpoints, see more at https://wiki.biocomputeobject.org/index.php?title=Swagger_Usage and information about the Sandbox set up and usage can be found at https://wiki.biocomputeobject.org/index.php?title=BCODB_Sandbox. 
 
 For general FAQs, refer to https://wiki.biocomputeobject.org/index.php?title=Faq or contact the BioCompute team via the Contact Us button on the portal header. 
 

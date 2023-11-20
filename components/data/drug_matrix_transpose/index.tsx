@@ -78,7 +78,7 @@ export const DMTUnion = MetaNode('DMTUnion')
     return { set: array.unique(dict.values(props.inputs.dmt).flatMap(({ set: drugset }) => drugset)) }
   })
   .story(props =>
-    `All the identified drug sets were combined usng the union set operation.`
+    `All the identified drug sets were combined using the union set operation.`
   )
   .build()
 

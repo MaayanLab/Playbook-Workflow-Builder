@@ -8,7 +8,7 @@ export default function ExportButton({ session_id, id }: { session_id?: string, 
   return (
     <a
       className="bp5-button bp5-minimal"
-      href={`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/output/export`}
+      href={`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/export`}
       download={`${id}.json`}
     >
       <Icon

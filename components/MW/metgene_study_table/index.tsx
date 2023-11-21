@@ -4,12 +4,12 @@ import { z } from 'zod'
 import { additional_info_icon, study_icon } from '@/icons';
 
 const MetGeneStudyObjC = z.object({
-  KEGG_COMPOUND_ID: z.string(),
+  KEGG_COMPOUND_ID: z.string().url(),
   REFMET_NAME: z.string(),
   STUDY_ID: z.string(),
 });
 
-export type  MetGeneStudyObj = z.infer<typeof  MetGeneStudyObjC>
+export type MetGeneStudyObj = z.infer<typeof  MetGeneStudyObjC>
 
 // important ref: https://rsinohara.github.io/json-to-zod-react/
 // array of objects: [{}]
@@ -54,8 +54,8 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
 
           return (
             <tr key={key}>
-
-              <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "_blank">{val.KEGG_COMPOUND_ID}</a></td>
+              <>
+              <td>{ val.KEGG_COMPOUND_ID }</td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
                 {study_id_arr.map((study_id: string, i: number) =>
@@ -65,11 +65,13 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
                   </>
                 )}
               </td>
+              </>
             </tr>
           )
         })}
         </table>
       </div>
+    
     )
   })
   .build()

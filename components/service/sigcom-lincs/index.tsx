@@ -69,7 +69,7 @@ async function sigcom_meta_user_input_signature(body: { entities: string[] } | {
         "$validator": "/dcic/signature-commons-schema/v6/meta/user_input/user_input.json",
         ...body,
       },
-      type: "signature",
+      type: "signatures",
     }),
   })
   return z.object({ id: z.string() }).parse(await metaInputReq.json())
@@ -93,8 +93,7 @@ async function sigcom_data_enrich_ranktwosided(body: {
     results: z.array(z.object({
       uuid: z.string(),
       type: z.string(),
-      'z-up': z.number(),
-      'z-down': z.number(),
+      'z-sum': z.number(),
     })),
   }).parse(await dataReq.json())
 }
@@ -183,7 +182,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
     })
     const signatureScores = dict.init(results.map(({ uuid: key, ...value }) => ({ key, value })))
     const signatureMeta = await sigcom_signatures_find_by_id(dict.keys(signatureScores))
-    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-up'] - signatureScores[signature.id]['z-down'] })).filter(({ term }) => !!term)
+    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-sum'] })).filter(({ term }) => !!term)
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })
@@ -209,7 +208,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
     })
     const signatureScores = dict.init(results.map(({ uuid: key, ...value }) => ({ key, value })))
     const signatureMeta = await sigcom_signatures_find_by_id(dict.keys(signatureScores))
-    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-up'] - signatureScores[signature.id]['z-down'] })).filter(({ term }) => !!term)
+    const signatures = signatureMeta.map(signature => ({ term: signature.meta.pert_name, zscore: signatureScores[signature.id]['z-sum'] })).filter(({ term }) => !!term)
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })

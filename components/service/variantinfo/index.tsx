@@ -273,7 +273,7 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   
   export const VariantSetInfo = MetaNode('VariantSetInfo')
   .meta({
-    label: 'VariantSetInfo',
+    label: 'Variant Set Info',
     description: ''
   })
   .codec(AlleleRegistryVariantSetInfoC)
@@ -296,7 +296,7 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
 
   export const VariantInfoFromVariantSet = MetaNode('VariantInfoFromVariantSet')
   .meta({
-    label: `VariantInfoFromVariantSet`,
+    label: `Variant Info From Variant Set`,
     description: "Get Variant Info from Allele Registry for a set of Varinat CaId's."
   })
   .inputs({ variantset: VariantSet })
@@ -893,7 +893,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetExternalRecords = MetaNode('GetVarinatSetExternalRecords')
   .meta({
-    label: `GetVarinatSetExternalRecords`,
+    label: `Get Varinat Set External Records`,
     description: "Get External Records for a given Variant Set."
   })
   .inputs({ variantSetInfo: VariantSetInfo })
@@ -921,7 +921,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GeneAssociationsSet_HG38 = MetaNode('GeneAssociationsSet_HG38')
   .meta({
-    label: 'GeneAssociationsSet_HG38',
+    label: 'Gene Associations Set HG38',
     description: ''
   })
   .codec(HG38GeneAssociationsSetC)
@@ -1059,7 +1059,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
   .meta({
-    label: `GetVarinatSetToGeneAssociation_HG38`,
+    label: `Get Varinat Set To Gene Association HG38`,
     description: "Get Associated Gene info for a given set of Variant External records."
   })
   .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })
@@ -1091,9 +1091,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     `Get Associated Gene info for a given set of Variant External records.`
   ).build()
 
-  export const REforVariantSet = MetaNode('REforVariantSet')
+  export const REforVariantSetInfo = MetaNode('REforVariantSetInfo')
   .meta({
-    label: 'REforVariantSet',
+    label: 'Regulatory Elements For Variant Set Info',
     description: ''
   })
   .codec(
@@ -1131,11 +1131,11 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetRegulatoryElementsForVariantSet = MetaNode('GetRegulatoryElementsForVariantSet')
   .meta({
-    label: `RegulatoryElementsForVariantSet`,
+    label: `Regulatory Elements For Variant Set`,
     description: "Get Regulatory Elements for the Variant Set"
   })
   .inputs({ variantset: VariantSet })
-  .output(REforVariantSet)
+  .output(REforVariantSetInfo)
   .resolve(async (props) => {
     var varinatSetInpt = props.inputs.variantset.set;
     
@@ -1166,7 +1166,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')
   .meta({
-    label: 'AlleleSpecificEvidenceForVariantSet',
+    label: 'Allele Specific Evidence For Variant Set',
     description: ''
   })
   .codec(
@@ -1296,7 +1296,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetAlleleSpecificEvidence = MetaNode('GetVarinatSetAlleleSpecificEvidence')
   .meta({
-    label: `GetVarinatSetAlleleSpecificEvidence`,
+    label: `Get Varinat Set Allele Specific Evidence`,
     description: "Get Allele Specific Evidence form Varinat Set."
   })
   .inputs({ variantSetInfo: VariantSetInfo })
@@ -1329,7 +1329,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const xQTL_EvidenceFroVariantSet = MetaNode('xQTL_EvidenceFroVariantSet')
   .meta({
-    label: 'xQTL_EvidenceFroVariantSet',
+    label: 'xQTL Evidence For Variant Set',
     description: ''
   })
   .codec(

@@ -241,24 +241,22 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     `Graph Nodes were extracted from the CTD output.`
   ).build()
 
-/* kegg is not used for now because of licencing issues
-export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
+export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
-    label: `GeneSet_CTD_Kegg`,
-    description: "Get a CTD response for a set of genes for graph type kegg."
+    label: `CTD Wikipathways For Gene Set`,
+    description: "Get a CTD response for a set of genes for graph type wikipathways."
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     let requestBody = {
-      "graphType": "kegg",
+      "graphType": "wikipathways",
       "geneList": props.inputs.geneset.set
     }
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
-    `Get a CTD response for a set of genes for graph type kegg.`
+    `Get a CTD response for a set of genes for graph type wikipathways.`
   ).build()
-*/
 
 export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
@@ -277,10 +275,9 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
 
-/* //kegg is not used for now because of licencing issues
-export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
+export const GenesFile_CTD_Wikipathways = MetaNode('GenesFile_CTD_Wikipathways')
   .meta({
-    label: `GenesFile_CTD_Kegg`,
+    label: `CTD Wikipathways For Genes Set File`,
     description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
     icon: [file_transfer_icon]
   })
@@ -291,9 +288,11 @@ export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
 
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
-    formData.append('graphType', "kegg");
+    formData.append('graphType', "wikipathways");
     return await getCTDFileResponse(formData);
-  }).build()*/
+  })
+  .story(props => ``)
+  .build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({

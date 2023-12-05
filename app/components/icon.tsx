@@ -8,7 +8,7 @@ const tooltip_offset_top = 5
 
 export default function Icon({
   icon,
-  className,
+  className: className_,
   color: color_,
   size: size_,
   title,
@@ -27,6 +27,7 @@ export default function Icon({
 }) {
   const tooltipContainerRef = React.useRef<SVGRectElement>(null)
   const tooltipRef = React.useRef<{ tooltip: HTMLDivElement, listener: (evt: MouseEvent) => void }>(null)
+  const className = className_ !== undefined ? className_ :  "fill-black dark:fill-white"
   const color = color_ !== undefined ? color_ : 'auto'
   const size = size_ !== undefined ? size_ : 1
   const icons = ensureArray(icon)

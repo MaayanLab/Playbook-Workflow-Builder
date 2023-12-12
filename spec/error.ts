@@ -9,8 +9,8 @@ export class ResponseCodedError extends Error {
  * The method is not supported
  */
 export class UnsupportedMethodError extends ResponseCodedError {
-  constructor() {
-    super(405, 'Unsupported method')
+  constructor(message = 'Unsupported method') {
+    super(405, message)
     Object.setPrototypeOf(this, UnsupportedMethodError.prototype)
   }
 }
@@ -19,8 +19,8 @@ export class UnsupportedMethodError extends ResponseCodedError {
  * The resource is not found
  */
 export class NotFoundError extends ResponseCodedError {
-  constructor() {
-    super(404, 'Not Found')
+  constructor(message = 'Not Found') {
+    super(404, message)
     Object.setPrototypeOf(this, NotFoundError.prototype)
   }
 }
@@ -29,8 +29,8 @@ export class NotFoundError extends ResponseCodedError {
  * The resource is not found
  */
 export class UnauthorizedError extends ResponseCodedError {
-  constructor() {
-    super(401, 'Unauthorized')
+  constructor(message = 'Unauthorized') {
+    super(401, message)
     Object.setPrototypeOf(this, UnauthorizedError.prototype)
   }
 }
@@ -40,8 +40,8 @@ export class UnauthorizedError extends ResponseCodedError {
  *  fortunately, even if it occurs the job will requeue still making progress.
  */
 export class TimeoutError extends ResponseCodedError {
-  constructor() {
-    super(504, 'Timeout reached')
+  constructor(message = 'Timeout reached') {
+    super(504, message)
     Object.setPrototypeOf(this, TimeoutError.prototype)
   }
 }
@@ -50,8 +50,8 @@ export class TimeoutError extends ResponseCodedError {
  * This error occurs when the input node is not populated yet
  */
 export class UnboundError extends ResponseCodedError {
-  constructor() {
-    super(422, 'Refusing to submit unbound variable')
+  constructor(message = 'Refusing to submit unbound variable') {
+    super(422, message)
     Object.setPrototypeOf(this, UnboundError.prototype)
   }
 }

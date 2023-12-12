@@ -28,6 +28,6 @@ export default handler(async (req, res) => {
       data: BodyType.parse(req.body),
     }))
   } else {
-    throw new UnsupportedMethodError()
+    throw new UnsupportedMethodError(req.method)
   }
 })

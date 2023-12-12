@@ -12,7 +12,7 @@ const QueryType = z.object({
 const BodyType = IdOrPlaybookMetadataC
 
 export default handler(async (req, res) => {
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const { fpl_id, rebase_id } = QueryType.parse(req.query)
   const rebase_fpl = await fpprg.getFPL(rebase_id)
   if (rebase_fpl === undefined) throw new NotFoundError()

@@ -9,7 +9,7 @@ const QueryType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
   const { id } = QueryType.parse(req.query)

@@ -13,6 +13,6 @@ export default handler(async (req, res) => {
     })
     return res.status(200).json(uploads)
   } else {
-    throw new UnsupportedMethodError()
+    throw new UnsupportedMethodError(req.method)
   }
 })

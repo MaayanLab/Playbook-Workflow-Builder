@@ -14,7 +14,7 @@ export default handler(async (req, res) => {
     res.status(200).end()
     return
   }
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const body = BodyType.parse(req.body)
   const gptReq = await fetch(`https://api.openai.com/v1/chat/completions`, {
     method: 'POST',

@@ -19,7 +19,7 @@ const QueryType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'HEAD' && req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'HEAD' && req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const { fpl_id, metadata } = QueryType.parse(req.query)
   const fpl = await fpprg.getFPL(fpl_id)
   if (fpl === undefined) throw new NotFoundError()
@@ -29,8 +29,8 @@ export default handler(async (req, res) => {
   if (!user.name) throw new Error('Name required')
   // @ts-ignore
   const userOrcidAccount = await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } })
-  if (!userOrcidAccount) throw new Error('ORCID Required')
-  if (Date.now()/1000 > userOrcidAccount.expires_at) throw new Error('ORCID Expired, Please Log in Again')
+  if (!userOrcidAccount) throw new UnauthorizedError('ORCID Required')
+  if (Date.now()/1000 > userOrcidAccount.expires_at) throw new UnauthorizedError('ORCID Expired')
   if (req.method === 'HEAD') {
     res.status(200).end()
     return

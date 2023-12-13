@@ -127,6 +127,10 @@ import * as data_log_normalization from "./data/log_normalization"
 import data_log_normalization_packageJson from "./data/log_normalization/package.json"
 metanodes.push(...MetaNodesFromExports(data_log_normalization, data_log_normalization_packageJson))
 components.push("data/log_normalization")
+import * as data_met_z_score_normalization from "./data/met_z_score_normalization"
+import data_met_z_score_normalization_packageJson from "./data/met_z_score_normalization/package.json"
+metanodes.push(...MetaNodesFromExports(data_met_z_score_normalization, data_met_z_score_normalization_packageJson))
+components.push("data/met_z_score_normalization")
 import * as data_metabolite_count_matrix from "./data/metabolite_count_matrix"
 import data_metabolite_count_matrix_packageJson from "./data/metabolite_count_matrix/package.json"
 metanodes.push(...MetaNodesFromExports(data_metabolite_count_matrix, data_metabolite_count_matrix_packageJson))
@@ -135,6 +139,14 @@ import * as data_metadata_matrix from "./data/metadata_matrix"
 import data_metadata_matrix_packageJson from "./data/metadata_matrix/package.json"
 metanodes.push(...MetaNodesFromExports(data_metadata_matrix, data_metadata_matrix_packageJson))
 components.push("data/metadata_matrix")
+import * as data_metanndata from "./data/metanndata"
+import data_metanndata_packageJson from "./data/metanndata/package.json"
+metanodes.push(...MetaNodesFromExports(data_metanndata, data_metanndata_packageJson))
+components.push("data/metanndata")
+import * as data_metpcagraph from "./data/metpcagraph"
+import data_metpcagraph_packageJson from "./data/metpcagraph/package.json"
+metanodes.push(...MetaNodesFromExports(data_metpcagraph, data_metpcagraph_packageJson))
+components.push("data/metpcagraph")
 import * as data_pca_transformation from "./data/pca_transformation"
 import data_pca_transformation_packageJson from "./data/pca_transformation/package.json"
 metanodes.push(...MetaNodesFromExports(data_pca_transformation, data_pca_transformation_packageJson))

@@ -10,7 +10,7 @@ class MetaboliteCountMatrix(File, typing.TypedDict):
   values: typing.List[typing.List[typing.Union[int, typing.Literal['nan'], typing.Literal['inf'], typing.Literal['-inf']]]]
   ellipses: typing.Tuple[typing.Union[int, None], typing.Union[int, None]]
 
-def anndata_from_gctx(file: File):
+def metanndata_from_gctx(file: File):
   with file_as_path(file, 'r') as fr:
     import h5py
     f = h5py.File(fr, 'r')
@@ -20,7 +20,7 @@ def anndata_from_gctx(file: File):
       var=f['0']['META']['0']['COL'],
     )
 
-def anndata_from_gct(file: File):
+def metanndata_from_gct(file: File):
   with file_as_stream(file, 'r') as fr:
     import pandas as pd
     version = fr.readline()
@@ -32,7 +32,7 @@ def anndata_from_gct(file: File):
       obs=df.iloc[:-shape[1]],
     )
 
-def anndata_from_file(file: File):
+def metanndata_from_file(file: File):
   ''' Read from a bunch of different formats, get an anndata file
   '''
   print("I AM HERE")
@@ -72,7 +72,7 @@ def metabolite_count_matrix(file: File) -> MetaboliteCountMatrix:
   ''' We'll preserve the file url but include various properties useful
   for visualization. If the file is invalid, reading it will fail.
   '''
-  d = anndata_from_file(file)
+  d = metanndata_from_file(file)
   # we want to see the gene count matrix preview in transposed form
   d = d.transpose()
   if d.shape[0] >= 10:
@@ -114,7 +114,7 @@ def metabolite_count_matrix(file: File) -> MetaboliteCountMatrix:
   )
 
 def transpose(m: File):
-  d = anndata_from_file(m)
+  d = metanndata_from_file(m)
   d = d.T
   with upsert_file('.h5ad') as f:
     d.write_h5ad(f.file)

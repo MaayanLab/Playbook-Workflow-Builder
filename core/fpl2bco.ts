@@ -42,11 +42,11 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     await Promise.all(fullFPL.map(async (step, index) => {
       const metanode = props.krg.getProcessNode(step.process.type)
       let story: string | undefined
-      if (props.metadata?.description) {
-        story = undefined
-      } else {
-        const inputs = await decode_complete_process_inputs(props.krg, step.process)
-        const output = await decode_complete_process_output(props.krg, step.process)
+      if (!props.metadata?.description) {
+        let inputs: Record<string, unknown> | undefined
+        try { inputs = await decode_complete_process_inputs(props.krg, step.process) } catch (e) {}
+        let output: unknown | undefined
+        try { output = await decode_complete_process_output(props.krg, step.process) } catch (e) {}
         story = metanode.story ? metanode.story({ inputs, output }) : undefined
       }
       return {

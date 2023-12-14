@@ -8,6 +8,8 @@ import type { AdminJobs as AdminJobs_ } from './v1/admin/jobs'
 export const AdminJobs = APIInterface<typeof AdminJobs_>("/api/v1/admin/jobs", "GET")
 import type { UserIntegrationsBioComputeAuth as UserIntegrationsBioComputeAuth_ } from './v1/user/integrations/biocompute'
 export const UserIntegrationsBioComputeAuth = APIInterface<typeof UserIntegrationsBioComputeAuth_>("/api/v1/user/integrations/biocompute/auth", "GET")
+import type { UserIntegrationsBioComputePublishedBCO as UserIntegrationsBioComputePublishedBCO_ } from './v1/user/integrations/biocompute'
+export const UserIntegrationsBioComputePublishedBCO = APIInterface<typeof UserIntegrationsBioComputePublishedBCO_>("/api/v1/user/integrations/biocompute/[fpl_id]/published", "GET")
 import type { UserIntegrationsCAVATICA as UserIntegrationsCAVATICA_ } from './v1/user/integrations/cavatica'
 export const UserIntegrationsCAVATICA = APIInterface<typeof UserIntegrationsCAVATICA_>("/api/v1/user/integrations/cavatica", "GET")
 import type { UserIntegrationsCAVATICAUpdate as UserIntegrationsCAVATICAUpdate_ } from './v1/user/integrations/cavatica'

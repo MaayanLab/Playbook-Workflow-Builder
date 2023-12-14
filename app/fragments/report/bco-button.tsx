@@ -6,6 +6,8 @@ import { fetcherPOST } from '@/utils/next-rest-fetcher'
 import { ResponseCodedError } from '@/spec/error'
 import { signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
+import { useAPIQuery } from '@/core/api/client'
+import { UserIntegrationsBioComputePublishedBCO } from '@/app/api/client'
 
 const Bp5Popover = dynamic(() => import('@blueprintjs/core').then(({ Popover }) => Popover))
 const Bp5Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
@@ -16,6 +18,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function BCOButton({ session_id, id, metadata, disabled }: { session_id?: string, id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
   const router = useRouter()
+  const { data: publishedBCO } = useAPIQuery(UserIntegrationsBioComputePublishedBCO, () => id ? { fpl_id: id } : null, { shouldRetryOnError: false })
   const { trigger, isMutating, error } = useSWRMutation(id ? `${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}/draft` : null, fetcherPOST<undefined, { object_id: string }>)
   const [showError, setShowError] = React.useState(false)
   React.useEffect(() => {
@@ -46,22 +49,29 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
                 text="Download BCO"
               />
             </a>
-            <Bp5MenuItem
-              icon="send-to"
-              text="Draft in BioCompute Portal"
-              onClick={async (evt) => {
-                trigger().then((res) => {
-                  if (res) window.open(`https://biocomputeobject.org/builder?${res.object_id}`, '_blank')
-                })
-              }}
-            />
+            {publishedBCO ? /* TODO: get the right link */
+              <a href={`https://biocomputeobject.org/builder?https://biocomputeobject.org/${publishedBCO}/DRAFT`}>
+                <Bp5MenuItem
+                  icon="link"
+                  text="View in BioCompute Portal"
+                />
+              </a>
+              : <Bp5MenuItem
+                icon="send-to"
+                text="Draft in BioCompute Portal"
+                onClick={async (evt) => {
+                  trigger().then((res) => {
+                    if (res) window.open(`https://biocomputeobject.org/builder?${res.object_id}`, '_blank')
+                  })
+                }}
+              />}
           </Bp5Menu>
         }
         placement="bottom"
       >
         <Icon
           icon={biocompute_icon}
-          className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
+          className={publishedBCO ? 'fill-green-500' : disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
           title={disabled ? 'Save to Create BCO' : 'Create BCO'}
         />
       </Bp5Popover>

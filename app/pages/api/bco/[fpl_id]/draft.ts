@@ -5,7 +5,7 @@ import FPL2BCO from '@/core/fpl2bco'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import handler from '@/utils/next-rest'
-import { NotFoundError, UnsupportedMethodError, UnauthorizedError } from '@/spec/error'
+import { NotFoundError, UnsupportedMethodError, UnauthorizedError, ResponseCodedError } from '@/spec/error'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 
 const QueryType = z.object({
@@ -65,9 +65,10 @@ export default handler(async (req, res) => {
       ]
     }),
   })
-  if (bcoReq.status !== 200) {
-    res.status(bcoReq.status).end(await bcoReq.text())
-    return
+  if (bcoReq.status === 403) {
+    throw new UnauthorizedError('BCO Unauthorization')
+  } else if (bcoReq.status !== 200) {
+    throw new ResponseCodedError(bcoReq.status, await bcoReq.text())
   }
   const [bcoRes] = z.array(z.object({ object_id: z.string() })).parse(await bcoReq.json())
   res.status(200).json(bcoRes)

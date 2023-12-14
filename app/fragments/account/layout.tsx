@@ -12,7 +12,7 @@ const AccountSettings = dynamic(() => import('@/app/fragments/account/settings')
 const AccountUploads = dynamic(() => import('@/app/fragments/account/uploads'))
 const AccountPlaybooks = dynamic(() => import('@/app/fragments/account/playbooks'))
 const AccountSuggestions = dynamic(() => import('@/app/fragments/account/suggestions'))
-// const AccountBioCompute = dynamic(() => import('@/app/fragments/account/biocompute'))
+const AccountBioCompute = dynamic(() => import('@/app/fragments/account/biocompute'))
 const AccountCAVATICA = dynamic(() => import('@/app/fragments/account/cavatica'))
 
 export default function Layout({ session }: { session: SessionWithId }) {
@@ -43,7 +43,7 @@ export default function Layout({ session }: { session: SessionWithId }) {
       <Bp5Tab id="suggestions" title={<><Bp5Icon icon="lightbulb" /> Suggestions</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSuggestions />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Integrations</span>
-      {/* <Bp5Tab id="biocompute" title={<><Bp5Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountBioCompute />} /> */}
+      <Bp5Tab id="biocompute" title={<><Bp5Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountBioCompute />} />
       <Bp5Tab id="cavatica" title={<><Bp5Icon icon="application" /> CAVATICA</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountCAVATICA />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Session</span>

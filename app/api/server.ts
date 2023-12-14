@@ -4,5 +4,6 @@
  * It is designed to be imported server-side.
  */
 export * from "./v1/admin/jobs"
+export * from "./v1/user/integrations/biocompute"
 export * from "./v1/user/integrations/cavatica"
 export * from "./v1/user/playbooks"

@@ -16,10 +16,10 @@ export default function SiteMap() {
         <div className="hero">
           <div className="hero-content prose">
             <div>
-              <h2>Site Map</h2>
-              <p>Click the card to go to the relevant page.</p>
+              <h2 className="prose">Site Map</h2>
+              <p className="prose">Click the card to go to the relevant page.</p>
               <div className="grid md:grid-cols-3 gap-4 my-2">
-                <Link href="/graph">
+                <Link href="/graph/extend">
                   <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
                     <div className="card-body prose">
                       <h4 className="card-title">Graph Mode</h4>

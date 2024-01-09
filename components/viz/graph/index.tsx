@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import { z } from 'zod'
 import { plot_icon } from '@/icons'
 
-const CytoscapeCanvas = dynamic(() => import('./cytoscape'), { ssr: false, loading: () => <div>Loading...</div> })
+const CytoscapeCanvas = dynamic(() => import('./cytoscape'), { ssr: false, loading: () => <div className="prose">Loading...</div> })
 
 export const GraphPlot = MetaNode('GraphPlot')
   .meta({

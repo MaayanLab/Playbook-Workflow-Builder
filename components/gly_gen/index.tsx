@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
 import { z } from 'zod'
-import { glygen_icon, protein_icon } from '@/icons'
+import { glygen_icon } from '@/icons'
 import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
 import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef, glygenProteinSearchQuery } from './utils'
 import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
@@ -11,7 +11,6 @@ import { ProteinSet } from '../core/input/set'
 
 
 // -------- Schema Definitions -------- // 
-
 
 /**
  * Zod definition for glycosylation data 
@@ -50,7 +49,7 @@ export const GlyGenProteinResponse = z.object({
       taxid: z.string(),
     }),
     glycoprotein: z.object({
-      glycosylation: z.boolean(),
+      glycosylation: z.boolean().optional(),
       glycosylation_data: z.array(GlycosylationEntry)
     })
   })
@@ -112,7 +111,6 @@ export const GlycanResponse = z.object({
 
 // -------- Data Metanodes -------- // 
 
-
 /**
  * Data metanode for the glygen api protein response, defines how the protein api response should 
  * be rendered in the UI 
@@ -128,7 +126,7 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
     const glyGenLink = `http://www.glygen.org/protein/${data.uniprot.uniprot_canonical_ac}`
 
     return (
-      <div>
+      <div className="prose">
           <div>Gene Name: <b>{data.gene.name}</b></div>
           <div>UniProtKB Accession:
             <b>
@@ -223,7 +221,7 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
 
     if (recordCount > 0) {
       return (
-        <div>
+        <div className="prose">
           <div>
             UniProtKB Accession: 
               <b>
@@ -240,7 +238,7 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
       )
     } else {
       return (
-        <div>
+        <div className="prose">
           <div>
             UniProtKB Accession: 
                 <b>
@@ -258,14 +256,13 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
   .meta({
     label: 'Glycan information',
     description: 'Glycan information from GlyGen'
-    // icon: []
   })
   .codec(GlycanResponse)
   .view(data => {
     const glyGenLink = `http://www.glygen.org/glycan/${data.glytoucan.glytoucan_ac}`
 
     return (
-      <div>
+      <div className="prose">
         <div>GlyTouCan Accession: 
           <b>
             <a href={glyGenLink} target='_blank' rel='noopener nonreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.glytoucan.glytoucan_ac}</u></a>
@@ -291,7 +288,6 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
 
 // -------- Process Metanodes (all resolver process metanodes) -------- // 
 
-
 /**
  * Process metanode for searching by protein name for protein products 
  */
@@ -305,7 +301,6 @@ export const GlyGenProtein = MetaNode('GGP')
   .inputs({ protein_uniprot_canonical_ac: ProteinTerm })
   .output(GlyGenProteinResponseNode)
   .resolve(async (props) => {
-    console.log("===> Got protein input %s", props.inputs.protein_uniprot_canonical_ac);
     const protein_response = await resolveFilteredResult(props.inputs.protein_uniprot_canonical_ac);
     return protein_response;
   })
@@ -393,10 +388,10 @@ export const GlyGenProteinInformation = MetaNode('GlyGenProteinInformation')
   .output(GlyGenProteinResponseNode)
   .resolve(async (props) => {
     const gene = await GeneInfoFromGeneTerm.resolve(props)
-    return await GlyGenProteinProduct.resolve({ inputs: { gene } })
+    return await GlyGenProteinProduct.resolve({ ...props, inputs: { gene } })
   })
   .story(props =>
-    `Next, Gene Info was resolved From the Gene Term "${props.inputs ? props.inputs.gene : 'the gene'}" via mygene.info.`
+    `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of protein products that originate from ${props.inputs ? props.inputs.gene : 'the gene'}.`
   )
   .build()
 
@@ -433,7 +428,6 @@ export const GlycanInformation = MetaNode('GlycanInformation')
   .inputs({ glycan: GlycanTerm })
   .output(GlycanViewResponseNode)
   .resolve(async (props) => {
-    console.log("===> Got glycan input %s", props.inputs.glycan);
     // get glycan data 
     const detail_response = await fetch(`https://api.glygen.org/glycan/detail/${props.inputs.glycan}`, {
       method: 'POST',
@@ -447,7 +441,7 @@ export const GlycanInformation = MetaNode('GlycanInformation')
     return glycan_data
   })
   .story(props => 
-    'placeholder'
+    `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a information about ${props.inputs ? props.inputs.glycan : 'the glycan'}.`
   )
   .build()
 

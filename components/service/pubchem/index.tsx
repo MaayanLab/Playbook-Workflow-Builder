@@ -12,7 +12,8 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
   .output(DrugSet)
   .resolve(async (props) => await python(
       'components.service.pubchem.filter_fda_set',
-      { kargs: [props.inputs.drugs] }
+      { kargs: [props.inputs.drugs] },
+      message => props.notify({ type: 'info', message }),
     )
   )
   .story(props => `The drug set was filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].`)
@@ -27,8 +28,9 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
   .output(ScoredDrugs)
   .resolve(async (props) => await python(
       'components.service.pubchem.filter_fda_scored',
-      { kargs: [props.inputs.drugs] }
+      { kargs: [props.inputs.drugs] },
+      message => props.notify({ type: 'info', message }),
     )
   )
-  .story(props => `The drugs was filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].`)
+  .story(props => `The drugs were filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].`)
   .build()

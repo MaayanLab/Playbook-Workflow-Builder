@@ -39,4 +39,6 @@ export const MyPrompt = MetaNode('MyPrompt')
       </div>
     )
   })
+  // Write up what this node has done doing
+  .story(props => `The workflow starts with ${props.output ? props.output : 'a gene'}.`)
   .build()

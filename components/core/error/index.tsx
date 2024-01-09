@@ -11,6 +11,6 @@ export const Error = MetaNode('Error')
   })
   .codec(z.string())
   .view(error => (
-    <div>{error}</div>
+    <div className="alert alert-error">{error}</div>
   ))
   .build()

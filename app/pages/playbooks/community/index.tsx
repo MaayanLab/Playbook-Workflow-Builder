@@ -39,10 +39,12 @@ export default function CommunityPlaybooks() {
     if (playbooks) {
       playbooks.forEach(playbook => {
         (playbook.inputs||'').split(', ').forEach(input => {
-          allInputs[input] = krg.getDataNode(input) as DataMetaNode
+          const node = krg.getDataNode(input)
+          if (node) allInputs[input] = node
         });
         (playbook.outputs||'').split(', ').forEach(output => {
-          allOutputs[output] = krg.getDataNode(output) as DataMetaNode
+          const node = krg.getDataNode(output)
+          if (node) allOutputs[output] = node
         });
       })
     }
@@ -108,11 +110,11 @@ export default function CommunityPlaybooks() {
             </div>
           </div>
         </div>
-        <div className="bp4-input-group">
-          <span className="bp4-icon bp4-icon-search" />
+        <div className="bp5-input-group">
+          <span className="bp5-icon bp5-icon-search" />
           <input
             type="search"
-            className="bp4-input"
+            className="bp5-input"
             placeholder="Search playbooks by title, description, and more"
             value={search}
             onChange={evt => {
@@ -148,7 +150,7 @@ export default function CommunityPlaybooks() {
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row flex-wrap gap-2 justify-center">
-                    {(playbook.inputs||'').split(', ').map(spec => krg.getDataNode(spec)).map(input => (
+                    {(playbook.inputs||'').split(', ').map(spec => krg.getDataNode(spec)).filter(node => node !== undefined).map(input => (
                       <button
                         key={input.spec}
                         onClick={() => {
@@ -172,7 +174,7 @@ export default function CommunityPlaybooks() {
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Outputs</div>
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row flex-wrap gap-2 justify-center">
-                    {(playbook.outputs||'').split(', ').map(spec => krg.getDataNode(spec)).map(output => (
+                    {(playbook.outputs||'').split(', ').map(spec => krg.getDataNode(spec)).filter(node => node !== undefined).map(output => (
                       <button
                         key={output.spec}
                         onClick={() => {
@@ -204,7 +206,6 @@ export default function CommunityPlaybooks() {
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row gap-2 justify-center">
                     <button onClick={() => {
-                      // TODO: register click
                       router.push(`/report/${playbook.playbook}`)
                     }}>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
@@ -225,7 +226,7 @@ export default function CommunityPlaybooks() {
                   <p><b>Published</b>: {playbook.created.toString()}</p>
                   <p><b>Authors</b>:<br /><UserIdentity user={playbook.user} /></p>
                   <p><b>Description</b>: {playbook.description}</p>
-                  <Link href={`/report/${playbook.playbook}`}><button className="bp4-button bp4-large">Launch</button></Link>
+                  <Link href={`/report/${playbook.playbook}`}><button className="bp5-button bp5-large">Launch</button></Link>
                 </div>
               </div>
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>

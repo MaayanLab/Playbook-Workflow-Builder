@@ -11,7 +11,7 @@ import { file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
 
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export const DMT = MetaNode(`DMT`)
   .meta({
@@ -62,6 +62,7 @@ export const DMTFromFile = MetaNode('DMTFromFile')
   .resolve(async (props) => await python(
     'components.data.drug_matrix_transpose.load_drug_matrix_transpose',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a drug matrix transpose.`)
   .build()
@@ -77,7 +78,7 @@ export const DMTUnion = MetaNode('DMTUnion')
     return { set: array.unique(dict.values(props.inputs.dmt).flatMap(({ set: drugset }) => drugset)) }
   })
   .story(props =>
-    `All the identified drug sets were combined usng the union set operation.`
+    `All the identified drug sets were combined using the union set operation.`
   )
   .build()
 
@@ -127,23 +128,20 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
     label: `Assemble DMT from Drug Sets`,
     description: 'Group multiple independently generated drug sets into a single DMT'
   })
+  .codec(z.object({
+    terms: z.record(z.union([z.string(), z.number()]).transform(key => +key), z.string()),
+    descriptions: z.record(z.union([z.string(), z.number()]).transform(key => +key), z.string()),
+  }))
   .inputs({ sets: [DrugSet] })
   .output(DMT)
   .prompt(props => {
-    const [terms, setTerms] = React.useState({} as Record<number, string>)
-    const [descriptions, setDescriptions] = React.useState({} as Record<number, string>)
+    const [terms, setTerms] = React.useState(() => dict.init(array.arange(props.inputs.sets.length).map(key => ({ key, value: props.inputs.sets[key].description||'' }))))
+    const [descriptions, setDescriptions] = React.useState(() => dict.init(array.arange(props.inputs.sets.length).map(key => ({ key, value: '' }))))
     React.useEffect(() => {
-      if (props.inputs) {
-        setTerms(dict.init(array.arange(props.inputs.sets.length).map(key => ({ key, value: props.inputs.sets[key].description||'' }))))
-        setDescriptions(dict.init(array.arange(props.inputs.sets.length).map(key => ({ key, value: '' }))))
-      }
-    }, [props.inputs])
-    React.useEffect(() => {
-      if (props.output) {
-        setTerms(dict.init(dict.keys(props.output).map((key, i) => ({ key: i, value: key }))))
-        setDescriptions(dict.init(dict.values(props.output).map(({ description }, i) => ({ key: i, value: description||'' }))))
-      }
-    }, [props.output])
+      if (!props.data) return
+      setTerms(props.data.terms ? props.data.terms : {} as Record<number, string>)
+      setDescriptions(props.data.descriptions ? props.data.descriptions : {} as Record<number, string>)
+    }, [props.data])
     return (
       <div>
         <Table
@@ -151,14 +149,13 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
           cellRendererDependencies={[props.inputs.sets, terms, descriptions]}
           numRows={props.inputs.sets.length}
           enableGhostCells
-          enableFocusedCell
         >
           <Column
             name="Term"
             cellRenderer={row => <EditableCell
               key={row+''}
               value={terms[row]}
-              placeholder={`Drug set from path ${row}`}
+              editableTextProps={{placeholder: `Drug set from path ${row}`}}
               onChange={value => setTerms(terms => ({ ...terms, [row]: value }))}
             />}
           />
@@ -167,7 +164,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
             cellRenderer={row => <EditableCell
               key={row+''}
               value={descriptions[row]}
-              placeholder={`Some optional description`}
+              editableTextProps={{placeholder: `Some optional description`}}
               onChange={value => setDescriptions(descriptions => ({ ...descriptions, [row]: value }))}
             />}
           />
@@ -176,24 +173,30 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
             cellRenderer={row => <Cell key={row+''}>{props.inputs.sets[row].set.join('\t')}</Cell>}
           />
         </Table>
-        <Bp4Button
+        <Bp5Button
           large
           type="submit"
           text="Submit"
           rightIcon="bring-data"
-          onClick={() => props.submit(
-            dict.init(
-              array.arange(props.inputs.sets.length)
-                .map(i => ({
-                  key: terms[i],
-                  value: {
-                    description: descriptions[i],
-                    set: props.inputs.sets[i].set,
-                  }
-                }))
-            ))}
+          onClick={() => props.submit({ terms, descriptions })}
         />
       </div>
+    )
+  })
+  .resolve(async (props) => {
+    const { terms, descriptions } = props.data
+    if (props.inputs.sets.length !== Object.keys(terms).length) {
+      throw new Error('Please confirm the terms')
+    }
+    return dict.init(
+      array.arange(props.inputs.sets.length)
+        .map(i => ({
+          key: terms[i],
+          value: {
+            description: descriptions[i],
+            set: props.inputs.sets[i].set,
+          }
+        }))
     )
   })
   .story(props =>

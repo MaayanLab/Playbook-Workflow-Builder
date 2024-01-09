@@ -32,18 +32,18 @@ const Suggestion = MetaNode('Suggestion')
   }))
   .view(suggestion => (
     <div>
-      <div className="bp4-card">
-        <h4 className="bp4-heading">{suggestion.name}</h4>
-        <p className="bp4-text-large">{suggestion.description}</p>
-        <div className="bp4-callout">
-          <h5 className="bp4-heading">Author</h5>
+      <div className="bp5-card">
+        <h4 className="bp5-heading">{suggestion.name}</h4>
+        <p className="bp5-text-large">{suggestion.description}</p>
+        <div className="bp5-callout">
+          <h5 className="bp5-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div>
         {/* <br />
-        <h5 className="bp4-heading"><i>Comments</i></h5>
-        <div className="bp4-callout">
-          <p className="bp4-text-large">My comment is important</p>
-          <h5 className="bp4-heading">Author</h5>
+        <h5 className="bp5-heading"><i>Comments</i></h5>
+        <div className="bp5-callout">
+          <p className="bp5-text-large">My comment is important</p>
+          <h5 className="bp5-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div> */}
       </div>
@@ -104,16 +104,16 @@ export function SuggestionEdges(input?: DataMetaNode) {
   }))
 }
 
-export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head: Metapath }) {
+export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
-  const { data: session } = useSessionWithId({ required: true })
+  const { data: userSession } = useSessionWithId({ required: true })
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined
   const [suggestion, setSuggestion] = React.useState({
     name: '',
     inputs: input ? input.spec as string : '',
     output: '',
-    user: session?.user?.id,
+    user: userSession?.user?.id,
     description: '',
   })
   return (
@@ -222,6 +222,9 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
           }
           // register the suggestion
           const kvReq = await fetch(`/api/suggest/`, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
             method: 'POST',
             body: JSON.stringify(suggestion_final)
           })
@@ -236,7 +239,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
               })
               .codec<any>()
               .view((props) => {
-                return <div>This data type was suggested as part of {suggestion_final.name}</div>
+                return <div className="prose">This data type was suggested as part of {suggestion_final.name}</div>
               })
               .build()
             krg.add(OutputNode)
@@ -251,7 +254,7 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
             ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
             .output(OutputNode)
             .prompt((props) => {
-              return <div>
+              return <div className="prose">
                 <p>{suggestion.description}</p>
                 <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
               </div>
@@ -267,6 +270,9 @@ export default function Suggest({ krg, id, head }: { krg: KRG, id: string, head:
             }
           }
           const extendReq = await fetch(`/api/db/fpl/${id}/extend`, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
             method: 'POST',
             body: JSON.stringify({
               type: ProcessNode.spec,

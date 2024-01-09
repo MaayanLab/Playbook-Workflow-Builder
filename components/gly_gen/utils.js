@@ -62,7 +62,7 @@ export function filterGlyGenResults(result, prop_type, prop_name) {
 
 export function GlycosylationTable({ glycosylationData, isPreview = false }) {
   return (
-    <div>
+    <div className="prose">
       <table>
         <thead>
           <tr>
@@ -106,7 +106,7 @@ export function GlycanCrossRef({ crossref }) {
   }
 
   return (
-    <div>
+    <div className="prose">
       {pubMedCrossRefs.map(entry => (
         <div key={entry.id}>
           <b>{entry.database}: </b>

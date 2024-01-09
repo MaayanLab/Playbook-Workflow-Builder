@@ -21,8 +21,8 @@ import { downloadBlob } from '@/utils/download'
 import dynamic from 'next/dynamic'
 import pluralize from 'pluralize'
 
-const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
-const Bp4TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
+const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
+const Bp5TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
 
 const Set_T = (T: Primative) => MetaNode(`Set[${T.name}]`)
   .meta({
@@ -100,7 +100,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
     }, [props.output])
     return (
       <div>
-        <Bp4TextArea
+        <Bp5TextArea
           placeholder="Newline separated set of terms"
           rows={8}
           fill
@@ -108,17 +108,17 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           onChange={evt => setSet(evt.target.value)}
           value={set}
         />
-        <div className="bp4-input-group">
+        <div className="bp5-input-group">
           <input
             type="text"
-            className="bp4-input"
+            className="bp5-input"
             placeholder={`${T.label} Set description`}
             onChange={evt => setDescription(evt.target.value)}
             value={description}
           />
         </div>
         {T.extra?.set?.meta?.example !== undefined ?
-          <Bp4Button
+          <Bp5Button
             large
             rightIcon="send-to-graph"
             onClick={evt => {
@@ -130,7 +130,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
             text="Example"
           />
           : null}
-        <Bp4Button
+        <Bp5Button
           large
           type="submit"
           text="Submit"

@@ -2,6 +2,14 @@ FROM node:latest as base
 RUN echo "Installing git..." && apt-get -y update && apt-get -y install git && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
+FROM base as prepare_system
+RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
+ENV PYTHON_BIN="python3"
+
+FROM prepare_system as prepare_r
+COPY cli/setup.R /app/setup.R
+RUN echo "Running setup.R..." && R -e "source('/app/setup.R')" && rm /app/setup.R
+
 FROM base as prepare_src
 COPY . /app
 
@@ -29,15 +37,7 @@ RUN npm run codegen:requirements \
 
 FROM prepare_src as prepare_build
 COPY --from=prepare_npm_i /app /app
-RUN echo "Building app..." && LANDING_PAGE=/graph/extend npm run build
-
-FROM base as prepare_system
-RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
-ENV PYTHON_BIN="python3"
-
-FROM prepare_system as prepare_r
-COPY cli/setup.R /app/setup.R
-RUN echo "Running setup.R..." && R -e "source('/app/setup.R')" && rm /app/setup.R
+RUN echo "Building app..." && LANDING_PAGE=/graph/extend PUBLIC_URL=https://playbook-workflow-builder.cloud npm run build
 
 FROM prepare_system as prepare_python
 COPY --from=prepare_requirements_txt_complete /app /app
@@ -55,7 +55,7 @@ CMD ["/bin/bash"]
 # TARGET: app_minimal -- production server with dependencies to run just the webserver
 FROM base as app_minimal
 COPY --from=prepare_build /app /app
-EXPOSE 3000
+ENV PORT 3000
 CMD ["npm", "run", "start"]
 
 # TARGET: app -- production server with dependencies to run everything
@@ -63,5 +63,6 @@ FROM prepare_system as app
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_build /app /app
-EXPOSE 3000
+RUN chmod +x /app/cli/wes-worker.sh
+ENV PORT 3000
 CMD ["npm", "run", "start"]

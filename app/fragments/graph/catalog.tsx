@@ -10,23 +10,26 @@ const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup 
 
 type KVCounts = { [key: string]: { [val: string]: number } }
 
-export default function Catalog<T extends { meta?: { pagerank?: number, tags?: Record<string, Record<string, number>> } }>({ items, serialize, children }: {
+export default function Catalog<T extends { spec: string, meta?: { pagerank?: number, tags?: Record<string, Record<string, number>> } }>({ items, weights, serialize, children }: {
   items: Array<T>,
+  weights: Record<string, number>,
   serialize: (item: T) => string,
   children: (child: T) => React.ReactElement,
 }) {
   const [search, setSearch] = React.useState('')
   const [filters, setFilters] = React.useState({} as Record<string, Record<string, number>>)
   const search_ts = React.useMemo(() => tsvector(search), [search])
-  const { group_values, item_search_ts, pagerank_max } = React.useMemo(() => {
+  const { group_values, item_search_ts, pagerank_max, weight_max } = React.useMemo(() => {
     const group_values: KVCounts = {}
     const item_search_ts: Record<string, TSVector> = {}
     let pagerank_max = 1
+    let weight_max = 1
     for (const k in items) {
       const item = items[k]
       const item_meta = item.meta||{}
       item_search_ts[k] = tsvector(serialize(item))
       pagerank_max = Math.max(item_meta.pagerank||0, pagerank_max)
+      weight_max = Math.max(weights[item.spec]||0, weight_max)
       if (!('tags' in item_meta)) continue
       for (const group in item_meta.tags) {
         if (!(group in group_values)) {
@@ -40,7 +43,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
         }
       }
     }
-    return { group_values, item_search_ts, pagerank_max }
+    return { group_values, item_search_ts, pagerank_max, weight_max }
   }, [items])
   const items_filtered = React.useMemo(() =>
     array.arange(items.length)
@@ -73,12 +76,18 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
         })
     items_filtered_searched.sort((a, b) => {
       const a_meta = items[a].meta || {}
+      const a_pagerank = (a_meta.pagerank||0.)/pagerank_max
+      const a_weight = (weights[items[a].spec]||0.)/weight_max
       const b_meta = items[b].meta || {}
+      const b_pagerank = (b_meta.pagerank||0.)/pagerank_max
+      const b_weight = (weights[items[b].spec]||0.)/weight_max
       return (
-        ((b_meta.pagerank||0.)/pagerank_max
+        (b_pagerank
+          + 2 * b_weight
           + 2 * ((items_filtered_search_score[b]||0.)/items_filtered_search_score_max))
-        - (
-        ((a_meta.pagerank||0.)/pagerank_max)
+        -
+        (a_pagerank
+          + 2 * a_weight
           + 2 * ((items_filtered_search_score[a]||0.)/items_filtered_search_score_max))
       )
     })
@@ -126,7 +135,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
                 <div className="ml-2 mb-4">
                   {dict.keys(group_values[group])
                     .map(value => (
-                      <label key={value} className="bp4-control bp4-switch prose prose-sm">
+                      <label key={value} className="bp5-control bp5-switch prose prose-sm">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -151,7 +160,7 @@ export default function Catalog<T extends { meta?: { pagerank?: number, tags?: R
                             setFilters(_filters)
                           }}
                         />
-                        <span className="bp4-control-indicator"></span>
+                        <span className="bp5-control-indicator"></span>
                         {value} <span className="whitespace-nowrap">[{
                         (group_values_filtered[group]||{})[value] === group_values[group][value] ? (
                           group_values[group][value]

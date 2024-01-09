@@ -23,6 +23,7 @@ export default {
   "10.1093/nar/gks1193": "Barrett, T. et al. NCBI GEO: archive for functional genomics data sets—update. Nucleic Acids Research vol. 41 D991–D995 (2012).",
   "10.1093/nar/gkv007": " Ritchie, M. E. et al. limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research vol. 43 e47–e47 (2015).",
   "10.1093/nar/gkx1153": "Landrum, M. J. et al. ClinVar: improving access to variant interpretations and supporting evidence. Nucleic Acids Research vol. 46 D1062–D1067 (2017).",
+  "10.1093/nar/gkz393": " Lachmann, A. et al. Geneshot: search engine for ranking genes from arbitrary text queries. Nucleic Acids Research vol. 47 W571–W577 (2019).",
   "10.1093/nar/gkz446": "Keenan, A. B. et al. ChEA3: transcription factor enrichment analysis by orthogonal omics integration. Nucleic Acids Research vol. 47 W212–W224 (2019).",
   "10.1186/1471-2105-15-79": " Clark, N. R. et al. The characteristic direction: a geometrical approach to identify differentially expressed genes. BMC Bioinformatics vol. 15 (2014).",
   "10.1186/gb-2014-15-2-r29": " Law, C. W., Chen, Y., Shi, W. & Smyth, G. K. voom: precision weights unlock linear model analysis tools for RNA-seq read counts. Genome Biology vol. 15 R29 (2014).",

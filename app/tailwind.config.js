@@ -2,11 +2,12 @@ const colors = require('tailwindcss/colors')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  mode: 'jit',
   darkMode: 'class',
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./fragments/**/*.{js,ts,jsx,tsx}",
+    "../app/pages/**/*.{js,ts,jsx,tsx}",
+    "../app/components/**/*.{js,ts,jsx,tsx}",
+    "../app/fragments/**/*.{js,ts,jsx,tsx}",
     "../components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {

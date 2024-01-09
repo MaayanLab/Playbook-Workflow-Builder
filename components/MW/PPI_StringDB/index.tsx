@@ -161,7 +161,7 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
     const dataobj = data.edges; //const dataobj = [data][0];
 
     return(
-          <div>
+          <div className="prose">
             <h3>Species: {data.species_id}</h3>
             <h3>Taxonomy ID: {data.species_txid}</h3>
             <table>
@@ -185,7 +185,7 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
   .build()
 
 // A unique name for your resolver is used here
-export const FetchStringDBPPI_Gene = MetaNode('FetchStringDBPPI_Gene')
+export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
 // Human readble descriptors about this node should go here
 .meta({
   label: 'Fetch StringDB PPI',

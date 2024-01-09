@@ -16,6 +16,7 @@ export const QuantileNormalizeGeneCountMatrix = MetaNode('QuantileNormalizeGeneC
   .resolve(async (props) => await python(
     'components.data.quantile_normalization.quantile_normalize_gene_count_matrix',
     { kargs: [props.inputs.matrix]  },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props =>
     `The gene count matrix was then quantile normalized [\\ref{doi:10.1038/s41598-020-72664-6}].`

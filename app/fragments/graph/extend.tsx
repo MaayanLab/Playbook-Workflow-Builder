@@ -9,6 +9,7 @@ import type { Metapath } from '@/app/fragments/metapath'
 import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
+import pathWeights from '@/app/public/weights.json'
 import Head from 'next/head'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
@@ -16,7 +17,7 @@ const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
-export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
+export default function Extend({ session_id, krg, id, head, metapath }: { session_id?: string, krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const router = useRouter()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const selections = React.useMemo(() => {
@@ -33,6 +34,11 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
     })
     return selections
   }, [metapath, head])
+  const weights = React.useMemo(() => {
+    const key = ['Start', ...metapath.map(p => p.process.type)].slice(-2).join(' ')
+    const weights = pathWeights[key as keyof typeof pathWeights] || {}
+    return weights
+  }, [metapath])
   return (
     <>
       <Head>
@@ -40,7 +46,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
       </Head>
       <Catalog<ProcessMetaNode & ({}|{ onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
         items={[
-          ...krg.getNextProcess(processNode ? processNode.output.spec : ''),
+          ...krg.getNextProcess(processNode ? processNode.output.spec : '').filter(proc => proc.meta.hidden !== true),
           ...SuggestionEdges(processNode ? processNode.output : undefined),
         ]}
         serialize={item => [
@@ -50,6 +56,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
           dict.values(item.meta.tags || {})
             .flatMap(tagGroup => dict.items(tagGroup).filter(({ value }) => value).map(({ key }) => key)),
         ].join(' ')}
+        weights={weights}
       >{item => {
         // determine if multi-inputs are satisfiable
         const disabled = !array.all(
@@ -88,7 +95,10 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
                     inputs[arg] = { id: selection.process.id }
                   }
                 })
-                const req = await fetch(`/api/db/fpl/${id}/extend`, {
+                const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/extend`, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
                   method: 'POST',
                   body: JSON.stringify({
                     type: item.spec,
@@ -96,7 +106,7 @@ export default function Extend({ krg, id, head, metapath }: { krg: KRG, id: stri
                   })
                 })
                 const res = z.string().parse(await req.json())
-                router.push(`/graph/${res}`)
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res}`)
               }
             }}
           >

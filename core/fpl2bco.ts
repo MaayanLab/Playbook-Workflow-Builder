@@ -7,6 +7,7 @@ import * as array from '@/utils/array'
 import type { FPL } from "@/core/FPPRG"
 import { decode_complete_process_inputs, decode_complete_process_output } from "@/core/engine"
 import extractCitations from "@/utils/citations"
+import packageJson from '@/package.json'
 
 type BCO = z.infer<typeof IEE2791schema>
 type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
@@ -26,6 +27,13 @@ type Author = {
   affiliation?: string,
   email?: string,
   orcid?: string,
+}
+
+function parseMetaNodeAuthor(author: string) {
+  const m = /^(.+?)\s*(<(.+?)>)?$/.exec(author)
+  if (m === null) return { name: author }
+  const [_0, name, _2, email] = m
+  return { name, email }
 }
 
 export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<BCO> {
@@ -65,9 +73,9 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     provenance_domain: {
       embargo: {}, // ?
       name: props.metadata?.title || 'Playbook',
-      version: '1.0',
+      version: packageJson.version,
       license: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-      derived_from: 'NA',
+      derived_from: `${process.env.PUBLIC_URL}/report/${fullFPL[fullFPL.length - 1].id}`,
       contributors: [],
       review: [],
       created: toBCOTimeString(), // TODO: datetime
@@ -84,7 +92,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       pipeline_steps: dict.values(processLookup).map(({ index, node, metanode }) => ({
         name: metanode.meta.label,
         description: metanode.meta.description,
-        // version: metanode.meta.version,
+        version: metanode.meta.version,
         step_number: index + 1,
         prerequisite: dict.values(node.inputs).map(input => processLookup[input.id]).map(inputProcess => ({
           name: `Output of step ${inputProcess.index+1}`,
@@ -105,10 +113,10 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
         ],
       })),
     },
-    parametric_domain: dict.values(processLookup).filter(({ node }) => node.data !== null).map(({ index, node, metanode }) => ({
+    parametric_domain: dict.values(processLookup).filter(({ node }) => node.data !== null && node.data?.value).map(({ index, node, metanode }) => ({
       step: `${index+1}`,
       param: 'stdin',
-      value: node.data ? node.data.value : '',
+      value: JSON.stringify(node.data?.value),
     })),
     execution_domain: {
       // TODO: load prereqs from steps in use (?)
@@ -158,13 +166,25 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     },
     // TODO error_domain
   }
+  const current_authors = new Set()
   if (props.author) {
+    current_authors.add(props.author.name)
     baseBCO.provenance_domain.contributors.push({
       ...props.author,
       contribution: ['authoredBy'],
     })
   }
-  // TODO: include contributors based on edges in use
+  dict.values(processLookup).forEach(({ metanode }) => {
+    if (metanode.meta.author) {
+      const author = parseMetaNodeAuthor(metanode.meta.author)
+      if (current_authors.has(author.name)) return
+      current_authors.add(author.name)
+      baseBCO.provenance_domain.contributors.push({
+        ...author,
+        contribution: ['contributedBy'],
+      })
+    }
+  })
   return {
     spec_version: 'https://w3id.org/ieee/ieee-2791-schema/2791object.json',
     etag: sha256(baseBCO),

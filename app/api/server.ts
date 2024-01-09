@@ -3,4 +3,6 @@
  *  and exports all API routes recursively in this directory.
  * It is designed to be imported server-side.
  */
+export * from "./v1/admin/jobs"
+export * from "./v1/user/integrations/cavatica"
 export * from "./v1/user/playbooks"

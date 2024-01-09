@@ -5,7 +5,9 @@
       "@/*": [
         "./*"
       ],
-      "*": ["./types/*"]
+      "*": [
+        "./types/*"
+      ]
     },
     "target": "es6",
     "lib": [
@@ -24,13 +26,26 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next/types/**/*.ts"
   ],
+  "ts-node": {
+    "require": [
+      "dotenv/config",
+      "esm",
+      "tsconfig-paths/register"
+    ]
+  },
   "exclude": [
     "node_modules"
   ]

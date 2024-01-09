@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET')  {
       res.status(200).json(await db.objects.suggestion.findMany())
     } else if (req.method === 'POST') {
-      const suggestion = BodyType.parse(JSON.parse(req.body))
+      const suggestion = BodyType.parse(req.body)
       // add the suggested KRG node(s)
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           })
           .codec<any>()
           .view((props) => {
-            return <div>This data type was suggested as part of {suggestion.name}</div>
+            return <div className="prose">This data type was suggested as part of {suggestion.name}</div>
           })
           .build()
         krg.add(OutputNode)
@@ -52,8 +52,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .output(OutputNode)
         .prompt((props) => {
           return <div>
-            <p>{suggestion.description}</p>
-            <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
+            <p className="prose">{suggestion.description}</p>
+            <p className="prose">This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
           </div>
         })
         .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)

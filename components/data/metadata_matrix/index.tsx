@@ -32,7 +32,7 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
           ellipses={props.ellipses}
           shape={props.shape}
           downloads={{
-            'URL': () => downloadUrl(props.url)
+            'URL': () => downloadUrl(props.url, props.filename)
           }}
         />
       </div>
@@ -51,6 +51,7 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .resolve(async (props) => await python(
     'components.data.metadata_matrix.metadata_matrix',
     { kargs: [props.inputs.file] },
+    message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`)
   .build()

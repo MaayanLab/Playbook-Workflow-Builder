@@ -19,7 +19,7 @@ def anndata(file: File) -> AnnDataFile:
   return gene_count_matrix(file)
 
 def anndata_from_gene_count_matrix_and_metadata_matrix(gene_count_matrix: GeneCountMatrix, metadata_matrix: MetadataMatrix):
-  df = anndata_from_file(gene_count_matrix).T
+  df = anndata_from_file(gene_count_matrix)
   df_meta = metadata_from_file(metadata_matrix)
   df.obs = df_meta
   with upsert_file('.h5ad', description=gene_count_matrix.get('description')) as f:

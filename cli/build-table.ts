@@ -7,7 +7,7 @@ metanodes.forEach(metanode => krg.add(metanode))
 
 console.log(
   [
-    ['id', 'type', 'input', 'output', 'label', 'description', 'color'].join('\t'),
+    ['id', 'type', 'input', 'output', 'label', 'description', 'color', 'story'].join('\t'),
     ...[
       ...krg.getDataNodes(),
       ...krg.getPromptNodes(),
@@ -22,6 +22,7 @@ console.log(
       node.meta.label,
       node.meta.description,
       node.meta.color,
+      'story' in node ? node.story({}) : '',
     ].join('\t')),
   ].join('\n')
 )

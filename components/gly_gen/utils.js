@@ -122,8 +122,13 @@ export function GlycanCrossRef({ crossref }) {
 
 export async function glygenProteinSearchQuery(uniprot_canonical_accessions) {
   // hit the /protein/search query endpoing to get the list id 
-  const search_query = `https://api.glygen.org/protein/search?query={%22operation%22:%22AND%22,%22query_type%22:%22search_protein%22,%22uniprot_canonical_ac%22:%22${uniprot_canonical_accessions.join(',')}%22}`
-  const search_query_request = await fetch(search_query, {
+  const search_query = new URLSearchParams()
+  search_query.append('query', JSON.stringify({
+    operation:"AND",
+    query_type: "search_protein",
+    uniprot_canonical_ac: uniprot_canonical_accessions.join(','),
+  }))
+  const search_query_request = await fetch(`https://api.glygen.org/protein/search?${search_query.toString()}`, {
     method: 'GET',
     headers: {
       accept: 'application/json',
@@ -133,8 +138,16 @@ export async function glygenProteinSearchQuery(uniprot_canonical_accessions) {
   console.log('list_id status code: ', search_query_request.status)
   const search_query_response = await search_query_request.json();
   const list_id = search_query_response.list_id
-  const list_query = `https://api.glygen.org/protein/list?query={%22id%22:%22${list_id}%22,%22offset%22:1,%22limit%22:20,%22order%22:%22desc%22,%22sort%22:%22hit_score%22,%22filters%22:[]}`
-  const list_query_request = await fetch(list_query, {
+  const list_query = new URLSearchParams()
+  list_query.append('query', JSON.stringify({
+    id: list_id,
+    offset: 1,
+    limit: 20,
+    order: "desc",
+    sort: "hit_score",
+    filters: [],
+  }))
+  const list_query_request = await fetch(`https://api.glygen.org/protein/list?${list_query.toString()}`, {
     method: 'GET',
     headers: {
       accept: 'application/json',

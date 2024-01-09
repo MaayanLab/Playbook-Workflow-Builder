@@ -1,13 +1,11 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
+import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon } from '@/icons'
 import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
 import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef, glygenProteinSearchQuery } from './utils'
-import { Properties } from '@blueprintjs/icons/lib/esm/generated/16px/paths'
-import { filter } from '@/utils/dict'
-import { ProteinSet } from '../core/input/set'
+import { ProteinSet } from '@/components/core/input/set'
 
 
 // -------- Schema Definitions -------- // 

@@ -241,6 +241,24 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     `Graph Nodes were extracted from the CTD output.`
   ).build()
 
+  export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
+  .meta({
+    label: `CTD String For Gene Set`,
+    description: "Get a CTD response for a set of genes for graph type string."
+  })
+  .inputs({ geneset: GeneSet })
+  .output(CTDResponseInfo)
+  .resolve(async (props) => {
+    console.log("CTD String, gen set processing.");
+    let requestBody = {
+      "graphType": "string",
+      "geneList": props.inputs.geneset.set
+    }
+    return await getCTDGenSetResponse(JSON.stringify(requestBody));
+  }).story(props =>
+    `Get a CTD response for a set of genes for graph type string.`
+  ).build()
+
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
     label: `CTD Wikipathways For Gene Set`,
@@ -249,6 +267,7 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
+    console.log("CTD Wikipathways, gen set processing.");
     let requestBody = {
       "graphType": "wikipathways",
       "geneList": props.inputs.geneset.set
@@ -256,23 +275,6 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
     `Get a CTD response for a set of genes for graph type wikipathways.`
-  ).build()
-
-export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
-  .meta({
-    label: `CTD String For Gene Set`,
-    description: "Get a CTD response for a set of genes for graph type string."
-  })
-  .inputs({ geneset: GeneSet })
-  .output(CTDResponseInfo)
-  .resolve(async (props) => {
-    let requestBody = {
-      "graphType": "string",
-      "geneList": props.inputs.geneset.set
-    }
-    return await getCTDGenSetResponse(JSON.stringify(requestBody));
-  }).story(props =>
-    `Get a CTD response for a set of genes for graph type string.`
   ).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
@@ -285,7 +287,7 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     const fileReader = await fileAsStream(props.inputs.file);
-
+    console.log("CTD String, file processing: "+props.inputs.file.filename);
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
@@ -304,7 +306,7 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     const fileReader = await fileAsStream(props.inputs.file);
-
+    console.log("CTD Wikpathways, file processing: "+props.inputs.file.filename);
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "wikipathways");

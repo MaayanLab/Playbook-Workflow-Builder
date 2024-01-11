@@ -275,25 +275,6 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
 
-export const GenesFile_CTD_Wikipathways = MetaNode('GenesFile_CTD_Wikipathways')
-  .meta({
-    label: `CTD Wikipathways For Genes Set File`,
-    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
-    icon: [file_transfer_icon]
-  })
-  .inputs({ file: FileURL })
-  .output(CTDResponseInfo)
-  .resolve(async (props) => {
-    const fileReader = await fileAsStream(props.inputs.file);
-
-    const formData = new FormData();
-    formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
-    formData.append('graphType', "wikipathways");
-    return await getCTDFileResponse(formData);
-  })
-  .story(props => ``)
-  .build()
-
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
     label: `CTD String For Genes Set File`,
@@ -308,6 +289,25 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
+    return await getCTDFileResponse(formData);
+  })
+  .story(props => ``)
+  .build()
+
+  export const GenesFile_CTD_Wikipathways = MetaNode('GenesFile_CTD_Wikipathways')
+  .meta({
+    label: `CTD Wikipathways For Genes Set File`,
+    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
+    icon: [file_transfer_icon]
+  })
+  .inputs({ file: FileURL })
+  .output(CTDResponseInfo)
+  .resolve(async (props) => {
+    const fileReader = await fileAsStream(props.inputs.file);
+
+    const formData = new FormData();
+    formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
+    formData.append('graphType', "wikipathways");
     return await getCTDFileResponse(formData);
   })
   .story(props => ``)

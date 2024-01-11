@@ -247,7 +247,7 @@ export const VariantInfo = MetaNode('VariantInfo')
   })
   .codec(AlleleRegistryVariantInfoC)
   .view(variantinfo => (
-    <div>
+    <div className="prose">
       <a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${variantinfo.entId}`}>{variantinfo.entId}</a> (variant)
     </div>
   ))
@@ -348,7 +348,6 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             cellRendererDependencies={[alleleSpecificEvidence]}
             numRows={alleleSpecificEvidence.length}
             enableGhostCells
-            enableFocusedCell
             downloads={{
               JSON: () => downloadBlob(new Blob([JSON.stringify(alleleSpecificEvidence)], { type: 'application/json;charset=utf-8' }), 'data.json')
             }}

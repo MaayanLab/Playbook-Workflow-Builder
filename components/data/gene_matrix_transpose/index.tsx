@@ -78,7 +78,7 @@ export const GMTUnion = MetaNode('GMTUnion')
     return { set: array.unique(dict.values(props.inputs.gmt).flatMap(({ set: geneset }) => geneset)) }
   })
   .story(props =>
-    `All the identified gene sets were combined usng the union set operation.`
+    `All the identified gene sets were combined using the union set operation.`
   )
   .build()
 
@@ -149,7 +149,6 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
           cellRendererDependencies={[props.inputs.genesets, terms, descriptions]}
           numRows={props.inputs.genesets.length}
           enableGhostCells
-          enableFocusedCell
         >
           <Column
             name="Term"

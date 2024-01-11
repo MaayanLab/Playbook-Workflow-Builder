@@ -91,7 +91,6 @@ export const TopKScoredT = [
             }
             numRows={scored.length}
             enableGhostCells
-            enableFocusedCell
           >
             <Column
               name={T.label}
@@ -213,7 +212,6 @@ export const SetFromScoredT = [
             }
             numRows={set.length}
             enableGhostCells
-            enableFocusedCell
           >
             <Column
               name={T.label}
@@ -271,7 +269,6 @@ export const SetFromScoredT = [
             numRows={set.length}
             shape={[set.length - Object.keys(selected).length]}
             enableGhostCells
-            enableFocusedCell
           >
             <Column
               name={T.label}

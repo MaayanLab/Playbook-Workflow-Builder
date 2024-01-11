@@ -43,6 +43,9 @@ export default class KRG {
   getPromptNodes = () => {
     return dict.sortedValues(this.promptNodes)
   }
+  getPrevProcess = (spec: string = '') => {
+    return dict.sortedValues(this.processForOutput[spec] || {})
+  }
   getNextProcess = (spec: string = '') => {
     return dict.sortedValues(this.processForInput[spec] || {})
   }

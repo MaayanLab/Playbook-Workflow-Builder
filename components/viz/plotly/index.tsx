@@ -4,7 +4,7 @@ import type { PlotParams } from 'react-plotly.js'
 import dynamic from 'next/dynamic'
 import { plot_icon } from '@/icons'
 
-const Plot = dynamic(() => import('react-plotly.js'), { ssr: false, loading: () => <div>Loading...</div> })
+const Plot = dynamic(() => import('react-plotly.js'), { ssr: false, loading: () => <div className="prose">Loading...</div> })
 
 export type PlotlyJson = {
   data: PlotParams['data'],

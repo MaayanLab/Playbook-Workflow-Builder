@@ -1,10 +1,12 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneInfo, GeneInfoFromGeneTerm } from '../service/mygeneinfo'
+import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon } from '@/icons'
 import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
-import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef } from './utils'
+import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef, glygenProteinSearchQuery } from './utils'
+import { ProteinSet } from '@/components/core/input/set'
+
 
 // -------- Schema Definitions -------- // 
 
@@ -51,6 +53,33 @@ export const GlyGenProteinResponse = z.object({
   })
 
 /**
+ * Zod definition for protein data
+ */
+export const GlyGenProteinSetResponse = z.array(
+  z.object({
+    gene: z.object({
+      name: z.string()
+    }),
+    uniprot: z.object({
+      uniprot_canonical_ac: z.string()
+    }),
+    protein_names: z.object({
+      name: z.string()
+    }),
+    species: z.object({
+      name: z.string(),
+      taxid: z.string()
+    }),
+    bools: z.object({
+      total_n_glycosites: z.number(),
+      total_o_glycosites: z.number(),
+      reported_phosphosites: z.number(),
+      reported_snv: z.number()
+    })
+  })
+)
+
+/**
  * Zod definition for glycan data 
  */
 export const GlycanResponse = z.object({
@@ -78,7 +107,6 @@ export const GlycanResponse = z.object({
   )
 })
 
-
 // -------- Data Metanodes -------- // 
 
 /**
@@ -96,7 +124,7 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
     const glyGenLink = `http://www.glygen.org/protein/${data.uniprot.uniprot_canonical_ac}`
 
     return (
-      <div>
+      <div className="prose">
           <div>Gene Name: <b>{data.gene.name}</b></div>
           <div>UniProtKB Accession:
             <b>
@@ -124,6 +152,54 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
     )
   })
   .build()
+// TODO: total_n_glycosites, total_o_glycosites, reported_phosphosites, reported_snv booleans
+// TODO: accession link out to protein detail page similar to glycan data metanode 
+/**
+ * Data metanode for the glygen api protein response, defines how the protein api response should 
+ * be rendered in the UI 
+ */
+export const GlyGenProteinSetResponseNode = MetaNode('GlyGenProteinSetResponse')
+  .meta({
+    label: 'GlyGen Protein Products',
+    description: 'Protein product records in GlyGen',
+    icon: [glygen_icon],
+  })
+  .codec(GlyGenProteinSetResponse)
+  .view( data => {
+    // const glyGenLink = ``
+
+    return (
+      <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Gene name</th>
+                <th>Uniprot Accession</th>
+                <th>Protein Name</th>
+                <th>Species</th>
+                <th>Glycosylation</th>
+                <th>Phosphorylation</th>
+                <th>SNV</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((entry, index) => (
+                <tr key = {index}>
+                  <td>{entry.gene.name}</td>
+                  <td><a href = {`http://www.glygen.org/protein/${entry.uniprot.uniprot_canonical_ac}`} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}><u style={{color: 'blue'}}>{entry.uniprot.uniprot_canonical_ac}</u></a></td>
+                  <td>{entry.protein_names.name}</td>
+                  <td>{`${entry.species.name} (TaxID: ${entry.species.taxid})`}</td>
+                  <td>{entry.bools.total_n_glycosites + entry.bools.total_o_glycosites > 0 ? 'Yes' : 'No'}</td>
+                  <td>{entry.bools.reported_phosphosites > 0 ? 'Yes' : 'No'}</td>
+                  <td>{entry.bools.reported_snv > 0 ? 'Yes' : 'No'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+      </div>
+    )
+  })
+  .build()
 
 /**
  * Data metanode for the glycosylation list from a protein response, defines how the glycosylation 
@@ -143,7 +219,7 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
 
     if (recordCount > 0) {
       return (
-        <div>
+        <div className="prose">
           <div>
             UniProtKB Accession: 
               <b>
@@ -160,7 +236,7 @@ export const GlycosylationViewResponseNode = MetaNode('GlycosylationViewResponse
       )
     } else {
       return (
-        <div>
+        <div className="prose">
           <div>
             UniProtKB Accession: 
                 <b>
@@ -184,7 +260,7 @@ export const GlycanViewResponseNode = MetaNode('GlycanViewResponse')
     const glyGenLink = `http://www.glygen.org/glycan/${data.glytoucan.glytoucan_ac}`
 
     return (
-      <div>
+      <div className="prose">
         <div>GlyTouCan Accession: 
           <b>
             <a href={glyGenLink} target='_blank' rel='noopener nonreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.glytoucan.glytoucan_ac}</u></a>
@@ -224,6 +300,29 @@ export const GlyGenProtein = MetaNode('GGP')
   .output(GlyGenProteinResponseNode)
   .resolve(async (props) => {
     const protein_response = await resolveFilteredResult(props.inputs.protein_uniprot_canonical_ac);
+    return protein_response;
+  })
+  .story(props =>
+    // TODO: re-write story sentence to make sense with protein term input (previous gene value removed to prevent `npm run build` error)
+    `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`
+  )
+  .build()
+
+/**
+ * Process metanode for searching by protein name for protein products 
+ */
+export const GlyGenProteinSet = MetaNode('GGPS')
+  .meta({
+    label: 'Search GlyGen by Protein Name for Protein Products',
+    description: 'Find protein product records in GlyGen.',
+    icon: [glygen_icon],
+    pagerank: 2,
+  })
+  .inputs({ protein_uniprot_canonical_acs: ProteinSet })
+  .output(GlyGenProteinSetResponseNode)
+  .resolve(async (props) => {
+    console.log("===> Got protein(s) input: ", props.inputs.protein_uniprot_canonical_acs.set);
+    const protein_response = await glygenProteinSearchQuery(props.inputs.protein_uniprot_canonical_acs.set);
     return protein_response;
   })
   .story(props =>

@@ -695,15 +695,13 @@ export default class FPPRG {
       if (!process) throw new Error('Not found')
       await new Promise<void>(async (resolve, reject) => {
         const ctx = { resolved: false }
-        const unsub = this.db.listen((evt, data) => {
-          if (evt === `insert:resolved`) {
-            const record = z.object({ id: z.string() }).parse(data)
-            if (record.id === id) {
-              if (!ctx.resolved) {
-                ctx.resolved = true
-                unsub()
-                resolve()
-              }
+        const unsub = this.db.listen(`insert:resolved`, (data) => {
+          const record = z.object({ id: z.string() }).parse(data)
+          if (record.id === id) {
+            if (!ctx.resolved) {
+              ctx.resolved = true
+              unsub()
+              resolve()
             }
           }
         })

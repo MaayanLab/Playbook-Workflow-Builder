@@ -62,7 +62,7 @@ export function filterGlyGenResults(result, prop_type, prop_name) {
 
 export function GlycosylationTable({ glycosylationData, isPreview = false }) {
   return (
-    <div>
+    <div className="prose">
       <table>
         <thead>
           <tr>
@@ -106,7 +106,7 @@ export function GlycanCrossRef({ crossref }) {
   }
 
   return (
-    <div>
+    <div className="prose">
       {pubMedCrossRefs.map(entry => (
         <div key={entry.id}>
           <b>{entry.database}: </b>
@@ -118,4 +118,70 @@ export function GlycanCrossRef({ crossref }) {
     </div>
   ) 
 
+}
+
+export async function glygenProteinSearchQuery(uniprot_canonical_accessions) {
+  // hit the /protein/search query endpoing to get the list id 
+  const search_query = new URLSearchParams()
+  search_query.append('query', JSON.stringify({
+    operation:"AND",
+    query_type: "search_protein",
+    uniprot_canonical_ac: uniprot_canonical_accessions.join(','),
+  }))
+  const search_query_request = await fetch(`https://api.glygen.org/protein/search?${search_query.toString()}`, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+     'Content-Type': 'application/json',
+    }
+  });
+  console.log('list_id status code: ', search_query_request.status)
+  const search_query_response = await search_query_request.json();
+  const list_id = search_query_response.list_id
+  const list_query = new URLSearchParams()
+  list_query.append('query', JSON.stringify({
+    id: list_id,
+    offset: 1,
+    limit: 20,
+    order: "desc",
+    sort: "hit_score",
+    filters: [],
+  }))
+  const list_query_request = await fetch(`https://api.glygen.org/protein/list?${list_query.toString()}`, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json'
+    }
+  });
+  const list_query_response = await list_query_request.json();
+  const list_query_reults = list_query_response.results
+  console.log('Got list query')
+  const result = []
+  for (const element of list_query_reults) {
+    result.push(
+      {
+        "gene": {
+          "name": element.gene_name
+        },
+        "uniprot": {
+          "uniprot_canonical_ac": element.uniprot_canonical_ac
+        },
+        "protein_names": {
+          "name": element.protein_name
+        },
+        "species": {
+          "name": element.organism,
+          "taxid": String(element.tax_id)
+        },
+        "bools": {
+          "total_n_glycosites": element.total_n_glycosites,
+          "total_o_glycosites": element.total_o_glycosites,
+          "reported_phosphosites": element.reported_phosphosites,
+          "reported_snv": element.reported_snv
+        }
+      }
+    )
+  }
+  return result
 }

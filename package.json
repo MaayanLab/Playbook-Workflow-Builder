@@ -1,6 +1,6 @@
 {
   "name": "playbook-partnership",
-  "version": "0.49.6",
+  "version": "0.49.17",
   "description": "A repository for the playbook partnership collaboration.",
   "private": true,
   "workspaces": [
@@ -23,9 +23,9 @@
     "start:run-wes-worker": "ts-node cli/run-wes-worker.ts",
     "start:wes-worker": "NODE_ENV=production ts-node cli/wes-worker.ts",
     "start:ssl": "concurrently \"npm run start -- -p 3001\" \"ssl-proxy --source 3000 --target 3001\"",
-    "start": "npx --workspace=app next start",
-    "version": "docker build -t maayanlab/playbook-partnership:${npm_package_version} .",
-    "postversion": "docker push maayanlab/playbook-partnership:${npm_package_version}"
+    "start": "npx --workspace=app next start -H 0.0.0.0",
+    "version": "ts-node cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
+    "postversion": "docker-compose push"
   },
   "dependencies": {
     "@blueprintjs/core": "^5.5.1",

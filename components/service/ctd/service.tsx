@@ -61,12 +61,20 @@ export async function getCTDPrecalculationsResponse(formData: FormData): Promise
 }
 
 export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResponse> {
-  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/useCustomMatrix`, formData, {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/useCustomMatrix`, formData, {
     headers: { ...formData.getHeaders() },
-    responseType: 'json',
+    responseType: 'json'
   });
   return res.data
 }
+
+/*
+export async function getCustomMatrixFromExpressions(formData: FormData): Promise<Readable> {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/createCustomMatrix`, formData, {
+    headers: { ...formData.getHeaders() }
+  });
+  return res.data
+}*/
 
 export const CTD_FileDownload = MetaNode('CTD_FileDownload')
   .meta({
@@ -118,8 +126,8 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     formData.append('geneList', geneListFileReader, geneListFile.filename);
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
-    const respone = await getCTDPrecalculationsResponse(formData);
-    const file = await uploadFile(await fileFromStream(respone, `derived.${"customRDataFile.RData"}`))
+    const response = await getCTDPrecalculationsResponse(formData);
+    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
     return file;
   }).story(props =>   
     "The two files where send to the CTD API for precalculations."
@@ -144,8 +152,8 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
-    const respone = await getCTDPrecalculationsResponse(formData);
-    const file = await uploadFile(await fileFromStream(respone, `derived.${"customRDataFile.RData"}`))
+    const response = await getCTDPrecalculationsResponse(formData);
+    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
     return file;
   }).story(props =>   
     "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
@@ -167,6 +175,29 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
       </div>
     )
   }).build()
+
+  /*
+  export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
+  .meta({
+    label: `CTD Create a Custom Matrix`,
+    description: "Create a Custom Matrix Using a Gene Expressions File."
+  })
+  .inputs({file: FileURL})
+  .output(CTD_FileDownload)
+  .resolve(async (props) => {
+    const fileReader = await fileAsStream(props.inputs.file);
+    console.log("CTD-Matrix from gene expressions file: "+props.inputs.file.filename);
+
+    const formData = new FormData();
+    formData.append('csvExpressionsFile', fileReader, props.inputs.file.filename);
+
+    const response = await getCustomMatrixFromExpressions(formData);
+    const file = await uploadFile(await fileFromStream(response, `derived.${"customMatrix.csv"}`))
+    return file;
+  }).story(props =>   
+    "The three files where send to the CTD API for precalculations."
+  ).build()
+  */
 
   export const CTD_UseCustomMatrix = MetaNode('CTD_UseCustomMatrix')
   .meta({

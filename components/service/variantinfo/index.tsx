@@ -1111,6 +1111,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       numRows={varAndReIdArray.length}
       enableGhostCells
       enableFocusedCell
+      downloads={{
+        JSON: () => downloadBlob(new Blob([JSON.stringify(varAndReIdArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
+      }}
       >
         <Column
           name="Variant CaId"
@@ -1183,6 +1186,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       numRows={alleleEvidncForVarSetArray.length}
       enableGhostCells
       enableFocusedCell
+      downloads={{
+        JSON: () => downloadBlob(new Blob([JSON.stringify(alleleEvidncForVarSetArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
+      }}
       >
         <Column
           name="Varinat CaID"
@@ -1308,16 +1314,21 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     for(let indx in variantSetInfo){
       let variantInfoObj = variantSetInfo[indx];
       const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
-      
+      if(response == null || response.data == null || response.data.ld == null || response.data.ld.AlleleSpecificEvidence == null){
+        continue;
+      }
+
       let tempObj = {
         'caid': variantInfoObj.entId,
         'alleleSpecificEvidence' : [] 
       };
 
-      if(response.data.ld != null &&  response.data.ld.AlleleSpecificEvidence != null){
-        let evidenceReponse = getAlleleSpecificEvdncFromGitDataHub(response.data.ld.AlleleSpecificEvidence);
-        tempObj.alleleSpecificEvidence = evidenceReponse;
+      let evidenceReponse = getAlleleSpecificEvdncFromGitDataHub(response.data.ld.AlleleSpecificEvidence);
+      if(evidenceReponse == null || evidenceReponse.length == 0){
+        continue;
       }
+      tempObj.alleleSpecificEvidence = evidenceReponse;
+      
 
       varinatSetAlleleSpecificEvdnc.push(tempObj);
     }
@@ -1346,6 +1357,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
         numRows={xQTLEvdVariantSet.length}
         enableGhostCells
         enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(xQTLEvdVariantSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
       >
         <Column
           name="Variant CaID"
@@ -1423,7 +1437,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetXQTLEvidence = MetaNode('GetVarinatSetXQTLEvidence')
   .meta({
-    label: `GetVarinatSetXQTLEvidence`,
+    label: `Get Varinat Set xQTL Evidence`,
     description: "Get xQTL Evidence form Varinat Set."
   })
   .inputs({ variantSetInfo: VariantSetInfo })
@@ -1435,16 +1449,20 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     for(let indx in variantSetInfo){
       let variantInfoObj = variantSetInfo[indx];
       const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
-      
+      if(response == null || response.data == null || response.data.ld == null || response.data.ld.xqtlEvidence == null){
+        continue;
+      }
+
       let tempObj = {
         'caid': variantInfoObj.entId,
         'xQTL_Evidence': []
       };
-
-      if(response.data.ld != null &&  response.data.ld.xqtlEvidence != null){
-        let evidenceReponse = reformatxQTLEvidences2(response.data.ld.xqtlEvidence);
-        tempObj.xQTL_Evidence = evidenceReponse;
+    
+      let evidenceReponse = reformatxQTLEvidences2(response.data.ld.xqtlEvidence);
+      if(evidenceReponse == null || evidenceReponse.length == 0){
+        continue;
       }
+      tempObj.xQTL_Evidence = evidenceReponse;     
 
       varinatSetXQTLEvidnc.push(tempObj);
     }

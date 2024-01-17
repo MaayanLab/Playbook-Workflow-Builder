@@ -82,6 +82,7 @@ services:
     environment:
     - PUBLIC_URL
     - DATABASE_URL
+    - NEXTAUTH_SECRET
     - N_WORKERS=5
     logging: *default-logging
   # the database is used by everything it can be provisioned with

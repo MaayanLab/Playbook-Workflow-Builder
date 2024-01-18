@@ -9,7 +9,7 @@ def umap_transformation(gene_count_matrix: GeneCountMatrix):
   df = anndata_from_file(gene_count_matrix)
 
   # leiden coloring
-  sc.pp.neighbors(df)
+  sc.pp.neighbors(df, use_rep='X')
   sc.tl.umap(df, n_components=3)
   sc.tl.leiden(df, key_added="leiden")
 

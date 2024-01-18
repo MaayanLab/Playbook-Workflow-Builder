@@ -48,7 +48,7 @@ export default handler(async (req, res) => {
       }),
     },
   })
-  const bcoReq = await fetch('https://biocomputeobject.org/api/objects/drafts/create/', {
+  const bcoReq = await fetch('https://biocomputeobject.org/users/bcodb/draft_bco/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

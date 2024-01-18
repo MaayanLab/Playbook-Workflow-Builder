@@ -14,8 +14,7 @@ export const UserIntegrationsBioComputeAuth = API.get('/api/v1/user/integrations
     if (!userOrcidAccount) {
       return { orcid: false }
     } else {
-      // TODO: probably a better endpoint for this
-      const bcoReq = await fetch('https://biocomputeobject.org/api/objects/drafts/create/', {
+      const bcoReq = await fetch('https://biocomputeobject.org/users/orcid/user_info/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,8 +42,8 @@ export const UserIntegrationsBioComputePublishedBCO = API.get('/api/v1/user/inte
     // @ts-ignore
     const userOrcidAccount = user ? await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } }) : undefined
     if (!userOrcidAccount) throw new UnauthorizedError('ORCID Required')
-    // TODO: this gives me unauthorized even when ORCID is properly configured
-    const bcoReq = await fetch(`https://biocomputeobject.org/api/objects/?contents=${encodeURIComponent(`${process.env.PUBLIC_URL}/report/${inputs.query.fpl_id}`)}`, {
+    const persistent_url = `${process.env.PUBLIC_URL}/report/${inputs.query.fpl_id}`
+    const bcoReq = await fetch(`https://biocomputeobject.org/api/objects/?contents=${encodeURIComponent(persistent_url)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -52,9 +51,17 @@ export const UserIntegrationsBioComputePublishedBCO = API.get('/api/v1/user/inte
       },
     })
     if (!bcoReq.ok) throw new ResponseCodedError(bcoReq.status, await bcoReq.text())
-    const results = await bcoReq.json()
-    // TODO: verify that the results are as we expect
-    // console.log(results)
-    return Array.isArray(results) && results.length > 0 ? results[0].object_id : null
+    const results = z.array(z.array(z.object({
+      contents: z.object({
+        object_id: z.string(),
+        provenance_domain: z.object({
+          derived_from: z.string(),
+        }),
+      }),
+      state: z.string(),
+    }))).parse(await bcoReq.json())
+      .flatMap(r => r)
+      .filter(item => item.contents.provenance_domain.derived_from === persistent_url)
+    return results.length > 0 ? results[0].contents.object_id : null
   })
   .build()

@@ -50,7 +50,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
               />
             </a>
             {publishedBCO ? /* TODO: get the right link */
-              <a href={`https://biocomputeobject.org/builder?https://biocomputeobject.org/${publishedBCO}/DRAFT`}>
+              <a href={`https://biocomputeobject.org/builder?${publishedBCO}`}>
                 <Bp5MenuItem
                   icon="link"
                   text="View in BioCompute Portal"
@@ -61,7 +61,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
                 text="Draft in BioCompute Portal"
                 onClick={async (evt) => {
                   trigger().then((res) => {
-                    if (res) window.open(`https://biocomputeobject.org/builder?${res.object_id}`, '_blank')
+                    if (res) window.open(res.object_id, '_blank')
                   })
                 }}
               />}

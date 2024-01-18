@@ -1,4 +1,4 @@
-FROM node:latest as base
+FROM node:21.3.0 as base
 RUN echo "Installing git..." && apt-get -y update && apt-get -y install git && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 

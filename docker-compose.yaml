@@ -60,10 +60,9 @@ services:
     labels:
     - "traefik.enable=true"
     - "traefik.http.routers.app.rule=Host(`${SERVER_NAME}`)"
+    - "traefik.http.routers.app.middlewares=app@docker"
     - "traefik.http.services.app.loadbalancer.server.port=3000"
-    - "traefik.http.routers.app.tls=true"
-    - "traefik.http.routers.app.tls.certresolver=letsencrypt-prod"
-    - "traefik.http.routers.app.tls.domains[0].main=${SERVER_NAME}"
+    - "traefik.http.middlewares.app.headers.customrequestheaders.X-Forwarded-Proto=https"
     logging: *default-logging
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.

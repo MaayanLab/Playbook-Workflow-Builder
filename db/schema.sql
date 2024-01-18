@@ -231,6 +231,7 @@ CREATE TABLE public.cell_metadata (
 
 CREATE TABLE public.data (
     created timestamp without time zone DEFAULT now() NOT NULL,
+    hits bigint DEFAULT 0 NOT NULL,
     id uuid NOT NULL,
     type character varying NOT NULL,
     value character varying NOT NULL
@@ -244,6 +245,7 @@ CREATE TABLE public.data (
 CREATE TABLE public.fpl (
     cell_metadata uuid,
     created timestamp without time zone DEFAULT now() NOT NULL,
+    hits bigint DEFAULT 0 NOT NULL,
     id uuid NOT NULL,
     parent uuid,
     playbook_metadata uuid,
@@ -272,6 +274,7 @@ CREATE TABLE public.playbook_metadata (
 CREATE TABLE public.process (
     created timestamp without time zone DEFAULT now() NOT NULL,
     data uuid,
+    hits bigint DEFAULT 0 NOT NULL,
     id uuid NOT NULL,
     type character varying NOT NULL
 );
@@ -431,7 +434,7 @@ CREATE TABLE public.user_upload (
     filename character varying NOT NULL,
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     upload uuid NOT NULL,
-    "user" uuid NOT NULL
+    "user" uuid
 );
 
 

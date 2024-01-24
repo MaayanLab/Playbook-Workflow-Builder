@@ -165,7 +165,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
       from ${JSON.stringify(this.table.name)}
       where ${columns.map(key => `${JSON.stringify(key)} = ${subst(this.table.field_codecs[key].encode(find.where[key] as Decoded<T[keyof T]>))}`).join(' and ')};
     `)
-    if (results.rowCount === 0) return null
+    if (results.rowCount === 0 || results.rowCount === null) return null
     else if (results.rowCount > 1) throw new Error('Expected one got several')
     else return this.table.codec.decode(results.rows[0])
   }
@@ -223,7 +223,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
         from rows
       ) select * from rows;
     `)
-    if (results.rowCount === 0) return null
+    if (results.rowCount === 0 || results.rowCount === null) return null
     else if (results.rowCount > 1) throw new Error('Unexpected output')
     else return this.table.codec.decode(results.rows[0])
   }
@@ -283,7 +283,7 @@ export class PgTable<T extends {}> implements DbTable<T> {
         from rows
       ) select * from rows;
     `)
-    if (results.rowCount === 0) return null
+    if (results.rowCount === 0 || results.rowCount === null) return null
     else if (results.rowCount > 1) throw new Error('Unexpected output')
     else return this.table.codec.decode(results.rows[0])
   }

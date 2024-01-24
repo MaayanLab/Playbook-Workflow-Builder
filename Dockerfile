@@ -45,7 +45,27 @@ RUN echo "Installing python dependencies..." && python3 -m pip install --break-s
 
 # TARGET: dev -- development environment with dependencies to run dev tools
 FROM prepare_system as dev
-RUN echo "Installing dev deps..." && apt-get -y update && apt-get -y install librsvg2-bin imagemagick potrace && rm -rf /var/lib/apt/lists/*
+RUN echo "Installing dev deps..." \
+  && apt-get -y update \
+  && apt-get -y install \
+    librsvg2-bin \
+    imagemagick \
+    potrace \
+    autoconf \
+    pkg-config \
+    build-essential \
+    curl \
+    libpng-dev \
+  && ln -s /usr/bin/python3 /usr/bin/python \
+  && curl -LO https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-26.tar.gz \
+  && tar xzf 7.1.1-26.tar.gz \
+  && rm 7.1.1-26.tar.gz \
+  && sh ./ImageMagick-7.1.1-26/configure --prefix=/usr/local --with-bzlib=yes --with-fontconfig=yes --with-freetype=yes --with-gslib=yes --with-gvc=yes --with-jpeg=yes --with-jp2=yes --with-png=yes --with-tiff=yes --with-xml=yes --with-gs-font-dir=yes --with-rsvg=yes \
+  && make -j && make install && ldconfig /usr/local/lib/ \
+  && apt-get clean \
+  && apt-get autoremove \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=amacneil/dbmate /usr/local/bin/dbmate /usr/local/bin/dbmate
 ENV npm_config_cache=/app/.npm
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/

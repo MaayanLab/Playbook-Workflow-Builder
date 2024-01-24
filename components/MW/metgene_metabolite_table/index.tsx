@@ -3,7 +3,6 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { FileDesURLC } from '../MetENP_on_MetSet'
 import { additional_info_icon, drug_icon } from '@/icons';
-import { ELEVATION_0 } from '@blueprintjs/core/lib/esm/common/classes'
 
 const MetGeneMetObjC = z.object({
   Gene: z.string(),

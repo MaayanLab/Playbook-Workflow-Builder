@@ -4,7 +4,6 @@ import { MetaboliteSet } from '@/components/core/input/set'
 import { metabolomicsworkbench_icon } from '@/icons'
 import { z } from 'zod'
 import { additional_info_icon} from '@/icons'
-import { test } from 'node:test'
 
 //import { VALID_LOADERS } from 'next/dist/shared/lib/image-config'
 

@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileInput } from '@/components/core/file'
+import { FileURL } from '@/components/core/file'
 import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
 import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
@@ -11,7 +11,6 @@ import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
 import { Readable } from 'stream'
-import { NotFoundError } from '@/spec/error'
 
 const CTDResponseC = z.object({
   "highlyConnectedGenes": z.any(),

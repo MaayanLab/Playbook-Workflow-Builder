@@ -14,7 +14,7 @@ const Bp4Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) =>
 
 export const CTDPrecalculationsFileURLs = MetaNode('CTDPrecalculationsFileURLs')
   .meta({
-    label: 'CTDPrecalculationsFileURLs',
+    label: 'CTD - Precalculations With File Inputs',
     description: 'URLs to the files for CTD Precalculations API call',
     icon: [file_icon],
   })
@@ -56,7 +56,7 @@ export const CTDPrecalculationsFileURLs = MetaNode('CTDPrecalculationsFileURLs')
 export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput')
   .meta({
     label: 'CTD - Precalculations',
-    description: 'Upload two files, Gene list and Adj. Matrix, for CTD Precalculations',
+    description: 'Upload two custom files, Gene list and Adj. Matrix, for CTD Precalculations in order to get the RData file for the final CTD response.',
     icon: [input_icon],
   })
   .inputs()
@@ -234,8 +234,8 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
 
 export const CTDUseCustomMatrixFileURLs = MetaNode('CTDUseCustomMatrixFileURLs')
   .meta({
-    label: 'CTDUseCustomMatrixFileURLs',
-    description: 'URLs to the files for CTD Cusotm Matrix Use API call',
+    label: 'CTD - Use Custom Matrix With File Inputs',
+    description: 'URLs to the files for CTD Custom Matrix Use API call.',
     icon: [file_icon],
   })
   .codec(z.object({
@@ -277,8 +277,8 @@ export const CTDUseCustomMatrixFileURLs = MetaNode('CTDUseCustomMatrixFileURLs')
 
 export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput')
   .meta({
-    label: 'CTD - UseCustomMatrix',
-    description: 'Upload three files, Gene list, Adj. Matrix and RData, for CTD custom matrix.',
+    label: 'CTD - Use With Custom Matrix',
+    description: 'Upload three files: Gene list, Adj. Matrix and RData, for CTD  final response with a custom matrix.',
     icon: [input_icon],
   })
   .inputs()

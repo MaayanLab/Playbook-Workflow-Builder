@@ -1,10 +1,10 @@
 import React from 'react'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
-import { DrugSet, GeneSet } from '@/components/core/input/set'
-import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
-import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
-import { ScoredDrugs, ScoredGenes, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
+import { DrugSet, GeneSet, VariantSet, RegulatoryElementSet } from '@/components/core/input/set'
+import { Disease, Drug, Gene, Pathway, Phenotype, Tissue, Variant, RegulatoryElement } from '@/components/core/primitives'
+import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm, VariantTerm, RegulatoryElementTerm } from '@/components/core/input/term'
+import { ScoredDrugs, ScoredGenes, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredTissues, ScoredVariants, ScoredRegulatoryElement } from '@/components/core/input/scored'
 import { Table, Cell, Column } from '@/app/components/Table'
 import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
@@ -19,6 +19,8 @@ function withPrecision(value: number | string, precision: number) {
 export const TopKScoredT = [
   { ScoredT: ScoredDrugs, TermT: DrugTerm, T: Drug },
   { ScoredT: ScoredGenes, TermT: GeneTerm, T: Gene },
+  { ScoredT: ScoredVariants, TermT: VariantTerm, T: Variant },
+  { ScoredT: ScoredRegulatoryElement, TermT: RegulatoryElementTerm, T: RegulatoryElement },
   { ScoredT: ScoredDiseases, TermT: DiseaseTerm, T: Disease },
   { ScoredT: ScoredPathways, TermT: PathwayTerm, T: Pathway },
   { ScoredT: ScoredPhenotypes, TermT: PhenotypeTerm, T: Phenotype },
@@ -116,6 +118,8 @@ export const SelectScoredT = [
   { ScoredT: ScoredDiseases },
   { ScoredT: ScoredDrugs },
   { ScoredT: ScoredGenes },
+  { ScoredT: ScoredVariants },
+  { ScoredT: ScoredRegulatoryElement },
   { ScoredT: ScoredPathways },
   { ScoredT: ScoredPhenotypes },
   { ScoredT: ScoredTissues },
@@ -159,6 +163,8 @@ export const SelectScoredT = [
 export const SetFromScoredT = [
   { ScoredT: ScoredDrugs, SetT: DrugSet, TermT: DrugTerm, T: Drug, },
   { ScoredT: ScoredGenes, SetT: GeneSet, TermT: GeneTerm, T: Gene, },
+  { ScoredT: ScoredVariants, SetT: VariantSet, TermT: VariantTerm, T: Variant, },
+  { ScoredT: ScoredRegulatoryElement, SetT: RegulatoryElementSet, TermT: RegulatoryElementTerm, T: RegulatoryElement, },
 ].flatMap(({ ScoredT, SetT, TermT, T }) => [
   MetaNode(`SetFromScored[${ScoredT.spec}]`)
     .meta({
@@ -294,6 +300,8 @@ export const ReduceMultiScoredT = [
   { ScoredT: ScoredDiseases, T: Disease, },
   { ScoredT: ScoredDrugs, T: Drug, },
   { ScoredT: ScoredGenes, T: Gene, },
+  { ScoredT: ScoredVariants, T: Variant, },
+  { ScoredT: ScoredRegulatoryElement, T: RegulatoryElement, },
   { ScoredT: ScoredPathways, T: Pathway, },
   { ScoredT: ScoredPhenotypes, T: Phenotype, },
   { ScoredT: ScoredTissues, T: Tissue, },

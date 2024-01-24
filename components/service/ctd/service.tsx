@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { FileURL } from '@/components/core/file'
+import { FileURL, FileInput } from '@/components/core/file'
 import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
 import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
@@ -11,6 +11,7 @@ import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
 import { Readable } from 'stream'
+import { NotFoundError } from '@/spec/error'
 
 const CTDResponseC = z.object({
   "highlyConnectedGenes": z.any(),
@@ -62,16 +63,24 @@ export async function getCTDPrecalculationsResponse(formData: FormData): Promise
 
 export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResponse> {
   const { default: axios } = await import('axios')
-  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/useCustomMatrix`, formData, {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/useCustomMatrix`, formData, {
     headers: { ...formData.getHeaders() },
-    responseType: 'json',
+    responseType: 'json'
   });
   return res.data
 }
 
+/*
+export async function getCustomMatrixFromExpressions(formData: FormData): Promise<Readable> {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/createCustomMatrix`, formData, {
+    headers: { ...formData.getHeaders() }
+  });
+  return res.data
+}*/
+
 export const CTD_FileDownload = MetaNode('CTD_FileDownload')
   .meta({
-    label: 'CTD_FileDownload',
+    label: 'CTD File Download',
     description: '',
     icon: [datafile_icon]
   })
@@ -105,8 +114,8 @@ export const CTD_FileDownload = MetaNode('CTD_FileDownload')
 
 export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
   .meta({
-    label: `Execute_CTD_Precalculations`,
-    description: "Execute CTD Precalculations using a custom geme list and ajd. matrix file in order to get am RData file for the final step."
+    label: `CTD Precalculations With Custom Matrix`,
+    description: "Execute CTD Precalculations using a custom gene list and ajd. matrix file in order to create an RData file and get the final CTD response."
   })
   .inputs({ ctdPrecalculationsFileURLs: CTDPrecalculationsFileURLs })
   .output(CTD_FileDownload)
@@ -119,17 +128,42 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     formData.append('geneList', geneListFileReader, geneListFile.filename);
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
-    const respone = await getCTDPrecalculationsResponse(formData);
-    //create a new file object from a stream
-    const file = await uploadFile(await fileFromStream(respone, `derived.${"customRDataFile.RData"}`))
+    const response = await getCTDPrecalculationsResponse(formData);
+    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
     return file;
   }).story(props =>   
     "The two files where send to the CTD API for precalculations."
   ).build()
 
+  export const Execute_CTD_Precalculations_Hybrid = MetaNode('Execute_CTD_Precalculations_Hybrid')
+  .meta({
+    label: `CTD Precalculations - Gene Set & Adj. Matrix File Input`,
+    description: "Execute CTD Precalculations using a custom gene list and ajd. matrix file in order to create an RData file and get the final CTD response."
+  })
+  .inputs({ geneSet: GeneSet, file: FileURL})
+  .output(CTD_FileDownload)
+  .resolve(async (props) => {
+    let geneNamesList = props.inputs.geneSet.set;
+    let adjMatrixFile = props.inputs.file;
+    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
+
+    console.log("geneNamesList: "+JSON.stringify(geneNamesList))
+    console.log("file: "+adjMatrixFile.filename)
+
+    const formData = new FormData();
+    formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
+    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
+
+    const response = await getCTDPrecalculationsResponse(formData);
+    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
+    return file;
+  }).story(props =>   
+    "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
+  ).build()
+
   export const CTDResponseInfo = MetaNode('CTDResponseInfo')
   .meta({
-    label: 'CTDResponseInfo',
+    label: 'CTD Response Info',
     description: '',
     icon: [datafile_icon]
   })
@@ -144,10 +178,33 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     )
   }).build()
 
+  /*
+  export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
+  .meta({
+    label: `CTD Create a Custom Matrix`,
+    description: "Create a Custom Matrix Using a Gene Expressions File."
+  })
+  .inputs({file: FileURL})
+  .output(CTD_FileDownload)
+  .resolve(async (props) => {
+    const fileReader = await fileAsStream(props.inputs.file);
+    console.log("CTD-Matrix from gene expressions file: "+props.inputs.file.filename);
+
+    const formData = new FormData();
+    formData.append('csvExpressionsFile', fileReader, props.inputs.file.filename);
+
+    const response = await getCustomMatrixFromExpressions(formData);
+    const file = await uploadFile(await fileFromStream(response, `derived.${"customMatrix.csv"}`))
+    return file;
+  }).story(props =>   
+    "The three files where send to the CTD API for precalculations."
+  ).build()
+  */
+
   export const CTD_UseCustomMatrix = MetaNode('CTD_UseCustomMatrix')
   .meta({
-    label: `CTD_UseCustomMatrix`,
-    description: "Execute CTD Precalculations using a custom geme list and ajd. matrix file in order to get am RData file for the final step."
+    label: `CTD Response With Custom Matrix`,
+    description: "Get CTD Reponse using a custom gene list, ajd. matrix file and RData file. Use the \"CTD Precalculations With Custom Matrix\" card to create the custom  RData file.!"
   })
   .inputs({ ctdUseCustomMatrixFileURLs: CTDUseCustomMatrixFileURLs })
   .output(CTDResponseInfo)
@@ -217,33 +274,15 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     `Graph Nodes were extracted from the CTD output.`
   ).build()
 
-/* kegg is not used for now because of licencing issues
-export const GeneSet_CTD_Kegg = MetaNode('GeneSet_CTD_Kegg')
+  export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
-    label: `GeneSet_CTD_Kegg`,
-    description: "Get a CTD response for a set of genes for graph type kegg."
-  })
-  .inputs({ geneset: GeneSet })
-  .output(CTDResponseInfo)
-  .resolve(async (props) => {
-    let requestBody = {
-      "graphType": "kegg",
-      "geneList": props.inputs.geneset.set
-    }
-    return await getCTDGenSetResponse(JSON.stringify(requestBody));
-  }).story(props =>
-    `Get a CTD response for a set of genes for graph type kegg.`
-  ).build()
-*/
-
-export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
-  .meta({
-    label: `GeneSet_CTD_String`,
+    label: `CTD String For Gene Set`,
     description: "Get a CTD response for a set of genes for graph type string."
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
+    console.log("CTD String, gen set processing.");
     let requestBody = {
       "graphType": "string",
       "geneList": props.inputs.geneset.set
@@ -253,27 +292,27 @@ export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
     `Get a CTD response for a set of genes for graph type string.`
   ).build()
 
-/* //kegg is not used for now because of licencing issues
-export const GenesFile_CTD_Kegg = MetaNode('GenesFile_CTD_Kegg')
+export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
-    label: `GenesFile_CTD_Kegg`,
-    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
-    icon: [file_transfer_icon]
+    label: `CTD Wikipathways For Gene Set`,
+    description: "Get a CTD response for a set of genes for graph type wikipathways."
   })
-  .inputs({ file: FileURL })
+  .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
-    const fileReader = await fileAsStream(props.inputs.file);
-
-    const formData = new FormData();
-    formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
-    formData.append('graphType', "kegg");
-    return await getCTDFileResponse(formData);
-  }).build()*/
+    console.log("CTD Wikipathways, gen set processing.");
+    let requestBody = {
+      "graphType": "wikipathways",
+      "geneList": props.inputs.geneset.set
+    }
+    return await getCTDGenSetResponse(JSON.stringify(requestBody));
+  }).story(props =>
+    `Get a CTD response for a set of genes for graph type wikipathways.`
+  ).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
-    label: `GenesFile_CTD_String`,
+    label: `CTD String For Genes Set File`,
     description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
     icon: [file_transfer_icon]
   })
@@ -281,10 +320,29 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     const fileReader = await fileAsStream(props.inputs.file);
-
+    console.log("CTD String, file processing: "+props.inputs.file.filename);
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");
+    return await getCTDFileResponse(formData);
+  })
+  .story(props => ``)
+  .build()
+
+  export const GenesFile_CTD_Wikipathways = MetaNode('GenesFile_CTD_Wikipathways')
+  .meta({
+    label: `CTD Wikipathways For Genes Set File`,
+    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
+    icon: [file_transfer_icon]
+  })
+  .inputs({ file: FileURL })
+  .output(CTDResponseInfo)
+  .resolve(async (props) => {
+    const fileReader = await fileAsStream(props.inputs.file);
+    console.log("CTD Wikpathways, file processing: "+props.inputs.file.filename);
+    const formData = new FormData();
+    formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
+    formData.append('graphType', "wikipathways");
     return await getCTDFileResponse(formData);
   })
   .story(props => ``)

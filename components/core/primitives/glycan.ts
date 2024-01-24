@@ -2,7 +2,7 @@ import { Primative } from './spec'
 import useSWRImmutable from 'swr/immutable'
 import levenSort from '@/utils/leven-sort'
 import fetcher from '@/utils/next-rest-fetcher'
-import { protein_icon } from '@/icons'
+import { glygen_icon } from '@/icons'
 
 // XXX
 // function useHarmonizomeGeneSuggestions(search: string) {
@@ -14,7 +14,7 @@ import { protein_icon } from '@/icons'
 export const Glycan = {
   name: 'glycan',
   label: 'Glycan',
-  icon: [protein_icon],
+  icon: [glygen_icon],
   color: '#B3CFFF',
   extra: {
     term: {

@@ -84,20 +84,33 @@ const BreadcrumbContext = React.createContext(undefined as {
 
 export function Breadcrumbs({ children }: React.PropsWithChildren<{}>) {
   const [graph, setGraph] = React.useState(Map<string, BreadcrumbNode>())
-  const { P, E, W, H } = React.useMemo(() => layout(graph), [graph])
+  const { P, E, top, left, w, h } = React.useMemo(() => {
+    const { P, E, W, H } = layout(graph)
+    let top = 1
+    let left = 1
+    let w = 1.5 * W - 0.5
+    if (w < 0) {
+      left -= w
+      w = Math.abs(w)
+    }
+    let h = 1.5 * H + (H === 1 ? 0.5 : 0.25)
+    if (h < 0) {
+      top -= h
+      h = Math.abs(h)
+    }
+    return { P, E, top, left, w, h }
+  }, [graph])
   const add = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => graph.set(node.id, node))}, [setGraph])
   const del = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => graph.delete(node.id))}, [setGraph])
   const pos = React.useCallback((node: BreadcrumbNode) => node.id in P ? { x: P[node.id].x, y: P[node.id].y } : undefined, [P])
-  let w = 1.5 * W - 0.5
-  let h = 1.5 * H + (H === 1 ? 0.5 : 0.25)
   return (
     <svg
       className="flex-grow"
       style={{ height: 40*h }}
-      viewBox={`-1 -1 ${w} ${h}`}
+      viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="xMinYMid meet"
     >
-      <g>
+      <g transform={`translate(${left}, ${top})`}>
         {E.map(({ id, src, dst }) => {
           return (
             <line

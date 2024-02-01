@@ -17,13 +17,13 @@ export const UserIntegrationsBioComputeAuth = API.get('/api/v1/user/integrations
       const bcoReq = await fetch('https://biocomputeobject.org/users/orcid/user_info/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userOrcidAccount.id_token}`,
+          'Accept': 'application/json',
+          'Authorization': `Token ${userOrcidAccount.id_token}`,
+          'Referer': 'https://playbook-workflow-builder.cloud',
         },
-        body: JSON.stringify({}),
       })
       return {
-        biocompute: bcoReq.status !== 403,
+        biocompute: bcoReq.status === 200,
         orcid: userOrcidAccount !== undefined,
       }
     }

@@ -64,6 +64,12 @@ services:
     - "traefik.http.routers.app.tls=true"
     - "traefik.http.routers.app.tls.certresolver=letsencrypt-prod"
     - "traefik.http.routers.app.tls.domains[0].main=${SERVER_NAME}"
+    - "traefik.http.routers.app.middlewares=app-cors"
+    - "traefik.http.middlewares.app-cors.headers.accesscontrolallowmethodsHEAD,GET,POST,OPTIONS"
+    - "traefik.http.middlewares.app-cors.headers.accesscontrolallowheaders=*"
+    - "traefik.http.middlewares.app-cors.headers.accesscontrolalloworiginlist=*"
+    - "traefik.http.middlewares.app-cors.headers.accesscontrolmaxage=100"
+    - "traefik.http.middlewares.app-cors.headers.addvaryheader=true"
     logging: *default-logging
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.

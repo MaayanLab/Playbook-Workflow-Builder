@@ -21,19 +21,6 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
   const { data: publishedBCO } = useAPIQuery(UserIntegrationsBioComputePublishedBCO, () => id ? { fpl_id: id } : null, { shouldRetryOnError: false })
   const { trigger, isMutating, error } = useSWRMutation(id ? `${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}/draft` : null, fetcherPOST<undefined, { object_id: string }>)
   const [showError, setShowError] = React.useState(false)
-  React.useEffect(() => {
-    if (error) {
-      console.error(error)
-      setShowError(() => true)
-      if ((error as ResponseCodedError).message === 'ORCID Expired') {
-        signOut().then(() => signIn('orcid'))
-      } else if ((error as ResponseCodedError).message === 'ORCID Required') {
-        router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
-      } else if((error as ResponseCodedError).message === 'BCO Unauthorization') {
-        router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
-      }
-    }
-  }, [error])
   if (!id) return null
   else if (isMutating) return <Bp5Spinner className="inline-block" size={20} />
   return (
@@ -60,8 +47,21 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
                 icon="send-to"
                 text="Draft in BioCompute Portal"
                 onClick={async (evt) => {
-                  trigger().then((res) => {
-                    if (res) window.open(res.object_id, '_blank')
+                  trigger()
+                    .then((res) => {
+                      if (res) window.open(res.object_id, '_blank')
+                    })
+                  .catch((error) => {
+                    console.error(error)
+                    setShowError(() => true)
+                    console.log(`err ${(error as ResponseCodedError).message}`)
+                    if ((error as ResponseCodedError).message === 'ORCID Expired') {
+                      signOut().then(() => signIn('orcid'))
+                    } else if ((error as ResponseCodedError).message === 'ORCID Required') {
+                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
+                    } else if((error as ResponseCodedError).message === 'BCO Unauthorization') {
+                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
+                    }
                   })
                 }}
               />}

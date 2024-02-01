@@ -82,12 +82,14 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       modified: toBCOTimeString(), // TODO: datetime
     },
     description_domain: {
-      keywords: array.unique(
-        dict.values(processLookup)
-          .flatMap(({ metanode }) =>
-            metanode.meta.tags ? dict.keys(metanode.meta.tags) : []
-          )
-      ),
+      keywords: [
+        'Playbook Workflow Builder',
+        ...array.unique(
+          dict.values(processLookup)
+            .flatMap(({ metanode }) => metanode.meta.tags ? dict.items(metanode.meta.tags) : [])
+            .flatMap(({ key, value }) => dict.keys(value).map(tag => `${tag} (${key})`))
+        )
+      ],
       platform: ['Debian GNU/Linux 11'],
       pipeline_steps: dict.values(processLookup).map(({ index, node, metanode }) => ({
         name: metanode.meta.label,

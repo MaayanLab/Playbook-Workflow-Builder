@@ -48,28 +48,19 @@ export default handler(async (req, res) => {
       }),
     },
   })
-  const bcoReq = await fetch('https://biocomputeobject.org/users/bcodb/draft_bco/add', {
+  const bcoReq = await fetch('https://biocomputeobject.orgusers/bcodb/draft_bco/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${userOrcidAccount.id_token}`,
     },
-    body: JSON.stringify({
-      POST_api_objects_draft_create: [
-        {
-          contents: BCO,
-          prefix: "BCO",
-          schema: "IEEE",
-          owner_group: "bco_drafter"
-        }
-      ]
-    }),
+    body: JSON.stringify({contents: BCO, origin: "https://playbook-workflow-builder.cloud "}),
   })
   if (bcoReq.status === 403) {
     throw new UnauthorizedError('BCO Unauthorization')
   } else if (bcoReq.status !== 200) {
     throw new ResponseCodedError(bcoReq.status, await bcoReq.text())
   }
-  const [bcoRes] = z.array(z.object({ object_id: z.string() })).parse(await bcoReq.json())
+  const bcoRes = z.object({ object_id: z.string() }).parse(await bcoReq.json())
   res.status(200).json(bcoRes)
 })

@@ -86,8 +86,9 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
         'Playbook Workflow Builder',
         ...array.unique(
           dict.values(processLookup)
-            .flatMap(({ metanode }) => metanode.meta.tags ? dict.items(metanode.meta.tags) : [])
-            .flatMap(({ key, value }) => dict.keys(value).map(tag => `${tag} (${key})`))
+            .flatMap(({ metanode }) =>
+              metanode.meta.tags ? dict.items(metanode.meta.tags).flatMap(({ key: _, value }) => dict.keys(value)).join(' ') : []
+            )
         )
       ],
       platform: ['Debian GNU/Linux 11'],

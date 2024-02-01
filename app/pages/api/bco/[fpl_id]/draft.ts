@@ -54,7 +54,7 @@ export default handler(async (req, res) => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${userOrcidAccount.id_token}`,
     },
-    body: JSON.stringify({contents: BCO, origin: "https://playbook-workflow-builder.cloud "}),
+    body: JSON.stringify({contents: BCO, origin: "https://playbook-workflow-builder.cloud"}),
   })
   if (bcoReq.status === 403) {
     throw new UnauthorizedError('BCO Unauthorization')

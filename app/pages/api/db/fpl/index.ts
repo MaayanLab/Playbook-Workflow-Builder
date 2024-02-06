@@ -12,7 +12,7 @@ const BodyType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   // load the submitted processArray specification
   const { data = {}, workflow, metadata } = BodyType.parse(req.body)
   // resolve the process array by walking through the specification, collecting instantiated processes

@@ -10,6 +10,6 @@ export default handler(async (req, res) => {
     const suggestions = await db.objects.suggestion.findMany({ where: { user: session.user.id } })
     return res.status(200).json(suggestions)
   } else {
-    throw new UnsupportedMethodError()
+    throw new UnsupportedMethodError(req.method)
   }
 })

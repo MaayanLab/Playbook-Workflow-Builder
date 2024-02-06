@@ -8,7 +8,7 @@ const QueryType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'GET') throw new UnsupportedMethodError()
+  if (req.method !== 'GET') throw new UnsupportedMethodError(req.method)
   const { process_id } = QueryType.parse(req.query)
   const process = await fpprg.getProcess(process_id)
   if (process === undefined) throw new NotFoundError()

@@ -65,6 +65,6 @@ export default handler(async (req, res) => {
     console.warn(e)
     throw new NotFoundError()
   }
-  if (!(req.method in component_handlers)) throw new UnsupportedMethodError()
-  await component_handlers[req.method](req, res, { throwOnError: false })
+  if (!(req.method in component_handlers)) throw new UnsupportedMethodError(req.method)
+  await component_handlers[req.method](req, res)
 })

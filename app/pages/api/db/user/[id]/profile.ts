@@ -8,7 +8,7 @@ const QueryType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'GET') throw new UnsupportedMethodError()
+  if (req.method !== 'GET') throw new UnsupportedMethodError(req.method)
   const { id } = QueryType.parse(req.query)
   const user = await db.objects.user.findUnique({ where: { id } })
   if (user === null) throw new NotFoundError()

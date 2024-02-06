@@ -5,6 +5,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import dynamic from 'next/dynamic'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
+import { UnsupportedMethodError } from '@/spec/error'
 
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
@@ -62,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await db.objects.suggestion.create({ data: suggestion })
       res.status(200).end()
     } else {
-      throw new Error('Unsupported method')
+      throw new UnsupportedMethodError(req.method)
     }
   } catch (e) {
     console.error(e)

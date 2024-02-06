@@ -9,7 +9,7 @@ const QueryType = z.object({
 })
 
 export default handler(async (req, res) => {
-  if (req.method !== 'GET') throw new UnsupportedMethodError()
+  if (req.method !== 'GET') throw new UnsupportedMethodError(req.method)
   const { fpl_id } = QueryType.parse(req.query)
   const fpl = await fpprg.getFPL(fpl_id)
   if (fpl === undefined) throw new NotFoundError()

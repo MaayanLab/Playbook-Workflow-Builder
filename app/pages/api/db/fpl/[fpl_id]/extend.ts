@@ -12,7 +12,7 @@ const BodyType = IdOrProcessC
 
 export default handler(async (req, res) => {
   if (!fpprg) throw new ResponseCodedError(503, 'Not ready')
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const { fpl_id } = QueryType.parse(req.query)
   const process = await fpprg.resolveProcess(BodyType.parse(req.body))
   if (fpl_id === 'start') {

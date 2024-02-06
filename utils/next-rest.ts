@@ -14,13 +14,13 @@ function augmentRequestWithExtras(req: NextApiRequest) {
   return req as NextApiRequestWithExtras
 }
 
-const handler = (handler_: (req: NextApiRequestWithExtras, res: NextApiResponse) => Promise<void>) => async (req: NextApiRequest, res: NextApiResponse, { throwOnError = false }: { throwOnError?: boolean } = {}) => {
+const handler = (handler_: (req: NextApiRequestWithExtras, res: NextApiResponse) => Promise<void>) => async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await handler_(augmentRequestWithExtras(req), res)
   } catch (e) {
     res
       .status(('error_code' in (e as ResponseCodedError)) ? (e as ResponseCodedError).error_code : 500)
-      .json((e as Error).toString())
+      .send((e as ResponseCodedError).message ?? (e as Error).toString())
   }
 }
 export default handler

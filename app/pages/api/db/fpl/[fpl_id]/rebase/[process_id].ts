@@ -12,7 +12,7 @@ const QueryType = z.object({
 const BodyType = IdOrProcessC
 
 export default handler(async (req, res) => {
-  if (req.method !== 'POST') throw new UnsupportedMethodError()
+  if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const { fpl_id, process_id } = QueryType.parse(req.query)
   const old_process = await fpprg.getProcess(process_id)
   if (old_process === undefined) throw new NotFoundError()

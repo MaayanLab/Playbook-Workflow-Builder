@@ -3,7 +3,7 @@ import { UnsupportedMethodError } from '@/spec/error'
 import packageJson from '@/package.json'
 
 export default handler(async (req, res) => {
-  if (req.method !== 'GET') throw new UnsupportedMethodError()
+  if (req.method !== 'GET') throw new UnsupportedMethodError(req.method)
   res.json(JSON.stringify({
     "id": "cloud.playbook-workflow-builder",
     "name": "Playbook Workflow Builder",

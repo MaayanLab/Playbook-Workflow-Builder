@@ -65,7 +65,7 @@ export default class APIRouter {
     const url = new URL(req.url, `http://${req.headers.host}`)
     const match = this.find(url.pathname)
     if (typeof match === 'undefined') throw new NotFoundError()
-    if (!req.method || !(req.method in match.routes)) throw new UnsupportedMethodError()
+    if (!req.method || !(req.method in match.routes)) throw new UnsupportedMethodError(req.method)
     const route = match.routes[req.method]
     const query = route.parameters.parse(
       dict.init(dict.items({ ...match.pathParams, ...Object.fromEntries(url.searchParams.entries()) }).map(({ key, value }) => ({ key, value: tryJsonParse(value) })))

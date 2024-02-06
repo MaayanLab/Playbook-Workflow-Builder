@@ -42,11 +42,11 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
     await Promise.all(fullFPL.map(async (step, index) => {
       const metanode = props.krg.getProcessNode(step.process.type)
       let story: string | undefined
-      if (props.metadata?.description) {
-        story = undefined
-      } else {
-        const inputs = await decode_complete_process_inputs(props.krg, step.process)
-        const output = await decode_complete_process_output(props.krg, step.process)
+      if (!props.metadata?.description) {
+        let inputs: Record<string, unknown> | undefined
+        try { inputs = await decode_complete_process_inputs(props.krg, step.process) } catch (e) {}
+        let output: unknown | undefined
+        try { output = await decode_complete_process_output(props.krg, step.process) } catch (e) {}
         story = metanode.story ? metanode.story({ inputs, output }) : undefined
       }
       return {
@@ -82,12 +82,15 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       modified: toBCOTimeString(), // TODO: datetime
     },
     description_domain: {
-      keywords: array.unique(
-        dict.values(processLookup)
-          .flatMap(({ metanode }) =>
-            metanode.meta.tags ? dict.keys(metanode.meta.tags) : []
-          )
-      ),
+      keywords: [
+        'Playbook Workflow Builder',
+        ...array.unique(
+          dict.values(processLookup)
+            .flatMap(({ metanode }) =>
+              metanode.meta.tags ? dict.items(metanode.meta.tags).flatMap(({ key: _, value }) => dict.keys(value)).join(' ') : []
+            )
+        )
+      ],
       platform: ['Debian GNU/Linux 11'],
       pipeline_steps: dict.values(processLookup).map(({ index, node, metanode }) => ({
         name: metanode.meta.label,

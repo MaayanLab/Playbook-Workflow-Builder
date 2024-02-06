@@ -1,5 +1,9 @@
 // import * as fs from 'fs';
 
+// import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
+
+import { URLSearchParams } from "url";
+
 export async function resolveFilteredResult(cannonicalAccession) {
   const resolvedDetail = await fetch(`https://api.glygen.org/protein/detail/${cannonicalAccession}/`, {
     method: 'POST',
@@ -119,6 +123,62 @@ export function GlycanCrossRef({ crossref }) {
   ) 
 
 }
+
+export async function glygenGlycanSetSearchQuery(glytoucan_accessions){
+  const search_query = new URLSearchParams()
+  search_query.append('query', JSON.stringify({
+    operation: "AND",
+    query_type: "search_glycan",
+    glycan_identifier: {
+      glycan_id: glytoucan_accessions.join(','),
+    },
+  }));
+    const search_query_request = await fetch(`https://api.glygen.org/glycan/search?${search_query.toString()}`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      "Content-Type": "aapplication/json",
+    }
+  });
+  const search_query_response = await search_query_request.json();
+  const list_id = search_query_response.list_id;
+  const list_query = new URLSearchParams();
+  list_query.append('query', JSON.stringify({
+    id: list_id,
+    offset: 1,
+    limit: 20,
+    order: "desc",
+    sort: "hit_score",
+    filters: [],
+  }))
+  const list_query_request = await fetch(`https://api.glygen.org/glycan/list?${list_query.toString()}`, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json'
+    }
+  });
+  const list_query_response = await list_query_request.json();
+  const list_query_results = list_query_response.results
+  const result = []
+  for (const element of list_query_results) {
+    result.push(
+      {
+        "glytoucan": {
+          "glytoucan_ac": element.glytoucan_ac,
+        },
+        "hit_score": element.hit_score,
+        "mass": element.mass,
+        "mass_pme": element.mass_pme,
+        "sugar_count": element.number_monosaccharides,
+        "glycoprotein_count": element.number_proteins,
+        "associated_enzymes": element.number_enzymes,
+      }
+    )
+  }
+  return result
+}
+
 
 export async function glygenProteinSearchQuery(uniprot_canonical_accessions) {
   // hit the /protein/search query endpoing to get the list id 

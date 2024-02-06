@@ -10,6 +10,7 @@ import {
   Phenotype,
   Primative,
   Protein,
+  Glycan,
   RegulatoryElement,
   Tissue,
   Variant,
@@ -67,6 +68,7 @@ export const DiseaseSet = Set_T(Disease)
 export const DrugSet = Set_T(Drug)
 export const GeneSet = Set_T(Gene)
 export const ProteinSet = Set_T(Protein)
+export const GlycanSet = Set_T(Glycan)
 export const VariantSet = Set_T(Variant)
 export const RegulatoryElementSet = Set_T(RegulatoryElement)
 export const PathwaySet = Set_T(Pathway)
@@ -148,6 +150,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
 
 export const InputGeneSet = Input_Set_T(Gene, GeneSet)
 export const IntputProteinSet = Input_Set_T(Protein, ProteinSet)
+export const IntputGlycanSet = Input_Set_T(Glycan, GlycanSet)
 export const InputVariantSet = Input_Set_T(Variant, VariantSet)
 export const InputRegulatoryElementSet = Input_Set_T(RegulatoryElement, RegulatoryElementSet)
 export const InputDrugSet = Input_Set_T(Drug, DrugSet)

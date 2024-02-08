@@ -29,10 +29,10 @@ function prepare(statement_builder: (subst: (value: any) => string) => string) {
 
 export class PgDatabase implements DbDatabase {
   public objects: any
+  public pool: pg.Pool
   private listeners: Record<string, Record<number, (data: unknown) => void>> = {}
   private id = 0
   private subscriber: Subscriber
-  private pool: pg.Pool
   private boss: PgBoss
 
   constructor(connectionString: string) {

@@ -17,8 +17,11 @@ const MetapathContext = React.createContext({
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
   const fetchSocket = React.useMemo(async () => {
-    await fetch(`${props.session_id ? `/api/${props.session_id}` : ''}/api/socket`)
-    return io()
+    if (process.env.NODE_ENV === 'development') {
+      return io('http://localhost:3005', { transports: ['websocket'] })
+    } else {
+      return io({ transports: ['websocket'] })
+    }
   }, [props.session_id])
   const fetchFPL = React.useCallback(cache(async (id) => {
     if (id === 'start') return []

@@ -40,6 +40,10 @@
     ".next/types/**/*.ts"
   ],
   "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS",
+      "esModuleInterop": true
+    },
     "require": [
       "dotenv/config",
       "esm",

@@ -33,5 +33,17 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS",
+      "esModuleInterop": true,
+      "jsx": "react-jsx"
+    },
+    "require": [
+      "dotenv/config",
+      "esm",
+      "tsconfig-paths/register"
+    ]
+  },
 }

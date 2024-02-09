@@ -78,6 +78,12 @@ COPY --from=prepare_build /app /app
 ENV PORT 3000
 CMD ["npm", "run", "start"]
 
+# TARGET: app_ws_minimal -- production server with dependencies to run just the websocket server
+FROM base as app_ws_minimal
+COPY --from=prepare_build /app /app
+ENV PORT 3005
+CMD ["npm", "run", "start:ws"]
+
 # TARGET: app -- production server with dependencies to run everything
 FROM prepare_system as app
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/

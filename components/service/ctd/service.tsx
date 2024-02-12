@@ -114,7 +114,7 @@ export const CTD_FileDownload = MetaNode('CTD_FileDownload')
 export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
   .meta({
     label: `CTD Precalculations With Custom Matrix`,
-    description: "Execute CTD Precalculations using a custom gene list and ajd. matrix file in order to create an RData file and get the final CTD response."
+    description: "Use CTD to “Connect the Dots” and identify highly connected set of proteins using the pre-calculated graph."
   })
   .inputs({ ctdPrecalculationsFileURLs: CTDPrecalculationsFileURLs })
   .output(CTD_FileDownload)
@@ -136,8 +136,8 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
 
   export const Execute_CTD_Precalculations_Hybrid = MetaNode('Execute_CTD_Precalculations_Hybrid')
   .meta({
-    label: `CTD Precalculations - Gene Set & Adj. Matrix File Input`,
-    description: "Execute CTD Precalculations using a custom gene list and ajd. matrix file in order to create an RData file and get the final CTD response."
+    label: `Connect the Dots in Precalculated Graph`,
+    description: "Use CTD to “Connect the Dots” and identify highly connected set of proteins using the pre-calculated graph."
   })
   .inputs({ geneSet: GeneSet, file: FileURL})
   .output(CTD_FileDownload)
@@ -226,7 +226,7 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
 export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
   .meta({
     label: `Extract Highly Connected Genes`,
-    description: "Get a list of Highly Connected Genes from the CTD output"
+    description: "Extract nodes that are determined to be highly connected by CTD in your initial node set and display them in a table."
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
@@ -243,7 +243,7 @@ export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
 export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
   .meta({
     label: `Extract Guilty By Association Genes`,
-    description: "Get a list of Guilty By Association Genes from the CTD output"
+    description: "Extract nodes that are “guilty by association” and connect your initial genes of interest within the graph."
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
@@ -260,7 +260,7 @@ export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes
 export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .meta({
     label: 'CTD Graph',
-    description: 'A graph showing the CTD output.',
+    description: 'This is a visual display of the nodes that are found to be highly connected with CTD. Nodes that connect these nodes and are “guilty by association” will also be displayed.',
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GraphPlot)
@@ -275,38 +275,36 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 
   export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
-    label: `CTD String For Gene Set`,
-    description: "Get a CTD response for a set of genes for graph type string."
+    label: `Connect the Dots in STRING`,
+    description: "Use CTD to “Connect the Dots” and identify highly connected set of proteins in the STRING protein interaction graph. *Please note 10-150 genes of interest are required to run CTD"
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
-    console.log("CTD String, gen set processing.");
     let requestBody = {
       "graphType": "string",
       "geneList": props.inputs.geneset.set
     }
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
-    `Get a CTD response for a set of genes for graph type string.`
+    `CTD is applied which diffuses through all nodes in STRING [\\ref{doi:10.1093/nar/gku1003}] to identify nodes that are “guilty by association” and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
   ).build()
 
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
-    label: `CTD Wikipathways For Gene Set`,
-    description: "Get a CTD response for a set of genes for graph type wikipathways."
+    label: `Connect the Dots in Wikipathways`,
+    description: "Use CTD to “Connect the Dots” and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD"
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
   .resolve(async (props) => {
-    console.log("CTD Wikipathways, gen set processing.");
     let requestBody = {
       "graphType": "wikipathways",
       "geneList": props.inputs.geneset.set
     }
     return await getCTDGenSetResponse(JSON.stringify(requestBody));
   }).story(props =>
-    `Get a CTD response for a set of genes for graph type wikipathways.`
+    `CTD is applied which diffuses through all nodes in WikiPathways [\\ref{doi:10.1093/nar/gkad960}] to identify nodes that are “guilty by association” and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
   ).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
@@ -319,7 +317,6 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     const fileReader = await fileAsStream(props.inputs.file);
-    console.log("CTD String, file processing: "+props.inputs.file.filename);
     const formData = new FormData();
     formData.append('csvGenesFile', fileReader, props.inputs.file.filename);
     formData.append('graphType', "string");

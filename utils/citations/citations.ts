@@ -2,6 +2,7 @@ export default {
   "10.1002/cpz1.90": " Xie, Z. et al. Gene Set Knowledge Discovery with Enrichr. Current Protocols vol. 1 (2021).",
   "10.1002/pro.3715": "Kanehisa, M. Toward understanding the origin and evolution of cellular organisms. Protein Science vol. 28 1947–1951 (2019).",
   "10.1016/j.cell.2017.10.049": "Subramanian, A. et al. A Next Generation Connectivity Map: L1000 Platform and the First 1,000,000 Profiles. Cell vol. 171 1437-1452.e17 (2017).",
+  "10.1016/j.isci.2022.105799": " Petrosyan, V. et al. Identifying biomarkers of differential chemotherapy response in TNBC patient-derived xenografts with a CTD/WGCNA approach. iScience vol. 26 105799 (2023).",
   "10.1016/j.xgen.2023.100340": " Shapiro, J. A. et al. OpenPBTA: The Open Pediatric Brain Tumor Atlas. Cell Genomics 100340 (2023) doi:10.1016/j.xgen.2023.100340.",
   "10.1038/75556": "Ashburner, M. et al. Gene Ontology: tool for the unification of biology. Nature Genetics vol. 25 25–29 (2000).",
   "10.1038/nature11247": "An integrated encyclopedia of DNA elements in the human genome. Nature vol. 489 57–74 (2012).",
@@ -19,6 +20,7 @@ export default {
   "10.1093/nar/gkac328": "Evangelista, J. E. et al. SigCom LINCS: data and metadata search engine for a million gene expression signatures. Nucleic Acids Research vol. 50 W697–W709 (2022).",
   "10.1093/nar/gkac956": " Kim, S. et al. PubChem 2023 update. Nucleic Acids Research vol. 51 D1373–D1380 (2022).",
   "10.1093/nar/gkac963": "Kanehisa, M., Furumichi, M., Sato, Y., Kawashima, M. & Ishiguro-Watanabe, M. KEGG for taxonomy-based analysis of pathways and genomes. Nucleic Acids Research vol. 51 D587–D592 (2022).",
+  "10.1093/nar/gkad960": " Agrawal, A. et al. WikiPathways 2024: next generation pathway database. Nucleic Acids Research vol. 52 D679–D689 (2023).",
   "10.1093/nar/gks1114": "Wu, C., MacLeod, I. & Su, A. I. BioGPS and MyGene.info: organizing online, gene-centric information. Nucleic Acids Research vol. 41 D561–D565 (2012).",
   "10.1093/nar/gks1193": "Barrett, T. et al. NCBI GEO: archive for functional genomics data sets—update. Nucleic Acids Research vol. 41 D991–D995 (2012).",
   "10.1093/nar/gkv007": " Ritchie, M. E. et al. limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research vol. 43 e47–e47 (2015).",
@@ -28,6 +30,7 @@ export default {
   "10.1186/1471-2105-15-79": " Clark, N. R. et al. The characteristic direction: a geometrical approach to identify differentially expressed genes. BMC Bioinformatics vol. 15 (2014).",
   "10.1186/gb-2014-15-2-r29": " Law, C. W., Chen, Y., Shi, W. & Smyth, G. K. voom: precision weights unlock linear model analysis tools for RNA-seq read counts. Genome Biology vol. 15 R29 (2014).",
   "10.1186/s13059-016-0953-9": "Xin, J. et al. High-performance web services for querying gene and variant annotation. Genome Biology vol. 17 (2016).",
+  "10.1371/journal.pcbi.1009551": " Thistlethwaite, L. R. et al. Correction: CTD: An information-theoretic algorithm to interpret sets of metabolomic and transcriptomic perturbations in the context of graphical models. PLOS Computational Biology vol. 17 e1009551 (2021).",
   "10.1371/journal.pmed.1001779": "Sudlow, C. et al. UK Biobank: An Open Access Resource for Identifying the Causes of a Wide Range of Complex Diseases of Middle and Old Age. PLOS Medicine vol. 12 e1001779 (2015).",
   "10.48550/arXiv.1802.03426": " McInnes, L., Healy, J. & Melville, J. UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction. Preprint at https://doi.org/10.48550/ARXIV.1802.03426 (2018).",
 }

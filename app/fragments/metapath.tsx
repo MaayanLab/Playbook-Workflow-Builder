@@ -7,6 +7,7 @@ import cache from '@/utils/cache'
 import { Readable, derived, readable } from '@/utils/store'
 import { useReadable, usePromise } from '@/utils/hooks'
 import type { ResolvedLifecycle } from '@/app/extensions/socket/fpprg'
+import { useRuntimeConfig } from './config'
 
 export type Metapath = ReturnType<FPL['toJSON']>
 
@@ -16,13 +17,14 @@ const MetapathContext = React.createContext({
 })
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
+  const config = useRuntimeConfig()
   const fetchSocket = React.useMemo(async () => {
     if (process.env.NODE_ENV === 'development') {
-      return io('http://localhost:3005', { transports: ['websocket'] })
+      return io(config.NEXT_PUBLIC_WS_URL, { transports: ['websocket'] })
     } else {
       return io({ transports: ['websocket'] })
     }
-  }, [props.session_id])
+  }, [config.NEXT_PUBLIC_WS_URL])
   const fetchFPL = React.useCallback(cache(async (id) => {
     if (id === 'start') return []
     const socket = await fetchSocket

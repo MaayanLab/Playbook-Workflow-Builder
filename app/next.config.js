@@ -34,6 +34,7 @@ if (!process.env.NEXTAUTH_URL_INTERNAL) process.env.NEXTAUTH_URL_INTERNAL = 'htt
 if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
 if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
+if (!process.env.NEXT_PUBLIC_WS_URL && process.env.NODE_ENV === 'development') process.env.NEXT_PUBLIC_WS_URL = 'http://localhost:3005'
 
 module.exports = withBundleAnalyzer({
   experimental: {

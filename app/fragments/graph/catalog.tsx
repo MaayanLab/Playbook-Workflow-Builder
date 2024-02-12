@@ -1,6 +1,6 @@
 import React from 'react'
 import Masonry from 'react-masonry-css'
-import tsvector, { type TSVector } from "@/utils/tsvector"
+import { tsvector, tsvector_intersect } from "@/utils/tsvector"
 import dynamic from "next/dynamic"
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
@@ -21,7 +21,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
   const search_ts = React.useMemo(() => tsvector(search), [search])
   const { group_values, item_search_ts, pagerank_max, weight_max } = React.useMemo(() => {
     const group_values: KVCounts = {}
-    const item_search_ts: Record<string, TSVector> = {}
+    const item_search_ts: Record<string, Set<string>> = {}
     let pagerank_max = 1
     let weight_max = 1
     for (const k in items) {
@@ -69,7 +69,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
       : items_filtered
         .filter((k) => {
           const _fts = item_search_ts[k]
-          const score = _fts.intersect(search_ts).size
+          const score = tsvector_intersect(_fts, search_ts).size
           items_filtered_search_score[k] = score
           items_filtered_search_score_max = Math.max(score, items_filtered_search_score_max)
           return score !== 0

@@ -1,9 +1,9 @@
-import type { Socket } from "socket.io"
+import type { Server, Socket } from "socket.io"
 import { onSocketCavatica } from "./cavatica";
 import { onSocketFPPRG } from "./fpprg";
 
-export default function onSocket(client: Socket) {
+export default function onSocket(server: Server, client: Socket) {
   console.debug(`${client.id} connected`)
-  onSocketCavatica(client)
-  onSocketFPPRG(client)
+  onSocketCavatica(server, client)
+  onSocketFPPRG(server, client)
 }

@@ -1,4 +1,4 @@
-import type { Socket } from 'socket.io'
+import type { Socket, Server } from 'socket.io'
 import fpprg from '@/app/fpprg'
 import { TimeoutError } from '@/spec/error'
 import { Resolved } from '@/core/FPPRG'
@@ -18,7 +18,7 @@ export type ResolvedLifecycle = {
   data: ResolvedJSON
 }
 
-export function onSocketFPPRG(client: Socket) {
+export function onSocketFPPRG(server: Server, client: Socket) {
   client.on('fpprg:fpl', async (id: string) => {
     const fpl = await fpprg.getFPL(id)
     if (!fpl) {

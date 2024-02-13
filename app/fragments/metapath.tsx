@@ -33,7 +33,7 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
         }
       })
     })
-    socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:fpl`, { fpl_id: id, session_id: props.session_id })
+    socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:fpl`, id)
     return await ret
   }), [fetchSocket, props.session_id])
   const fetchResolved = React.useCallback(cache(async (id) => {
@@ -42,10 +42,10 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
       socket.on(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved:${id}`, value => {
         set(value)
       })
-      socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved`, { fpl_id: id, session_id: props.session_id })
+      socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved`, id)
       return () => {socket.off(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved:${id}`, set)}
     })
-    return { subscribe, refresh: () => {socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved`, { fpl_id: id, session_id: props.session_id })} }
+    return { subscribe, refresh: () => {socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved`, id)} }
   }), [fetchSocket, props.session_id])
   return (
     <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>

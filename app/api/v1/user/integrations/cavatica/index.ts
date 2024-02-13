@@ -4,7 +4,7 @@ import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import { UnauthorizedError, ResponseCodedError, NotFoundError } from '@/spec/error'
 import db from '@/app/db'
 import { emitter } from '@/app/extensions/socket/cavatica'
-import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
+import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica/testing'
 
 export const UserIntegrationsCAVATICA = API.get('/api/v1/user/integrations/cavatica')
   .query(z.object({}))

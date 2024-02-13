@@ -1,13 +1,10 @@
 /**
  * Most of this file is straight out of the Next.JS Custom Server section -- it runs the nextjs app
  */
-import { createServer } from 'http'
-import { parse } from 'url'
-import next from 'next'
-import path from 'path'
-import conf from '@/app/next.config'
+import mainApp, { Options } from '@/app/server'
 import { io } from 'socket.io-client'
 import * as dict from '@/utils/dict'
+import { z } from 'zod'
 
 async function wsConnect(url: string) {
   console.log(`Fetching ws config from ${url}...`)
@@ -18,18 +15,16 @@ async function wsConnect(url: string) {
 }
 
 async function main() {
-  const dir = path.join(path.dirname(__dirname), 'app')
-  const dev = process.env.NODE_ENV !== 'production'
-  const hostname = '0.0.0.0'
-  const port = 3002
-
+  const opts = Options.parse({ ws: {}, next: {} })
   const [_node, _script, config] = process.argv
   const {
     url,
     session_id,
     auth_token,
     project,
-  } = JSON.parse(config)
+  } = z.object({
+    url: z.string(), session_id: z.string(), auth_token: z.string(), project: z.string()
+  }).parse(JSON.parse(config))
 
   process.env.UFS_STORAGE = JSON.stringify({
     "cls": "ufs.impl.prefix.Prefix",
@@ -47,7 +42,8 @@ async function main() {
   })
   process.env.N_WORKERS = '50'
   process.env.NEXTAUTH_SECRET = auth_token
-  process.env.PUBLIC_URL = process.env.NEXT_PUBLIC_URL = `http://${hostname}:${port}`
+  process.env.PUBLIC_URL = process.env.NEXT_PUBLIC_URL = `http://${opts.next?.hostname}:${opts.next?.port}`
+  process.env.NEXT_PUBLIC_WS_URL = `http://${opts.ws?.hostname}:${opts.ws?.port}`
 
   // monitor socket messages
   //  -- close if around 2 minutes elapsed with no messages
@@ -67,11 +63,11 @@ async function main() {
     publicServerSocket.emit('cavatica:join', session_id)
   })
   publicServerSocket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: string }) => {
-    console.log(JSON.stringify({ handle: { id, path, headers, method } }))
+    // console.log(JSON.stringify({ handle: { id, path, headers, method } }))
     ctx.lastMessage = Date.now()
     let responseHeaders: Record<string, string> = {}
     try {
-      const req = await fetch(`http://${hostname}:${port}${path}`, { headers, method, body: body ? Buffer.from(body, 'base64') : undefined })
+      const req = await fetch(`http://${opts.next?.hostname}:${opts.next?.port}${path}`, { headers, method, body: body ? Buffer.from(body, 'base64') : undefined })
       responseHeaders = dict.fromHeaders(req.headers)
       const res = await req.text()
       const status = req.status
@@ -89,36 +85,13 @@ async function main() {
     process.exit(0)
   })
 
-  // when using middleware `hostname` and `port` must be provided below
-  const app = next({ dev, hostname, port, dir, conf })
-  const handle = app.getRequestHandler()
-
-  await app.prepare()
-
-  await new Promise<void>((resolve, reject) => {
-    createServer(async (req, res) => {
-      try {
-        // Be sure to pass `true` as the second argument to `url.parse`.
-        // This tells it to parse the query portion of the URL.
-        if (!req.url) throw new Error('url is undefined')
-        const parsedUrl = parse(req.url, true)
-        await handle(req, res, parsedUrl)
-      } catch (err) {
-        console.error('Error occurred handling', req.url, err)
-        res.statusCode = 500
-        res.end('internal server error')
-      }
-    }).once('error', (err) => {
-      console.error(err)
-      process.exit(1)
-    }).listen(port, () => {resolve()})
-  })
-  console.log(`> Ready on http://${hostname}:${port}`)
+  // launch the main app
+  await mainApp(opts)
 
   // create a bidirectional channel between the two servers over websocket
   //  in the public server, this is prefixed by `ws:{id}:` but locally
   //  this prefix is omitted
-  const privateServerSocket = await wsConnect(`http://${hostname}:${port}`)
+  const privateServerSocket = await wsConnect(`http://${opts.next?.hostname}:${opts.next?.port}`)
   publicServerSocket.onAny((evt, ...args) => {
     if (evt.startsWith(`ws:${session_id}:`)) {
       ctx.lastMessage = Date.now()

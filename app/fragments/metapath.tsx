@@ -25,7 +25,7 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
     if (id === 'start') return []
     const socket = await fetchSocket
     const ret = new Promise<Metapath[]>((resolve, reject) => {
-      socket.once(`fpprg:fpl:${id}`, (ret: { error: any } | Metapath[]) => {
+      socket.once(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:fpl:${id}`, (ret: { error: any } | Metapath[]) => {
         if ('error' in ret) {
           reject(ret.error)
         } else {
@@ -33,20 +33,20 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
         }
       })
     })
-    socket.emit('fpprg:fpl', id)
+    socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:fpl`, { fpl_id: id, session_id: props.session_id })
     return await ret
-  }), [fetchSocket])
+  }), [fetchSocket, props.session_id])
   const fetchResolved = React.useCallback(cache(async (id) => {
     const socket = await fetchSocket
     const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => {
-      socket.on(`fpprg:resolved:${id}`, value => {
+      socket.on(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved:${id}`, value => {
         set(value)
       })
-      socket.emit(`fpprg:resolved`, id)
-      return () => {socket.off(`fpprg:resolved:${id}`, set)}
+      socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved`, { fpl_id: id, session_id: props.session_id })
+      return () => {socket.off(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved:${id}`, set)}
     })
-    return { subscribe, refresh: () => {socket.emit(`fpprg:resolved`, id)} }
-  }), [fetchSocket])
+    return { subscribe, refresh: () => {socket.emit(`${props.session_id ? `ws:${props.session_id}:` : ''}fpprg:resolved`, { fpl_id: id, session_id: props.session_id })} }
+  }), [fetchSocket, props.session_id])
   return (
     <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>
       {props.children}

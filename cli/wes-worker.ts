@@ -113,6 +113,20 @@ async function main() {
     }).listen(port, () => {resolve()})
   })
   console.log(`> Ready on http://${hostname}:${port}`)
+
+  // create a bidirectional channel between the two servers over websocket
+  //  in the public server, this is prefixed by `ws:{id}:` but locally
+  //  this prefix is omitted
+  const privateServerSocket = await wsConnect(`http://${hostname}:${port}`)
+  publicServerSocket.onAny((evt, ...args) => {
+    if (evt.startsWith(`ws:${session_id}:`)) {
+      ctx.lastMessage = Date.now()
+      privateServerSocket.emit(evt.slice(`ws:${session_id}:`.length), ...args)
+    }
+  })
+  privateServerSocket.onAny((evt, ...args) => {
+    publicServerSocket.emit(`ws:${session_id}:${evt}`, ...args)
+  })
 }
 
 main().catch((err) => {

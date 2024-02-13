@@ -18,4 +18,12 @@ export function onSocketCavatica(server: Server, client: Socket) {
   client.on('http:recv', ({ id, ...rest}) => {
     emitter.emit(`http:recv:${id}`, rest)
   })
+  client.onAny(async (evt, ...args) => {
+    const m = /^ws:([^:]+):(.+)$/.exec(evt)
+    if (m === null) return
+    const sockets = await server.in(m[1]).fetchSockets()
+    sockets.filter(socket => socket.id !== client.id).forEach(socket => {
+      socket.emit(evt, ...args)
+    })
+  })
 }

@@ -23,7 +23,7 @@ if ('pool' in db) {
   io.adapter(createAdapter((db as PgDatabase).pool))
 }
 
-io.on('connection', onSocket);
+io.on('connection', (socket) => onSocket(io, socket));
 
 server.listen(3005, '0.0.0.0', () => {
   console.log('WebSocket server listening on port 3005');

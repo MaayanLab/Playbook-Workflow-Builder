@@ -21,7 +21,7 @@ async function main() {
   const dir = path.join(path.dirname(__dirname), 'app')
   const dev = process.env.NODE_ENV !== 'production'
   const hostname = '0.0.0.0'
-  const port = 3000
+  const port = 3002
 
   const [_node, _script, config] = process.argv
   const {
@@ -47,6 +47,7 @@ async function main() {
   })
   process.env.N_WORKERS = '50'
   process.env.NEXTAUTH_SECRET = auth_token
+  process.env.PUBLIC_URL = process.env.NEXT_PUBLIC_URL = `http://${hostname}:${port}`
 
   // monitor socket messages
   //  -- close if around 2 minutes elapsed with no messages

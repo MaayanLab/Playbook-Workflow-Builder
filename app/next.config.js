@@ -1,7 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
-const root = process.env.APP_ROOT = path.dirname(__dirname)
+if (!process.env.APP_ROOT) process.env.APP_ROOT = path.dirname(__dirname)
+const root = process.env.APP_ROOT
 
 // create .env from .env.example if not present
 if (!fs.existsSync(path.join(root, '.env'))) {
@@ -30,7 +31,7 @@ if (!process.env.NEXTAUTH_URL_INTERNAL) process.env.NEXTAUTH_URL_INTERNAL = 'htt
 if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
 if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
-if (!process.env.NEXT_PUBLIC_WS_URL && process.env.NODE_ENV === 'development') process.env.NEXT_PUBLIC_WS_URL = 'http://localhost:3005'
+if (!process.env.NEXT_PUBLIC_WS_URL) process.env.NEXT_PUBLIC_WS_URL = process.env.NEXT_PUBLIC_URL
 
 /** @type {import('next').NextConfig} */
 module.exports = {

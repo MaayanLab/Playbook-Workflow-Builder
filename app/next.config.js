@@ -1,7 +1,3 @@
-console.log('!!!!!!!!!! ENOWORKSPACES error can be safely ignored !!!!!!!!!!')
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.NEXT_ANALYZE === 'true',
-})
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
@@ -36,7 +32,8 @@ if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 if (!process.env.NEXT_PUBLIC_WS_URL && process.env.NODE_ENV === 'development') process.env.NEXT_PUBLIC_WS_URL = 'http://localhost:3005'
 
-module.exports = withBundleAnalyzer({
+/** @type {import('next').NextConfig} */
+module.exports = {
   experimental: {
     externalDir: true,
   },
@@ -47,7 +44,7 @@ module.exports = withBundleAnalyzer({
     return [
       {
         source: '/',
-        destination: process.env.LANDING_PAGE,
+        destination: process.env.LANDING_PAGE ?? '/graph/extend',
         permanent: false,
       },
     ]
@@ -75,4 +72,4 @@ module.exports = withBundleAnalyzer({
     }
     return config
   }
-})
+}

@@ -1,3 +1,4 @@
+//@ts-nocheck
 /**
  * leven-sort has an issue with being imported for some reason, since the module is somewhat small and stable
  *  I've just extracted the applicable code and put it here.
@@ -88,7 +89,7 @@ function levenSrc(first, second) {
 
 const bufChar = String.fromCharCode(2000)
 
-export default (ary, src1, key1, src2, key2) => {
+export default (ary: string[], src1: string, key1?: string, src2?: string, key2?: string): string[] => {
   let max = 0
 
   ary.forEach(function (el) {

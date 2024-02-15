@@ -4,7 +4,6 @@
     "license": "CC-BY-NC-SA-4.0",
     "author": "William Khan <wnkhan32@gmail.com>",
     "private": true,
-    "main": "index.tsx",
     "dependencies": {
         "plotly": "^1.0.0",
         "react": "^18.2.0",

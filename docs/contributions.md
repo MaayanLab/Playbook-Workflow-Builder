@@ -55,7 +55,6 @@ The `package.json` is a standard by the javascript ecosystem and is used to capt
   "license": "CC-BY-NC-SA-4.0",
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "contributors": [],
-  "main": "index.tsx",
   "private": true,
   "dependencies": {},
   "devDependencies": {}

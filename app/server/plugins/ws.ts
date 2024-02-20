@@ -4,10 +4,14 @@ import db from '@/app/db'
 import { createAdapter } from '@socket.io/postgres-adapter'
 import { PgDatabase } from '@/utils/orm/pg'
 import onSocket from '@/app/extensions/socket'
+import '@/utils/global_cache'
+declare global {
+  var io: Server | undefined
+}
 
 export default async function plugin(server: http.Server, opts: {}) {
   console.log('Starting Socket.io server...')
-  const io = new Server(server, { transports: ['websocket'] });
+  const io = global.io = new Server(server, { transports: ['websocket'] });
   if ('pool' in db) {
     // if there would be multiple instances of the ui, this will ensure
     //  messages can be shared across processes

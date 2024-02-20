@@ -2,8 +2,8 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { func_icon, variable_icon } from '@/icons'
 import { DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
-import ReactMarkdown from 'react-markdown'
 
+const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: (DataMetaNode | ProcessMetaNode), multi?: boolean, type?: string, }[] }) {
@@ -31,11 +31,11 @@ export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: 
                   >{metanode.meta.label}</Link>
                 </th>
                 <td className="prose whitespace-pre-wrap">
-                  <ReactMarkdown components={{
+                  <Markdown components={{
                     p(props: React.PropsWithChildren<{}>) {
                       return <span {...props}>{props.children}</span>
                     }
-                  }}>{metanode.meta.description}</ReactMarkdown>
+                  }}>{metanode.meta.description}</Markdown>
                 </td>
               </tr>
             )

@@ -5,10 +5,10 @@ import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, 
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import classNames from 'classnames'
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import { useStory } from '@/app/fragments/story'
 import { Waypoint } from '@/app/components/waypoint'
 
+const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -37,9 +37,9 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             </div>
             <div className="collapse-content">
               <p className="bp5-ui-text">
-                <ReactMarkdown>
+                <Markdown>
                   {cellMetadata[head.id].description ?? processNode.meta.description ?? ''}
-                </ReactMarkdown>
+                </Markdown>
               </p>
             </div>
           </div>

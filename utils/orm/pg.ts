@@ -29,10 +29,10 @@ function prepare(statement_builder: (subst: (value: any) => string) => string) {
 
 export class PgDatabase implements DbDatabase {
   public objects: any
+  public pool: pg.Pool
   private listeners: Record<string, Record<number, (data: unknown) => void>> = {}
   private id = 0
   private subscriber: Subscriber
-  private pool: pg.Pool
   private boss: PgBoss
 
   constructor(connectionString: string) {
@@ -56,12 +56,10 @@ export class PgDatabase implements DbDatabase {
       this.listen('distributed:on_insert', async (rawPayload) => {
         const payload = db.notify_insertion_trigger_payload.codec.decode(rawPayload)
         const { table, operation, id } = payload
-        // console.debug(`received on_insert from ${table}: ${id}`)
         if (operation === 'INSERT') {
           this.notify(`insert:${table}`, { id })
         }
       })
-      // console.log('ready')
     })(this).catch((error) => {
       console.error('Failed to initialize subscriber', error)
       process.exit(1)

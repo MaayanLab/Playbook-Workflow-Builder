@@ -5,14 +5,22 @@
   "browser": {
     "child_process": false
   },
+  "scripts": {
+    "build:next": "NODE_ENV=production DATABASE_URL= next build",
+    "build:server": "NODE_ENV=production tsc --project tsconfig.server.json",
+    "build": "npm run build:next && npm run build:server",
+    "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/app/server/cli.js",
+    "dev": "NODE_ENV=development ts-node server/cli.ts"
+  },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.9",
     "d3": "^7.8.2",
     "daisyui": "^2.50.0",
     "dotenv": "^16.0.3",
+    "events": "^3.3.0",
     "jwt-decode": "^3.1.2",
     "multiparty": "^4.2.3",
-    "next": "^13.5.6",
+    "next": "^14.1.0",
     "next-auth": "^4.19.2",
     "nodemailer": "^6.8.0",
     "prismjs": "^1.29.0",
@@ -27,7 +35,6 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^13.1.6",
     "@types/d3": "^7.4.0",
     "@types/multiparty": "^0.0.33",
     "@types/uuid": "^9.0.0",

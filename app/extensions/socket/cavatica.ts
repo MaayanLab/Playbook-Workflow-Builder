@@ -5,25 +5,40 @@ import cache from '@/utils/global_cache'
 export const emitter = cache('emitter', () => new EventEmitter())
 
 export function onSocketCavatica(server: Server, client: Socket) {
-  client.on('cavatica:join', async (id) => {
-    console.debug(`${client.id} joined cavatica:${id}`)
-    await client.join(`cavatica:${id}`)
+  client.on('join', async (id) => {
+    // console.debug(`[${id}]: client ${client.id} joined`)
+    await client.join(`client:${id}`)
+  })
+  client.on('leave', async (id) => {
+    // console.debug(`[${id}]: client ${client.id} left`)
+    await client.leave(`client:${id}`)
+  })
+  client.on('worker:join', async (id) => {
+    // console.debug(`[${id}]: worker ${client.id} joined`)
+    await client.join(`worker:${id}`)
     emitter.emit(`join:${id}`)
     emitter.on(`close:${id}`, async () => {
-      console.debug(`${client.id} disconnected from ${id}`)
-      await client.leave(`cavatica:${id}`)
-      client.send('cavatica:close')
+      // console.debug(`[${id}]: worker ${client.id} disconnected`)
+      await client.leave(`worker:${id}`)
+      client.emit('cavatica:close')
     })
   })
   client.on('http:recv', ({ id, ...rest}) => {
     emitter.emit(`http:recv:${id}`, rest)
   })
   client.onAny(async (evt, ...args) => {
-    const m = /^ws:([^:]+):(.+)$/.exec(evt)
-    if (m === null) return
-    const sockets = await server.in(m[1]).fetchSockets()
-    sockets.filter(socket => socket.id !== client.id).forEach(socket => {
-      socket.emit(evt, ...args)
+    const evt_m = /^ws:(.+)$/.exec(evt)
+    if (evt_m === null) return
+    client.rooms.forEach(room => {
+      const room_m = /^(client|worker):(.+)$/.exec(room)
+      if (room_m === null) return
+      if (room_m[1] === 'client') {
+        // console.debug(`[${room_m[1]}]: forward ${evt} to workers`)
+        server.to(`worker:${room_m[2]}`).emit(evt, ...args)
+      } else if (room_m[1] === 'worker') {
+        // console.debug(`[${room_m[1]}]: forward ${evt} to clients`)
+        server.to(`client:${room_m[2]}`).emit(evt, ...args)
+      }
     })
   })
 }

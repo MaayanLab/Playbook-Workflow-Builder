@@ -83,14 +83,14 @@ export default async function plugin(server: http.Server, opts: z.infer<typeof O
     publicServerSocket.onAny((evt, ...args) => {
       if (!opts.proxy) return
       if (evt.startsWith(`ws:`)) {
-        console.log(`forwarding ${evt.slice(`ws:`.length)} from public to private`)
+        // console.debug(`forwarding ${evt.slice(`ws:`.length)} from public to private`)
         ctx.lastMessage = Date.now()
         privateServerSocket.emit(evt.slice(`ws:`.length), ...args)
       }
     })
     privateServerSocket.onAny((evt, ...args) => {
       if (!opts.proxy) return
-      console.log(`forwarding ${evt} from private to public`)
+      // console.debug(`forwarding ${evt} from private to public`)
       publicServerSocket.emit(`ws:${evt}`, ...args)
     })
   })

@@ -76,13 +76,7 @@ CMD ["/bin/bash"]
 FROM base as app_minimal
 COPY --from=prepare_build /app /app
 ENV PORT 3000
-CMD ["npm", "run", "start:ui"]
-
-# TARGET: app_ws_minimal -- production server with dependencies to run just the websocket server
-FROM base as app_ws_minimal
-COPY --from=prepare_build /app /app
-ENV PORT 3005
-CMD ["npm", "run", "start:ws"]
+CMD ["npm", "run", "start"]
 
 # TARGET: app -- production server with dependencies to run everything
 FROM prepare_system as app
@@ -92,4 +86,4 @@ COPY --from=prepare_build /app /app
 RUN chmod +x /app/cli/wes-worker.sh
 ENV PORT 3000
 ENV PORT 3005
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]

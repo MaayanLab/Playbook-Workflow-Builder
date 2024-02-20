@@ -29,22 +29,21 @@ export default async function Forward(req: NextApiRequest, res: NextApiResponse)
   if (io === undefined) throw new Error('Not Implemented')
   const request_id = randomUUID()
   const body = ['HEAD', 'GET'].includes(req.method ?? '') ? undefined : (await getRawBody(req)).toString('base64')
-  const [socket, ..._] = await io.to(room_id).fetchSockets()
   const proxyReq = new Promise<{ status: number, body?: string, headers: Record<string, string> }>((resolve, reject) => {
     emitter.once(`http:recv:${request_id}`, (r) => resolve(r))
     setTimeout(() => reject(new TimeoutError()), 5000)
   })
-  socket.emit('http:send', {
-    id: request_id,
-    path,
-    headers: {
-      'authorization': `Token ${integrations.cavatica_api_key}`,
-      ...dict.fromIncomingHeaders(req.headers)
-    },
-    method: req.method,
-    body: body,
-  })
   try {
+    io.to(`worker:${room_id}`).emit('http:send', {
+      id: request_id,
+      path,
+      headers: {
+        'authorization': `Token ${integrations.cavatica_api_key}`,
+        ...dict.fromIncomingHeaders(req.headers)
+      },
+      method: req.method,
+      body,
+    })
     const proxyRes = await proxyReq
     dict.items(proxyRes.headers).forEach(({ key, value }) => {
       res.setHeader(key, value)

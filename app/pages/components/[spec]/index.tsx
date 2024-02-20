@@ -4,9 +4,9 @@ import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import * as dict from '@/utils/dict'
-import ReactMarkdown from 'react-markdown'
 import { func_icon, variable_icon } from '@/icons'
 
+const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const MetaNodeListing = dynamic(() => import('@/app/fragments/components/listing'))
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -53,11 +53,11 @@ export default function ComponentPage({ spec, kind }: { spec: string, kind: 'dat
           <div className="badge badge-secondary prose" key={tag}>{tag}</div>
         )}</div>
         </p> : null}
-        <ReactMarkdown components={{
+        <Markdown components={{
           p(props: React.PropsWithChildren<{}>) {
             return <p className="prose" {...props}>{props.children}</p>
           }
-        }}>{`**Description**: ${metanode.meta.description}`}</ReactMarkdown>
+        }}>{`**Description**: ${metanode.meta.description}`}</Markdown>
           <MetaNodeListing
             metanodes={[
               ...inputMetanodes ? dict.items(inputMetanodes)

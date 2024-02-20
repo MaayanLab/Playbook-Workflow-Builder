@@ -5,15 +5,17 @@ import cache from '@/utils/global_cache'
 export const emitter = cache('emitter', () => new EventEmitter())
 
 export function onSocketCavatica(server: Server, client: Socket) {
-  client.on('join', async (id) => {
+  client.on('join', async (id, ack) => {
     // console.debug(`[${id}]: client ${client.id} joined`)
     await client.join(`client:${id}`)
+    if (ack) ack()
   })
-  client.on('leave', async (id) => {
+  client.on('leave', async (id, ack) => {
     // console.debug(`[${id}]: client ${client.id} left`)
     await client.leave(`client:${id}`)
+    if (ack) ack()
   })
-  client.on('worker:join', async (id) => {
+  client.on('worker:join', async (id, ack) => {
     // console.debug(`[${id}]: worker ${client.id} joined`)
     await client.join(`worker:${id}`)
     emitter.emit(`join:${id}`)
@@ -22,6 +24,7 @@ export function onSocketCavatica(server: Server, client: Socket) {
       await client.leave(`worker:${id}`)
       client.emit('cavatica:close')
     })
+    if (ack) ack()
   })
   client.on('http:recv', ({ id, ...rest}) => {
     emitter.emit(`http:recv:${id}`, rest)

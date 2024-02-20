@@ -705,7 +705,7 @@ export default class FPPRG {
             }
           }
         })
-        console.debug(`Awaiting ${process.type} (${id})`)
+        console.debug(`awaiting ${process.type} (${id})`)
         await this.db.send('work-queue', { id, priority: - (await process.dependencies()) })
         setTimeout(() => {
           if (!ctx.resolved) {

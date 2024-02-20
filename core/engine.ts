@@ -49,13 +49,13 @@ export async function resolve_process(krg: KRG, instanceProcess: Process, notify
   try {
     const metaProcess = krg.getProcessNode(instanceProcess.type)
     if (metaProcess === undefined) throw new Error('Unrecognized process')
-    console.debug(`Preparing ${metaProcess.spec}`)
+    console.debug(`preparing ${metaProcess.spec}`)
     const props = {
       data: instanceProcess.data?.value,
       inputs: await decode_complete_process_inputs(krg, instanceProcess),
       notify,
     }
-    console.debug(`Processing ${metaProcess.spec}`)
+    console.debug(`processing ${metaProcess.spec}`)
     if ('prompt' in metaProcess && props.data === undefined) throw new UnboundError()
     const output = metaProcess.output.codec.encode(await metaProcess.resolve(props))
     return new Resolved(instanceProcess, new Data(metaProcess.output.spec, output))

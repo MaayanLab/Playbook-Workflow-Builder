@@ -1,10 +1,8 @@
-/**
- * Most of this file is straight out of the Next.JS Custom Server section -- it runs the nextjs app
- */
-import mainApp, { Options } from '@/app/server'
+import http from 'http'
 import { io } from 'socket.io-client'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
+import type { Options } from '..'
 
 async function wsConnect(url: string) {
   console.log(`Fetching ws config from ${url}...`)
@@ -14,17 +12,9 @@ async function wsConnect(url: string) {
   return io(uri, opts)
 }
 
-async function main() {
-  const opts = Options.parse({ ws: {}, next: {} })
-  const [_node, _script, config] = process.argv
-  const {
-    url,
-    session_id,
-    auth_token,
-    project,
-  } = z.object({
-    url: z.string(), session_id: z.string(), auth_token: z.string(), project: z.string()
-  }).parse(JSON.parse(config))
+export default async function plugin(server: http.Server, opts: z.infer<typeof Options>) {
+  if (!opts.proxy) throw new Error('Missing proxy config')
+  console.log('Starting CAVATICA proxy...')
 
   process.env.UFS_STORAGE = JSON.stringify({
     "cls": "ufs.impl.prefix.Prefix",
@@ -32,18 +22,17 @@ async function main() {
       "cls": "ufs.impl.sync.Sync",
       "ufs": {
         "cls": "ufs.impl.sbfs.SBFS",
-        "auth_token": auth_token,
+        "auth_token": opts.proxy.auth_token,
         "api_endpoint": "https://cavatica-api.sbgenomics.com",
         "drs_endpoint": "drs://cavatica-ga4gh-api.sbgenomics.com",
         "ttl": 60,
       },
     },
-    "prefix": `/${project}`,
+    "prefix": `/${opts.proxy.project}`,
   })
   process.env.N_WORKERS = '50'
-  process.env.NEXTAUTH_SECRET = auth_token
-  process.env.PUBLIC_URL = process.env.NEXT_PUBLIC_URL = `http://${opts.next?.hostname}:${opts.next?.port}`
-  process.env.NEXT_PUBLIC_WS_URL = `http://${opts.ws?.hostname}:${opts.ws?.port}`
+  process.env.NEXTAUTH_SECRET = opts.proxy.auth_token
+  process.env.PUBLIC_URL = process.env.NEXT_PUBLIC_URL = `http://${opts.hostname}:${opts.port}`
 
   // monitor socket messages
   //  -- close if around 2 minutes elapsed with no messages
@@ -57,17 +46,18 @@ async function main() {
     }
   }, 30*1000)
 
-  const publicServerSocket = await wsConnect(url)
+  const publicServerSocket = await wsConnect(opts.proxy.url)
   publicServerSocket.on('connect', () => {
-    console.log(`Connected, joining ${session_id}...`)
-    publicServerSocket.emit('cavatica:join', session_id)
+    if (!opts.proxy) return
+    console.log(`Connected, joining ${opts.proxy.session_id}...`)
+    publicServerSocket.emit('worker:join', opts.proxy.session_id)
   })
   publicServerSocket.on('http:send', async ({ id, path, headers, method, body }: { id: string, path: string, headers: Record<string, string>, method: string, body?: string }) => {
-    // console.log(JSON.stringify({ handle: { id, path, headers, method } }))
+    console.log(JSON.stringify({ handle: { id, path, headers, method } }))
     ctx.lastMessage = Date.now()
     let responseHeaders: Record<string, string> = {}
     try {
-      const req = await fetch(`http://${opts.next?.hostname}:${opts.next?.port}${path}`, { headers, method, body: body ? Buffer.from(body, 'base64') : undefined })
+      const req = await fetch(`http://${opts.hostname}:${opts.port}${path}`, { headers, method, body: body ? Buffer.from(body, 'base64') : undefined })
       responseHeaders = dict.fromHeaders(req.headers)
       const res = await req.text()
       const status = req.status
@@ -85,25 +75,23 @@ async function main() {
     process.exit(0)
   })
 
-  // launch the main app
-  await mainApp(opts)
-
-  // create a bidirectional channel between the two servers over websocket
-  //  in the public server, this is prefixed by `ws:{id}:` but locally
-  //  this prefix is omitted
-  const privateServerSocket = await wsConnect(`http://${opts.next?.hostname}:${opts.next?.port}`)
-  publicServerSocket.onAny((evt, ...args) => {
-    if (evt.startsWith(`ws:${session_id}:`)) {
-      ctx.lastMessage = Date.now()
-      privateServerSocket.emit(evt.slice(`ws:${session_id}:`.length), ...args)
-    }
-  })
-  privateServerSocket.onAny((evt, ...args) => {
-    publicServerSocket.emit(`ws:${session_id}:${evt}`, ...args)
+  server.on('listening', async () => {
+    // create a bidirectional channel between the two servers over websocket
+    //  in the public server, this is prefixed by `ws:{id}:` but locally
+    //  this prefix is omitted
+    const privateServerSocket = await wsConnect(`http://${opts.hostname}:${opts.port}`)
+    publicServerSocket.onAny((evt, ...args) => {
+      if (!opts.proxy) return
+      if (evt.startsWith(`ws:`)) {
+        console.log(`forwarding ${evt.slice(`ws:`.length)} from public to private`)
+        ctx.lastMessage = Date.now()
+        privateServerSocket.emit(evt.slice(`ws:`.length), ...args)
+      }
+    })
+    privateServerSocket.onAny((evt, ...args) => {
+      if (!opts.proxy) return
+      console.log(`forwarding ${evt} from private to public`)
+      publicServerSocket.emit(`ws:${evt}`, ...args)
+    })
   })
 }
-
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})

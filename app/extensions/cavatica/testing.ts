@@ -21,19 +21,21 @@ export async function *run_wes_worker({
   wes_endpoint?: string,
   polling_interval?: number,
 }) {
+  const { DATABASE_URL: _, ...env } = process.env
   const proc = spawn('npm', [
-    'run',
-    'start:wes-worker',
+    'start',
     '--',
     JSON.stringify({
-      url,
-      session_id,
-      auth_token,
-      project,
+      port: 3001,
+      plugins: ['next', 'ws', 'cavatica-proxy'],
+      proxy: {
+        url,
+        session_id,
+        auth_token,
+        project,
+      },
     }),
-  ], {
-    cwd: process.env.APP_ROOT,
-  })
+  ], { env })
   const ctx = {
     current_state: null as string | null,
     state: null as string | null,

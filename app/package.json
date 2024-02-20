@@ -9,7 +9,7 @@
     "build:next": "NODE_ENV=production DATABASE_URL= next build",
     "build:server": "NODE_ENV=production tsc --project tsconfig.server.json",
     "build": "npm run build:next && npm run build:server",
-    "start": "NODE_ENV=production APP_ROOT=$(pwd)/.. TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/app/server/cli.js",
+    "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/app/server/cli.js",
     "dev": "NODE_ENV=development ts-node server/cli.ts"
   },
   "dependencies": {

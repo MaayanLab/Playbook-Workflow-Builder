@@ -20,7 +20,6 @@
     "dev": "npm run --workspace=app dev",
     "start:worker": "ts-node cli/resolve-process-worker.ts",
     "start:run-wes-worker": "ts-node cli/run-wes-worker.ts",
-    "start:wes-worker": "NODE_ENV=production DATABASE_URL= ts-node cli/wes-worker.ts",
     "start": "npm run --workspace=app start",
     "start:ui": "npm run --workspace=app start:ui",
     "start:ws": "npm run --workspace=app start:ws",

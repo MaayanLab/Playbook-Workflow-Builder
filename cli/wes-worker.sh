@@ -1,3 +1,3 @@
 #!/bin/sh
 cd /app
-npm run start:wes-worker -- "$@"
+npm start -- "{\"port\":3001,\"plugins\":[\"next\",\"ws\",\"cavatica-proxy\"],\"proxy\":$@}"

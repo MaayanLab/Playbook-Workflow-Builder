@@ -16,18 +16,19 @@ const MetapathContext = React.createContext({
 })
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
-  const fetchSocket = React.useMemo(async () => {
+  const fetchSocketWithoutRoom = React.useMemo(async () => {
     const req = await fetch('/api/socket')
     const { uri, ...opts } = await req.json()
     return io(uri, opts)
-  }, [])
-  React.useEffect(() => {
-    if (!props.session_id) return
-    fetchSocket.then(socket => socket.emit('join', props.session_id))
-    return () => {
-      fetchSocket.then(socket => socket.emit('leave', props.session_id))
-    }
-  }, [fetchSocket, props.session_id])
+  }, [props.session_id])
+  const fetchSocket = React.useMemo(async () => (
+    fetchSocketWithoutRoom.then(async (socket) => {
+      if (props.session_id) {
+        await socket.emitWithAck('join', props.session_id)
+      }
+      return socket
+    })
+  ), [fetchSocketWithoutRoom, props.session_id])
   const fetchFPL = React.useCallback(cache(async (id) => {
     if (id === 'start') return []
     const socket = await fetchSocket

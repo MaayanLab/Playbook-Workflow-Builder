@@ -4,7 +4,7 @@ import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { z } from 'zod'
 import { glygen_icon } from '@/icons'
 import { GeneTerm, ProteinTerm, GlycanTerm } from '@/components/core/input/term'
-import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, GlycanClassification, GlycanCrossRef, glygenProteinSearchQuery, glygenGlycanSetSearchQuery } from './utils'
+import { filterGlyGenResults, resolveFilteredResult, GlycosylationTable, PhosphorylationTable, GlycanClassification, GlycanCrossRef, glygenProteinSearchQuery, glygenGlycanSetSearchQuery } from './utils'
 import { ProteinSet, GlycanSet } from '@/components/core/input/set'
 
 
@@ -20,37 +20,53 @@ const GlycosylationEntry = z.object({
   glytoucan_ac: z.string()
 }); 
 
+/**
+ * Zod definition for phosphorylation data
+ */
+const PhosphorylationEntry = z.object({
+  start_pos: z.number(),
+  end_pos: z.number(),
+  kinase_uniprot_canonical_ac: z.string().optional(),
+  kinase_gene_name: z.string().optional(),
+  residue: z.string(),
+  comment: z.string().optional()
+})
+
 /*
  * Zod definition for the overall glygen protein data  
  */
 export const GlyGenProteinResponse = z.object({
-    gene: z.object({
-      name: z.string(),
-      locus: z.object({
-        chromosome: z.string(),
-        start_pos: z.number(),
-        end_pos: z.number(),
-        strand: z.string()
-      })
-    }),
-    uniprot: z.object({
-      uniprot_id: z.string(),
-      uniprot_canonical_ac: z.string(),
-      length: z.number()
-    }),
-    protein_names: z.object({
-      name: z.string()
-    }),
-    species: z.object({
-      name: z.string(),
-      common_name: z.string(),
-      taxid: z.string(),
-    }),
-    glycoprotein: z.object({
-      glycosylation: z.boolean().optional(),
-      glycosylation_data: z.array(GlycosylationEntry)
+  gene: z.object({
+    name: z.string(),
+    locus: z.object({
+      chromosome: z.string(),
+      start_pos: z.number(),
+      end_pos: z.number(),
+      strand: z.string()
     })
+  }),
+  uniprot: z.object({
+    uniprot_id: z.string(),
+    uniprot_canonical_ac: z.string(),
+    length: z.number()
+  }),
+  protein_names: z.object({
+    name: z.string()
+  }),
+  species: z.object({
+    name: z.string(),
+    common_name: z.string(),
+    taxid: z.string(),
+  }),
+  glycoprotein: z.object({
+    glycosylation: z.boolean(),
+    glycosylation_data: z.array(GlycosylationEntry).optional()
+  }),
+  phosphorylation: z.object({
+    phosphorylation: z.boolean(),
+    phosphorylation_data: z.array(PhosphorylationEntry).optional()
   })
+})
 
 /**
  * Zod definition for protein data
@@ -143,9 +159,10 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
     return (
       <div className="prose">
           <div>Gene Name: <b>{data.gene.name}</b></div>
-          <div>UniProtKB Accession:
+          <div>
+            <span>UniProtKB Accession: </span>
             <b>
-              <a href={glyGenLink} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}> <u style={{color: 'blue'}}>{data.uniprot.uniprot_canonical_ac}</u></a>
+              <a href={glyGenLink} target='_blank' rel='noopener noreferrer' style={{color: 'blue'}}><u style={{color: 'blue'}}>{data.uniprot.uniprot_canonical_ac}</u></a>
             </b>
           </div>
           <div>Gene location: Chromosome: {data.gene.locus.chromosome} ({data.gene.locus.start_pos} - {data.gene.locus.end_pos}, '{data.gene.locus.strand}' strand)</div>
@@ -153,9 +170,10 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
           <div>Protein Length: <b>{data.uniprot.length}</b></div>
           <div>UniProtKB Protein Name(s): {data.protein_names.name}</div>
           <div>Organism: <b>{data.species.name} ({data.species.common_name}; TaxID: {data.species.taxid})</b></div>
+          <div>Phosphoprotein: {data.phosphorylation.phosphorylation ? 'True' : 'False'}</div>
           <div>Glycoprotein: {data.glycoprotein.glycosylation ? 'True' : 'False'}</div>
           <br />
-          <div>{data.glycoprotein.glycosylation && data.glycoprotein.glycosylation_data.length > 0 && (
+          <div>{data.glycoprotein.glycosylation && data.glycoprotein.glycosylation_data && data.glycoprotein.glycosylation_data.length > 0 && (
             <GlycosylationTable
               glycosylationData={
                 data.glycoprotein.glycosylation_data.length > 5
@@ -165,12 +183,14 @@ export const GlyGenProteinResponseNode = MetaNode('GlyGenProteinResponse')
               isPreview={data.glycoprotein.glycosylation_data.length > 5}
             />
           )}</div>
+          <div>{data.phosphorylation.phosphorylation && data.phosphorylation.phosphorylation_data && data.phosphorylation.phosphorylation_data.length > 0 && (
+            <PhosphorylationTable phosphorylationData={data.phosphorylation.phosphorylation_data}/>
+          )}</div>
       </div>
     )
   })
   .build()
-// TODO: total_n_glycosites, total_o_glycosites, reported_phosphosites, reported_snv booleans
-// TODO: accession link out to protein detail page similar to glycan data metanode 
+
 /**
  * Data metanode for the glygen api protein response, defines how the protein api response should 
  * be rendered in the UI 

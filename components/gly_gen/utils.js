@@ -2,6 +2,7 @@
 
 // import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
 
+// import { internalMutate } from "swr/dist/_internal";
 import { URLSearchParams } from "url";
 
 export async function resolveFilteredResult(cannonicalAccession) {
@@ -39,6 +40,22 @@ export async function resolveFilteredResult(cannonicalAccession) {
     glycosylation: isGlycosylation,
     glycosylation_data: glycosylationData
   }
+
+  const isPhosphorylation = "phosphorylation" in intermediateResult;
+  const phosphorylation_data = intermediateResult.phosphorylation ? intermediateResult.phosphorylation.map(tag => ({
+    start_pos: tag.start_pos,
+    end_pos: tag.end_pos,
+    kinase_uniprot_canonical_ac: tag.kinase_uniprot_canonical_ac || 'No data available',
+    kinase_gene_name: tag.kinase_gene_name || 'No data available',
+    residue: tag.residue,
+    comment: tag.comment || 'No data available',
+    site_lbl: tag.site_lbl
+  })) : [];
+  intermediateResult.phosphorylation = {
+    phosphorylation: isPhosphorylation,
+    phosphorylation_data: phosphorylation_data
+  }
+
   return intermediateResult;
 }
 
@@ -88,6 +105,33 @@ export function GlycosylationTable({ glycosylationData, isPreview = false }) {
         </tbody>
       </table>
       {isPreview && <div style={{ margintop: "10px", fontSynthesis: "italic" }}>*This is a preview of the full glycosylation data data.</div>}
+    </div>
+  )
+}
+
+export function PhosphorylationTable({phosphorylationData}) {
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Residue</th>
+            <th>Kinase Protein</th>
+            <th>Kinase Gene</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {phosphorylationData.map((entry, index) => (
+            <tr key = {index}>
+              <td>{entry.residue}</td>
+              <td>{entry.kinase_uniprot_canonical_ac}</td>
+              <td>{entry.kinase_gene_name}</td>
+              <td>{entry.comment}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

@@ -178,13 +178,12 @@ export const GlycosylationViewResponseNode = MetaNode(
   })
   .codec(GlycosylationData)
   .view((data) => {
-    const recordCount = data.glycosylation_data?.length ?? 0;
     const emptyGlytoucanAcCount =
       data.glycosylation_data?.filter((entry) => entry.glytoucan_ac === "")
         .length ?? 0;
     const glyGenLink = `http://www.glygen.org/protein/${data.protein_accession}`;
 
-    if (recordCount > 0) {
+    if ((data.glycosylation_data?.length ?? 0) > 0) {
       return (
         <div className="prose">
           <div>
@@ -208,7 +207,7 @@ export const GlycosylationViewResponseNode = MetaNode(
             Records Without GlyTouCan Accessions: <b>{emptyGlytoucanAcCount}</b>
           </div>
           <br />
-          <GlycosylationTable glycosylationData={data.glycosylation_data} />
+          <GlycosylationTable glycosylation_data={data.glycosylation_data ?? []} />
         </div>
       );
     } else {

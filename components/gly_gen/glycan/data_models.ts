@@ -45,3 +45,4 @@ export const GlyGenGlycanSetResponse = z.array(
     associated_enzymes: z.number(),
   }),
 );
+

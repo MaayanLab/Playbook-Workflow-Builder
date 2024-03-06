@@ -6,8 +6,24 @@ import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
+import gptEmbeddingClfDef from '@/app/public/chat/gpt-embedding-clf.json'
 import { mean } from '@/utils/math'
-import transformerEmbedDef from '@/app/public/chat/transformer-embed.json'
+
+async function gptEmbeddingClf({ embedding }: { embedding: number[] }) {
+  const req = await fetch(`${gptEmbeddingClfDef.url}:predict`, {
+    method: 'POST',
+    body: JSON.stringify({
+      instances: [embedding],
+    }),
+  })
+  const res = await req.json()
+  const { predictions: [predictions] } = z.object({ predictions: z.array(z.array(z.number())) }).parse(res)
+  const scores: Record<string, number> = {}
+  gptEmbeddingClfDef.vocab.forEach((workflow, i) => {
+    scores[workflow] = predictions[i]
+  })
+  return scores
+}
 
 const OpenAIEmbeddingsRequest = z.object({
   model: z.string(),
@@ -35,25 +51,6 @@ async function openaiEmbedding({ input, model = 'text-embedding-ada-002', ...kwa
   return OpenAIEmbeddingsResponse.parse(res)
 }
 
-async function transformer({ text, embedding, workflow }: { text: string, embedding: number[], workflow: string[] }) {
-  const req = await fetch(`${transformerEmbedDef.url}:predict`, {
-    method: 'POST',
-    body: JSON.stringify({
-      instances: [{
-        text: `[start] ${text} [end]`,
-        embedding,
-        workflow: [`[start]`, ...workflow].join('\t')
-      }],
-    }),
-  })
-  const { predictions: [[predictions]] } = z.object({ predictions: z.array(z.array(z.array(z.number()))) }).parse(await req.json())
-  const res: Record<string, number> = {}
-  transformerEmbedDef.vocab.workflow.forEach((workflow, i) => {
-    res[workflow] = predictions[i]
-  })
-  return res
-}
-
 function nodeDesc(node: ProcessMetaNode, { inputs, output }: { inputs?: Record<string, unknown>, output?: string }) {
   if (inputs !== undefined && node.story !== undefined) {
     try {
@@ -71,7 +68,9 @@ type Component = { id: number, inputs?: Record<string, number | number[]>, data?
 async function findAnswers(messages: { role: string, content: string }[]) {
   const lastMessage = array.findLast(messages, ({ role }) => role === 'user')
   if (!lastMessage) throw new Error('No user message')
-
+  // obtain likelihood scores
+  const [{ embedding }] = (await openaiEmbedding({ input: [lastMessage.content] })).data
+  const scores = await gptEmbeddingClf({ embedding })
   // find all previous components from message history
   const previousComponents = messages.reduce((components, { role, content }) => {
     if (role !== 'assistant') return components
@@ -79,14 +78,10 @@ async function findAnswers(messages: { role: string, content: string }[]) {
     if (!m) return components
     return [...components, JSON.parse(m[1])]
   }, [] as Component[])
-
   const ctx = { maxId: Math.max(0, ...previousComponents.map(component => component.id)) }
   const results: { role: 'assistant', content: string }[] = []
-  
   // extend while high likelihood, otherwise offer suggestions
-  const [{ embedding }] = (await openaiEmbedding({ input: [lastMessage.content] })).data
   for (let i = 0; i < 10; i++) {
-    const scores = await transformer({ text: lastMessage.content, embedding, workflow: previousComponents.map(component => component.type) })
     const nextComponents: {
       id: number,
       type: string,
@@ -122,6 +117,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
             likelihoods.push(scores[`${lastComponent.type} ${proc.spec}`] || 0)
           })
           const likelihood = mean(likelihoods)
+          console.log(`${ctx.maxId} ${lastComponentProc.spec} => ${lastComponentProc.output.spec} => ${proc.spec}`)
           nextComponents.push({
             id: ++ctx.maxId,
             inputs,
@@ -133,21 +129,20 @@ async function findAnswers(messages: { role: string, content: string }[]) {
     }
     if (nextComponents.length === 0) break
     else if (nextComponents.length === 1) {
-      const [{ likelihood: _, ...nextComponent }] = nextComponents
+      const [{ likelihood, ...nextComponent }] = nextComponents
       previousComponents.push(nextComponent)
       results.push({ role: 'assistant', content: '```component\n' + JSON.stringify(nextComponent) + '\n```', })
     }
-    const totalLikelihood = nextComponents.reduce((totalLiklihood, component) => totalLiklihood + component.likelihood, 0.0) + scores['[end]']
+    const totalLikelihood = nextComponents.reduce((totalLiklihood, component) => totalLiklihood + component.likelihood, 0.0)
     nextComponents.sort((a, b) => b.likelihood - a.likelihood)
-    // next components with likelihoods > 0.9
-    const likelyNextComponents = nextComponents.filter(nextComponent => (nextComponent.likelihood / totalLikelihood) >= 0.9)
-    if (!(nextComponents[0].likelihood < scores['[end]'] && (scores['[end]']/totalLikelihood) > 0.9) && likelyNextComponents.length === 1) {
+    const likelyNextComponents = nextComponents.filter(nextComponent => (nextComponent.likelihood / totalLikelihood) >= 0.5)
+    if (likelyNextComponents.length === 1) {
       const [{ likelihood: _, ...nextComponent }] = likelyNextComponents
       previousComponents.push(nextComponent)
       results.push({ role: 'assistant', content: '```component\n' + JSON.stringify(nextComponent) + '\n```', })
       continue
     } else {
-      nextComponents.slice(0, 3).forEach(nextComponent => {nextComponent.likelihood /= totalLikelihood})
+      likelyNextComponents.forEach(nextComponent => {nextComponent.likelihood /= totalLikelihood})
       results.push({ role: 'assistant', content: '```suggestions\n' + JSON.stringify(nextComponents.slice(0, 3)) + '\n```', })
       break
     }
@@ -155,7 +150,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
   return results
 }
 
-export const ChatTransformerEmbed = API('/api/v1/chat/transformer-embed')
+export const ChatGPTEmbeddingCLF = API.post('/api/v1/chat/gpt-embedding-clf')
   .query(z.object({}))
   .body(z.object({
     messages: z.array(z.object({

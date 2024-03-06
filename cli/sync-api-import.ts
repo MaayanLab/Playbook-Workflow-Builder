@@ -1,8 +1,6 @@
 import fs from 'fs'
 import glob from 'glob'
 import path from 'path'
-import * as dict from '@/utils/dict'
-import { APIRoute } from '@/spec/api'
 
 const base = path.join(__dirname, '..', 'app', 'api')
 const apis = glob.sync(path.join(base, '**', 'index.ts').replace(/\\/g, '/'))
@@ -39,7 +37,7 @@ fs.writeFileSync(path.join(base, 'client.ts'), [
       const apiPath = path.relative(base, api)
       return [
         ...fs.readFileSync(path.join(api, 'index.ts')).toString().matchAll(
-          /export const (\w+) = API.(get|post)\(['"](.+?)['"]\)/g
+          /export const (\w+) = API\.(get|post)\(['"](.+?)['"]\)/g
         )
       ].flatMap((kv) => {
         const key = kv[1] as string

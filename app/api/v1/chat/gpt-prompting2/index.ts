@@ -166,7 +166,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
   return results
 }
 
-export const ChatGPTPrompting2 = API('/api/v1/chat/gpt-prompting2')
+export const ChatGPTPrompting2 = API.post('/api/v1/chat/gpt-prompting2')
   .query(z.object({}))
   .body(z.object({
     messages: z.array(z.object({

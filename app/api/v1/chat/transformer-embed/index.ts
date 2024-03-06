@@ -7,21 +7,48 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
 import { mean } from '@/utils/math'
-import transformerDef from '@/app/public/chat/transformer.json'
+import transformerEmbedDef from '@/app/public/chat/transformer-embed.json'
 
-async function transformer({ text, workflow }: { text: string, workflow: string[] }) {
-  const req = await fetch(`${transformerDef.url}:predict`, {
+const OpenAIEmbeddingsRequest = z.object({
+  model: z.string(),
+  input: z.array(z.string()),
+})
+
+const OpenAIEmbeddingsResponse = z.object({
+  data: z.array(z.object({
+    embedding: z.array(z.number()),
+  }))
+})
+
+async function openaiEmbedding({ input, model = 'text-embedding-ada-002', ...kwargs }: Partial<z.TypeOf<typeof OpenAIEmbeddingsRequest>>) {
+  console.debug(`send ${JSON.stringify(input)}`)
+  const req = await fetch(`https://api.openai.com/v1/embeddings`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({ input, model, ...kwargs }),
+  })
+  const res = await req.json()
+  // console.debug(`recv ${JSON.stringify(res)}`)
+  return OpenAIEmbeddingsResponse.parse(res)
+}
+
+async function transformer({ text, embedding, workflow }: { text: string, embedding: number[], workflow: string[] }) {
+  const req = await fetch(`${transformerEmbedDef.url}:predict`, {
     method: 'POST',
     body: JSON.stringify({
       instances: [{
         text: `[start] ${text} [end]`,
+        embedding,
         workflow: [`[start]`, ...workflow].join('\t')
       }],
     }),
   })
   const { predictions: [[predictions]] } = z.object({ predictions: z.array(z.array(z.array(z.number()))) }).parse(await req.json())
   const res: Record<string, number> = {}
-  transformerDef.vocab.workflow.forEach((workflow, i) => {
+  transformerEmbedDef.vocab.workflow.forEach((workflow, i) => {
     res[workflow] = predictions[i]
   })
   return res
@@ -44,6 +71,7 @@ type Component = { id: number, inputs?: Record<string, number | number[]>, data?
 async function findAnswers(messages: { role: string, content: string }[]) {
   const lastMessage = array.findLast(messages, ({ role }) => role === 'user')
   if (!lastMessage) throw new Error('No user message')
+
   // find all previous components from message history
   const previousComponents = messages.reduce((components, { role, content }) => {
     if (role !== 'assistant') return components
@@ -56,8 +84,9 @@ async function findAnswers(messages: { role: string, content: string }[]) {
   const results: { role: 'assistant', content: string }[] = []
   
   // extend while high likelihood, otherwise offer suggestions
+  const [{ embedding }] = (await openaiEmbedding({ input: [lastMessage.content] })).data
   for (let i = 0; i < 10; i++) {
-    const scores = await transformer({ text: lastMessage.content, workflow: previousComponents.map(component => component.type) })
+    const scores = await transformer({ text: lastMessage.content, embedding, workflow: previousComponents.map(component => component.type) })
     const nextComponents: {
       id: number,
       type: string,
@@ -126,7 +155,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
   return results
 }
 
-export const ChatTransformer = API('/api/v1/chat/transformer')
+export const ChatTransformerEmbed = API.post('/api/v1/chat/transformer-embed')
   .query(z.object({}))
   .body(z.object({
     messages: z.array(z.object({

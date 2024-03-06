@@ -6,6 +6,18 @@
 import { APIInterface } from '@/spec/api'
 import type { AdminJobs as AdminJobs_ } from './v1/admin/jobs'
 export const AdminJobs = APIInterface<typeof AdminJobs_>("/api/v1/admin/jobs", "GET")
+import type { ChatDecoder as ChatDecoder_ } from './v1/chat/decoder'
+export const ChatDecoder = APIInterface<typeof ChatDecoder_>("/api/v1/chat/decoder", "POST")
+import type { ChatGPTEmbeddingCLF as ChatGPTEmbeddingCLF_ } from './v1/chat/gpt-embedding-clf'
+export const ChatGPTEmbeddingCLF = APIInterface<typeof ChatGPTEmbeddingCLF_>("/api/v1/chat/gpt-embedding-clf", "POST")
+import type { ChatGPTPrompting as ChatGPTPrompting_ } from './v1/chat/gpt-prompting'
+export const ChatGPTPrompting = APIInterface<typeof ChatGPTPrompting_>("/api/v1/chat/gpt-prompting", "POST")
+import type { ChatGPTPrompting2 as ChatGPTPrompting2_ } from './v1/chat/gpt-prompting2'
+export const ChatGPTPrompting2 = APIInterface<typeof ChatGPTPrompting2_>("/api/v1/chat/gpt-prompting2", "POST")
+import type { ChatTransformer as ChatTransformer_ } from './v1/chat/transformer'
+export const ChatTransformer = APIInterface<typeof ChatTransformer_>("/api/v1/chat/transformer", "POST")
+import type { ChatTransformerEmbed as ChatTransformerEmbed_ } from './v1/chat/transformer-embed'
+export const ChatTransformerEmbed = APIInterface<typeof ChatTransformerEmbed_>("/api/v1/chat/transformer-embed", "POST")
 import type { UserIntegrationsBioComputeAuth as UserIntegrationsBioComputeAuth_ } from './v1/user/integrations/biocompute'
 export const UserIntegrationsBioComputeAuth = APIInterface<typeof UserIntegrationsBioComputeAuth_>("/api/v1/user/integrations/biocompute/auth", "GET")
 import type { UserIntegrationsBioComputePublishedBCO as UserIntegrationsBioComputePublishedBCO_ } from './v1/user/integrations/biocompute'

@@ -6,49 +6,25 @@ import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { ProcessMetaNode } from '@/spec/metanode'
-import gptEmbeddingClfDef from '@/app/public/chat/gpt-embedding-clf.json'
 import { mean } from '@/utils/math'
+import transformerDef from '@/app/public/chat/transformer.json'
 
-async function gptEmbeddingClf({ embedding }: { embedding: number[] }) {
-  const req = await fetch(`${gptEmbeddingClfDef.url}:predict`, {
+async function transformer({ text, workflow }: { text: string, workflow: string[] }) {
+  const req = await fetch(`${transformerDef.url}:predict`, {
     method: 'POST',
     body: JSON.stringify({
-      instances: [embedding],
+      instances: [{
+        text: `[start] ${text} [end]`,
+        workflow: [`[start]`, ...workflow].join('\t')
+      }],
     }),
   })
-  const res = await req.json()
-  const { predictions: [predictions] } = z.object({ predictions: z.array(z.array(z.number())) }).parse(res)
-  const scores: Record<string, number> = {}
-  gptEmbeddingClfDef.vocab.forEach((workflow, i) => {
-    scores[workflow] = predictions[i]
+  const { predictions: [[predictions]] } = z.object({ predictions: z.array(z.array(z.array(z.number()))) }).parse(await req.json())
+  const res: Record<string, number> = {}
+  transformerDef.vocab.workflow.forEach((workflow, i) => {
+    res[workflow] = predictions[i]
   })
-  return scores
-}
-
-const OpenAIEmbeddingsRequest = z.object({
-  model: z.string(),
-  input: z.array(z.string()),
-})
-
-const OpenAIEmbeddingsResponse = z.object({
-  data: z.array(z.object({
-    embedding: z.array(z.number()),
-  }))
-})
-
-async function openaiEmbedding({ input, model = 'text-embedding-ada-002', ...kwargs }: Partial<z.TypeOf<typeof OpenAIEmbeddingsRequest>>) {
-  console.debug(`send ${JSON.stringify(input)}`)
-  const req = await fetch(`https://api.openai.com/v1/embeddings`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({ input, model, ...kwargs }),
-  })
-  const res = await req.json()
-  // console.debug(`recv ${JSON.stringify(res)}`)
-  return OpenAIEmbeddingsResponse.parse(res)
+  return res
 }
 
 function nodeDesc(node: ProcessMetaNode, { inputs, output }: { inputs?: Record<string, unknown>, output?: string }) {
@@ -68,9 +44,6 @@ type Component = { id: number, inputs?: Record<string, number | number[]>, data?
 async function findAnswers(messages: { role: string, content: string }[]) {
   const lastMessage = array.findLast(messages, ({ role }) => role === 'user')
   if (!lastMessage) throw new Error('No user message')
-  // obtain likelihood scores
-  const [{ embedding }] = (await openaiEmbedding({ input: [lastMessage.content] })).data
-  const scores = await gptEmbeddingClf({ embedding })
   // find all previous components from message history
   const previousComponents = messages.reduce((components, { role, content }) => {
     if (role !== 'assistant') return components
@@ -78,10 +51,13 @@ async function findAnswers(messages: { role: string, content: string }[]) {
     if (!m) return components
     return [...components, JSON.parse(m[1])]
   }, [] as Component[])
+
   const ctx = { maxId: Math.max(0, ...previousComponents.map(component => component.id)) }
   const results: { role: 'assistant', content: string }[] = []
+  
   // extend while high likelihood, otherwise offer suggestions
   for (let i = 0; i < 10; i++) {
+    const scores = await transformer({ text: lastMessage.content, workflow: previousComponents.map(component => component.type) })
     const nextComponents: {
       id: number,
       type: string,
@@ -117,7 +93,6 @@ async function findAnswers(messages: { role: string, content: string }[]) {
             likelihoods.push(scores[`${lastComponent.type} ${proc.spec}`] || 0)
           })
           const likelihood = mean(likelihoods)
-          console.log(`${ctx.maxId} ${lastComponentProc.spec} => ${lastComponentProc.output.spec} => ${proc.spec}`)
           nextComponents.push({
             id: ++ctx.maxId,
             inputs,
@@ -129,20 +104,21 @@ async function findAnswers(messages: { role: string, content: string }[]) {
     }
     if (nextComponents.length === 0) break
     else if (nextComponents.length === 1) {
-      const [{ likelihood, ...nextComponent }] = nextComponents
+      const [{ likelihood: _, ...nextComponent }] = nextComponents
       previousComponents.push(nextComponent)
       results.push({ role: 'assistant', content: '```component\n' + JSON.stringify(nextComponent) + '\n```', })
     }
-    const totalLikelihood = nextComponents.reduce((totalLiklihood, component) => totalLiklihood + component.likelihood, 0.0)
+    const totalLikelihood = nextComponents.reduce((totalLiklihood, component) => totalLiklihood + component.likelihood, 0.0) + scores['[end]']
     nextComponents.sort((a, b) => b.likelihood - a.likelihood)
-    const likelyNextComponents = nextComponents.filter(nextComponent => (nextComponent.likelihood / totalLikelihood) >= 0.5)
-    if (likelyNextComponents.length === 1) {
+    // next components with likelihoods > 0.9
+    const likelyNextComponents = nextComponents.filter(nextComponent => (nextComponent.likelihood / totalLikelihood) >= 0.9)
+    if (!(nextComponents[0].likelihood < scores['[end]'] && (scores['[end]']/totalLikelihood) > 0.9) && likelyNextComponents.length === 1) {
       const [{ likelihood: _, ...nextComponent }] = likelyNextComponents
       previousComponents.push(nextComponent)
       results.push({ role: 'assistant', content: '```component\n' + JSON.stringify(nextComponent) + '\n```', })
       continue
     } else {
-      likelyNextComponents.forEach(nextComponent => {nextComponent.likelihood /= totalLikelihood})
+      nextComponents.slice(0, 3).forEach(nextComponent => {nextComponent.likelihood /= totalLikelihood})
       results.push({ role: 'assistant', content: '```suggestions\n' + JSON.stringify(nextComponents.slice(0, 3)) + '\n```', })
       break
     }
@@ -150,7 +126,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
   return results
 }
 
-export const ChatGPTEmbeddingCLF = API('/api/v1/chat/gpt-embedding-clf')
+export const ChatTransformer = API.post('/api/v1/chat/transformer')
   .query(z.object({}))
   .body(z.object({
     messages: z.array(z.object({

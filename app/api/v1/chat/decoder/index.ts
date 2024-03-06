@@ -154,7 +154,7 @@ async function findAnswers(messages: { role: string, content: string }[]) {
   return results
 }
 
-export const ChatDecoder = API('/api/v1/chat/decoder')
+export const ChatDecoder = API.post('/api/v1/chat/decoder')
   .query(z.object({}))
   .body(z.object({
     messages: z.array(z.object({

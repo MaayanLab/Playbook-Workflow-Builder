@@ -63,7 +63,7 @@ export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
   .build()
 
 export async function myRegElemInfo_query(regElemId: string): Promise<RegulatoryElementInfo> {
-  const res = await fetch(`https://genboree.org/cfde-gene-dev/RegulatoryElement/id/${encodeURIComponent(regElemId)}`)
+  const res = await fetch(`https://ldh.genome.network/cfde/ldh/RegulatoryElement/id/${encodeURIComponent(regElemId)}`)
   return await res.json()
 }
 

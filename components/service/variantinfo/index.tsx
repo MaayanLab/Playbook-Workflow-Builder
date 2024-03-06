@@ -230,7 +230,7 @@ async function resolveVarinatCaID(variantIdTerm: string){
 }
 
 async function getGitDataHubVariantInfo(variantId: string): Promise<GitHubVariantInfo> {
-  const res = await fetch(`https://genboree.org/cfde-gene-dev/Variant/id/${encodeURIComponent(variantId)}`)
+  const res = await fetch(`https://ldh.genome.network/cfde/ldh/Variant/id/${encodeURIComponent(variantId)}`)
   return await res.json()
 }
 

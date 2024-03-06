@@ -19,7 +19,7 @@ export const MyGeneInfoByTermC = z.object({
 export type MyGeneInfoByTerm = z.infer<typeof MyGeneInfoByTermC>
 
 export async function myGeneInfoFromLinkDataHub(geneTerm: string): Promise<MyGeneInfoByTerm> {
-  const res = await fetch(`https://genboree.org/cfde-gene-dev/Gene/id/${encodeURIComponent(geneTerm)}`)
+  const res = await fetch(`https://ldh.genome.network/cfde/ldh/Gene/id/${encodeURIComponent(geneTerm)}`)
   return await res.json()
 }
 
@@ -48,7 +48,7 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
     return reSet;
   })
   .story(props =>
-    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
+    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
   )
   .build()
 
@@ -61,6 +61,6 @@ export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryE
     return await GetRegulatoryElementsForGeneInfo.resolve({ ...props, inputs: { geneInfo } })
   })
   .story(props =>
-    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://genboree.org/cfde-gene-dev/}].`
+    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
   )
   .build()

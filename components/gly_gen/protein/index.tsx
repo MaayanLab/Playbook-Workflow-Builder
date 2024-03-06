@@ -12,6 +12,7 @@ import {
   GlyGenProteinResponse,
   GlyGenProteinSetResponse,
   GlycosylationData,
+  PhosphorylationData,
 } from "./data_models";
 import {
   get_single_protein_data,
@@ -99,7 +100,14 @@ export const GlyGenProteinResponseNode = MetaNode("GlyGenProteinResponse")
             data.phosphorylation.phosphorylation_data &&
             data.phosphorylation.phosphorylation_data.length > 0 && (
               <PhosphorylationTable
-                phosphorylation_data={data.phosphorylation.phosphorylation_data}
+                phosphorylation_data={
+                  data.phosphorylation.phosphorylation_data.length > 5
+                    ? data.phosphorylation.phosphorylation_data.slice(0, 5)
+                    : data.phosphorylation.phosphorylation_data
+                }
+                is_preview={
+                  data.phosphorylation.phosphorylation_data.length > 5
+                }
               />
             )}
         </div>
@@ -187,7 +195,7 @@ export const GlycosylationViewResponseNode = MetaNode(
       return (
         <div className="prose">
           <div>
-            UniProtKB Accession:
+            <span>UniProtKB Accession: </span>
             <b>
               <a
                 href={glyGenLink}
@@ -207,7 +215,9 @@ export const GlycosylationViewResponseNode = MetaNode(
             Records Without GlyTouCan Accessions: <b>{emptyGlytoucanAcCount}</b>
           </div>
           <br />
-          <GlycosylationTable glycosylation_data={data.glycosylation_data ?? []} />
+          <GlycosylationTable
+            glycosylation_data={data.glycosylation_data ?? []}
+          />
         </div>
       );
     } else {
@@ -230,6 +240,35 @@ export const GlycosylationViewResponseNode = MetaNode(
           <div>
             <b>No Glycosylation Information to Display</b>
           </div>
+        </div>
+      );
+    }
+  })
+  .build();
+
+export const PhosphorylationViewResponseNode = MetaNode(
+  "PhosphorylationViewResponseNode",
+)
+  .meta({
+    label: "Phosphorylation Information for the Phosphoprotein",
+    description: "Phosphorylation product records in GlyGen",
+    icon: [glygen_icon],
+  })
+  .codec(PhosphorylationData)
+  .view((data) => {
+    if ((data.phosphorylation_data?.length ?? 0) > 0) {
+      return (
+        <div className="prose">
+          Total Records: <b>{data.phosphorylation_data?.length ?? 0}</b>
+          <PhosphorylationTable
+            phosphorylation_data={data.phosphorylation_data ?? []}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <b>No Phosphorylation Information to Display</b>
         </div>
       );
     }
@@ -309,5 +348,31 @@ export const GlycosylationInformation = MetaNode("GlycosylationInformation")
   .story(
     (props) =>
       "The glycosylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
+  )
+  .build();
+
+// Phosphoprotein table process metanode from the protein product
+export const PhosphorylationInformation = MetaNode("PhosphorylationInformation")
+  .meta({
+    label: "Get Phosphorylation Data from the GlyGen Protein Products",
+    description: "Phosphorylation information for Phosphoproteins",
+    icon: [glygen_icon],
+    pagerank: 2,
+  })
+  .inputs({ glyGenProteinResponse: GlyGenProteinResponseNode })
+  .output(PhosphorylationViewResponseNode)
+  .resolve(async (props) => {
+    const data = extract_specific_data(
+      props.inputs.glyGenProteinResponse,
+      "phosphorylation",
+    );
+    if (!phosphorylation_check(data)) {
+      throw new Error("Expected phosphorylation data but got something else.");
+    }
+    return data;
+  })
+  .story(
+    (props) =>
+      "The phosphorylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
   )
   .build();

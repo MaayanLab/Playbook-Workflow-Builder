@@ -45,7 +45,7 @@ export function GlycosylationTable({
       </table>
       {is_preview && (
         <div style={{ marginTop: "10px", fontSynthesis: "italic" }}>
-          *This is a preview of the full glycosylation data data.
+          *This is a preview of the full glycosylation data table.
         </div>
       )}
     </div>
@@ -54,8 +54,10 @@ export function GlycosylationTable({
 
 export function PhosphorylationTable({
   phosphorylation_data,
+  is_preview = false,
 }: {
   phosphorylation_data: PhosphorylationArrayType;
+  is_preview?: boolean;
 }) {
   /* Creates a table of the phosphorylation information.
    *
@@ -85,6 +87,11 @@ export function PhosphorylationTable({
           ))}
         </tbody>
       </table>
+      {is_preview && (
+      <div style={{marginTop: "10px", fontSynthesis: "italic"}}>
+          *This is a preview of the full phosphorylation data table.
+      </div>
+      )}
     </div>
   );
 }

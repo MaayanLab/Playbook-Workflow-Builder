@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "dist",
+    "lib": ["es2019", "dom"],
+    "jsx": "react-jsx",
+    "target": "es2019",
+    "isolatedModules": false,
+    "noEmit": false
+  },
+  "include": ["server/**/*.ts"]
+}

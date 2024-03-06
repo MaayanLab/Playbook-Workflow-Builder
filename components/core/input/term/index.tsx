@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
 
 const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
+const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 
@@ -75,33 +76,45 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
   .output(Term_T)
   .prompt(props => {
     const [item, setItem] = React.useState('')
-    const [query, setQuery] = React.useState('')
-    const { items, error } = T.extra?.term?.autocomplete !== undefined ? T.extra.term.autocomplete(query) : { items: [], error: undefined }
+    const { items, error } = T.extra?.term?.autocomplete !== undefined ? T.extra.term.autocomplete(item) : { items: [], error: undefined }
     if (error) console.warn(error)
     React.useEffect(() => { setItem(props.output || '') }, [props.output])
     return (
       <div>
-        <Suggest2
-          fill
-          closeOnSelect
-          selectedItem={item}
-          createNewItemFromQuery={createNewItemFromQuery}
-          onItemSelect={item => setItem(item as string)}
-          inputValueRenderer={inputValueRenderer}
-          itemRenderer={itemRenderer}
-          createNewItemRenderer={createNewItemRenderer}
-          noResults={
-            <MenuItem
-              key="No results"
-              text="No results"
-              disabled
-            />
-          }
-          items={items}
-          inputProps={{ leftIcon: 'search', placeholder: `Search ${T.label}...` }}
-          popoverProps={{ minimal: true }}
-          onQueryChange={q => setQuery(q)}
-        />
+        {T.extra?.term?.autocomplete ?
+          <Suggest2
+            fill
+            closeOnSelect
+            query={item}
+            selectedItem={item}
+            createNewItemFromQuery={createNewItemFromQuery}
+            onItemSelect={item => {
+              setItem(item as string)
+            }}
+            inputValueRenderer={inputValueRenderer}
+            itemRenderer={itemRenderer}
+            createNewItemRenderer={createNewItemRenderer}
+            createNewItemPosition="first"
+            noResults={
+              item ? <MenuItem
+                key="No results"
+                text="No results"
+                disabled
+                roleStructure="listoption"
+              /> : null
+            }
+            items={items}
+            inputProps={{ leftIcon: 'search', placeholder: `Search ${T.label}...` }}
+            popoverProps={{ minimal: true }}
+            onQueryChange={q => setItem(q)}
+          />
+        : <InputGroup
+            fill
+            value={item}
+            onChange={evt => {setItem(evt.currentTarget.value)}}
+            leftIcon="search"
+            placeholder={`Search ${T.label}...`}
+          />}
         {T.extra?.term?.meta?.example !== undefined ?
           <Button
             large
@@ -119,6 +132,7 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
             type="submit"
             text="Submit"
             rightIcon="send-to-graph"
+            disabled={!item}
             onClick={evt => props.submit(item)}
           />
       </div>

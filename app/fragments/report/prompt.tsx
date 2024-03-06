@@ -8,14 +8,13 @@ import { func_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
-import { TimeoutError } from '@/spec/error'
 import { useStory } from '@/app/fragments/story'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
-  const { data: inputs, error } = useMetapathInputs({ session_id, krg, head })
+  const { data: inputs, error } = useMetapathInputs({ krg, head })
   const { nodeStories } = useStory()
   const data = React.useMemo(() => {
     // invalidate data if it no longer matches the codec
@@ -38,7 +37,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
         </div>
         <p className="prose max-w-none">{nodeStories[head.id]}</p>
       </div>
-      {error && !(error instanceof TimeoutError) ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       <div className="collapse-content">
         {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?

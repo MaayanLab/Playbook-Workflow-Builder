@@ -7,7 +7,6 @@
     "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>"
   ],
   "private": true,
-  "main": "index.ts",
   "dependencies": {
     "react": "^18.2.0"
   },

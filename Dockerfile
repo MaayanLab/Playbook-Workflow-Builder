@@ -85,4 +85,5 @@ COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_build /app /app
 RUN chmod +x /app/cli/wes-worker.sh
 ENV PORT 3000
-CMD ["npm", "run", "start"]
+ENV PORT 3005
+CMD ["npm", "start"]

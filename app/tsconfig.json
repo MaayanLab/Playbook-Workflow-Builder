@@ -20,7 +20,7 @@
     "noEmit": true,
     "incremental": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -33,5 +33,18 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "ts-node": {
+    "experimentalResolver": true,
+    "compilerOptions": {
+      "module": "CommonJS",
+      "esModuleInterop": true,
+      "jsx": "react-jsx",
+      "allowJs": true
+    },
+    "require": [
+      "dotenv/config",
+      "tsconfig-paths/register"
+    ]
+  },
 }

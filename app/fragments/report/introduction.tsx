@@ -2,11 +2,12 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Head from 'next/head'
-import { view_in_graph_icon, fork_icon, start_icon, save_icon, share_icon } from '@/icons'
+import { view_in_graph_icon, fork_icon, start_icon, share_icon, extend_icon, func_icon, variable_icon } from '@/icons'
 import { useStory } from '@/app/fragments/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
 import { Metapath } from '../metapath'
+import KRG from '@/core/KRG'
 
 const SaveButton = dynamic(() => import('@/app/fragments/report/save-button'))
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
@@ -15,9 +16,21 @@ const ExportButton = dynamic(() => import('@/app/fragments/report/export-button'
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Introduction({ session_id, id, userPlaybook, playbookMetadata, setPlaybookMetadata, toggleSave, togglePublic, updateRequired, error }: {
+export default function Introduction({
+  session_id,
+  id,
+  userPlaybook,
+  playbookMetadata,
+  setPlaybookMetadata,
+  toggleSave,
+  togglePublic,
+  updateRequired,
+  error,
+}: {
   session_id?: string,
   id: string,
+  krg: KRG,
+  metapath: Metapath[],
   userPlaybook?: { public: boolean },
   playbookMetadata: Exclude<Metapath['playbook_metadata'], null>, setPlaybookMetadata: React.Dispatch<React.SetStateAction<Exclude<Metapath['playbook_metadata'], null>>>,
   updateRequired: boolean,
@@ -34,6 +47,7 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
         <title>Playbook Report{playbookMetadata.title ? `: ${playbookMetadata.title}` : null}</title>
       </Head>
       <div className="flex-grow flex-shrink bp5-card p-0">
+        {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} className="fill-black dark:fill-white" />
@@ -68,7 +82,7 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
               onClick={evt => {setPlaybookMetadata(({ summary, ...playbookMetadata }) => ({ ...playbookMetadata, summary: 'manual', id: '' }))}}
             >Manual Summary</button>
           </div>
-          <div className="prose">
+          <div className="prose max-w-full">
             {playbookMetadata.summary === 'auto' ?
               <>
                 <p className="prose-lg text-justify mt-1">{storyText}</p>
@@ -92,7 +106,6 @@ export default function Introduction({ session_id, id, userPlaybook, playbookMet
               : null}
           </div>
         </div>
-        {error ? <div className="alert alert-error prose">{error}</div> : null}
         <div className="border-t-secondary border-t-2 mt-2">
           <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp5-button bp5-minimal">

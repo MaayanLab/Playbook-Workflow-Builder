@@ -1,11 +1,8 @@
-console.log('!!!!!!!!!! ENOWORKSPACES error can be safely ignored !!!!!!!!!!')
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.NEXT_ANALYZE === 'true',
-})
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
-const root = process.env.APP_ROOT = path.dirname(__dirname)
+if (!process.env.APP_ROOT) process.env.APP_ROOT = path.dirname(__dirname)
+const root = process.env.APP_ROOT
 
 // create .env from .env.example if not present
 if (!fs.existsSync(path.join(root, '.env'))) {
@@ -35,7 +32,8 @@ if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
 if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 
-module.exports = withBundleAnalyzer({
+/** @type {import('next').NextConfig} */
+module.exports = {
   experimental: {
     externalDir: true,
   },
@@ -46,7 +44,7 @@ module.exports = withBundleAnalyzer({
     return [
       {
         source: '/',
-        destination: process.env.LANDING_PAGE,
+        destination: process.env.LANDING_PAGE ?? '/graph/extend',
         permanent: false,
       },
     ]
@@ -74,4 +72,4 @@ module.exports = withBundleAnalyzer({
     }
     return config
   }
-})
+}

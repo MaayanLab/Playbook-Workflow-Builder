@@ -1,12 +1,16 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
-import type { Metapath } from '@/app/fragments/metapath'
+import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
-import { useAPIMutation, useAPIQuery } from '@/core/api/client'
+import { useAPIMutation } from '@/core/api/client'
 import { UserPlaybook, UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
+import { Breadcrumbs } from '../breadcrumbs'
+import { DataBreadcrumb, ProcessBreadcrumb } from '../graph/breadcrumb'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
+import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -14,10 +18,8 @@ const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
 export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
   const router = useRouter()
-  const { data, error } = useAPIQuery(UserPlaybook, { id }, {
-    keepPreviousData: true,
-    base: session_id ? `/api/socket/${session_id}` : '',
-  })
+  const { data: metapath } = useFPL(id)
+  const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook: undefined }) : undefined, [metapath])
   const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
@@ -60,62 +62,129 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     })))
     setUserPlaybook(data.userPlaybook)
   }, [data])
-  if (!data || !playbookMetadata) return null
+  const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
+  const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
+  const { waypoints, scrollTo } = useWaypoints()
+  if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
       <SessionStatus session_id={session_id}>
-        <StoryProvider session_id={session_id} krg={krg} metapath={data.metapath}>
-          <Introduction
-            session_id={session_id}
-            id={id}
-            error={error}
-            playbookMetadata={playbookMetadata}
-            userPlaybook={userPlaybook}
-            setPlaybookMetadata={setPlaybookMetadata}
-            updateRequired={updateRequired}
-            toggleSave={() => {
-              if (updateRequired || !userPlaybook) {
-                const { id: playbookMetadataId, ...playbook_metadata } = playbookMetadata
-                const cell_metadata = dict.init(dict.items(cellMetadata).map(({ key, value }) => {
-                  const { id, ...meta } = value
-                  return { key, value: id ? { id } : meta }
-                }))
-                updateUserPlaybook({
-                  query: { id },
-                  body: {
-                    user_playbook: { public: userPlaybook?.public || false },
-                    playbook_metadata: playbookMetadataId ? { id: playbookMetadataId } : playbook_metadata,
-                    cell_metadata,
-                  },
-                }).then(id => {
-                  setUserPlaybook({ public: userPlaybook?.public || false })
-                  setPlaybookMetadata(metadata => ({ ...metadata, id: data.metapath[data.metapath.length-1].playbook_metadata?.id || '' }))
-                  setUpdateRequired(false)
-                  router.push(`${session_id ? `/session/${session_id}` : ''}/report/${id}`, undefined, { shallow: true, scroll: false })
-                })
-              } else {
-                deleteUserPlaybook({
-                  query: { id },
-                  body: {},
-                }).then(id => {
-                  setUserPlaybook(undefined)
-                  setUpdateRequired(false)
-                })
-              }
-            }}
-            togglePublic={() => {
-              if (!updateRequired && userPlaybook) {
-                const publicPlaybook = !userPlaybook.public
-                publishUserPlaybook({
-                  query: { id },
-                  body: { public: publicPlaybook },
-                }).then(id => {
-                  setUserPlaybook({ public: publicPlaybook })
-                  setUpdateRequired(false)
-                })
-              }
-            }}
-          />
+        <StoryProvider krg={krg} metapath={data.metapath}>
+          <Waypoint id="head" className="sticky top-0 left-0 z-50 bg-white w-full">
+            <Breadcrumbs>
+              <DataBreadcrumb
+                key="start"
+                index={0}
+                id="start"
+                label="Start"
+                active={waypoints.get('start')?.active !== false}
+                icon={[start_icon]}
+                parents={[]}
+                onClick={() => {
+                  scrollTo('top')
+                }}
+              />
+              {metapath.flatMap((step, i) => {
+                const process = krg.getProcessNode(step.process.type)
+                if (process === undefined) return []
+                return [
+                  <ProcessBreadcrumb
+                    key={step.id}
+                    index={i * 2 + 1}
+                    id={step.id}
+                    label={process.meta.label}
+                    head={step}
+                    active={false}
+                    icon={process.meta.icon || [func_icon]}
+                    parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
+                    onClick={() => {
+                      scrollTo(`${step.id}:process`)
+                    }}
+                  />,
+                  <DataBreadcrumb
+                    key={`${step.id}:${step.process.id}`}
+                    index={i * 2 + 2}
+                    id={`${step.id}:${step.process.id}`}
+                    label={process.output.meta.label}
+                    head={step}
+                    active={!!waypoints.get(`${step.id}:data`)?.active}
+                    icon={process.output.meta.icon || [variable_icon]}
+                    parents={[step.id]}
+                    onClick={() => {
+                      scrollTo(`${step.id}:data`)
+                    }}
+                  />,
+                ]
+              })}
+              <ProcessBreadcrumb
+                key="extend"
+                index={metapath.length * 2 + 1}
+                id="extend"
+                label="Extend"
+                active={false}
+                icon={extend_icon}
+                parents={[head ? `${head.id}:${head.process.id}` : `start`]}
+                onClick={() => {
+                  scrollTo(`bottom`)
+                }}
+              />
+            </Breadcrumbs>
+          </Waypoint>
+          <Waypoint id="start">
+            <Introduction
+              session_id={session_id}
+              id={id}
+              error={null}
+              krg={krg}
+              metapath={metapath}
+              playbookMetadata={playbookMetadata}
+              userPlaybook={userPlaybook}
+              setPlaybookMetadata={setPlaybookMetadata}
+              updateRequired={updateRequired}
+              toggleSave={() => {
+                if (updateRequired || !userPlaybook) {
+                  const { id: playbookMetadataId, ...playbook_metadata } = playbookMetadata
+                  const cell_metadata = dict.init(dict.items(cellMetadata).map(({ key, value }) => {
+                    const { id, ...meta } = value
+                    return { key, value: id ? { id } : meta }
+                  }))
+                  updateUserPlaybook({
+                    query: { id },
+                    body: {
+                      user_playbook: { public: userPlaybook?.public || false },
+                      playbook_metadata: playbookMetadataId ? { id: playbookMetadataId } : playbook_metadata,
+                      cell_metadata,
+                    },
+                  }).then(id => {
+                    setUserPlaybook({ public: userPlaybook?.public || false })
+                    setPlaybookMetadata(metadata => ({ ...metadata, id: data.metapath[data.metapath.length-1].playbook_metadata?.id || '' }))
+                    setUpdateRequired(false)
+                    router.push(`${session_id ? `/session/${session_id}` : ''}/report/${id}`, undefined, { shallow: true, scroll: false })
+                  })
+                } else {
+                  deleteUserPlaybook({
+                    query: { id },
+                    body: {},
+                  }).then(id => {
+                    setUserPlaybook(undefined)
+                    setUpdateRequired(false)
+                  })
+                }
+              }}
+              togglePublic={() => {
+                if (!updateRequired && userPlaybook) {
+                  const publicPlaybook = !userPlaybook.public
+                  publishUserPlaybook({
+                    query: { id },
+                    body: { public: publicPlaybook },
+                  }).then(id => {
+                    setUserPlaybook({ public: publicPlaybook })
+                    setUpdateRequired(false)
+                  })
+                }
+              }}
+            />
+          </Waypoint>
           {(data.metapath||[]).filter(head => head.id in cellMetadata).map(head => (
             <Cell
               key={`${head.id}-${cellMetadata[head.id]?.process_visible}-${cellMetadata[head.id]?.data_visible}`}

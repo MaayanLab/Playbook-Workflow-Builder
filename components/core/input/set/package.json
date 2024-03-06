@@ -4,7 +4,6 @@
   "license": "CC-BY-NC-SA-4.0",
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
-  "main": "index.ts",
   "dependencies": {
     "leven-sort": "^4.0.0",
     "react": "^18.2.0"

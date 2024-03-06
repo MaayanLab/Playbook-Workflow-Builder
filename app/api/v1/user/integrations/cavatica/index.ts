@@ -3,7 +3,7 @@ import { API } from '@/spec/api'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import { UnauthorizedError, ResponseCodedError, NotFoundError } from '@/spec/error'
 import db from '@/app/db'
-import emitter from '@/app/emitter'
+import { emitter } from '@/app/extensions/socket/cavatica'
 import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
 
 export const UserIntegrationsCAVATICA = API.get('/api/v1/user/integrations/cavatica')

@@ -7,10 +7,10 @@ import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
-import tsvector, { TSVector } from '@/utils/tsvector'
+import { tsvector, tsvector_intersect } from '@/utils/tsvector'
 
 import publicPlaybooks from '@/app/public/playbooksDemo'
-const playbook_tsvectors: Record<string, TSVector> = {}
+const playbook_tsvectors: Record<string, Set<string>> = {}
 publicPlaybooks.forEach(playbook => {
   playbook_tsvectors[playbook.id] = tsvector([
     playbook.label,
@@ -51,7 +51,7 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
       const search_tsvector = tsvector(search)
       const search_scores: Record<string, number> = {}
       playbooks.forEach(playbook => {
-        search_scores[playbook.id] = playbook_tsvectors[playbook.id]?.intersect(search_tsvector).size
+        search_scores[playbook.id] = tsvector_intersect(playbook_tsvectors[playbook.id], search_tsvector).size
       })
       playbooks = playbooks.filter(playbook => search_scores[playbook.id] > 0)
       playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
@@ -114,7 +114,7 @@ export const PublicUserPlaybooks = API.get('/api/v1/public/user/playbooks')
           playbook.title || '',
           playbook.description || '',
         ].join(' '))
-        return { key: playbook.id, value: search_tsvector.intersect(playbook_tsvector).size }
+        return { key: playbook.id, value: tsvector_intersect(search_tsvector, playbook_tsvector).size }
       }))
       playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
     }

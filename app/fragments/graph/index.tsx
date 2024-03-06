@@ -1,6 +1,5 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import Head from 'next/head'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
 import krg from '@/app/krg'
@@ -11,6 +10,7 @@ import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import { MetaNode } from '@/spec/metanode'
 import fetcher from '@/utils/next-rest-fetcher'
+import { MetapathProvider } from '@/app/fragments/metapath'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
@@ -109,15 +109,17 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
   return (
     <Layout>
       <SWRConfig value={{ fallback, fetcher }}>
-        <main className="flex-grow container mx-auto py-4 flex flex-col">
-          <Graph
-            session_id={params?.session_id}
-            graph_id={graph_id}
-            node_id={node_id}
-            extend={extend}
-            suggest={suggest}
-          />
-        </main>
+        <MetapathProvider session_id={params?.session_id}>
+          <main className="flex-grow container mx-auto py-4 flex flex-col">
+            <Graph
+              session_id={params?.session_id}
+              graph_id={graph_id}
+              node_id={node_id}
+              extend={extend}
+              suggest={suggest}
+            />
+          </main>
+        </MetapathProvider>
       </SWRConfig>
     </Layout>
   )

@@ -20,6 +20,19 @@ const CrossRefEntry = z.object({
 });
 export const CrossRefArray = z.array(CrossRefEntry);
 
+export const EnzymeEntry = z.object({
+  uniprot_canonical_ac: z.string(),
+  protein_name: z.string(),
+  gene: z.string(),
+  tax_name: z.string(),
+  tax_common_name: z.string()
+})
+export const EnzymeArray = z.array(EnzymeEntry);
+export const EnzymeData = z.object({
+  enzyme: z.boolean(),
+  enzyme_data: EnzymeArray.optional()
+})
+
 // --- Main Glycan Data Models --- //
 
 export const GlycanResponse = z.object({
@@ -29,7 +42,8 @@ export const GlycanResponse = z.object({
   mass: z.number(),
   mass_pme: z.number(),
   classification: ClassificationArray,
-  crossref: CrossRefArray
+  crossref: CrossRefArray,
+  enzyme: EnzymeData
 });
 
 export const GlyGenGlycanSetResponse = z.array(

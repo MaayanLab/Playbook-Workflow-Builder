@@ -126,7 +126,7 @@ export const GlyGenProteinSetResponseNode = MetaNode("GlyGenProteinSetResponse")
   .codec(GlyGenProteinSetResponse)
   .view((data) => {
     return (
-      <div>
+      <div className="prose">
         <table>
           <thead>
             <tr>

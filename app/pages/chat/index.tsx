@@ -23,6 +23,27 @@ export default function Chat() {
           ><b>Please log in to use this feature</b></button>
           : null}
         <div className="flex flex-row flex-wrap justify-center place-items-center gap-6">
+          <Link href="/chat/thread">
+            <div className="tooltip tooltip-bottom" data-tip="Works through prompts to OpenAI's assistant endpoint.">
+              <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>
+                GPT Assistant (1)
+              </button>
+            </div>
+          </Link>
+          <Link href="/chat/thread2">
+            <div className="tooltip tooltip-bottom" data-tip="Works through prompts to OpenAI's assistant endpoint.">
+              <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>
+                GPT Assistant (2)
+              </button>
+            </div>
+          </Link>
+          <Link href="/chat/thread3">
+            <div className="tooltip tooltip-bottom" data-tip="Works through prompts to OpenAI's assistant endpoint.">
+              <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>
+                GPT Assistant (3)
+              </button>
+            </div>
+          </Link>
           <Link href="/chat/gpt-prompting">
             <div className="tooltip tooltip-bottom" data-tip="Works through prompts to OpenAI's completions endpoint.">
               <button className="btn btn-xl btn-primary" disabled={!data?.user?.id}>

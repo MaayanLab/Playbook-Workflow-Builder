@@ -4,15 +4,7 @@
  * It is designed to be imported server-side.
  */
 export * from "./v1/admin/jobs"
-export * from "./v1/chat/decoder"
-export * from "./v1/chat/gpt-embedding-clf"
-export * from "./v1/chat/gpt-prompting"
-export * from "./v1/chat/gpt-prompting2"
-export * from "./v1/chat/thread"
-export * from "./v1/chat/thread2"
-export * from "./v1/chat/thread3"
-export * from "./v1/chat/transformer"
-export * from "./v1/chat/transformer-embed"
+export * from "./v1/chat"
 export * from "./v1/user/integrations/biocompute"
 export * from "./v1/user/integrations/cavatica"
 export * from "./v1/user/playbooks"

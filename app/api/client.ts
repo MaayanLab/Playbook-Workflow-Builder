@@ -14,6 +14,30 @@ import type { ChatGPTPrompting as ChatGPTPrompting_ } from './v1/chat/gpt-prompt
 export const ChatGPTPrompting = APIInterface<typeof ChatGPTPrompting_>("/api/v1/chat/gpt-prompting", "POST")
 import type { ChatGPTPrompting2 as ChatGPTPrompting2_ } from './v1/chat/gpt-prompting2'
 export const ChatGPTPrompting2 = APIInterface<typeof ChatGPTPrompting2_>("/api/v1/chat/gpt-prompting2", "POST")
+import type { GPTAssistantThreadCreate as GPTAssistantThreadCreate_ } from './v1/chat/thread'
+export const GPTAssistantThreadCreate = APIInterface<typeof GPTAssistantThreadCreate_>("/api/v1/chat/threads", "POST")
+import type { GPTAssistantThreadMessage as GPTAssistantThreadMessage_ } from './v1/chat/thread'
+export const GPTAssistantThreadMessage = APIInterface<typeof GPTAssistantThreadMessage_>("/api/v1/chat/threads/[thread_id]/messages", "POST")
+import type { GPTAssistantThreadMessagesList as GPTAssistantThreadMessagesList_ } from './v1/chat/thread'
+export const GPTAssistantThreadMessagesList = APIInterface<typeof GPTAssistantThreadMessagesList_>("/api/v1/chat/threads/[thread_id]/messages", "GET")
+import type { GPTAssistantThreadDelete as GPTAssistantThreadDelete_ } from './v1/chat/thread'
+export const GPTAssistantThreadDelete = APIInterface<typeof GPTAssistantThreadDelete_>("/api/v1/chat/threads/[thread_id]/delete", "POST")
+import type { GPTAssistantThread2Create as GPTAssistantThread2Create_ } from './v1/chat/thread2'
+export const GPTAssistantThread2Create = APIInterface<typeof GPTAssistantThread2Create_>("/api/v1/chat/threads2", "POST")
+import type { GPTAssistantThread2Message as GPTAssistantThread2Message_ } from './v1/chat/thread2'
+export const GPTAssistantThread2Message = APIInterface<typeof GPTAssistantThread2Message_>("/api/v1/chat/threads2/[thread_id]/messages", "POST")
+import type { GPTAssistantThread2MessagesList as GPTAssistantThread2MessagesList_ } from './v1/chat/thread2'
+export const GPTAssistantThread2MessagesList = APIInterface<typeof GPTAssistantThread2MessagesList_>("/api/v1/chat/threads2/[thread_id]/messages", "GET")
+import type { GPTAssistantThread2Delete as GPTAssistantThread2Delete_ } from './v1/chat/thread2'
+export const GPTAssistantThread2Delete = APIInterface<typeof GPTAssistantThread2Delete_>("/api/v1/chat/threads2/[thread_id]/delete", "POST")
+import type { GPTAssistantThread3Create as GPTAssistantThread3Create_ } from './v1/chat/thread3'
+export const GPTAssistantThread3Create = APIInterface<typeof GPTAssistantThread3Create_>("/api/v1/chat/threads3", "POST")
+import type { GPTAssistantThread3Message as GPTAssistantThread3Message_ } from './v1/chat/thread3'
+export const GPTAssistantThread3Message = APIInterface<typeof GPTAssistantThread3Message_>("/api/v1/chat/threads3/[thread_id]/messages", "POST")
+import type { GPTAssistantThread3MessagesList as GPTAssistantThread3MessagesList_ } from './v1/chat/thread3'
+export const GPTAssistantThread3MessagesList = APIInterface<typeof GPTAssistantThread3MessagesList_>("/api/v1/chat/threads3/[thread_id]/messages", "GET")
+import type { GPTAssistantThread3Delete as GPTAssistantThread3Delete_ } from './v1/chat/thread3'
+export const GPTAssistantThread3Delete = APIInterface<typeof GPTAssistantThread3Delete_>("/api/v1/chat/threads3/[thread_id]/delete", "POST")
 import type { ChatTransformer as ChatTransformer_ } from './v1/chat/transformer'
 export const ChatTransformer = APIInterface<typeof ChatTransformer_>("/api/v1/chat/transformer", "POST")
 import type { ChatTransformerEmbed as ChatTransformerEmbed_ } from './v1/chat/transformer-embed'

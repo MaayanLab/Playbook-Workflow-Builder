@@ -1,5 +1,5 @@
 import React from 'react'
-import { GPTAssistantThread2Delete, GPTAssistantThread2Message, GPTAssistantThread2MessagesList } from "@/app/api/client"
+import { GPTAssistantDelete, GPTAssistantMessage, GPTAssistantMessagesList } from "@/app/api/client"
 import { useAPIMutation, useAPIQuery } from "@/core/api/client"
 import dynamic from "next/dynamic"
 import Head from "next/head"
@@ -10,7 +10,7 @@ import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 import type { Session } from 'next-auth'
-import { z } from 'zod'
+import { AssembleState } from '@/app/api/v1/chat/utils'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
@@ -113,74 +113,22 @@ function Message({ session, role, children }: React.PropsWithChildren<{ session:
   )
 }
 
-function TryJSONParse(obj: string) {
-  try {
-    return JSON.parse(obj)
-  } catch (e) {
-    return obj
-  }
-}
-
-function AssembleState(messages: (string | undefined)[]) {
-  let max_id = 0
-  const all_nodes: Record<number, { id: number, name: string, inputs: Record<string, { id: number }> }> = {}
-  const all_values: Record<number, string> = {}
-  const workflow: { id: number, name: string, inputs: Record<string, { id: number }> }[] = []
-  messages
-    .filter((msg): msg is string => !!msg)
-    .map(TryJSONParse)
-    .map(msg => z.union([
-      z.string().transform(el => ({ message: el })),
-      z.object({ message: z.string(), choices: z.array(z.object({ id: z.number(), name: z.string(), inputs: z.record(z.string(), z.object({ id: z.number() })) })) }),
-      z.object({ step: z.object({ id: z.number() }), choices: z.array(z.object({ id: z.number(), name: z.string(), inputs: z.record(z.string(), z.object({ id: z.number() })) })) }),
-    ]).parse(msg))
-    .forEach(item => {
-      if ('step' in item) {
-        workflow.push(all_nodes[+item.step.id])
-      }
-      if ('choices' in item) {
-        item.choices.forEach(choice => {
-          all_nodes[+choice.id] = choice
-          max_id = Math.max(max_id, +choice.id)
-        })
-      }
-    })
-  return { all_nodes, workflow, max_id }
-}
-
 export default function ChatThread() {
   const { data: session } = Auth.useSession()
   const router = useRouter()
   const [state, setState] = React.useState({} as Record<number, string>)
   const [message, setMessage] = React.useState('')
-  const { data: messages, mutate } = useAPIQuery(GPTAssistantThread2MessagesList, { thread_id: router.query.thread_id as string })
-  const { trigger, isMutating } = useAPIMutation(GPTAssistantThread2Message, { thread_id: router.query.thread_id as string })
-  const { trigger: triggerDelete } = useAPIMutation(GPTAssistantThread2Delete, { thread_id: router.query.thread_id as string })
+  const { data: messages, mutate } = useAPIQuery(GPTAssistantMessagesList, { thread_id: router.query.thread_id as string })
+  const { trigger, isMutating } = useAPIMutation(GPTAssistantMessage, { thread_id: router.query.thread_id as string })
+  const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id: router.query.thread_id as string })
+  const playbookState = React.useMemo(() => messages ? AssembleState(messages) : undefined, [messages])
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
     const newMessages = await trigger({ body })
-    await mutate(messages => [...messages ?? [], ...newMessages?.data ?? []])
+    await mutate(messages => [...messages ?? [], ...newMessages ?? []])
     if ('step' in body && body.step.value) {
       setState({ [body.step.id]: body.step.value })
     }
-    if (newMessages) {
-      const lastMessage = newMessages.data[newMessages.data.length-1]
-      if (lastMessage.role === 'assistant') {
-        const lastMessageContent = lastMessage.content[lastMessage.content.length-1]
-        if (lastMessageContent.type === 'text') {
-          const value = TryJSONParse(lastMessageContent.text.value)
-          if (value.suggestions.length === 1) {
-            await submit({ step: value.suggestions[0] })
-          }
-        }
-      }
-    }
   }, [trigger])
-  const playbookState = React.useMemo(() => messages ? AssembleState(
-    messages
-      .filter(msg => msg.role === 'user')
-      .flatMap(msg => msg.content)
-      .map(msgContent => msgContent.type === 'text' ? msgContent.text.value : undefined)
-  ) : undefined, [messages])
   return (
     <Layout>
       <Head><title>Chat</title></Head>
@@ -205,50 +153,39 @@ export default function ChatThread() {
               <button
                 key={i}
                 className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm"
-                onClick={evt => {
-                  submit({ message: suggestion })
-                }}
+                onClick={evt => {submit({ message: suggestion })}}
               >{suggestion}</button>
             )
           })}
         </div>
-        {messages?.map((message, i) =>
-          <React.Fragment key={i}>
-            {message.content.map((content, j) => {
-              if (content.type === 'image_file') return null
-              const value = TryJSONParse(content.text.value)
-              const component = (typeof value === 'object' && 'step' in value) ? playbookState?.all_nodes[value.step.id] : undefined
-              return (
-                <React.Fragment key={j}>
-                  {/*content.text.value*/}
-                  {typeof value === 'string' ? <Message role={message.role} session={session}>{value}</Message>
-                    : typeof value === 'object' && 'message' in value ? <Message role={message.role} session={session}>{value.message}</Message>
-                    : null}
-                  {component ? <Component component={component} state={state} setState={setState} /> : null}
-                  {typeof value === 'object' && 'suggestions' in value && value.suggestions.length > 1 ?
-                    <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                      {value.suggestions.map((suggestion: any) => {
-                        const suggestionNode = playbookState?.all_nodes[suggestion.id] ? krg.getProcessNode(playbookState.all_nodes[suggestion.id].name) : undefined
-                        return (
-                          <div key={suggestion.id} className="tooltip" data-tip={suggestionNode?.meta?.description}>
-                            <button
-                              className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm"
-                              onClick={evt => {submit({ step: suggestion })}}
-                            >
-                              {suggestionNode ? <>
-                              {suggestionNode.meta.label} {suggestion.likelihood !== undefined ? `(${suggestion.likelihood.toPrecision(2)})` : null}
-                              </> : JSON.stringify(suggestion)}
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                    : null}
-                </React.Fragment>
-              )
-            })}
-          </React.Fragment>
-        )}
+        {messages?.map((message, i) => {
+          const component = 'step' in message && playbookState ? playbookState.all_nodes[message.step.id] : undefined
+          console.log({ playbookState, message })
+          return (
+            <React.Fragment key={i}>
+              {'message' in message ? <Message role={message.role} session={session}>{message.message}</Message> : null}
+              {component ? <Component component={component} state={state} setState={setState} /> : null}
+              {message.role === 'assistant' && message.suggestions.length > 1 ?
+                <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                  {message.suggestions.map(suggestion => {
+                    const suggestionProcess = playbookState?.all_nodes[suggestion.id]
+                    console.log(playbookState?.all_nodes)
+                    const suggestionNode = suggestionProcess ? krg.getProcessNode(suggestionProcess.name) : undefined
+                    if (!suggestionNode) return null
+                    return (
+                      <div key={suggestion.id} className="tooltip" data-tip={suggestionNode.meta.description}>
+                        <button
+                          className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm"
+                          onClick={evt => {submit({ step: suggestion })}}
+                        >{suggestionNode.meta.label}</button>
+                      </div>
+                    )
+                  })}
+                </div>
+                : null}
+            </React.Fragment>
+          )
+        })}
         {isMutating ?
           <Message role="assistant" session={session}>
             <progress className="progress w-full"></progress>

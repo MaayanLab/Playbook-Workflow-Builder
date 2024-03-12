@@ -6,9 +6,19 @@ const AgentC = z.object({
   suggestions: z.array(z.object({ id: z.number(), value: z.string().optional() })),
 })
 
-const UserC = z.union([
+const UserC = z.intersection(
+  z.union([
+    z.object({
+      message: z.string(),
+    }),
+    z.object({
+      step: z.object({
+        id: z.number(),
+        value: z.string().optional(),
+      }),
+    }),
+  ]),
   z.object({
-    message: z.string(),
     choices: z.array(z.object({
       id: z.number(),
       name: z.string(),
@@ -19,13 +29,7 @@ const UserC = z.union([
       story: z.string().optional(),
     })).optional(),
   }),
-  z.object({
-    step: z.object({
-      id: z.number(),
-      value: z.string().optional(),
-    }),
-  })
-])
+)
 
 export function GPTAssistantMessageParse(messages: OpenAI.Beta.Threads.Messages.ThreadMessage[]) {
   return messages.flatMap(msg =>

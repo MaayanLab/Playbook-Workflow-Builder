@@ -120,6 +120,7 @@ export type BaseProcessMetaNode<T = InternalProcessMetaNode> = IdentifiableMetaN
   inputs: {[K in keyof ExtractKey<T, 'inputs'>]: ExtractKey<T, 'inputs'>[K]}
   output: ExtractKey<T, 'output'>
   story(props: {
+    data?: ExtractKey<T, 'data'>,
     inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
     step?: number,
@@ -147,12 +148,6 @@ export type ResolveMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T
     /* Use in long-running processes to keep the user updated */
     notify(status: StatusUpdate): void,
   }): Promise<DataMetaNodeData<ExtractKey<T, 'output'>>>
-  story(props: {
-    /* The inputs to this process */
-    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
-    /* The output of this process */
-    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-  }): string
 }
 
 /**
@@ -177,14 +172,6 @@ export type PromptMetaNode<T = InternalDataMetaNode & InternalProcessMetaNode> =
     /* Use in long-running processes to keep the user updated */
     notify(status: StatusUpdate): void,
   }): Promise<DataMetaNodeData<ExtractKey<T, 'output'>>>
-  story(props: {
-    /* The data configured in the prompt */
-    data?: ExtractKey<T, 'data'>,
-    /* The inputs to this process */
-    inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
-    /* The output of this process */
-    output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-  }): string
 }
 
 /**

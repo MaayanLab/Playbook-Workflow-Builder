@@ -120,7 +120,7 @@ export default function ChatThread() {
   const { data: messages, mutate } = useAPIQuery(GPTAssistantMessagesList, { thread_id: router.query.thread_id as string })
   const { trigger, isMutating } = useAPIMutation(GPTAssistantMessage, { thread_id: router.query.thread_id as string })
   const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id: router.query.thread_id as string })
-  const playbookState = React.useMemo(() => messages ? AssembleState(messages) : undefined, [messages])
+  const playbookState = React.useMemo(() => messages ? AssembleState(messages, { with_value: true }) : undefined, [messages])
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
     const newMessages = await trigger({ body })
     await mutate(messages => [...messages ?? [], ...newMessages ?? []])

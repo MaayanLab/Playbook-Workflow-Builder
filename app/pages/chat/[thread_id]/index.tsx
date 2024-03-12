@@ -11,6 +11,7 @@ import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 import type { Session } from 'next-auth'
 import { AssembleState } from '@/app/api/v1/chat/utils'
+import SafeRender from '@/utils/saferender'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
@@ -19,8 +20,7 @@ type Component = {
   id: number,
   inputs: Record<string, { id: number }>,
   name: string,
-  data?: any,
-  likelihood?: number,
+  value?: any,
 }
 
 function Component({ state, setState, component }: {
@@ -29,14 +29,17 @@ function Component({ state, setState, component }: {
 }) {
   const metanode = krg.getProcessNode(component.name)
   React.useEffect(() => {
-    if (component.id in state) return
-    if (component.data !== undefined) {
-      setState({[component.id]: metanode.output.codec.encode(component.data)})
+    if (`${component.id}` in state) return
+    if (component.value !== undefined) {
+      setState(state => ({...state, [`${component.id}`]: metanode.output.codec.encode(component.value)}))
       return
     }
     if (!('resolve' in metanode)) return
-    if (dict.keys(metanode.inputs).some(arg => !(component.inputs[arg].id in state))) return
-    async () => {
+    if (dict.keys(metanode.inputs).some(arg => !(`${component.inputs[arg].id}` in state))) {
+      console.log('missing deps')
+      return
+    }
+    (async () => {
       let result: any
       try {
         const req = await fetch(`/api/resolver`, {
@@ -46,48 +49,44 @@ function Component({ state, setState, component }: {
           },
           body: JSON.stringify({
             spec: metanode.spec,
-            data: state[component.id],
-            inputs: dict.init(dict.keys(metanode.inputs).map((arg) => ({ key: arg, value: state[component.inputs[arg].id] }))),
+            data: state[`${component.id}`],
+            inputs: dict.init(dict.keys(metanode.inputs).map((arg) => ({ key: arg, value: state[`${component.inputs[arg].id}`] }))),
           }),
         })
         if (!req.ok) throw new Error('Error')
         result = await req.json()
       } catch (e) { console.warn(e); result = '' }
-      setState(state => ({ ...state, [component.id]: result }))
-    }
+      setState(state => ({ ...state, [`${component.id}`]: result }))
+    })()
   }, [state, component])
     if (!metanode) return <span>Invalid metanode {component.name}</span>
   if ('prompt' in metanode) {
-    const Prompt = metanode.prompt
     const inputs: Record<string, unknown> = {}
     dict.items(metanode.inputs).forEach(({ key, value }) => {
-      inputs[key] = value.codec.decode(state[component.inputs[key].id])
+      inputs[key] = value.codec.decode(state[`${component.inputs[key].id}`])
     })
     let output
     try{
-      output = typeof state[component.id] !== 'undefined' ? metanode.output.codec.decode(state[component.id]) : component.data
+      output = typeof state[`${component.id}`] !== 'undefined' ? metanode.output.codec.decode(state[`${component.id}`]) : component.value
     } catch (e) {}
     return <div>
       <h3 className="m-0">{metanode.meta.label}</h3>
-      <Prompt
-        inputs={inputs}
-        output={output}
-        submit={(output) => {
-          setState({ [component.id]: metanode.output.codec.encode(output) })
+      <SafeRender
+        component={metanode.prompt}
+        props={{
+          inputs: inputs,
+          output: output,
+          submit: (output) => {
+            setState(state => ({ [`${component.id}`]: metanode.output.codec.encode(output) }))
+          },
         }}
       />
     </div>
   }
-  const output = state[component.id]
-  let viewOutput
-  try {
-    viewOutput = output ? metanode.output.view(metanode.output.codec.decode(output)) : <div>Updating...</div>
-  } catch (e) {
-    viewOutput = <div>Error: {(e as any).toString()}</div>
-  }
+  const output = state[`${component.id}`]
   return <div>
     <h3 className="m-0">{metanode.meta.label}</h3>
-    {viewOutput}
+    {output ? <SafeRender component={metanode.output.view} props={metanode.output.codec.decode(output)} /> : <>Waiting...</>}
   </div>
 }
 
@@ -125,9 +124,6 @@ export default function ChatThread() {
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
     const newMessages = await trigger({ body })
     await mutate(messages => [...messages ?? [], ...newMessages ?? []])
-    if ('step' in body && body.step.value) {
-      setState({ [body.step.id]: body.step.value })
-    }
   }, [trigger])
   return (
     <Layout>
@@ -160,7 +156,6 @@ export default function ChatThread() {
         </div>
         {messages?.map((message, i) => {
           const component = 'step' in message && playbookState ? playbookState.all_nodes[message.step.id] : undefined
-          console.log({ playbookState, message })
           return (
             <React.Fragment key={i}>
               {'message' in message ? <Message role={message.role} session={session}>{message.message}</Message> : null}
@@ -169,7 +164,6 @@ export default function ChatThread() {
                 <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
                   {message.suggestions.map(suggestion => {
                     const suggestionProcess = playbookState?.all_nodes[suggestion.id]
-                    console.log(playbookState?.all_nodes)
                     const suggestionNode = suggestionProcess ? krg.getProcessNode(suggestionProcess.name) : undefined
                     if (!suggestionNode) return null
                     return (

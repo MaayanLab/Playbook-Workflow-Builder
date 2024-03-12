@@ -47,12 +47,13 @@ export type AssistantParsedMessages = ReturnType<typeof GPTAssistantMessageParse
 
 export function AssembleState(messages: AssistantParsedMessages) {
   let max_id = 0
-  const all_nodes: Record<number, { id: number, name: string, inputs: Record<string, { id: number }> }> = {}
-  const workflow: { id: number, name: string, inputs: Record<string, { id: number }> }[] = []
+  const all_nodes: Record<number, { id: number, name: string, value?: string, inputs: Record<string, { id: number }> }> = {}
+  const workflow: { id: number, name: string, value?: string, inputs: Record<string, { id: number }> }[] = []
   messages
     .forEach(item => {
       if ('step' in item) {
         workflow.push(all_nodes[item.step.id])
+        if (item.step.value) all_nodes[item.step.id].value = item.step.value
       }
       if ('choices' in item && item.choices) {
         item.choices.forEach(choice => {

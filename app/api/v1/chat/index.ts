@@ -203,5 +203,6 @@ export const GPTAssistantDelete = API.post('/api/v1/chat/[thread_id]/delete')
       return
     }
     await openai.beta.threads.del(inputs.query.thread_id)
+    return null
   })
   .build()

@@ -49,10 +49,13 @@ export function StoryProvider({ children, metapath, krg }: React.PropsWithChildr
     const [_storyText, storyCitations] = story.split('\n\n')
     const citationMap = dict.init(
       (storyCitations || '').split('\n')
-        .map(citation => ({
+        .map(citation => citation.includes('doi:') ? {
           value: `${citation.split('. ')[0]}`,
           key: `\\ref{doi:${citation.split('doi:')[1]}}`
-        }))
+        } : {
+          value: citation.split('. ')[0],
+          key: `\\ref{${citation.split('. ')[1]}}`,
+        })
     )
     return dict.init(dict.items(rawNodeStories).map(({ key, value }) => {
       dict.items(citationMap).forEach(({ key: search, value: replace }) => {

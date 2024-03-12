@@ -5,6 +5,7 @@ import krg from '@/app/krg'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import classNames from 'classnames'
+import SafeRender from '@/utils/saferender'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
@@ -62,70 +63,68 @@ export default function App() {
   if (currentNode.prompt) {
     // if our current node has a prompt, show it
     const promptNode = krg.getPromptNode(currentNode.prompt.type)
-    const Prompt = promptNode.prompt
-    promptNodeView = <Prompt
-      data={currentNode.prompt.data ? JSON.parse(currentNode.prompt.data) : undefined}
-      output={currentNode.data ? JSON.parse(currentNode.data) : undefined}
-      inputs={currentNode.prompt.inputs}
-      submit={async (promptData) => {
-        if (!currentNode.prompt) return
-        setData((data) => {
-          return {
-            ...data,
-            nodes: {
-              ...data.nodes,
-              [data.current]: {
-                ...data.nodes[data.current],
-                prompt: {
-                  ...data.nodes[data.current].prompt ?? { type: '', data: '', inputs: {} },
-                  data: JSON.stringify(promptNode.codec.encode(promptData)),
+    promptNodeView = <SafeRender
+      component={promptNode.prompt}
+      props={{
+        data: currentNode.prompt.data ? JSON.parse(currentNode.prompt.data) : undefined,
+        output: currentNode.data ? JSON.parse(currentNode.data) : undefined,
+        inputs: currentNode.prompt.inputs,
+        submit: async (promptData: any) => {
+          if (!currentNode.prompt) return
+          setData((data) => {
+            return {
+              ...data,
+              nodes: {
+                ...data.nodes,
+                [data.current]: {
+                  ...data.nodes[data.current],
+                  prompt: {
+                    ...data.nodes[data.current].prompt ?? { type: '', data: '', inputs: {} },
+                    data: JSON.stringify(promptNode.codec.encode(promptData)),
+                  },
                 },
               },
-            },
-          }
-        })
-        setLoading(() => true)
-        try {
-          const req = await fetch(`/api/resolver`, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              spec: promptNode.spec,
-              data: promptNode.codec.encode(promptData),
-              inputs: currentNode.prompt.inputs,
-            }),
+            }
           })
-          const res = JSON.stringify(await req.json())
-          setData(data => ({
-            ...data,
-            nodes: {
-              ...data.nodes,
-              [data.current]: {
-                ...data.nodes[data.current],
-                data: res,
+          setLoading(() => true)
+          try {
+            const req = await fetch(`/api/resolver`, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
               },
-            },
-          }))
-        } catch (e) {
-          appendData({
-            type: 'Error',
-            data: JSON.stringify((e as Error).toString()),
-          })
-        } finally {
-          setLoading(() => false)
+              body: JSON.stringify({
+                spec: promptNode.spec,
+                data: promptNode.codec.encode(promptData),
+                inputs: currentNode.prompt.inputs,
+              }),
+            })
+            const res = JSON.stringify(await req.json())
+            setData(data => ({
+              ...data,
+              nodes: {
+                ...data.nodes,
+                [data.current]: {
+                  ...data.nodes[data.current],
+                  data: res,
+                },
+              },
+            }))
+          } catch (e) {
+            appendData({
+              type: 'Error',
+              data: JSON.stringify((e as Error).toString()),
+            })
+          } finally {
+            setLoading(() => false)
+          }
         }
       }}
     />
   }
   if (currentNode.data && dataNode) {
-    try {
-      dataNodeView = dataNode.view(JSON.parse(currentNode.data))
-    } catch (e) {
-      dataNodeView = <div className="prose">Error rendering {dataNode.meta.label}: {(e as Error).toString()}</div>
-    }
+    dataNodeView = <SafeRender component={dataNode.view} props={JSON.parse(currentNode.data)} />
   }
   return (
     <Layout>

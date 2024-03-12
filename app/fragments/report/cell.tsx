@@ -7,6 +7,7 @@ import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import classNames from 'classnames'
 import { useStory } from '@/app/fragments/story'
 import { Waypoint } from '@/app/components/waypoint'
+import SafeRender from '@/utils/saferender'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
@@ -15,7 +16,6 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
   const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput({ krg, head })
   const { nodeStories } = useStory()
-  const View = outputNode ? outputNode.view : undefined
   const processNode = krg.getProcessNode(head.process.type)
   if (!processNode) return <div className="alert alert-error">Error: {head.process.type} does not exist</div>
   return (
@@ -73,7 +73,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               </div>
             </div>
             <div className="collapse-content">
-              {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
+              {outputNode?.view && output ? <SafeRender component={outputNode.view} props={output} /> : isLoading ? 'Waiting for results' : 'Waiting for input'}
             </div>
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !cellMetadata[head.id].data_visible })}>

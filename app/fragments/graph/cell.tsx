@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import Head from 'next/head'
 import { useStory } from '@/app/fragments/story'
+import SafeRender from '@/utils/saferender'
 
 const Linkify = dynamic(() => import('@/utils/linkify'))
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
@@ -13,7 +14,6 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
   const { data: { output, outputNode }, status, error: outputError, mutate } = useMetapathOutput({ krg, head })
   const { story } = useStory()
   const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
-  const View = outputNode ? ({ output }: { output: any }) => outputNode.view(output) : undefined
   return (
     <>
       <Head>
@@ -47,9 +47,9 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
             ) : null}
             {!outputNode ? <div>Loading...</div>
             : <>
-                {!View || output === undefined ? <div className="prose">Loading...</div>
+                {!outputNode?.view || output === undefined ? <div className="prose">Loading...</div>
                 : output === null ? <div className="prose">Waiting for input</div>
-                : <View output={output} />}
+                : <SafeRender component={outputNode.view} props={output} />}
               </>}
               <button
                 className="btn btn-primary"

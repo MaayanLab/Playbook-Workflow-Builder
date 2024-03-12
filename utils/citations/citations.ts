@@ -23,6 +23,7 @@ export default {
   "10.1093/nar/gkad960": " Agrawal, A. et al. WikiPathways 2024: next generation pathway database. Nucleic Acids Research vol. 52 D679–D689 (2023).",
   "10.1093/nar/gks1114": "Wu, C., MacLeod, I. & Su, A. I. BioGPS and MyGene.info: organizing online, gene-centric information. Nucleic Acids Research vol. 41 D561–D565 (2012).",
   "10.1093/nar/gks1193": "Barrett, T. et al. NCBI GEO: archive for functional genomics data sets—update. Nucleic Acids Research vol. 41 D991–D995 (2012).",
+  "10.1093/nar/gku1003": " Szklarczyk, D. et al. STRING v10: protein–protein interaction networks, integrated over the tree of life. Nucleic Acids Research vol. 43 D447–D452 (2014).",
   "10.1093/nar/gkv007": " Ritchie, M. E. et al. limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research vol. 43 e47–e47 (2015).",
   "10.1093/nar/gkx1153": "Landrum, M. J. et al. ClinVar: improving access to variant interpretations and supporting evidence. Nucleic Acids Research vol. 46 D1062–D1067 (2017).",
   "10.1093/nar/gkz393": " Lachmann, A. et al. Geneshot: search engine for ranking genes from arbitrary text queries. Nucleic Acids Research vol. 47 W571–W577 (2019).",

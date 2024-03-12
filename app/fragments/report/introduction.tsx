@@ -15,6 +15,7 @@ const BCOButton = dynamic(() => import('@/app/fragments/report/bco-button'))
 const ExportButton = dynamic(() => import('@/app/fragments/report/export-button'))
 const EditableText = dynamic(() => import('@blueprintjs/core').then(({ EditableText }) => EditableText))
 const Icon = dynamic(() => import('@/app/components/icon'))
+const Linkify = dynamic(() => import('@/utils/linkify'))
 
 export default function Introduction({
   session_id,
@@ -86,7 +87,9 @@ export default function Introduction({
             {playbookMetadata.summary === 'auto' ?
               <>
                 <p className="prose-lg text-justify mt-1">{storyText}</p>
-                <div className="prose-sm text-justify whitespace-pre-line">{storyCitations}</div>
+                <div className="prose-sm text-justify whitespace-pre-line">
+                  <Linkify>{storyCitations}</Linkify>
+                </div>
               </>
             : playbookMetadata.summary === 'manual' ?
               <p className="prose-lg text-justify mt-1 whitespace-pre-line">

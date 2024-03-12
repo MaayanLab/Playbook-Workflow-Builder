@@ -5,6 +5,7 @@ import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import Head from 'next/head'
 import { useStory } from '@/app/fragments/story'
 
+const Linkify = dynamic(() => import('@/utils/linkify'))
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
 export default function Cell({ session_id, krg, id, head, autoextend }: { session_id?: string, krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
@@ -33,8 +34,8 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
           : <>
           <div className="mb-4">
             <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
-            <p className="prose text-justify">{storyText}</p>
-            <p className="prose text-sm text-justify whitespace-pre-line">{storyCitations}</p>
+            <p className="prose text-justify"><Linkify>{storyText}</Linkify></p>
+            <p className="prose text-sm text-justify whitespace-pre-line"><Linkify>{storyCitations}</Linkify></p>
           </div>
           <div className="flex-grow flex flex-col py-4">
             {outputError ? <div className="alert alert-error prose">{outputError.toString()}</div> : null}

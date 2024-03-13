@@ -27,7 +27,24 @@ function Component({ state, setState, component }: {
   state: Record<number, any>, setState: React.Dispatch<React.SetStateAction<Record<number, any>>>,
   component: Component,
 }) {
-  const metanode = krg.getProcessNode(component.name)
+  const metanode = React.useMemo(() => krg.getProcessNode(component.name), [component])
+  const inputs = React.useMemo(() => {
+    if (dict.keys(metanode.inputs).some(arg => !(`${component.inputs[arg].id}` in state))) {
+      return undefined
+    }
+    const inputs: Record<string, unknown> = {}
+    dict.items(metanode.inputs).forEach(({ key, value }) => {
+      inputs[key] = value.codec.decode(state[`${component.inputs[key].id}`])
+    })
+    return inputs
+  }, [metanode, state])
+  const output = React.useMemo(() => {
+    let output
+    try{
+      output = typeof state[`${component.id}`] !== 'undefined' ? metanode.output.codec.decode(state[`${component.id}`]) : component.value
+    } catch (e) {}
+    return output
+  }, [state, component])
   React.useEffect(() => {
     if (`${component.id}` in state) return
     if (component.value !== undefined) {
@@ -35,10 +52,7 @@ function Component({ state, setState, component }: {
       return
     }
     if (!('resolve' in metanode)) return
-    if (dict.keys(metanode.inputs).some(arg => !(`${component.inputs[arg].id}` in state))) {
-      console.log('missing deps')
-      return
-    }
+    if (!inputs) return
     (async () => {
       let result: any
       try {
@@ -50,7 +64,7 @@ function Component({ state, setState, component }: {
           body: JSON.stringify({
             spec: metanode.spec,
             data: state[`${component.id}`],
-            inputs: dict.init(dict.keys(metanode.inputs).map((arg) => ({ key: arg, value: state[`${component.inputs[arg].id}`] }))),
+            inputs,
           }),
         })
         if (!req.ok) throw new Error('Error')
@@ -59,34 +73,37 @@ function Component({ state, setState, component }: {
       setState(state => ({ ...state, [`${component.id}`]: result }))
     })()
   }, [state, component])
-    if (!metanode) return <span>Invalid metanode {component.name}</span>
+  if (!metanode) return <span>Invalid metanode {component.name}</span>
   if ('prompt' in metanode) {
-    const inputs: Record<string, unknown> = {}
-    dict.items(metanode.inputs).forEach(({ key, value }) => {
-      inputs[key] = value.codec.decode(state[`${component.inputs[key].id}`])
-    })
-    let output
-    try{
-      output = typeof state[`${component.id}`] !== 'undefined' ? metanode.output.codec.decode(state[`${component.id}`]) : component.value
-    } catch (e) {}
-    return <div>
-      <h3 className="m-0">{metanode.meta.label}</h3>
-      <SafeRender
-        component={metanode.prompt}
-        props={{
-          inputs: inputs,
-          output: output,
-          submit: (output) => {
-            setState(state => ({ [`${component.id}`]: metanode.output.codec.encode(output) }))
-          },
-        }}
-      />
+    return <div className="card card-bordered rounded-3xl p-4">
+      <div className="card-title flex-col place-items-start">
+        <h3 className="prose text-xl">{metanode.meta.label}</h3>
+        <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
+      </div>
+      <div className="card-body">
+        {inputs ?
+          <SafeRender
+            component={metanode.prompt}
+            props={{
+              inputs,
+              output,
+              submit: (output) => {
+                setState(state => ({ [`${component.id}`]: metanode.output.codec.encode(output) }))
+              },
+            }}
+          />
+          : <>Waiting for inputs...</>}
+      </div>
     </div>
   }
-  const output = state[`${component.id}`]
-  return <div>
-    <h3 className="m-0">{metanode.meta.label}</h3>
-    {output ? <SafeRender component={metanode.output.view} props={metanode.output.codec.decode(output)} /> : <>Waiting...</>}
+  return <div className="card card-bordered rounded-3xl p-4">
+    <div className="card-title flex-col place-items-start">
+      <h3 className="prose text-xl">{metanode.meta.label}</h3>
+      <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
+    </div>
+    <div className="card-body">
+      {output ? <SafeRender component={metanode.output.view} props={metanode.output.codec.decode(output)} /> : <>Waiting...</>}
+    </div>
   </div>
 }
 

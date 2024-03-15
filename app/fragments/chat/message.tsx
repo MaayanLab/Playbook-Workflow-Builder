@@ -134,7 +134,7 @@ export default function Message({
         </div>
         {role === 'assistant' ? 
           <div className={classNames('chat-footer text-lg cursor-pointer')}>
-            <div className="bp4-icon bp4-icon-link" /> <div className="bp4-icon bp4-icon-thumbs-up" /> <div className="bp4-icon bp4-icon-thumbs-down" />
+            <div className="bp5-icon bp5-icon-link" /> <div className="bp5-icon bp5-icon-thumbs-up" /> <div className="bp5-icon bp5-icon-thumbs-down" />
           </div>
           : null}
       </div>

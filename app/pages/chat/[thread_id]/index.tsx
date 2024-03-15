@@ -75,34 +75,44 @@ function Component({ state, setState, component }: {
   }, [state, component])
   if (!metanode) return <span>Invalid metanode {component.name}</span>
   if ('prompt' in metanode) {
-    return <div className="card card-bordered rounded-3xl p-4">
+    return <div className="flex flex-col mx-16">
+      <div className="card card-bordered rounded-3xl p-4">
+        <div className="card-title flex-col place-items-start">
+          <h3 className="prose text-xl">{metanode.meta.label}</h3>
+          <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
+        </div>
+        <div className="card-body">
+          {inputs ?
+            <SafeRender
+              component={metanode.prompt}
+              props={{
+                inputs,
+                output,
+                submit: (output) => {
+                  setState(state => ({ [`${component.id}`]: metanode.output.codec.encode(output) }))
+                },
+              }}
+            />
+            : <>Waiting for inputs...</>}
+        </div>
+      </div>
+      <div className="chat-footer text-lg cursor-pointer">
+        <div className="bp5-icon bp5-icon-link" /> <div className="bp5-icon bp5-icon-thumbs-up" /> <div className="bp5-icon bp5-icon-thumbs-down" />
+      </div>
+    </div>
+  }
+  return <div className="flex flex-col mx-16">
+    <div className="card card-bordered rounded-3xl p-4">
       <div className="card-title flex-col place-items-start">
         <h3 className="prose text-xl">{metanode.meta.label}</h3>
         <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
       </div>
       <div className="card-body">
-        {inputs ?
-          <SafeRender
-            component={metanode.prompt}
-            props={{
-              inputs,
-              output,
-              submit: (output) => {
-                setState(state => ({ [`${component.id}`]: metanode.output.codec.encode(output) }))
-              },
-            }}
-          />
-          : <>Waiting for inputs...</>}
+        {output ? <SafeRender component={metanode.output.view} props={metanode.output.codec.decode(output)} /> : <>Waiting...</>}
       </div>
     </div>
-  }
-  return <div className="card card-bordered rounded-3xl p-4">
-    <div className="card-title flex-col place-items-start">
-      <h3 className="prose text-xl">{metanode.meta.label}</h3>
-      <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
-    </div>
-    <div className="card-body">
-      {output ? <SafeRender component={metanode.output.view} props={metanode.output.codec.decode(output)} /> : <>Waiting...</>}
+    <div className="chat-footer text-lg cursor-pointer">
+      <div className="bp5-icon bp5-icon-link" /> <div className="bp5-icon bp5-icon-thumbs-up" /> <div className="bp5-icon bp5-icon-thumbs-down" />
     </div>
   </div>
 }
@@ -119,9 +129,9 @@ function Message({ session, role, children }: React.PropsWithChildren<{ session:
         <div className={classNames('chat-bubble rounded-xl w-full prose', { 'chat-bubble-primary': role === 'user', 'chat-bubble-secondary': role === 'assistant' || role === 'welcome', 'chat-bubble-error': role === 'error' })}>
           {typeof children === 'string' ? <ReactMarkdown>{children}</ReactMarkdown> : children}
         </div>
-        {role === 'assistant' ? 
+        {role !== 'user' ?
           <div className={classNames('chat-footer text-lg cursor-pointer')}>
-            <div className="bp4-icon bp4-icon-link" /> <div className="bp4-icon bp4-icon-thumbs-up" /> <div className="bp4-icon bp4-icon-thumbs-down" />
+            <div className="bp5-icon bp5-icon-link" /> <div className="bp5-icon bp5-icon-thumbs-up" /> <div className="bp5-icon bp5-icon-thumbs-down" />
           </div>
           : null}
       </div>

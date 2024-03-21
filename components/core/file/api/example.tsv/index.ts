@@ -16,7 +16,7 @@ export type UploadExampleFileResponse = Awaited<ReturnType<typeof uploadExampleF
 
 export async function uploadExampleFile(session?: SessionWithId) {
   return await uploadFile({
-    url: `file://${exampleFile.split(path.sep).join(path.posix.sep)}`,
+    url: `${process.env.PUBLIC_URL}/api/v1/components/core/file/example.tsv`,
     filename: 'example.tsv',
   }, session)
 }

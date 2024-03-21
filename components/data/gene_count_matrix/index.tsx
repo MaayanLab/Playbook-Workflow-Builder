@@ -1,11 +1,13 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileC } from '@/components/core/file'
+import { FileURL, FileC, FilePrompt } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
+import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
+import { clientLoadExample } from  '@/components/core/file/api/example.tsv/client'
+import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -40,7 +42,7 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
   })
   .build()
 
-export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
+  export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   .meta({
     label: 'Resolve a Gene Count Matrix from a File',
     description: 'Ensure a file contains a gene count matrix, load it into a standard format',
@@ -55,6 +57,35 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   ))
   .story(props =>
     `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`
+  )
+  .build()
+
+export const GeneCountMatrixFileUpload = MetaNode('GeneCountMatrixFileUpload')
+  .meta({
+    label: 'Upload a Gene Count Matrix',
+    description: 'A file containing a gene count matrix',
+    tags: {
+      Type: {
+        File: 1,
+        Gene: 1,
+      },
+      Cardinality: {
+        Matrix: 1,
+      },
+    },
+    icon: [file_icon],
+  })
+  .codec(FileC)
+  .inputs()
+  .output(GeneCountMatrix)
+  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}</>)
+  .resolve(async (props) => await python(
+    'components.data.gene_count_matrix.gene_count_matrix',
+    { kargs: [props.data] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props =>
+    `The gene count matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
   )
   .build()
 

@@ -1,13 +1,15 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileC } from '@/components/core/file'
+import { FileURL, FileC, FilePrompt } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
+import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { GeneCountMatrix } from '../gene_count_matrix'
 import { MetadataMatrix } from '../metadata_matrix'
+import { clientLoadExample } from  '@/components/core/file/api/example.h5ad/client'
+import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -57,6 +59,35 @@ export const AnnDataFromFile = MetaNode('AnnDataFromFile')
   ))
   .story(props =>
     `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`
+  )
+  .build()
+
+export const AnnDataFileUpload = MetaNode('AnnDataFileUpload')
+  .meta({
+    label: 'Upload an AnnData Matrix File',
+    description: 'A file containing an AnnData matrix',
+    tags: {
+      Type: {
+        File: 1,
+        Gene: 1,
+      },
+      Cardinality: {
+        Matrix: 1,
+      },
+    },
+    icon: [file_icon],
+  })
+  .codec(FileC)
+  .inputs()
+  .output(AnnData)
+  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={AnnData.view} props={props.output} /> : null}</>)
+  .resolve(async (props) => await python(
+    'components.data.anndata.anndata',
+    { kargs: [props.data] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props =>
+    `An anndata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
   )
   .build()
 

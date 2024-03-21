@@ -1,14 +1,15 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileC } from '@/components/core/file'
+import { FileURL, FileC, FilePrompt } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
 import Matrix from '@/app/components/Matrix'
-import { datafile_icon, filter_icon, differential_expression_icon, file_transfer_icon } from '@/icons'
+import { datafile_icon, filter_icon, differential_expression_icon, file_transfer_icon, file_icon } from '@/icons'
 import { downloadUrl } from '@/utils/download'
 import { GMT } from '../gene_matrix_transpose'
 import { GeneSet } from '@/components/core/input/set'
 import { ScoredGenes } from '@/components/core/input/scored'
+import SafeRender from '@/utils/saferender'
 
 export const GeneSignature = MetaNode('GeneSignature')
   .meta({
@@ -58,6 +59,33 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature.`)
+  .build()
+
+export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
+  .meta({
+    label: 'Upload a Gene Signature',
+    description: 'A table of genes and their significance',
+    tags: {
+      Type: {
+        File: 1,
+        Gene: 1,
+      },
+      Cardinality: {
+        Signature: 1,
+      },
+    },
+    icon: [file_icon],
+  })
+  .codec(FileC)
+  .inputs()
+  .output(GeneSignature)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={GeneSignature.view} props={props.output} /> : null}</>)
+  .resolve(async (props) => await python(
+    'components.data.gene_signature.gene_signature',
+    { kargs: [props.data] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props => `A gene signature${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
   .build()
 
 export const GMTFromSignature = MetaNode('GMTFromSignature')

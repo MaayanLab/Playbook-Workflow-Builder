@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { MetaboliteCountMatrix } from '../metabolite_count_matrix'
 import { MetadataMatrix } from '../metadata_matrix'
+import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -78,7 +79,7 @@ export const MetAnnDataFileUpload = MetaNode('MetAnnDataFileUpload')
   .codec(FileC)
   .inputs()
   .output(MetAnnData)
-  .prompt(props => <FilePrompt {...props} />)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={MetAnnData.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.metanndata.metanndata',
     { kargs: [props.data] },

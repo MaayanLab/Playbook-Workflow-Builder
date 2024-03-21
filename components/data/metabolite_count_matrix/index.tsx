@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
+import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -77,7 +78,7 @@ export const MetaboliteCountMatrixFileUpload = MetaNode('MetaboliteCountMatrixFi
   .codec(FileC)
   .inputs()
   .output(MetaboliteCountMatrix)
-  .prompt(props => <FilePrompt {...props} />)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={MetaboliteCountMatrix.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.metabolite_count_matrix.metabolite_count_matrix',
     { kargs: [props.data] },

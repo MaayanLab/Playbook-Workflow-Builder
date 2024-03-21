@@ -10,6 +10,7 @@ import { downloadBlob } from '@/utils/download'
 import { file_icon, file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
+import SafeRender from '@/utils/saferender'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -85,7 +86,7 @@ export const DMTFileUpload = MetaNode('DMTFileUpload')
   .codec(FileC)
   .inputs()
   .output(DMT)
-  .prompt(props => <FilePrompt {...props} />)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={DMT.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.drug_matrix_transpose.load_drug_matrix_transpose',
     { kargs: [props.data] },

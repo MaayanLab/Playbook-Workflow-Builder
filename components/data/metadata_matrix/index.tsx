@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { file_icon, file_transfer_icon, metadata_file_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
+import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -73,7 +74,7 @@ export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
   .codec(FileC)
   .inputs()
   .output(MetadataMatrix)
-  .prompt(props => <FilePrompt {...props} />)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={MetadataMatrix.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.metadata_matrix.metadata_matrix',
     { kargs: [props.data] },

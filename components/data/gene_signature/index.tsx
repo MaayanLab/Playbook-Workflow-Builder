@@ -9,6 +9,7 @@ import { downloadUrl } from '@/utils/download'
 import { GMT } from '../gene_matrix_transpose'
 import { GeneSet } from '@/components/core/input/set'
 import { ScoredGenes } from '@/components/core/input/scored'
+import SafeRender from '@/utils/saferender'
 
 export const GeneSignature = MetaNode('GeneSignature')
   .meta({
@@ -78,7 +79,7 @@ export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
   .codec(FileC)
   .inputs()
   .output(GeneSignature)
-  .prompt(props => <FilePrompt {...props} />)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={GeneSignature.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gene_signature',
     { kargs: [props.data] },

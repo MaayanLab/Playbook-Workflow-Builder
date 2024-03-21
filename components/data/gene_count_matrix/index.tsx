@@ -7,6 +7,7 @@ import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { clientLoadExample } from  '@/components/core/file/api/example.tsv/client'
+import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
 
@@ -77,7 +78,7 @@ export const GeneCountMatrixFileUpload = MetaNode('GeneCountMatrixFileUpload')
   .codec(FileC)
   .inputs()
   .output(GeneCountMatrix)
-  .prompt(props => <FilePrompt {...props} example={clientLoadExample} />)
+  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.gene_count_matrix.gene_count_matrix',
     { kargs: [props.data] },

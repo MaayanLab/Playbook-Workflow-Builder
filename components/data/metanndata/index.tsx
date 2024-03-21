@@ -1,9 +1,9 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileC } from '@/components/core/file'
+import { FileURL, FileC, FilePrompt } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_transfer_icon, transpose_icon } from '@/icons'
+import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { MetaboliteCountMatrix } from '../metabolite_count_matrix'
@@ -57,6 +57,35 @@ export const MetAnnDataFromFile = MetaNode('MetAnnDataFromFile')
   ))
   .story(props =>
     `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an metanndata metabolite matrix.`
+  )
+  .build()
+
+export const MetAnnDataFileUpload = MetaNode('MetAnnDataFileUpload')
+  .meta({
+    label: 'Upload a MetAnnData Matrix',
+    description: 'A file containing a MetAnnData matrix',
+    tags: {
+      Type: {
+        File: 1,
+        Metabolite: 1,
+      },
+      Cardinality: {
+        Matrix: 1,
+      },
+    },
+    icon: [file_icon],
+  })
+  .codec(FileC)
+  .inputs()
+  .output(MetAnnData)
+  .prompt(props => <FilePrompt {...props} />)
+  .resolve(async (props) => await python(
+    'components.data.metanndata.metanndata',
+    { kargs: [props.data] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props =>
+    `A metanndata metabolite matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
   )
   .build()
 

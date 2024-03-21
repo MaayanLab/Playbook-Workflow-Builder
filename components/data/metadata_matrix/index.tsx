@@ -1,9 +1,9 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileC } from '@/components/core/file'
+import { FileURL, FileC, FilePrompt } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { file_transfer_icon, metadata_file_icon } from '@/icons'
+import { file_icon, file_transfer_icon, metadata_file_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 
@@ -56,3 +56,28 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`)
   .build()
 
+export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
+  .meta({
+    label: 'Upload a Metadata Matrix',
+    description: 'A file containing a metadata matrix',
+    tags: {
+      Type: {
+        File: 1,
+      },
+      Cardinality: {
+        Matrix: 1,
+      },
+    },
+    icon: [file_icon],
+  })
+  .codec(FileC)
+  .inputs()
+  .output(MetadataMatrix)
+  .prompt(props => <FilePrompt {...props} />)
+  .resolve(async (props) => await python(
+    'components.data.metadata_matrix.metadata_matrix',
+    { kargs: [props.data] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props => `A metadata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
+  .build()

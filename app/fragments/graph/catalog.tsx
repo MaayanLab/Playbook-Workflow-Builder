@@ -125,8 +125,8 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
           onChange={evt => setSearch(evt.currentTarget.value)}
         />
       </FormGroup>
-      <div className="flex-grow flex flex-row">
-        <div className="sm:col-span-12 md:col-span-4 lg:col-span-3">
+      <div className="flex-grow flex flex-row flex-wrap sm:flex-nowrap">
+        <div>
           {dict.keys(group_values)
             .filter(group => dict.keys(group_values[group]).length > 1)
             .map(group => (
@@ -135,7 +135,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                 <div className="ml-2 mb-4">
                   {dict.keys(group_values[group])
                     .map(value => (
-                      <label key={value} className="bp5-control bp5-switch prose prose-sm">
+                      <label key={value} className="bp5-control bp5-switch prose prose-sm whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -161,12 +161,12 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                           }}
                         />
                         <span className="bp5-control-indicator"></span>
-                        {value} <span className="whitespace-nowrap">[{
+                        {value} ({
                         (group_values_filtered[group]||{})[value] === group_values[group][value] ? (
                           group_values[group][value]
                         ) : (
                           `${(group_values_filtered[group]||{})[value]||0} / ${group_values[group][value]}`
-                        )} card{group_values[group][value] > 1 ? 's' : ''}]</span>
+                        )})
                       </label>
                   ))}
                 </div>

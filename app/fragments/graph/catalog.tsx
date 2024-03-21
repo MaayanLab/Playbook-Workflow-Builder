@@ -126,7 +126,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
         />
       </FormGroup>
       <div className="flex-grow flex flex-row flex-wrap sm:flex-nowrap">
-        <div>
+        <div className="flex-none">
           {dict.keys(group_values)
             .filter(group => dict.keys(group_values[group]).length > 1)
             .map(group => (
@@ -174,16 +174,15 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
             )
           )}
         </div>
-        <div className="flex-grow">
+        <div className="flex-grow overflow-hidden">
           <Masonry
             breakpointCols={{
               // note these breakpoints match the bootstrap breakpoints
               //  they should only be changed along with the columnClassName spec
               default: 4,
-              1400: 4,
-              1200: 3,
-              992: 2,
-              768: 1,
+              1279: 3,
+              1023: 2,
+              767: 1,
             }}
             className="flex flex-row gap-2"
             columnClassName="flex-grow flex flex-col gap-2"

@@ -278,7 +278,7 @@ export const CTDUseCustomMatrixFileURLs = MetaNode('CTDUseCustomMatrixFileURLs')
 export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput')
   .meta({
     label: 'CTD - Use With Custom Matrix',
-    description: 'This card allows you to run CTD with your graph of interest. This card requires a gene list, and adjacency matrix, and the RData file generated with the CTD Precalculations card. This card will identify highly connected genes and genes that are “guilty by association” and connect these genes. *Please note 10-150 nodes of interest are required to run CTD',
+    description: 'This card allows you to run CTD with your graph of interest. This card requires a gene list, and adjacency matrix, and the RData file generated with the CTD Precalculations card. This card will identify highly connected genes and genes that are "guilty by association" and connect these genes. *Please note 10-150 nodes of interest are required to run CTD',
     icon: [input_icon],
   })
   .inputs()

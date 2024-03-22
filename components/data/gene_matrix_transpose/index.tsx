@@ -205,7 +205,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
           large
           type="submit"
           text="Submit"
-          rightIcon="bring-data"
+          rightIcon="cloud-upload"
           onClick={() => props.submit({ terms, descriptions })}
         />
       </div>

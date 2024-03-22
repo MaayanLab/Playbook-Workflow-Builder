@@ -119,7 +119,7 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
           <Button
             large
             text="Example"
-            rightIcon="bring-data"
+            rightIcon="cloud-upload"
             onClick={evt => {
               if (T.extra?.term?.meta?.example !== undefined) {
                 setItem(T.extra.term.meta.example)

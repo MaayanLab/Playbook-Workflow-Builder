@@ -136,7 +136,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           large
           type="submit"
           text="Submit"
-          rightIcon="bring-data"
+          rightIcon="cloud-upload"
           onClick={evt => props.submit({ description: description, set: set.split(/\r?\n/g).filter(line => line.replace(/^\s+/, '').replace(/\s+$/, '')) }, true)}
           disabled={set.length === 0}
         />

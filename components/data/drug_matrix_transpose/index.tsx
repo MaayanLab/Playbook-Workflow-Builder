@@ -205,7 +205,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
           large
           type="submit"
           text="Submit"
-          rightIcon="bring-data"
+          rightIcon="cloud-upload"
           onClick={() => props.submit({ terms, descriptions })}
         />
       </div>

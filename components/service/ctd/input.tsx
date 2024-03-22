@@ -160,7 +160,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -209,7 +209,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -390,7 +390,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -439,7 +439,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -489,7 +489,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>

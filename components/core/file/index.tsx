@@ -167,7 +167,7 @@ export function FilePrompt(props: {
               <Bp5Button
                 large
                 text="Example"
-                rightIcon="bring-data"
+                rightIcon="cloud-upload"
                 onClick={async () => {
                   if (!props.example) return
                   props.submit(await props.example(), true)

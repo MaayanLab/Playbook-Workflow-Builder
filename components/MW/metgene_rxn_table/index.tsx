@@ -51,7 +51,7 @@ export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
 
     return (
 
-      <div className="prose">
+      <div className="prose max-w-none">
         <h2>MetGENE Reactions</h2>
         {data.map((arrayVal:MetGeneRxnObjArray, index:number) => (
           <div key={index}>

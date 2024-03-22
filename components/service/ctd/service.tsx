@@ -224,7 +224,7 @@ export const Execute_CTD_Precalculations_Hybrid_Upload = MetaNode('Execute_CTD_P
     }
 
     return(
-      <div className="prose">
+      <div className="prose max-w-none">
         <p>{message}</p>
         <p>Highly Connected Genes num: {hcgNum}</p>
         <p>Guilty By Association Genes num: {gbaNum}</p>

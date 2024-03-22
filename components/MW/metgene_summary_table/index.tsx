@@ -38,7 +38,7 @@ export const MetGeneSummaryTable = MetaNode('MetGeneSummaryTable')
     const heading4 = "Metabolites"
     const heading5 = "Studies"
     return (
-      <div className="prose">
+      <div className="prose max-w-none">
         <h2>MetGENE Summary</h2>
         <table>
           <tr>

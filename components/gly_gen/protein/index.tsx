@@ -37,7 +37,7 @@ export const GlyGenProteinResponseNode = MetaNode("GlyGenProteinResponse")
     const glyGenLink = `http://www.glygen.org/protein/${data.uniprot.uniprot_canonical_ac}`;
 
     return (
-      <div className="prose">
+      <div className="prose max-w-none">
         <div>
           Gene Name: <b>{data.gene.name}</b>
         </div>
@@ -126,7 +126,7 @@ export const GlyGenProteinSetResponseNode = MetaNode("GlyGenProteinSetResponse")
   .codec(GlyGenProteinSetResponse)
   .view((data) => {
     return (
-      <div className="prose">
+      <div className="prose max-w-none">
         <table>
           <thead>
             <tr>
@@ -193,7 +193,7 @@ export const GlycosylationViewResponseNode = MetaNode(
 
     if ((data.glycosylation_data?.length ?? 0) > 0) {
       return (
-        <div className="prose">
+        <div className="prose max-w-none">
           <div>
             <span>UniProtKB Accession: </span>
             <b>
@@ -222,7 +222,7 @@ export const GlycosylationViewResponseNode = MetaNode(
       );
     } else {
       return (
-        <div className="prose">
+        <div className="prose max-w-none">
           <div>
             UniProtKB Accession:
             <b>
@@ -258,7 +258,7 @@ export const PhosphorylationViewResponseNode = MetaNode(
   .view((data) => {
     if ((data.phosphorylation_data?.length ?? 0) > 0) {
       return (
-        <div className="prose">
+        <div className="prose max-w-none">
           Total Records: <b>{data.phosphorylation_data?.length ?? 0}</b>
           <PhosphorylationTable
             phosphorylation_data={data.phosphorylation_data ?? []}

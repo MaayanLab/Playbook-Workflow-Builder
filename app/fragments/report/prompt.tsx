@@ -37,7 +37,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
         </div>
         <p className="prose max-w-none">{nodeStories[head.id]}</p>
       </div>
-      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}
       <div className="collapse-content">
         {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
@@ -65,7 +65,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
               router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.head}`, undefined, { shallow: true, scroll: false })
             }}
           />
-          : <div className="prose">Waiting for input</div>}
+          : <div className="prose max-w-none">Waiting for input</div>}
       </div>
     </div>
   )

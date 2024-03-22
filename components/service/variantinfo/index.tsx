@@ -247,7 +247,7 @@ export const VariantInfo = MetaNode('VariantInfo')
   })
   .codec(AlleleRegistryVariantInfoC)
   .view(variantinfo => (
-    <div className="prose">
+    <div className="prose max-w-none">
       <a target="_blank" href={`https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/by_canonicalid?canonicalid=${variantinfo.entId}`}>{variantinfo.entId}</a> (variant)
     </div>
   ))

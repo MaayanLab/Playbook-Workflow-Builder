@@ -22,7 +22,7 @@ export function GlycosylationTable({
    * Returns: A table of the extracted glycosylation data.
    */
   return (
-    <div className="prose">
+    <div className="prose max-w-none max-w-none">
       <table>
         <thead>
           <tr>

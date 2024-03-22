@@ -56,7 +56,7 @@ export const GeneInfo = MetaNode('GeneInfo')
   })
   .codec(MyGeneInfoC)
   .view(geneinfo => (
-    <div className="prose">
+    <div className="prose max-w-none">
       <a href={`https://www.ncbi.nlm.nih.gov/gene/${geneinfo.entrezgene}`}>{geneinfo.symbol}</a> {geneinfo.name}
     </div>
   ))

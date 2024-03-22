@@ -34,7 +34,7 @@ export const GlycanViewResponseNode = MetaNode("GlycanViewResponse")
     const glyGenLink = `http://www.glygen.org/glycan/${data.glytoucan.glytoucan_ac}`;
 
     return (
-      <div className="prose">
+      <div className="prose max-w-none">
         <div>
           <span>GlyTouCan Accession: </span>
           <b>
@@ -153,7 +153,7 @@ export const GlycoenzymeViewResponseNode = MetaNode(
   .view((data) => {
     if ((data.enzyme_data?.length ?? 0) > 0) {
       return (
-        <div className="prose">
+        <div className="prose max-w-none">
           Total Records: <b>{data.enzyme_data?.length ?? 0}</b>
           <GlycoenzymeTable enzyme_data={data.enzyme_data ?? []} />
         </div>

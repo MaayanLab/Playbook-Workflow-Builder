@@ -27,7 +27,7 @@ export const FileURL = MetaNode('FileURL')
   .codec(FileC)
   .view(({ url }) => (
     <div>
-      <h2 className="prose">File: {url}</h2>
+      <h2 className="prose max-w-none">File: {url}</h2>
     </div>
   ))
   .build()
@@ -69,7 +69,7 @@ export function FilePrompt(props: {
   return (
     <div>
       {!session || !session.user ? (
-        <div className="alert alert-warning shadow-lg block prose">
+        <div className="alert alert-warning shadow-lg block prose max-w-none">
           You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
         </div>
       ) : (

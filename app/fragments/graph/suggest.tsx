@@ -239,7 +239,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
               })
               .codec<any>()
               .view((props) => {
-                return <div className="prose">This data type was suggested as part of {suggestion_final.name}</div>
+                return <div className="prose max-w-none">This data type was suggested as part of {suggestion_final.name}</div>
               })
               .build()
             krg.add(OutputNode)
@@ -254,7 +254,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
             ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
             .output(OutputNode)
             .prompt((props) => {
-              return <div className="prose">
+              return <div className="prose max-w-none">
                 <p>{suggestion.description}</p>
                 <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
               </div>

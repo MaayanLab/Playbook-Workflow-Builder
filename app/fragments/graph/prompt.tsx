@@ -31,10 +31,10 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
         <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
-        <p className="prose"><Linkify>{storyText}</Linkify></p>
-        <p className="prose text-sm"><Linkify>{storyCitations}</Linkify></p>
+        <p className="prose max-w-none"><Linkify>{storyText}</Linkify></p>
+        <p className="prose max-w-none text-sm"><Linkify>{storyCitations}</Linkify></p>
       </div>
-      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}
       {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
@@ -61,7 +61,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
             router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
-        : <div className="prose">Waiting for input</div>}
+        : <div className="prose max-w-none">Waiting for input</div>}
     </div>
   )
 }

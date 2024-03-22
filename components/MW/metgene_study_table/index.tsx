@@ -38,7 +38,7 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
 
     const studyID_url = "https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID="
     return (
-      <div className="prose">
+      <div className="prose max-w-none">
         <h2>MetGENE Studies</h2>
         <table>
           <tr>

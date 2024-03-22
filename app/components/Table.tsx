@@ -25,7 +25,7 @@ export function Table({ children, height, shape: shape_, downloads, ...props }: 
         <div><Bp5Table {...props}>{children}</Bp5Table></div>
       </div>
       <div className="bp5-navbar-group">
-        <span className="prose">Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
+        <span className="prose max-w-none">Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
         <span className="bp5-navbar-divider"></span>
         {downloads ?
           dict.keys(downloads).length === 1 ?

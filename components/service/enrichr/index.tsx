@@ -116,7 +116,7 @@ export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .view(userlist => (
     <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
       {'empty' in userlist ? 
-        <div className="prose">Enrichment Analysis Cannot be Performed on Empty Set</div>
+        <div className="prose max-w-none">Enrichment Analysis Cannot be Performed on Empty Set</div>
         : <iframe
           className="flex-grow border-0"
           src={`${enrichr_url}/enrich?dataset=${userlist.shortId}`}

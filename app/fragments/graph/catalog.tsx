@@ -117,7 +117,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
   }, [items_filtered_searched])
   return (
     <div className="flex-grow flex flex-col mx-4">
-      <FormGroup label={<span className="prose">Filter</span>}>
+      <FormGroup label={<span className="prose max-w-none">Filter</span>}>
         <InputGroup
           leftIcon="filter"
           placeholder="Filter string..."
@@ -135,7 +135,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                 <div className="ml-2 mb-4">
                   {dict.keys(group_values[group])
                     .map(value => (
-                      <label key={value} className="bp5-control bp5-switch prose prose-sm whitespace-nowrap">
+                      <label key={value} className="bp5-control bp5-switch prose prose-sm max-w-none whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}

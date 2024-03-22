@@ -41,21 +41,21 @@ export default function ComponentPage({ spec, kind }: { spec: string, kind: 'dat
       <div className="container flex-grow self-center flex flex-col py-5 overflow-hidden">
         <div className="flex flex-row items-center gap-2 m-2">
           <Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} size={3} title={null} />
-          <div className="flex flex-col prose">
+          <div className="flex flex-col prose max-w-none">
             <h1 className="m-0 whitespace-pre-wrap">{metanode.meta.label}</h1>
             <h2 className="m-0 text-gray-500">{metanode.kind === 'data' ? 'Data' : 'prompt' in metanode ? 'Prompt' : 'Resolver'} Node</h2>
           </div>
         </div>
-        {metanode.meta.version ? <p className="prose"><strong>Version</strong>: {metanode.meta.version}</p> : null}
-        {metanode.meta.author ? <p className="prose"><strong>Author</strong>: {metanode.meta.author}</p> : null}
-        {metanode.meta.license ? <p className="prose"><strong>License</strong>: {metanode.meta.license}</p> : null}
-        {metanode.meta.tags ? <p className="prose"><strong>Tags</strong>: <div className="inline-flex flex-row gap-2 flex-wrap">{dict.items(metanode.meta.tags).flatMap(({ key, value }) => dict.keys(value).map(v => `${v} (${key})`)).map(tag =>
-          <div className="badge badge-secondary prose" key={tag}>{tag}</div>
+        {metanode.meta.version ? <p className="prose max-w-none"><strong>Version</strong>: {metanode.meta.version}</p> : null}
+        {metanode.meta.author ? <p className="prose max-w-none"><strong>Author</strong>: {metanode.meta.author}</p> : null}
+        {metanode.meta.license ? <p className="prose max-w-none"><strong>License</strong>: {metanode.meta.license}</p> : null}
+        {metanode.meta.tags ? <p className="prose max-w-none"><strong>Tags</strong>: <div className="inline-flex flex-row gap-2 flex-wrap">{dict.items(metanode.meta.tags).flatMap(({ key, value }) => dict.keys(value).map(v => `${v} (${key})`)).map(tag =>
+          <div className="badge badge-secondary prose max-w-none" key={tag}>{tag}</div>
         )}</div>
         </p> : null}
         <Markdown components={{
           p(props: React.PropsWithChildren<{}>) {
-            return <p className="prose" {...props}>{props.children}</p>
+            return <p className="prose max-w-none" {...props}>{props.children}</p>
           }
         }}>{`**Description**: ${metanode.meta.description}`}</Markdown>
           <MetaNodeListing

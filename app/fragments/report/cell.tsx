@@ -33,7 +33,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
                     : processNode.spec}
                 </h2>
               </div>
-              <p className="prose max-w-none">{nodeStories[head.id]}</p>
+              <p className="max-w-none">{nodeStories[head.id]}</p>
             </div>
             <div className="collapse-content">
               <p className="bp5-ui-text">

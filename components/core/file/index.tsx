@@ -51,7 +51,7 @@ export function FilePrompt(props: {
       filename: string;
       description?: string | null | undefined;
       size?: number | undefined;
-  }) => void;
+  }, autoextend?: boolean) => void;
   session_id?: string | undefined;
 }) {
   const [currentFile, setCurrentFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
@@ -83,19 +83,19 @@ export function FilePrompt(props: {
                 url: currentFile.url,
                 filename: currentFile.filename,
                 size: currentFile.size,
-              })
+              }, true)
             } else if (tab === 'upload') {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
               const description = rawDescription === null ? undefined : rawDescription.toString()
               const { file: [record] } = await clientUploadFile(formData, props.session_id)
-              props.submit({ description, ...record })
+              props.submit({ description, ...record }, true)
             } else if (currentFile.url) {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
               const description = rawDescription === null ? undefined : rawDescription.toString()
               const record = await clientFetchFile({ url: currentFile.url }, props.session_id)
-              props.submit({ description, ...record })
+              props.submit({ description, ...record }, true)
             } else {
               console.error('Missing input')
             }
@@ -170,7 +170,7 @@ export function FilePrompt(props: {
                 rightIcon="bring-data"
                 onClick={async () => {
                   if (!props.example) return
-                  props.submit(await props.example())
+                  props.submit(await props.example(), true)
                 }}
               />
               : null}

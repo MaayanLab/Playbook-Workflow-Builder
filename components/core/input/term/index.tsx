@@ -133,7 +133,7 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
             text="Submit"
             rightIcon="send-to-graph"
             disabled={!item}
-            onClick={evt => props.submit(item)}
+            onClick={evt => props.submit(item, true)}
           />
       </div>
     )

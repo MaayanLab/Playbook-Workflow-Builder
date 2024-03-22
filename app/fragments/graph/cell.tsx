@@ -9,7 +9,7 @@ import SafeRender from '@/utils/saferender'
 const Linkify = dynamic(() => import('@/utils/linkify'))
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
-export default function Cell({ session_id, krg, id, head, autoextend }: { session_id?: string, krg: KRG, id: string, head: Metapath, autoextend: boolean }) {
+export default function Cell({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { output, outputNode }, status, error: outputError, mutate } = useMetapathOutput({ krg, head })
   const { story } = useStory()
@@ -29,7 +29,6 @@ export default function Cell({ session_id, krg, id, head, autoextend }: { sessio
             processNode={processNode}
             outputNode={outputNode}
             output={output}
-            autoextend={autoextend}
           />
           : <>
           <div className="mb-4">

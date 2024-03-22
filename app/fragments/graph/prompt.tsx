@@ -8,7 +8,7 @@ import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
 
-export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
+export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
   const { story } = useStory()
@@ -39,7 +39,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           data={data}
           inputs={inputs}
           output={output}
-          submit={async (data) => {
+          submit={async (data, autoextend = false) => {
             const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
               headers: {
                 'Content-Type': 'application/json',

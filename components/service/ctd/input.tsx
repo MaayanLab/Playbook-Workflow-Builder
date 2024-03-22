@@ -88,7 +88,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
               evt.preventDefault();
               if (props.output != null && geneListFile.url && geneListFile.url === props.output.geneListFile?.url && geneListFile.filename && geneListFile.size &&
                         adjMatrixFile.url && adjMatrixFile.url === props.output.adjMatrixFile?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
-                props.submit({ geneListFile, adjMatrixFile })
+                props.submit({ geneListFile, adjMatrixFile }, true)
               }else{
                 const formData = new FormData(evt.currentTarget)
                 formData.delete("description");
@@ -112,7 +112,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
                     filename: adjMatrixFileResponse.filename,
                     size: adjMatrixFileResponse.size,
                   }
-                })
+                }, true)
               }
             }}
           >
@@ -314,7 +314,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
               evt.preventDefault();
               if (props.output != null && geneListFile.url && geneListFile.url === props.output.geneListFile?.url && geneListFile.filename && geneListFile.size &&
                         adjMatrixFile.url && adjMatrixFile.url === props.output.adjMatrixFile?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
-                props.submit({ geneListFile, adjMatrixFile, rDataFile })
+                props.submit({ geneListFile, adjMatrixFile, rDataFile }, true)
               }else{
                 const formData = new FormData(evt.currentTarget)
                 formData.delete("description");
@@ -342,7 +342,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                     filename: rDataFileResponse.filename,
                     size: rDataFileResponse.size,
                   }
-                })
+                }, true)
               }
             }}
           >

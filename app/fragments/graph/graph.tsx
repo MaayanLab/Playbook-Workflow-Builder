@@ -133,7 +133,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
                 <Home />
                 : head ?
                   <StoryProvider krg={krg} metapath={metapathToHead(metapath, head)}>
-                    <Cell session_id={session_id} krg={krg} id={graph_id} head={head} autoextend />
+                    <Cell session_id={session_id} krg={krg} id={graph_id} head={head} />
                   </StoryProvider>
                   : null}
         </main>

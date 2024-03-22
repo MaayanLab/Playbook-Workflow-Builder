@@ -86,7 +86,7 @@ export default function Introduction({
           <div className="prose max-w-full">
             {playbookMetadata.summary === 'auto' ?
               <>
-                <p className="prose-lg text-justify mt-1">{storyText}</p>
+                <p className="prose-lg text-justify mt-1"><Linkify>{storyText}</Linkify></p>
                 <div className="prose-sm text-justify whitespace-pre-line">
                   <Linkify>{storyCitations}</Linkify>
                 </div>

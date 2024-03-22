@@ -7,6 +7,9 @@ import * as array from '@/utils/array'
 import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
+import dynamic from 'next/dynamic'
+
+const Linkify = dynamic(() => import('@/utils/linkify'))
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
@@ -28,8 +31,8 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
         <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
-        <p className="prose">{storyText}</p>
-        <p className="prose text-sm">{storyCitations}</p>
+        <p className="prose"><Linkify>{storyText}</Linkify></p>
+        <p className="prose text-sm"><Linkify>{storyCitations}</Linkify></p>
       </div>
       {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
       {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}

@@ -25,8 +25,8 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
           <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={cellMetadata[head.id].process_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], process_visible: evt.target.checked, id: '' } }))}} />
             <div className="collapse-title flex flex-col gap-2">
-              <div className="flex flex-row gap-2">
-                <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
+              <div className="flex flex-row gap-2 z-10">
+                <Icon icon={processNode.meta.icon || func_icon} title={processNode.meta.label} className="fill-black dark:fill-white" />
                 <h2 className="bp5-heading">
                   {cellMetadata[head.id].label ? cellMetadata[head.id].label
                     : processNode.meta.label ? processNode.meta.label
@@ -66,10 +66,18 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             />
             : <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={cellMetadata[head.id].data_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], data_visible: evt.target.checked, id: '' } }))}} />
-            <div className="collapse-title flex flex-col gap-2">
-              <div className="flex flex-row gap-2">
-                <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} className="fill-black dark:fill-white" />
-                <h2 className="bp5-heading">{(outputNode && (outputNode.meta.label || processNode.spec)) || "Loading"}</h2>
+            <div className="collapse-title flex flex-col gap-2 overflow-visible">
+              <div className="flex flex-row gap-2 z-10">
+                {outputNode ?
+                  <>
+                    <Icon icon={outputNode.meta.icon || variable_icon} title={outputNode.meta.label} className="fill-black dark:fill-white" />
+                    <h2 className="bp5-heading">{outputNode.meta.label}</h2>
+                  </>
+                  :
+                  <>
+                    <Icon icon={processNode.output.meta.icon || variable_icon} title={processNode.output.meta.label} className="fill-black dark:fill-white" />
+                    <h2 className="bp5-heading">{processNode.output.meta.label}</h2>
+                  </>}
               </div>
             </div>
             <div className="collapse-content">

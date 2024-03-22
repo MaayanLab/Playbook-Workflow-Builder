@@ -31,8 +31,8 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
     <div className="collapse collapse-arrow text-black dark:text-white">
       <input type="checkbox" defaultChecked={true} />
       <div className="collapse-title flex flex-col gap-2">
-        <div className="flex flex-row gap-2">
-          <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
+        <div className="flex flex-row gap-2 z-10">
+          <Icon icon={processNode.meta.icon || func_icon} title={processNode.meta.label} className="fill-black dark:fill-white" />
           <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
         </div>
         <p className="prose max-w-none">{nodeStories[head.id]}</p>

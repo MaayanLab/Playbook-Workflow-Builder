@@ -174,7 +174,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
             )
           )}
         </div>
-        <div className="flex-grow overflow-hidden">
+        <div className="flex-grow">
           <Masonry
             breakpointCols={{
               // note these breakpoints match the bootstrap breakpoints

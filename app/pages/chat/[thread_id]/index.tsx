@@ -156,7 +156,8 @@ export default function ChatThread() {
     <Layout>
       <Head><title>Chat</title></Head>
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
-        <div className="flex-grow text-right">
+        <div className="flex-grow prose max-w-none flex flex-row justify-between">
+          <h1>Chat</h1>
           <button
             type="button"
             className="btn btn-sm btn-error"

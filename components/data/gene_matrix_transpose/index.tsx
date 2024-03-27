@@ -11,6 +11,7 @@ import { file_icon, file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
 import SafeRender from '@/utils/saferender'
+import { clientLoadExample } from '@/components/data/gene_matrix_transpose/api/Aging_Perturbations_from_GEO_Brain_up.gmt/client'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -86,7 +87,7 @@ export const GMTFileUpload = MetaNode('GMTFileUpload')
   .codec(FileC)
   .inputs()
   .output(GMT)
-  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={GMT.view} props={props.output} /> : null}</>)
+  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={GMT.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.gene_matrix_transpose.load_gene_matrix_transpose',
     { kargs: [props.data] },

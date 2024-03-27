@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
-import { clientLoadExample } from  '@/components/core/file/api/example.tsv/client'
+import { clientLoadExample } from  '@/components/data/gene_count_matrix/api/example.tsv/client'
 import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))

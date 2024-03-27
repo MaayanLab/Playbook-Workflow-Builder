@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { GeneCountMatrix } from '../gene_count_matrix'
 import { MetadataMatrix } from '../metadata_matrix'
-import { clientLoadExample } from  '@/components/core/file/api/example.h5ad/client'
+import { clientLoadExample } from  '@/components/data/anndata/api/example.h5ad/client'
 import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))

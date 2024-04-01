@@ -7,8 +7,11 @@ import * as array from '@/utils/array'
 import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
+import dynamic from 'next/dynamic'
 
-export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, autoextend }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, autoextend: boolean }) {
+const Linkify = dynamic(() => import('@/utils/linkify'))
+
+export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
   const { story } = useStory()
@@ -28,10 +31,10 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
         <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
-        <p className="prose">{storyText}</p>
-        <p className="prose text-sm">{storyCitations}</p>
+        <p className="prose max-w-none"><Linkify>{storyText}</Linkify></p>
+        <p className="prose max-w-none text-sm"><Linkify>{storyCitations}</Linkify></p>
       </div>
-      {error ? <div className="alert alert-error prose">{error.toString()}</div> : null}
+      {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}
       {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
       {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
         <Component
@@ -39,7 +42,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           data={data}
           inputs={inputs}
           output={output}
-          submit={async (data) => {
+          submit={async (data, autoextend = false) => {
             const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
               headers: {
                 'Content-Type': 'application/json',
@@ -58,7 +61,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
             router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
           }}
         />
-        : <div className="prose">Waiting for input</div>}
+        : <div className="prose max-w-none">Waiting for input</div>}
     </div>
   )
 }

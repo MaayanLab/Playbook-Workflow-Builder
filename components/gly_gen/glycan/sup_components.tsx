@@ -53,7 +53,7 @@ export function GlycanCrossRef({ crossref }: { crossref: CrossRefArrayType }) {
   }
 
   return (
-    <div className="prose">
+    <div className="prose max-w-none">
       {pubMedCrossRefs.map((entry) => (
         <div key={entry.id}>
           <b>{entry.database}: </b>
@@ -86,7 +86,7 @@ export function GlycoenzymeTable({
    * Returns: A table of the extracted glycoenzyme data.
    */
   return (
-    <div className="prose">
+    <div className="prose max-w-none">
       <table>
         <thead>
           <tr>

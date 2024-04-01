@@ -37,6 +37,9 @@ export const TopKScoredT = [
     .inputs({ scored: ScoredT })
     .output(ScoredT)
     .prompt(props => {
+      React.useEffect(() => {
+        if (!props.data) props.submit({ k: 10 })
+      }, [props.data])
       return (
         <div className="flex flex-col gap-2">
           <div className="flex flex-row gap-2">

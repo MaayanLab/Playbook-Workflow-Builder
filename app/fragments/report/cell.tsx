@@ -7,6 +7,7 @@ import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import classNames from 'classnames'
 import { useStory } from '@/app/fragments/story'
 import { Waypoint } from '@/app/components/waypoint'
+import SafeRender from '@/utils/saferender'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
@@ -15,7 +16,6 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
   const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput({ krg, head })
   const { nodeStories } = useStory()
-  const View = outputNode ? outputNode.view : undefined
   const processNode = krg.getProcessNode(head.process.type)
   if (!processNode) return <div className="alert alert-error">Error: {head.process.type} does not exist</div>
   return (
@@ -25,15 +25,15 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
           <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={cellMetadata[head.id].process_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], process_visible: evt.target.checked, id: '' } }))}} />
             <div className="collapse-title flex flex-col gap-2">
-              <div className="flex flex-row gap-2">
-                <Icon icon={processNode.meta.icon || func_icon} className="fill-black dark:fill-white" />
+              <div className="flex flex-row gap-2 z-10">
+                <Icon icon={processNode.meta.icon || func_icon} title={processNode.meta.label} className="fill-black dark:fill-white" />
                 <h2 className="bp5-heading">
                   {cellMetadata[head.id].label ? cellMetadata[head.id].label
                     : processNode.meta.label ? processNode.meta.label
                     : processNode.spec}
                 </h2>
               </div>
-              <p className="prose max-w-none">{nodeStories[head.id]}</p>
+              <p className="max-w-none">{nodeStories[head.id]}</p>
             </div>
             <div className="collapse-content">
               <p className="bp5-ui-text">
@@ -66,14 +66,22 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             />
             : <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={cellMetadata[head.id].data_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...cellMetadata[head.id], data_visible: evt.target.checked, id: '' } }))}} />
-            <div className="collapse-title flex flex-col gap-2">
-              <div className="flex flex-row gap-2">
-                <Icon icon={(outputNode && outputNode.meta.icon) || variable_icon} className="fill-black dark:fill-white" />
-                <h2 className="bp5-heading">{(outputNode && (outputNode.meta.label || processNode.spec)) || "Loading"}</h2>
+            <div className="collapse-title flex flex-col gap-2 overflow-visible">
+              <div className="flex flex-row gap-2 z-10">
+                {outputNode ?
+                  <>
+                    <Icon icon={outputNode.meta.icon || variable_icon} title={outputNode.meta.label} className="fill-black dark:fill-white" />
+                    <h2 className="bp5-heading">{outputNode.meta.label}</h2>
+                  </>
+                  :
+                  <>
+                    <Icon icon={processNode.output.meta.icon || variable_icon} title={processNode.output.meta.label} className="fill-black dark:fill-white" />
+                    <h2 className="bp5-heading">{processNode.output.meta.label}</h2>
+                  </>}
               </div>
             </div>
             <div className="collapse-content">
-              {outputNode && View && output ? View(output) : isLoading ? 'Waiting for results' : 'Waiting for input'}
+              {outputNode?.view && output ? <SafeRender component={outputNode.view} props={output} /> : isLoading ? 'Waiting for results' : 'Waiting for input'}
             </div>
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !cellMetadata[head.id].data_visible })}>

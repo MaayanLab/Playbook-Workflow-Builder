@@ -7,8 +7,8 @@ import { barchart_icon } from '@/icons'
 export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues].map(ScoredT =>
   MetaNode(`BarplotFrom[${ScoredT.spec}]`)
     .meta({
-      label: `Barplot from ${ScoredT.meta.label}`,
-      description: `Construct Barplot with ${ScoredT.meta.label}`,
+      label: `Bar plot from ${ScoredT.meta.label}`,
+      description: `Construct Bar plot with ${ScoredT.meta.label}`,
       icon: [barchart_icon],
     })
     .inputs({ terms: ScoredT })

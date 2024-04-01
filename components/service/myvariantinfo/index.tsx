@@ -50,7 +50,7 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   })
   .codec(MyVariantInfoC)
   .view(variantinfo => (
-    <div className="prose">
+    <div className="prose max-w-none">
       {variantinfo._id}
     </div>
   ))

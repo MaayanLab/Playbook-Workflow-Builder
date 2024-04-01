@@ -85,12 +85,12 @@ def gmt_from_sig(sig: Signature):
   up = d[(d['LogFC'] > 0) & (d[col] < thresh)].index.tolist()
   down = d[(d['LogFC'] < 0) & (d[col] < thresh)].index.tolist()
   return {
-    f"{sig['description']} Up Genes": {
-      'description': f"Significant up genes for the {sig['description']}",
+    f"{sig.get('description', 'signature')} Up Genes": {
+      'description': f"Significant up genes for the {sig.get('description', 'signature')}",
       'set': up
     },
-    f"{sig['description']} Down Genes": {
-      'description': f"Significant down genes for the {sig['description']}",
+    f"{sig.get('description', 'signature')} Down Genes": {
+      'description': f"Significant down genes for the {sig.get('description', 'signature')}",
       'set': down
     }
   }
@@ -103,7 +103,7 @@ def geneset_from_sig(sig: Signature, direction):
   else:
     top = d[(d['LogFC'] < 0) & (d[col] < thresh)].index.tolist()
   return {
-    'description': f"Significant {direction} genes from the {sig['description']}",
+    'description': f"Significant {direction} genes from the {sig.get('description', 'signature')}",
     'set': top
   }
 

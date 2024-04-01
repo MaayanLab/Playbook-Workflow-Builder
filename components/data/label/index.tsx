@@ -80,7 +80,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
                     >
                       {column === 'Type: Control or Perturbation' ?
                       <div className="flex justify-center place-items-center gap-2">
-                        <span className="prose hover:cursor-pointer" onClick={() => {
+                        <span className="prose max-w-none hover:cursor-pointer" onClick={() => {
                           handleCellChange(row, column, 'Control')
                         }}>Control</span> 
                         <input
@@ -92,7 +92,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
                             handleCellChange(row, column, (tableData[column] || {})[row] === 'Control' ? 'Perturbation' : 'Control')
                           }
                         />
-                        <span className="prose hover:cursor-pointer" onClick={() => {
+                        <span className="prose max-w-none hover:cursor-pointer" onClick={() => {
                           handleCellChange(row, column, 'Perturbation')
                         }}>Perturbation</span>
                       </div>

@@ -61,6 +61,7 @@ export const MyVariantInfoFromVariantTerm = MetaNode('MyVariantInfoFromVariantTe
     label: 'Resolve Variant Info from Term',
     description: 'Resolve variant info from variant term with MyVariantInfo',
     icon: [mygeneinfo_icon],
+    hidden: true,
   })
   .inputs({ variant: VariantTerm })
   .output(MyVariantInfo)

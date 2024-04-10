@@ -225,7 +225,7 @@ export default function CommunityPlaybooks() {
                 <div className={classNames('mx-auto prose max-w-none whitespace-normal px-4', { hidden: !details[playbook.id] })}>
                   <p><b>Published</b>: {playbook.created.toString()}</p>
                   <p><b>Authors</b>:<br /><UserIdentity user={playbook.user} /></p>
-                  <p><b>Description</b>: {playbook.description}</p>
+                  {playbook.description ? <p><b>Description</b>: {playbook.description.split('\n')[0]}</p> : null}
                   <Link href={`/report/${playbook.playbook}`}><button className="bp5-button bp5-large">Launch</button></Link>
                 </div>
               </div>

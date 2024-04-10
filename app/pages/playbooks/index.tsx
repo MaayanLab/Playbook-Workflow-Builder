@@ -342,7 +342,7 @@ export default function Playbooks() {
                       </div>
                       <p><b>Published</b>: {playbook.published}</p>
                       <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
-                      <p><b>Description</b>: {playbook.description}</p>
+                      <p><b>Description</b>: {playbook.description.split('\n')[0]}</p>
                       <Link href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp5-button bp5-large">Launch</button></Link>
                     </div>
                   </div>

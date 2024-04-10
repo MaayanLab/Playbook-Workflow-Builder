@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import dynamic from 'next/dynamic'
-import { file_icon, input_icon } from '@/icons'
+import { ctd_icon, file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
@@ -16,7 +16,7 @@ export const CTDPrecalculationsFileURLs = MetaNode('CTDPrecalculationsFileURLs')
   .meta({
     label: 'CTD - Precalculations With File Inputs',
     description: 'URLs to the files for CTD Precalculations API call',
-    icon: [file_icon],
+    icon: [ctd_icon, file_icon],
   })
   .codec(z.object({
     geneListFile: FileC,
@@ -236,7 +236,7 @@ export const CTDUseCustomMatrixFileURLs = MetaNode('CTDUseCustomMatrixFileURLs')
   .meta({
     label: 'CTD - Use Custom Matrix With File Inputs',
     description: 'URLs to the files for CTD Custom Matrix Use API call.',
-    icon: [file_icon],
+    icon: [ctd_icon, file_icon],
   })
   .codec(z.object({
     geneListFile: FileC,

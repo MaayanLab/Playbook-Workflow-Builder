@@ -3,7 +3,7 @@ import { FileURL, FileInput, FilePrompt, FileC } from '@/components/core/file'
 import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
 import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { file_transfer_icon, datafile_icon } from '@/icons'
+import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { GraphPlot } from '@/components/viz/graph'
 import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
@@ -119,7 +119,8 @@ export const CTD_FileDownload = MetaNode('CTD_FileDownload')
 export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
   .meta({
     label: `CTD Precalculations With Custom Matrix`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.'
+    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
+    icon: [ctd_icon],
   })
   .inputs({ ctdPrecalculationsFileURLs: CTDPrecalculationsFileURLs })
   .output(CTD_FileDownload)
@@ -143,6 +144,7 @@ export const Execute_CTD_Precalculations_Hybrid = MetaNode('Execute_CTD_Precalcu
   .meta({
     label: `Connect the Dots in Precalculated Graph`,
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
+    icon: [ctd_icon],
     hidden: true,
   })
   .inputs({ geneSet: GeneSet, file: FileURL})
@@ -169,7 +171,8 @@ export const Execute_CTD_Precalculations_Hybrid = MetaNode('Execute_CTD_Precalcu
 export const Execute_CTD_Precalculations_Hybrid_Upload = MetaNode('Execute_CTD_Precalculations_Hybrid_Upload')
   .meta({
     label: `Connect the Dots in Precalculated Graph`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.'
+    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
+    icon: [ctd_icon],
   })
   .codec(FileC)
   .inputs({ geneSet: GeneSet })
@@ -354,7 +357,8 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
     label: `Connect the Dots in STRING`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins in the STRING protein interaction graph. *Please note 10-150 genes of interest are required to run CTD'
+    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins in the STRING protein interaction graph. *Please note 10-150 genes of interest are required to run CTD',
+    icon: [ctd_icon],
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
@@ -377,7 +381,8 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
     label: `Connect the Dots in Wikipathways`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD'
+    description: 'Use CTD to "Connect the Dots" and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD',
+    icon: [ctd_icon],
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)

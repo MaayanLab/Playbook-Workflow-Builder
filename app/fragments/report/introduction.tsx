@@ -52,8 +52,9 @@ export default function Introduction({
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} className="fill-black dark:fill-white" />
-            <h2 className="bp5-heading">
+            <h2 className="bp5-heading w-full">
               <EditableText
+                multiline
                 placeholder="Playbook title"
                 value={playbookMetadata?.title || ''}
                 onChange={title => {setPlaybookMetadata(playbookMetadata => ({ ...playbookMetadata, title, id: '' }))}}

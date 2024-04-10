@@ -1,10 +1,10 @@
 import { Primative } from './spec'
-import { gene_icon } from '@/icons'
+import { regulatoryelement_icon } from '@/icons'
 
 export const RegulatoryElement = {
   name: 'Regulatory_Element',
   label: 'Regulatory Element',
-  icon: [gene_icon],
+  icon: [regulatoryelement_icon],
   color: '#BDE0FE',
   extra: {
     term: {

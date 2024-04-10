@@ -1,10 +1,10 @@
 import { Primative } from './spec'
-import { gene_icon } from '@/icons'
+import { variant_icon } from '@/icons'
 
 export const Variant = {
   name: 'Variant',
   label: 'Variant',
-  icon: [gene_icon],
+  icon: [variant_icon],
   color: '#a1e8cc',
   extra: {
     term: {

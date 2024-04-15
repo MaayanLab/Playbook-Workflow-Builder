@@ -132,7 +132,7 @@ export default function Playbooks() {
       }}
       className="flex flex-col place-items-center underline"
     >
-      {showTitle ? <span className={classNames('prose prose-sm', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span> : null}
+      {showTitle ? <span className={classNames('prose prose-sm max-w-none', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span> : null}
       {dataSource in dataSourceIcons ?
         <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} alt={dataSource} />
         : null}
@@ -147,7 +147,7 @@ export default function Playbooks() {
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2">
-            <div className="prose"><h2>Data Sources</h2></div>
+            <div className="prose max-w-none"><h2>Data Sources</h2></div>
             <div className="flex flex-row flex-wrap gap-2">
               {dict.keys(dataSourceIcons).filter((dataSource) => dataSource in allDataSources).map((dataSource) => (
                 <DataSourceButton
@@ -161,7 +161,7 @@ export default function Playbooks() {
           </div>
           <div className="flex flex-row gap-2">
             <div className="flex-grow flex flex-col gap-2">
-              <div className="prose"><h2>Inputs</h2></div>
+              <div className="prose max-w-none"><h2>Inputs</h2></div>
               <div className="flex flex-row flex-wrap gap-2">
                 {dict.values(allInputs).map(input => (
                   <button
@@ -185,7 +185,7 @@ export default function Playbooks() {
               </div>
             </div>
             <div className="flex-grow flex flex-col gap-2">
-              <div className="prose"><h2>Outputs</h2></div>
+              <div className="prose max-w-none"><h2>Outputs</h2></div>
               <div className="flex flex-row flex-wrap gap-2">
                 {dict.values(allOutputs).map(output => (
                   <button
@@ -247,7 +247,7 @@ export default function Playbooks() {
                   </div>
                   <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
                   <div className="col-span-1 row-span-1 p-3">
-                    <div className="prose">{playbook.label}</div>
+                    <div className="prose max-w-none">{playbook.label}</div>
                   </div>
                   <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
                   <div className="col-span-1 row-span-1 p-3">
@@ -312,7 +312,7 @@ export default function Playbooks() {
                   </div>
                   <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Clicks</div>
                   <div className="col-span-1 row-span-1 p-3">
-                    <div className="prose text-center md:h-12">
+                    <div className="prose max-w-none text-center md:h-12">
                       {playbook.clicks}
                     </div>
                   </div>
@@ -335,14 +335,14 @@ export default function Playbooks() {
                     >{details[playbook.id] ? '-' : '+'}</button>
                   </div>
                   <div className={classNames('col-span-1 row-span-1 md:row-span-1 md:col-span-7')}>
-                    <div className={classNames('mx-auto prose whitespace-normal px-4', { hidden: !details[playbook.id] })}>
+                    <div className={classNames('mx-auto prose max-w-none whitespace-normal px-4', { hidden: !details[playbook.id] })}>
                       <div className="flex flex-row gap-2 flex-wrap">
                         <div className="badge badge-primary">v{playbook.version}</div>
                         <div className="badge bg-gray-300 dark:bg-gray-600 border-none"><a className="no-underline text-blue-700" href={playbook.licenseUrl} target="blank">{playbook.license}</a></div>
                       </div>
                       <p><b>Published</b>: {playbook.published}</p>
                       <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
-                      <p><b>Description</b>: {playbook.description}</p>
+                      <p><b>Description</b>: {playbook.description.split('\n')[0]}</p>
                       <Link href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp5-button bp5-large">Launch</button></Link>
                     </div>
                   </div>
@@ -350,7 +350,7 @@ export default function Playbooks() {
                 </React.Fragment>
               )
           : <div className="col-span-2 row-span-1 md:row-span-1 md:col-span-7">
-            <div className="alert prose max-w-full place-content-center">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose max-w-none place-content-center">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

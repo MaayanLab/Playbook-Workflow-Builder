@@ -31,7 +31,10 @@ function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange
       return ''
     }
   }, [inputs, processNode, output])
-  React.useEffect(() => onChange(story), [story])
+  React.useEffect(() => {
+    onChange(story)
+    return () => {onChange('')}
+  }, [story])
   return story
 }
 

@@ -41,7 +41,7 @@ export const MetaboliteSummary = MetaNode('MetaboliteSummary')
     //var data1 = [data];
     return (
       //<div>{JSON.stringify(data)}</div>
-      <div className="prose">
+      <div className="prose max-w-none">
         <h2>Metabolite Summary</h2>
         <table>
           <th> Name </th>

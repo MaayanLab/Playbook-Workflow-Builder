@@ -117,7 +117,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
   }, [items_filtered_searched])
   return (
     <div className="flex-grow flex flex-col mx-4">
-      <FormGroup label={<span className="prose">Filter</span>}>
+      <FormGroup label={<span className="prose max-w-none">Filter</span>}>
         <InputGroup
           leftIcon="filter"
           placeholder="Filter string..."
@@ -125,8 +125,8 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
           onChange={evt => setSearch(evt.currentTarget.value)}
         />
       </FormGroup>
-      <div className="flex-grow flex flex-row">
-        <div className="sm:col-span-12 md:col-span-4 lg:col-span-3">
+      <div className="flex-grow flex flex-row flex-wrap sm:flex-nowrap">
+        <div className="flex-none">
           {dict.keys(group_values)
             .filter(group => dict.keys(group_values[group]).length > 1)
             .map(group => (
@@ -135,7 +135,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                 <div className="ml-2 mb-4">
                   {dict.keys(group_values[group])
                     .map(value => (
-                      <label key={value} className="bp5-control bp5-switch prose prose-sm">
+                      <label key={value} className="bp5-control bp5-switch prose prose-sm max-w-none whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -161,12 +161,12 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                           }}
                         />
                         <span className="bp5-control-indicator"></span>
-                        {value} <span className="whitespace-nowrap">[{
+                        {value} ({
                         (group_values_filtered[group]||{})[value] === group_values[group][value] ? (
                           group_values[group][value]
                         ) : (
                           `${(group_values_filtered[group]||{})[value]||0} / ${group_values[group][value]}`
-                        )} card{group_values[group][value] > 1 ? 's' : ''}]</span>
+                        )})
                       </label>
                   ))}
                 </div>
@@ -180,10 +180,9 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
               // note these breakpoints match the bootstrap breakpoints
               //  they should only be changed along with the columnClassName spec
               default: 4,
-              1400: 4,
-              1200: 3,
-              992: 2,
-              768: 1,
+              1279: 3,
+              1023: 2,
+              767: 1,
             }}
             className="flex flex-row gap-2"
             columnClassName="flex-grow flex flex-col gap-2"

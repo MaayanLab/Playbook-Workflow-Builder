@@ -60,7 +60,7 @@ export default function CommunityPlaybooks() {
         <div className="flex flex-col gap-2">
           <div className="flex flex-row gap-2">
             <div className="flex-grow flex flex-col gap-2">
-              <div className="prose"><h2>Inputs</h2></div>
+              <div className="prose max-w-none"><h2>Inputs</h2></div>
               <div className="flex flex-row flex-wrap gap-2">
                 {dict.values(allInputs).map(input => (
                   <button
@@ -84,7 +84,7 @@ export default function CommunityPlaybooks() {
               </div>
             </div>
             <div className="flex-grow flex flex-col gap-2">
-              <div className="prose"><h2>Outputs</h2></div>
+              <div className="prose max-w-none"><h2>Outputs</h2></div>
               <div className="flex flex-row flex-wrap gap-2">
                 {dict.values(allOutputs).map(output => (
                   <button
@@ -145,7 +145,7 @@ export default function CommunityPlaybooks() {
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
                 <div className="col-span-1 row-span-1 p-3">
-                  <div className="prose">{playbook.title}</div>
+                  <div className="prose max-w-none">{playbook.title}</div>
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
                 <div className="col-span-1 row-span-1 p-3">
@@ -198,7 +198,7 @@ export default function CommunityPlaybooks() {
                 </div>
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Clicks</div>
                 <div className="col-span-1 row-span-1 p-3">
-                  <div className="prose text-center md:h-12">
+                  <div className="prose max-w-none text-center md:h-12">
                     {playbook.clicks}
                   </div>
                 </div>
@@ -222,10 +222,10 @@ export default function CommunityPlaybooks() {
                 >{details[playbook.id] ? '-' : '+'}</button>
               </div>
               <div className={classNames('col-span-1 row-span-1 md:row-span-1 md:col-span-6')}>
-                <div className={classNames('mx-auto prose whitespace-normal px-4', { hidden: !details[playbook.id] })}>
+                <div className={classNames('mx-auto prose max-w-none whitespace-normal px-4', { hidden: !details[playbook.id] })}>
                   <p><b>Published</b>: {playbook.created.toString()}</p>
                   <p><b>Authors</b>:<br /><UserIdentity user={playbook.user} /></p>
-                  <p><b>Description</b>: {playbook.description}</p>
+                  {playbook.description ? <p><b>Description</b>: {playbook.description.split('\n')[0]}</p> : null}
                   <Link href={`/report/${playbook.playbook}`}><button className="bp5-button bp5-large">Launch</button></Link>
                 </div>
               </div>
@@ -233,7 +233,7 @@ export default function CommunityPlaybooks() {
             </React.Fragment>
           )
           : <div className="col-span-2 row-span-1 md:row-span-1 md:col-span-6">
-            <div className="alert prose max-w-full place-content-center">No playbooks currently registered matching this criteria.</div>
+            <div className="alert prose max-w-none place-content-center">No playbooks currently registered matching this criteria.</div>
           </div>
           : null}
         </div>

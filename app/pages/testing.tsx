@@ -131,7 +131,7 @@ export default function App() {
       <div className={styles.App}>
         <div className={styles.Process}>
           <progress className="progress w-100 h-6" value={loading ? undefined : 0}></progress>
-          <div className="prose mb-2">
+          <div className="prose max-w-none mb-2">
             <h2>Extend From Selected Node(s)</h2>
           </div>
           <div className="flex flex-col gap-1 overflow-auto">
@@ -237,7 +237,7 @@ export default function App() {
             overflow: 'auto',
           }}>
             {currentNode.prompt ? <>
-              <span className="prose"><h2>Current Prompt Data</h2></span>
+              <span className="prose max-w-none"><h2>Current Prompt Data</h2></span>
               <JsonEditor
                 value={currentNode.prompt.data}
                 onValueChange={value => {
@@ -261,7 +261,7 @@ export default function App() {
                 }}
               />
             </> : null}
-            <span className="prose"><h2>Current Output</h2></span>
+            <span className="prose max-w-none"><h2>Current Output</h2></span>
             <JsonEditor
               value={currentNode.data}
               onValueChange={value => {
@@ -307,7 +307,7 @@ export default function App() {
           </div>
         </div>
         <div className={styles.View}>
-          <div className="prose">
+          <div className="prose max-w-none">
             <h2>Current View</h2>
           </div>
           <div className="form-control w-full max-w-xs">

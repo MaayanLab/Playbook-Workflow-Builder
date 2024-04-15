@@ -161,7 +161,7 @@ export const StringDB_PPI_Network = MetaNode('StringDB_PPI_Network')
     const dataobj = data.edges; //const dataobj = [data][0];
 
     return(
-          <div className="prose">
+          <div className="prose max-w-none">
             <h3>Species: {data.species_id}</h3>
             <h3>Taxonomy ID: {data.species_txid}</h3>
             <table>

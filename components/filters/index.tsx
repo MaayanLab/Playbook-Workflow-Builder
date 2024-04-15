@@ -1,10 +1,10 @@
 import React from 'react'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
-import { DrugSet, GeneSet, VariantSet, RegulatoryElementSet } from '@/components/core/input/set'
-import { Disease, Drug, Gene, Pathway, Phenotype, Tissue, Variant, RegulatoryElement } from '@/components/core/primitives'
-import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm, VariantTerm, RegulatoryElementTerm } from '@/components/core/input/term'
-import { ScoredDrugs, ScoredGenes, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredTissues, ScoredVariants, ScoredRegulatoryElement } from '@/components/core/input/scored'
+import { DrugSet, GeneSet, GlycanSet, ProteinSet, VariantSet, RegulatoryElementSet } from '@/components/core/input/set'
+import { Disease, Drug, Gene, Glycan, Pathway, Phenotype, Protein, Tissue, Variant, RegulatoryElement } from '@/components/core/primitives'
+import { DiseaseTerm, DrugTerm, GeneTerm, GlycanTerm, PathwayTerm, PhenotypeTerm, ProteinTerm, TissueTerm, VariantTerm, RegulatoryElementTerm } from '@/components/core/input/term'
+import { ScoredDrugs, ScoredGenes, ScoredGlycans, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredProteins, ScoredTissues, ScoredVariants, ScoredRegulatoryElement } from '@/components/core/input/scored'
 import { Table, Cell, Column } from '@/app/components/Table'
 import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
@@ -37,6 +37,9 @@ export const TopKScoredT = [
     .inputs({ scored: ScoredT })
     .output(ScoredT)
     .prompt(props => {
+      React.useEffect(() => {
+        if (!props.data) props.submit({ k: 10 })
+      }, [props.data])
       return (
         <div className="flex flex-col gap-2">
           <div className="flex flex-row gap-2">
@@ -163,6 +166,8 @@ export const SelectScoredT = [
 export const SetFromScoredT = [
   { ScoredT: ScoredDrugs, SetT: DrugSet, TermT: DrugTerm, T: Drug, },
   { ScoredT: ScoredGenes, SetT: GeneSet, TermT: GeneTerm, T: Gene, },
+  { ScoredT: ScoredGlycans, SetT: GlycanSet, TermT: GlycanTerm, T: Glycan, },
+  { ScoredT: ScoredProteins, SetT: ProteinSet, TermT: ProteinTerm, T: Protein, },
   { ScoredT: ScoredVariants, SetT: VariantSet, TermT: VariantTerm, T: Variant, },
   { ScoredT: ScoredRegulatoryElement, SetT: RegulatoryElementSet, TermT: RegulatoryElementTerm, T: RegulatoryElement, },
 ].flatMap(({ ScoredT, SetT, TermT, T }) => [

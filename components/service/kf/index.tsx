@@ -6,6 +6,7 @@ import { GeneTerm } from '@/components/core/input/term'
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { tumor_icon } from '@/icons'
+import { downloadBlob } from '@/utils/download'
 
 export const TumorGeneExpression = MetaNode(`[TumorGeneExpression]`)
   .meta({
@@ -30,6 +31,24 @@ export const TumorGeneExpression = MetaNode(`[TumorGeneExpression]`)
         numRows={expressionTable.length}
         enableGhostCells
         enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(expressionTable)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          CSV: () => downloadBlob(new Blob([
+            [
+              `Gene ID,Data Set,Disease,TPM Mean,TPM Stand. Dev.,TPM Median,Ensembl ID,Zscore`,
+              ...(expressionTable.map((record) => [
+                record.Gene_symbol,
+                record.Dataset,
+                record.Disease,
+                record.TPM_mean,
+                record.TPM_sd,
+                record.TPM_median,
+                record.Gene_Ensembl_ID,
+                record.zscore,
+              ].join(',')))
+            ].join('\n')
+          ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
+        }}
       >
         <Column
           name="Gene ID"

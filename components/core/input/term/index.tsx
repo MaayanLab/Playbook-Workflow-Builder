@@ -21,7 +21,7 @@ const Term_T = (T: Primative) => MetaNode(`Term[${T.name}]`)
   })
   .codec(z.string())
   .view(term => {
-    return <div className="prose">{T.label}: {term}</div>
+    return <div className="prose max-w-none">{T.label}: {term}</div>
   })
   .build()
 
@@ -119,7 +119,7 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
           <Button
             large
             text="Example"
-            rightIcon="bring-data"
+            rightIcon="cloud-upload"
             onClick={evt => {
               if (T.extra?.term?.meta?.example !== undefined) {
                 setItem(T.extra.term.meta.example)
@@ -133,7 +133,7 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
             text="Submit"
             rightIcon="send-to-graph"
             disabled={!item}
-            onClick={evt => props.submit(item)}
+            onClick={evt => props.submit(item, true)}
           />
       </div>
     )

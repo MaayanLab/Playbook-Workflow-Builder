@@ -48,12 +48,13 @@ export default function Introduction({
         <title>Playbook Report{playbookMetadata.title ? `: ${playbookMetadata.title}` : null}</title>
       </Head>
       <div className="flex-grow flex-shrink bp5-card p-0">
-        {error ? <div className="alert alert-error prose">{error}</div> : null}
+        {error ? <div className="alert alert-error prose max-w-none">{error}</div> : null}
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} className="fill-black dark:fill-white" />
-            <h2 className="bp5-heading">
+            <h2 className="bp5-heading w-full">
               <EditableText
+                multiline
                 placeholder="Playbook title"
                 value={playbookMetadata?.title || ''}
                 onChange={title => {setPlaybookMetadata(playbookMetadata => ({ ...playbookMetadata, title, id: '' }))}}
@@ -83,10 +84,10 @@ export default function Introduction({
               onClick={evt => {setPlaybookMetadata(({ summary, ...playbookMetadata }) => ({ ...playbookMetadata, summary: 'manual', id: '' }))}}
             >Manual Summary</button>
           </div>
-          <div className="prose max-w-full">
+          <div className="prose max-w-none">
             {playbookMetadata.summary === 'auto' ?
               <>
-                <p className="prose-lg text-justify mt-1">{storyText}</p>
+                <p className="prose-lg text-justify mt-1"><Linkify>{storyText}</Linkify></p>
                 <div className="prose-sm text-justify whitespace-pre-line">
                   <Linkify>{storyCitations}</Linkify>
                 </div>

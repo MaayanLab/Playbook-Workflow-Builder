@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           })
           .codec<any>()
           .view((props) => {
-            return <div className="prose">This data type was suggested as part of {suggestion.name}</div>
+            return <div className="prose max-w-none">This data type was suggested as part of {suggestion.name}</div>
           })
           .build()
         krg.add(OutputNode)
@@ -53,8 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .output(OutputNode)
         .prompt((props) => {
           return <div>
-            <p className="prose">{suggestion.description}</p>
-            <p className="prose">This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
+            <p className="prose max-w-none">{suggestion.description}</p>
+            <p className="prose max-w-none">This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
           </div>
         })
         .story(props => `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.`)

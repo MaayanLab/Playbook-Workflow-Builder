@@ -38,7 +38,7 @@ export const MetENP_MetSet = MetaNode('MetENP_MetSet')
     const dataobj = data.res; //const dataobj = [data][0];
 
     return(
-          <div className="prose">
+          <div className="prose max-w-none">
             <table>
     <tr>
     <th>No.</th>

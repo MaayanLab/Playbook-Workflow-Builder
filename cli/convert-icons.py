@@ -34,13 +34,13 @@ def extract_path(base):
   tree = ET.parse(f"{base}.tmp.svg")
   root = tree.getroot()
   ns = tag_re.match(root.tag).group(1)
-  g = root.find(f"{ns}g")
+  g = root.find(f"{ns}g") or root
   # join all the paths into one
   d = ' '.join(
     path.get('d')
     for path in g.iterfind(f"{ns}path")
   )
-  return dict(path=d, transform=g.get('transform'), title=os.path.basename(base), size=24)
+  return dict(path=d, transform=g.get('transform', ''), title=os.path.basename(base), size=24)
 
 def convert_path(base, ext):
   print(f"converting {os.path.basename(base)}")

@@ -73,7 +73,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
         <Icon
           icon={biocompute_icon}
           className={publishedBCO ? 'fill-green-500' : disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
-          title={disabled ? 'Save to Create BCO' : 'Create BCO'}
+          title={disabled ? 'Save to Create BioCompute Object' : 'Create BioCompute Object'}
         />
       </Bp5Popover>}
       <Bp5Alert

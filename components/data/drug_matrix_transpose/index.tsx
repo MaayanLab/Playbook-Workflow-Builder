@@ -5,11 +5,12 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { Table, Cell, Column, EditableCell } from '@/app/components/Table'
 import { DrugSet } from '@/components/core/input/set'
-import { FileURL } from '@/components/core/file'
+import { FileC, FilePrompt, FileURL } from '@/components/core/file'
 import { downloadBlob } from '@/utils/download'
-import { file_transfer_icon, gmt_icon } from '@/icons'
+import { file_icon, file_transfer_icon, gmt_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import python from '@/utils/python'
+import SafeRender from '@/utils/saferender'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -51,9 +52,9 @@ export const DMT = MetaNode(`DMT`)
   })
   .build()
 
-export const DMTFromFile = MetaNode('DMTFromFile')
+  export const DMTFromFile = MetaNode('DMTFromFile')
   .meta({
-    label: 'Resolve A Drug Matrix Tranpose from a File',
+    label: 'Resolve A Drug Matrix Transpose from a File',
     description: 'Ensure a file contains a drug matrix transpose, load it into a standard format',
     icon: [file_transfer_icon],
   })
@@ -65,6 +66,33 @@ export const DMTFromFile = MetaNode('DMTFromFile')
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a drug matrix transpose.`)
+  .build()
+
+export const DMTFileUpload = MetaNode('DMTFileUpload')
+  .meta({
+    label: 'Upload A Drug Matrix Transpose',
+    description: 'A file containing labeled drug sets',
+    tags: {
+      Type: {
+        File: 1,
+        Drug: 1,
+      },
+      Cardinality: {
+        Matrix: 1,
+      },
+    },
+    icon: [file_icon],
+  })
+  .codec(FileC)
+  .inputs()
+  .output(DMT)
+  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={DMT.view} props={props.output} /> : null}</>)
+  .resolve(async (props) => await python(
+    'components.data.drug_matrix_transpose.load_drug_matrix_transpose',
+    { kargs: [props.data] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props => `A drug matrix transpose${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
   .build()
 
 export const DMTUnion = MetaNode('DMTUnion')
@@ -177,7 +205,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
           large
           type="submit"
           text="Submit"
-          rightIcon="bring-data"
+          rightIcon="cloud-upload"
           onClick={() => props.submit({ terms, descriptions })}
         />
       </div>

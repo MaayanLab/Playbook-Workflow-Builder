@@ -12,10 +12,10 @@ export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: 
       <table className="table">
         <thead>
           <tr>
-            <th className="prose">Icon</th>
-            <th className="prose">Type</th>
-            <th className="prose">Label</th>
-            <th className="prose">Description</th>
+            <th className="prose max-w-none">Icon</th>
+            <th className="prose max-w-none">Type</th>
+            <th className="prose max-w-none">Label</th>
+            <th className="prose max-w-none">Description</th>
           </tr>
         </thead>
         <tbody>
@@ -27,10 +27,10 @@ export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: 
                 <th>
                   <Link
                     href={`/components/${encodeURIComponent(metanode.spec)}`}
-                    className="link prose whitespace-pre-wrap"
+                    className="link prose max-w-none whitespace-pre-wrap"
                   >{metanode.meta.label}</Link>
                 </th>
-                <td className="prose whitespace-pre-wrap">
+                <td className="prose max-w-none whitespace-pre-wrap">
                   <Markdown components={{
                     p(props: React.PropsWithChildren<{}>) {
                       return <span {...props}>{props.children}</span>
@@ -50,7 +50,7 @@ export function MetaNodeCard({ metanode }: { metanode: DataMetaNode | ProcessMet
   return (
     <div className="flex flex-row items-center gap-2 m-2">
       <Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} size={3} title={null} />
-      <div className="flex flex-col prose">
+      <div className="flex flex-col prose max-w-none">
         <h1 className="m-0 whitespace-pre-wrap">{metanode.meta.label}</h1>
         <h2 className="m-0 text-gray-500">{metanode.kind === 'data' ? 'Data' : 'prompt' in metanode ? 'Prompt' : 'Resolver'} Node</h2>
       </div>

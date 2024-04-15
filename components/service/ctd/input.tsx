@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import dynamic from 'next/dynamic'
-import { file_icon, input_icon } from '@/icons'
+import { ctd_icon, file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
@@ -16,7 +16,7 @@ export const CTDPrecalculationsFileURLs = MetaNode('CTDPrecalculationsFileURLs')
   .meta({
     label: 'CTD - Precalculations With File Inputs',
     description: 'URLs to the files for CTD Precalculations API call',
-    icon: [file_icon],
+    icon: [ctd_icon, file_icon],
   })
   .codec(z.object({
     geneListFile: FileC,
@@ -78,7 +78,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
     return (
       <div>
         {!session || !session.user ? (
-          <div className="alert alert-warning shadow-lg block prose">
+          <div className="alert alert-warning shadow-lg block prose max-w-none">
             You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
           </div>
         ) : (
@@ -88,7 +88,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
               evt.preventDefault();
               if (props.output != null && geneListFile.url && geneListFile.url === props.output.geneListFile?.url && geneListFile.filename && geneListFile.size &&
                         adjMatrixFile.url && adjMatrixFile.url === props.output.adjMatrixFile?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
-                props.submit({ geneListFile, adjMatrixFile })
+                props.submit({ geneListFile, adjMatrixFile }, true)
               }else{
                 const formData = new FormData(evt.currentTarget)
                 formData.delete("description");
@@ -112,7 +112,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
                     filename: adjMatrixFileResponse.filename,
                     size: adjMatrixFileResponse.size,
                   }
-                })
+                }, true)
               }
             }}
           >
@@ -160,7 +160,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -209,7 +209,7 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -236,7 +236,7 @@ export const CTDUseCustomMatrixFileURLs = MetaNode('CTDUseCustomMatrixFileURLs')
   .meta({
     label: 'CTD - Use Custom Matrix With File Inputs',
     description: 'URLs to the files for CTD Custom Matrix Use API call.',
-    icon: [file_icon],
+    icon: [ctd_icon, file_icon],
   })
   .codec(z.object({
     geneListFile: FileC,
@@ -304,7 +304,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
     return (
       <div>
         {!session || !session.user ? (
-          <div className="alert alert-warning shadow-lg block prose">
+          <div className="alert alert-warning shadow-lg block prose max-w-none">
             You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to upload files.
           </div>
         ) : (
@@ -314,7 +314,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
               evt.preventDefault();
               if (props.output != null && geneListFile.url && geneListFile.url === props.output.geneListFile?.url && geneListFile.filename && geneListFile.size &&
                         adjMatrixFile.url && adjMatrixFile.url === props.output.adjMatrixFile?.url && adjMatrixFile.filename && adjMatrixFile.size) {                
-                props.submit({ geneListFile, adjMatrixFile, rDataFile })
+                props.submit({ geneListFile, adjMatrixFile, rDataFile }, true)
               }else{
                 const formData = new FormData(evt.currentTarget)
                 formData.delete("description");
@@ -342,7 +342,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                     filename: rDataFileResponse.filename,
                     size: rDataFileResponse.size,
                   }
-                })
+                }, true)
               }
             }}
           >
@@ -390,7 +390,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -439,7 +439,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>
@@ -489,7 +489,7 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
                 <Bp4Button
                     large
                     text="Example"
-                    rightIcon="bring-data"
+                    rightIcon="cloud-upload"
                 />
               </a>
             </div>

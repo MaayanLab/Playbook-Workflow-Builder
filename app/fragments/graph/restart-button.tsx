@@ -40,13 +40,13 @@ export default function RestartButton({ session_id }: { session_id?: string }) {
         onCancel={() => {setIsOpen(false)}}
         onConfirm={() => {onConfirm()}}
       >
-        <p className="prose">
+        <p className="prose max-w-none">
           Are you sure you want to restart? If you haven't saved the this session, it might be deleted.
         </p>
-        <p className="prose">
+        <p className="prose max-w-none">
           If you want to continue this session with additional inputs, you should instead click the <Icon icon={start_icon} /> icon in the breadcrumbs.
         </p>
-        <p className="prose">
+        <p className="prose max-w-none">
           <b>Tip:</b> Hold shift when clicking to skip this confirmation.
         </p>
       </Bp5Alert>

@@ -8,8 +8,8 @@ import { ScoredTissues } from '@/components/core/input/scored'
 export const BarplotFromKfExpression = 
   MetaNode(`BarplotFrom[${TumorGeneExpression.spec}]`)
     .meta({
-      label: `Barplot from ${TumorGeneExpression.meta.label}`,
-      description: `Construct Barplot with ${TumorGeneExpression.meta.label}`,
+      label: `Bar plot from ${TumorGeneExpression.meta.label}`,
+      description: `Construct Bar plot with ${TumorGeneExpression.meta.label}`,
       icon: [barchart_icon],
     })
     .inputs({ terms: TumorGeneExpression, other_terms: ScoredTissues})

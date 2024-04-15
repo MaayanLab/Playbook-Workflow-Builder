@@ -16,7 +16,7 @@ export default function BioCompute() {
     }
   }, [biocomputeAuth, router.query.callback])
   return (
-    <div className="prose">
+    <div className="prose max-w-none">
       <h3 className="bp5-heading">BioCompute Integration</h3>
       <p>
         BioCompute is a standardized way of representing a computational workflow.

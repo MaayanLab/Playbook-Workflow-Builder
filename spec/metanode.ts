@@ -159,7 +159,7 @@ export type PromptMetaNode<T = InternalDataMetaNode & InternalProcessMetaNode> =
     data?: ExtractKey<T, 'data'>,
     inputs: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-    submit: (data: ExtractKey<T, 'data'>) => void,
+    submit: (data: ExtractKey<T, 'data'>, autoextend?: boolean) => void,
     session_id?: string,
   }): React.ReactElement
   resolve(props: {

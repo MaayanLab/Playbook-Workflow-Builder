@@ -27,11 +27,11 @@ const CTDResponseC = z.object({
       "source": z.string(),
       "target": z.string()
     })).optional(),
-  }),
+  }).nullable(),
   "report": z.object({
     "type": z.string(),
     "message": z.any().optional()
-  })
+  }).nullable()
 });
 export type CTDResponse = z.infer<typeof CTDResponseC>
 
@@ -341,7 +341,10 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .output(GraphPlot)
   .resolve(async (props) => {
     let highlyConnectedGenes = props.inputs.ctdResponseInfo.highlyConnectedGenes;
-    let jsonGraph = props.inputs.ctdResponseInfo.jsonGraph;
+    let jsonGraph = null;
+    if(props.inputs.ctdResponseInfo.jsonGraph != null){
+      jsonGraph = props.inputs.ctdResponseInfo.jsonGraph;
+    }
 
     if(jsonGraph == null){
       throw new Error("No Gene Graph Nodes available, please use a different input gene set!");
@@ -362,7 +365,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     }
 
     return {
-      edges: props.inputs.ctdResponseInfo.jsonGraph.interactions || [],
+      edges: jsonGraph.interactions || [],
       nodes: graphNodes.map(({ name, ...rest }) => ({ ...rest, id: name || '(no name)' })),
     }
   }).story(props =>

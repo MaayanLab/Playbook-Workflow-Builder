@@ -16,6 +16,10 @@ let clinvarRegex = "^[0-9]+$";
 let gnomADRegex = "[0-9]*-[0-9]*-[A-Za-z]*-[A-Za-z]*";
 let myVariantInfoHG38Regex = "chr[0-9]*:[a-z]\.[0-9]*[A-Za-z]*";
 
+let variantIdResolveErrorMessage = "Unbale to resolve the suplied Variant ID to a CAID!";
+let alleleRegRespErrorMessage = "Unable to get data from the Allele Registry API, please try again or wait a few minutes before the next atempt!";
+let gitDataHubErroMessage = "Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next atempt!";
+
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),
   entId: z.string(),
@@ -210,19 +214,14 @@ async function resolveVarinatCaID(variantIdTerm: string){
   if(caIdRegexObj.test(variantIdTerm)){
     return variantIdTerm;
   }else if(rsIdRegexObj.test(variantIdTerm)){
-    console.log("dbSNP (RsId)");
     return await getGenomeNetworkAlleles_dbSNP(variantIdTerm.slice(2));
   }else if(hgvsRegexObj.test(variantIdTerm)){
-    console.log("HGVS");
     return await getGenomeNetworkAlleles_HGVS(variantIdTerm);
   }else if(clinvarRegexObj.test(variantIdTerm)){
-    console.log("ClinVar");
     return await getGenomeNetworkAlleles_ClinVar(variantIdTerm);
   }else if(gnomADRegexObj.test(variantIdTerm)){
-    console.log("gnomAD");
     return await getGenomeNetworkAlleles_gnomAD(variantIdTerm);
   }else if(myVariantInfoHG38RegexObj.test(variantIdTerm)){
-    console.log("myGenomeHG38");
     return await getGenomeNetworkAlleles_myVariantInfoHG38(variantIdTerm);
   }else{
     return variantIdTerm;
@@ -263,8 +262,16 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
   .output(VariantInfo)
   .resolve(async (props) => {
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    if(varCaId == null || varCaId == ''){
+      throw new Error(variantIdResolveErrorMessage);
+    }
+
     console.log("Var CaId: "+varCaId)
     const response = await getAlleleRegistryVariantInfo(varCaId);
+    if(response == null){
+      throw new Error(alleleRegRespErrorMessage);
+    }
+
     response.entId = varCaId;
     return response;
   })
@@ -308,9 +315,17 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
     var varAlleleRegResponse = null;
     for(let indx in varinatSetInpt){
       varAlleleRegResponse = await getAlleleRegistryVariantInfo(varinatSetInpt[indx].trim());
+      if(varAlleleRegResponse == null){
+        continue;
+      }
       varAlleleRegResponse.entId = varinatSetInpt[indx].trim();
       varInfoSet.push(varAlleleRegResponse);
     }
+
+    if(varInfoSet.length == 0){
+      throw new Error(alleleRegRespErrorMessage);
+    }
+
     return varInfoSet;
   }).story(props =>
     `Get Allele Registry data for Variant Set.`
@@ -318,15 +333,22 @@ export const VariantInfoFromVariantTerm = MetaNode('VariantInfoFromVariantTerm')
 
 export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
   .meta({
-    label: 'Resolve Reg. Element from Var. Info',
-    description: 'GetRegulatoryElementsForThisVariant',
+    label: 'Identify Variant And Regulatory Element Association',
+    description: 'Get Regulatory Elements For This Variant ID',
   })
   .inputs({ variant: VariantTerm })
   .output(RegulatoryElementTerm)
   .resolve(async (props) => {
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
-    console.log("Var CaId: "+varCaId)
+    if(varCaId == null || varCaId == ''){
+      throw new Error(variantIdResolveErrorMessage);
+    }
+
     const response = await getGitDataHubVariantInfo(varCaId);
+    if(response == null || response.data == null){
+      throw new Error(gitDataHubErroMessage);
+    }
+
     if(response.data.ldFor.RegulatoryElement != null && response.data.ldFor.RegulatoryElement.length == 1){
       return response.data.ldFor.RegulatoryElement[0].entId;
     }
@@ -475,7 +497,15 @@ export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpeci
   .output(AlleleSpecificEvidencesTable)
   .resolve(async (props) => {
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    if(varCaId == null || varCaId == ''){
+      throw new Error(variantIdResolveErrorMessage);
+    }
+
     const response = await getGitDataHubVariantInfo(varCaId);
+    if(response == null || response.data == null){
+      throw new Error(gitDataHubErroMessage);
+    }
+
     let alleleSpecificEvidencesList = null;
     if(response.data.ld != null &&  response.data.ld.AlleleSpecificEvidence != null){
       alleleSpecificEvidencesList = response.data.ld.AlleleSpecificEvidence;
@@ -579,13 +609,20 @@ export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDa
   .output(xQTL_EvidenceDataTable)
   .resolve(async (props) => {
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    if(varCaId == null || varCaId == ''){
+      throw new Error(variantIdResolveErrorMessage);
+    }
+
     console.log("Var CaId: "+varCaId)
     let response = await getGitDataHubVariantInfo(varCaId);
-    
+    if(response == null  || response.data == null){
+      throw new Error(gitDataHubErroMessage);
+    }
+
     if(response.data.ld != null &&  response.data.ld.xqtlEvidence != null){
       reformatxQTLEvidences(response.data.ld.xqtlEvidence);
     }else{
-      throw Error();
+      throw new Error("Unable to process data, missing values!");
     }
     
     return response;
@@ -683,8 +720,15 @@ export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleReg
   .output(AlleleRegistryExternalRecordsTable)
   .resolve(async (props) => {
     var varCaId = await resolveVarinatCaID(props.inputs.variant);
-    console.log("Var CaId: "+varCaId)
+    if(varCaId == null || varCaId == ''){
+      throw new Error(variantIdResolveErrorMessage);
+    }
+
     let variantInfoObj: any = await getAlleleRegistryVariantInfo(varCaId);
+    if(variantInfoObj == null){
+      throw new Error(alleleRegRespErrorMessage);
+    }
+
     let reponse = null;
     if(variantInfoObj['externalRecords'] != null){
       reponse = processExternalRecords(variantInfoObj);
@@ -713,7 +757,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
         }}
       >
         <Column
-          name="Gene ID/Name"
+          name="Gene ID"
           cellRenderer={row => <Cell key={row+''}>{GeneAssociationsList[row].geneId}</Cell>}
         />
         <Column
@@ -767,7 +811,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       geneID = associatedGeenObj.gene_id+"";
 
       if(associatedGeenObj.distance_to_feature == null){
-        associatedGeenObj['distance_to_feature'] = "/";
+        associatedGeenObj['distance_to_feature'] = "within gene";
       }
 
       if(!associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
@@ -941,7 +985,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
           cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
         />
         <Column
-          name="Gene ID/Name"
+          name="Gene ID"
           cellRenderer={row =>
             <Cell key={row+''}>
               <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -987,7 +1031,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
             </Cell>}
         />
         <Column
-          name="Feature_Type"
+          name="Feature Type"
           cellRenderer={row =>
             <Cell key={row+''}>             
                 {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
@@ -1013,7 +1057,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
             </Cell>}
         />
         <Column
-          name="HGVS_C"
+          name="HGVS"
           cellRenderer={row =>
             <Cell key={row+''}>             
                 {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
@@ -1058,7 +1102,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
   .meta({
-    label: `Get Varinat Set To Gene Association HG38`,
+    label: `Identify Variant And Gene Associations`,
     description: "Get Associated Gene info for a given set of Variant External records."
   })
   .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })
@@ -1146,6 +1190,10 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     for(let indx in varinatSetInpt){
       let varCaID = varinatSetInpt[indx];
       const response = await getGitDataHubVariantInfo(varCaID);
+      if(response == null || response.data == null){
+        continue;
+      }
+
       if(response.data.ldFor.RegulatoryElement != null && response.data.ldFor.RegulatoryElement.length == 1){
         let reEntId = response.data.ldFor.RegulatoryElement[0].entId;
         let tempObj = {
@@ -1155,12 +1203,17 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
         }
 
         const rePositionData = await getRegElemPositionData(reEntId);
-        if(rePositionData.data.cCREQuery[0].coordinates != null){
+        if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){
           tempObj.rePosition = rePositionData.data.cCREQuery[0].coordinates.chromosome+": "+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
         }
         varAndRegulatoryElem.push(tempObj);
       }
     }
+
+    if(varAndRegulatoryElem.length == 0){
+      throw new Error(gitDataHubErroMessage);
+    }
+
     return varAndRegulatoryElem;
   }).story(props =>
     `Get Regulatory Elements id and posotion for Variant Set.`
@@ -1328,9 +1381,13 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       }
       tempObj.alleleSpecificEvidence = evidenceReponse;
       
-
       varinatSetAlleleSpecificEvdnc.push(tempObj);
     }
+
+    if(varinatSetAlleleSpecificEvdnc.length == 0){
+      throw new Error(gitDataHubErroMessage);
+    }
+
     return varinatSetAlleleSpecificEvdnc;
   }).story(props =>
     `Get Allele Specific Evidence form Variant Set.`
@@ -1465,6 +1522,11 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
       varinatSetXQTLEvidnc.push(tempObj);
     }
+
+    if(varinatSetXQTLEvidnc.length == 0){
+      throw new Error(gitDataHubErroMessage);
+    }
+
     return varinatSetXQTLEvidnc;
   }).story(props =>
     "Get xQTL Evidence form Variant Set."

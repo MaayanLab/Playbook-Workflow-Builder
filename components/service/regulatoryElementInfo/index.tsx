@@ -94,8 +94,13 @@ export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegE
   .output(RegulatoryElementInfo)
   .resolve(async (props) => {
     const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
+    
     const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
-    if(rePositionData.data.cCREQuery[0].coordinates != null){
+    if(response == null || response.data == null){
+      throw new Error("Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){
       response.data.coordinates = rePositionData.data.cCREQuery[0].coordinates;
     }else{
       response.data.coordinates = {
@@ -216,8 +221,9 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     for(let i in regElemeIdsSet){
       let rgId = regElemeIdsSet[i];
       const rePositionData = await getRegElemPositionData(rgId);
+
       let coordinates = null;
-      if(rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
+      if(rePositionData != null && rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
         coordinates = rePositionData.data.cCREQuery[0].coordinates;
       }else{
         coordinates = {

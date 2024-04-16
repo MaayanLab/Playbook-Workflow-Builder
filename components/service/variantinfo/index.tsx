@@ -16,9 +16,9 @@ let clinvarRegex = "^[0-9]+$";
 let gnomADRegex = "[0-9]*-[0-9]*-[A-Za-z]*-[A-Za-z]*";
 let myVariantInfoHG38Regex = "chr[0-9]*:[a-z]\.[0-9]*[A-Za-z]*";
 
-let variantIdResolveErrorMessage = "Unbale to resolve the suplied Variant ID to a CAID!";
-let alleleRegRespErrorMessage = "Unable to get data from the Allele Registry API, please try again or wait a few minutes before the next atempt!";
-let gitDataHubErroMessage = "Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next atempt!";
+let variantIdResolveErrorMessage = "Unable to resolve the suplied Variant ID to a CAID!";
+let alleleRegRespErrorMessage = "Unable to get data from the Allele Registry API, please try again or wait a few minutes before the next attempt!";
+let gitDataHubErroMessage = "Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next attempt!";
 
 const AlleleRegistryVariantInfoC = z.object({
   '@id': z.string(),

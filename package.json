@@ -7,6 +7,9 @@
     "./app",
     "./components/**"
   ],
+  "bin": {
+    "pwb": "cli/pwb.ts"
+  },
   "scripts": {
     "build": "npm --workspace=app run build",
     "codegen:apis": "ts-node cli/sync-api-import.ts",
@@ -34,6 +37,7 @@
     "@types/pluralize": "^0.0.32",
     "axios": "^1.6.1",
     "classnames": "^2.3.2",
+    "cmd-ts": "^0.13.0",
     "fast-sha256": "^1.3.0",
     "form-data": "^4.0.0",
     "glob": "^8.1.0",

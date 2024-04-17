@@ -15,8 +15,7 @@ export function cwl_cli_for_component(component: ProcessMetaNode) {
   return {
     cwlVersion: 'v1.0',
     class: 'CommandLineTool',
-    // TODO: pwb component cli
-    baseCommand: `pwb component ${component.spec}`,
+    baseCommand: `pwb ${component.spec}`,
     requirements: [
       {
         class: 'DockerRequirement',

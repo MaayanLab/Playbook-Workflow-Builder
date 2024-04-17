@@ -33,7 +33,8 @@ export function cwl_cli_for_component(component: ProcessMetaNode) {
         },
       } : {}),
       ...dict.init(dict.items(component.inputs).map(({ key, value }) => ({
-        key, value: {
+        key: `inputs.${key}`,
+        value: {
           type: Array.isArray(value) ? 'File[]' : 'File',
           inputBinding: {
             prefix: `--inputs.${key}=`,
@@ -95,18 +96,26 @@ export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL }) {
         key: `step-${index+1}-output`,
         value: {
           type: 'File',
-          outputSource: `step-${index+1}/output.json`,
+          outputSource: `step-${index+1}/output`,
         },
       }))),
       steps: dict.init(dict.values(processLookup).map(({ index, node, metanode }) => ({
-        key: `${index+1}_${metanode.meta.label}-`, value: {
+        key: `step-${index+1}`, value: {
           run: `${metanode.spec}.cwl`,
-          in: dict.init(dict.items(node.inputs).map(({ key, value }) => ({ key, value: processLookup[value.id] })).map(({ key, value }) => ({
-            key, value: {
-              source: `step-${value.index+1}/output.json`,
-            },
-          }))),
-          out: ['output.json'],
+          in: {
+            ...('codec' in metanode ? {
+              data: {
+                source: `step-${index+1}-data`
+              },
+            } : {}),
+            ...dict.init(dict.items(node.inputs).map(({ key, value }) => ({ key, value: processLookup[value.id] })).map(({ key, value }) => ({
+              key: `inputs.${key}`,
+              value: {
+                source: `step-${value.index+1}/output`,
+              },
+            })))
+          },
+          out: ['output'],
         },
       }))),
     },

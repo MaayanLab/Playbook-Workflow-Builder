@@ -1,3 +1,2 @@
 #!/bin/sh
-cd /app
-npx pwb $@
+TS_NODE_PROJECT=/app npx --prefix /app pwb $@

@@ -74,13 +74,14 @@ export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResp
   return res.data
 }
 
-/*
 export async function getCustomMatrixFromExpressions(formData: FormData): Promise<Readable> {
+  const { default: axios } = await import('axios')
   const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/createCustomMatrix`, formData, {
-    headers: { ...formData.getHeaders() }
+    headers: { ...formData.getHeaders() },
+    responseType: 'stream'
   });
   return res.data
-}*/
+}
 
 export const CTD_FileDownload = MetaNode('CTD_FileDownload')
   .meta({
@@ -236,7 +237,7 @@ export const Execute_CTD_Precalculations_Hybrid_Upload = MetaNode('Execute_CTD_P
     )
   }).build()
 
-  /*
+  
   export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
   .meta({
     label: `CTD Create a Custom Matrix`,
@@ -257,7 +258,7 @@ export const Execute_CTD_Precalculations_Hybrid_Upload = MetaNode('Execute_CTD_P
   }).story(props =>   
     "The three files where send to the CTD API for precalculations."
   ).build()
-  */
+
 
   export const CTD_UseCustomMatrix = MetaNode('CTD_UseCustomMatrix')
   .meta({

@@ -43,6 +43,7 @@
     "glob": "^8.1.0",
     "immutable": "^4.3.4",
     "json-canonicalize": "^1.0.6",
+    "jszip": "^3.10.1",
     "pg": "^8.11.3",
     "pg-boss": "^9.0.3",
     "pg-listen": "^1.7.0",
@@ -51,6 +52,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "swr": "^2.2.4",
+    "yaml": "^2.4.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

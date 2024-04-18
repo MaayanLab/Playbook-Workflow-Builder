@@ -45,7 +45,7 @@ export function cwl_cli_for_component(component: ProcessMetaNode) {
           },
         },
       }))),
-      output: {
+      outputFilename: {
         type: 'string',
         default: 'output.json',
         inputBinding: {
@@ -58,7 +58,7 @@ export function cwl_cli_for_component(component: ProcessMetaNode) {
       output: {
         type: 'File',
         outputBinding: {
-          glob: '$(inputs.output)',
+          glob: '$(inputs.outputFilename)',
         },
       },
     },
@@ -117,7 +117,7 @@ export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL }) {
                 source: `step-${value.index+1}/output`,
               },
             }))),
-            output: {
+            outputFilename: {
               default: `step-${index+1}-output.json`,
             },
           },

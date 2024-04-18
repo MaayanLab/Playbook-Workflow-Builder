@@ -116,7 +116,10 @@ export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL }) {
               value: {
                 source: `step-${value.index+1}/output`,
               },
-            })))
+            }))),
+            output: {
+              default: `step-${index+1}-output.json`,
+            },
           },
           out: ['output'],
         },

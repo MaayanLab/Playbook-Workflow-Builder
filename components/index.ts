@@ -71,6 +71,10 @@ import * as core_file from "./core/file"
 import core_file_packageJson from "./core/file/package.json"
 metanodes.push(...MetaNodesFromExports(core_file, core_file_packageJson))
 components.push("core/file")
+import * as core_ranked from "./core/ranked"
+import core_ranked_packageJson from "./core/ranked/package.json"
+metanodes.push(...MetaNodesFromExports(core_ranked, core_ranked_packageJson))
+components.push("core/ranked")
 import * as core_scored from "./core/scored"
 import core_scored_packageJson from "./core/scored/package.json"
 metanodes.push(...MetaNodesFromExports(core_scored, core_scored_packageJson))

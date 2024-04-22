@@ -223,6 +223,10 @@ import * as service_idg from "./service/idg"
 import service_idg_packageJson from "./service/idg/package.json"
 metanodes.push(...MetaNodesFromExports(service_idg, service_idg_packageJson))
 components.push("service/idg")
+import * as service_kea3 from "./service/kea3"
+import service_kea3_packageJson from "./service/kea3/package.json"
+metanodes.push(...MetaNodesFromExports(service_kea3, service_kea3_packageJson))
+components.push("service/kea3")
 import * as service_kf from "./service/kf"
 import service_kf_packageJson from "./service/kf/package.json"
 metanodes.push(...MetaNodesFromExports(service_kf, service_kf_packageJson))

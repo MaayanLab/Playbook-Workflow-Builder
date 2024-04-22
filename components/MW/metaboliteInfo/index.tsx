@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
-import { MetaboliteTerm } from '@/components/core/input/term'
-import { MetaboliteSet } from '@/components/core/input/set'
+import { MetaboliteTerm } from '@/components/core/term'
+import { MetaboliteSet } from '@/components/core/set'
 import { MetaboliteSummary } from '@/components/MW/metabolite_summary'
 import { metabolomicsworkbench_icon } from '@/icons'
 

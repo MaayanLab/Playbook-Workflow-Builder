@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneSet } from '@/components/core/input/set'
+import { GeneSet } from '@/components/core/set'
 import { MetGeneRxnTable } from '@/components/MW/metgene_rxn_table'
 import { metgene_icon } from '@/icons'
 import { MetGeneSummary } from '@/components/MW/metgene_summary'

@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
+import { GeneTerm } from '@/components/core/term'
 
 // A unique name for your resolver is used here
 export const MyIdentity = MetaNode('MyIdentity')

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { MetaboliteSet } from '@/components/core/input/set'
+import { MetaboliteSet } from '@/components/core/set'
 import { metabolomicsworkbench_icon } from '@/icons'
 import { z } from 'zod'
 import { additional_info_icon} from '@/icons'

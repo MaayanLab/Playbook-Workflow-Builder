@@ -6,6 +6,8 @@
 import { APIInterface } from '@/spec/api'
 import type { AdminJobs as AdminJobs_ } from './v1/admin/jobs'
 export const AdminJobs = APIInterface<typeof AdminJobs_>("/api/v1/admin/jobs", "GET")
+import type { CWLForPlaybook as CWLForPlaybook_ } from './v1/cwl'
+export const CWLForPlaybook = APIInterface<typeof CWLForPlaybook_>("/api/v1/cwl/[fpl_id]", "GET")
 import type { UserIntegrationsBioComputeAuth as UserIntegrationsBioComputeAuth_ } from './v1/user/integrations/biocompute'
 export const UserIntegrationsBioComputeAuth = APIInterface<typeof UserIntegrationsBioComputeAuth_>("/api/v1/user/integrations/biocompute/auth", "GET")
 import type { UserIntegrationsBioComputePublishedBCO as UserIntegrationsBioComputePublishedBCO_ } from './v1/user/integrations/biocompute'

@@ -3,7 +3,7 @@ RUN echo "Installing git..." && apt-get -y update && apt-get -y install git && r
 WORKDIR /app
 
 FROM base as prepare_system
-RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
+RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv pkg-config libhdf5-dev && rm -rf /var/lib/apt/lists/*
 ENV PYTHON_BIN="python3"
 
 FROM prepare_system as prepare_r
@@ -83,7 +83,9 @@ FROM prepare_system as app
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_build /app /app
-RUN chmod +x /app/cli/wes-worker.sh
+RUN set -x \
+  && chmod +x /app/cli/wes-worker.sh /app/cli/pwb.sh \
+  && npm i -g ts-node
 ENV PORT 3000
 ENV PORT 3005
 CMD ["npm", "start"]

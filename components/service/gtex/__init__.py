@@ -10,8 +10,10 @@ def gtex_resolve_genecode_id(geneId):
       format='json',
     )
   )
-  res = req.json()
-  return res['data'][0]['gencodeId']
+  if not req.ok: raise Exception('GTEx service experienced a server side error, try again later')
+  res = req.json()['data']
+  if len(res) == 0: raise Exception(f"The provided gene could not be found in GTEx")
+  return res[0]['gencodeId']
 
 def gtex_gene_expression(geneSymbol: str, datasetId: str='gtex_v8'):
   gencodeId = gtex_resolve_genecode_id(geneSymbol)

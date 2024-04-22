@@ -38,12 +38,12 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
         disabled={disabled}
         content={
           <Bp5Menu>
-            <a href={`/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`} download={`${(metadata.title || id).replace(/ /g, '-')}-bco.json`}>
-              <Bp5MenuItem
-                icon="document"
-                text="Download BCO"
-              />
-            </a>
+            <Bp5MenuItem
+              icon="document"
+              text="Download BCO"
+              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
+              download={`${(metadata.title || id).replace(/ /g, '-')}-bco.json`}
+            />
             <Bp5MenuItem
               icon="send-to"
               text="Draft in BioCompute Portal"

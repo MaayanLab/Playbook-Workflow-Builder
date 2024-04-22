@@ -6,8 +6,8 @@ import {
 } from "@/components/service/mygeneinfo";
 import { z } from "zod";
 import { glygen_icon } from "@/icons";
-import { ProteinTerm } from "@/components/core/input/term";
-import { ProteinSet } from "@/components/core/input/set";
+import { ProteinTerm } from "@/components/core/term";
+import { ProteinSet } from "@/components/core/set";
 import {
   GlyGenProteinResponse,
   GlyGenProteinSetResponse,

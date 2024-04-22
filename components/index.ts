@@ -71,18 +71,18 @@ import * as core_file from "./core/file"
 import core_file_packageJson from "./core/file/package.json"
 metanodes.push(...MetaNodesFromExports(core_file, core_file_packageJson))
 components.push("core/file")
-import * as core_input_scored from "./core/input/scored"
-import core_input_scored_packageJson from "./core/input/scored/package.json"
-metanodes.push(...MetaNodesFromExports(core_input_scored, core_input_scored_packageJson))
-components.push("core/input/scored")
-import * as core_input_set from "./core/input/set"
-import core_input_set_packageJson from "./core/input/set/package.json"
-metanodes.push(...MetaNodesFromExports(core_input_set, core_input_set_packageJson))
-components.push("core/input/set")
-import * as core_input_term from "./core/input/term"
-import core_input_term_packageJson from "./core/input/term/package.json"
-metanodes.push(...MetaNodesFromExports(core_input_term, core_input_term_packageJson))
-components.push("core/input/term")
+import * as core_scored from "./core/scored"
+import core_scored_packageJson from "./core/scored/package.json"
+metanodes.push(...MetaNodesFromExports(core_scored, core_scored_packageJson))
+components.push("core/scored")
+import * as core_set from "./core/set"
+import core_set_packageJson from "./core/set/package.json"
+metanodes.push(...MetaNodesFromExports(core_set, core_set_packageJson))
+components.push("core/set")
+import * as core_term from "./core/term"
+import core_term_packageJson from "./core/term/package.json"
+metanodes.push(...MetaNodesFromExports(core_term, core_term_packageJson))
+components.push("core/term")
 import * as data_anndata from "./data/anndata"
 import data_anndata_packageJson from "./data/anndata/package.json"
 metanodes.push(...MetaNodesFromExports(data_anndata, data_anndata_packageJson))

@@ -109,7 +109,7 @@ A prompt allows the user to have control of the resulting output, and relies on 
 ```tsx
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
+import { GeneTerm } from '@/components/core/term'
 
 export const PromptName = MetaNode('PromptName')
   // As with data types, we have metadata for the process

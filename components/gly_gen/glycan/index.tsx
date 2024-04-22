@@ -2,8 +2,8 @@ import React from "react";
 import { MetaNode } from "@/spec/metanode";
 import { z } from "zod";
 import { glygen_icon } from "@/icons";
-import { GlycanTerm } from "@/components/core/input/term";
-import { GlycanSet } from "@/components/core/input/set";
+import { GlycanTerm } from "@/components/core/term";
+import { GlycanSet } from "@/components/core/set";
 import {
   EnzymeData,
   GlycanResponse,

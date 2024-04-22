@@ -1,11 +1,10 @@
 {
-  "name": "set",
+  "name": "@playbook-partnership/term",
   "version": "1.0.0",
   "license": "CC-BY-NC-SA-4.0",
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
   "dependencies": {
-    "leven-sort": "^4.0.0",
     "react": "^18.2.0"
   },
   "devDependencies": {

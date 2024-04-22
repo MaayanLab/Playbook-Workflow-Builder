@@ -10,7 +10,7 @@ import {
   GeneTerm,
   ProteinTerm,
   GlycanTerm,
-} from "@/components/core/input/term";
+} from "@/components/core/term";
 import { GlyGenProteinResponseNode } from "../protein";
 import { filter_glygen_proteins } from "./sup_functions";
 

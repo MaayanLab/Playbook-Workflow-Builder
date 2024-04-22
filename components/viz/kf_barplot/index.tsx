@@ -2,7 +2,7 @@ import { PlotlyJson, PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
 import { barchart_icon } from '@/icons'
 import { TumorGeneExpression } from '@/components/service/kf'
-import { ScoredTissues } from '@/components/core/input/scored'
+import { ScoredTissues } from '@/components/core/scored'
 
 
 export const BarplotFromKfExpression = 

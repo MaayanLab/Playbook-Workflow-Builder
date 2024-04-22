@@ -4,6 +4,20 @@ import { idg_icon } from '@/icons'
 import { MetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 
+async function idg_filter(kind: string) {
+  const req = await fetch('https://maayanlab.cloud/geneshot/api/idgclass')
+  let filter: string[]
+  const { idg } = await req.json()
+  if (kind === 'all') {
+    filter = dict.values(
+      dict.filter(idg, ({ key }) => (key as string).startsWith('dark'))
+    ).reduce((all, proteins) => [...all, ...proteins], [])
+  } else {
+    filter = idg[kind]
+  }
+  return new Set((filter || [] as string[]).map(term => term.toLowerCase()))
+}
+
 export const IDGFilterT = [
   { kind: 'all', label: 'Understudied Proteins', },
   { kind: 'kinase', label: 'Kinases', },
@@ -23,17 +37,7 @@ export const IDGFilterT = [
     .inputs({ input: ScoredGenes })
     .output(ScoredGenes)
     .resolve(async (props) => {
-      const req = await fetch('https://maayanlab.cloud/geneshot/api/idgclass')
-      let filter: string[]
-      const { idg } = await req.json()
-      if (kind === 'all') {
-        filter = dict.values(
-          dict.filter(idg, ({ key }) => (key as string).startsWith('dark'))
-        ).reduce((all, proteins) => [...all, ...proteins], [])
-      } else {
-        filter = idg[kind]
-      }
-      const filterSet = new Set((filter as string[]).map(term => term.toLowerCase()))
+      const filterSet = await idg_filter(kind)
       return props.inputs.input.filter(({ term }) => filterSet.has(term.toLocaleLowerCase()))
     })
     .story(props => `Genes were filtered by IDG ${label} [\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}].`)
@@ -48,9 +52,7 @@ export const IDGFilterT = [
     .inputs({ input: GeneSet })
     .output(GeneSet)
     .resolve(async (props) => {
-      const req = await fetch('https://maayanlab.cloud/geneshot/api/idgclass')
-      const { idg: { [kind]: filter } } = await req.json()
-      const filterSet = new Set((filter as string[]).map(term => term.toLowerCase()))
+      const filterSet = await idg_filter(kind)
       return {
         description: props.inputs.input.description ? `${props.inputs.input.description} filtered by ${label}` : undefined,
         set: props.inputs.input.set.filter((term) => filterSet.has(term.toLocaleLowerCase())),

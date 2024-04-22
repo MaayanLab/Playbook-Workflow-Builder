@@ -15,5 +15,5 @@ try:
   else:
     json.dump(dict(data=out), sys.stdout, allow_nan=False)
 except Exception as e:
-  traceback.print_exc(sys.stderr)
+  traceback.print_exc(file=sys.stderr)
   json.dump(dict(error=str(e)), sys.stdout, allow_nan=False)

@@ -22,7 +22,7 @@ export function Table({ children, height, shape: shape_, downloads, ...props }: 
   return (
     <>
       <div style={{ maxHeight: height, overflow: 'hidden' }}>
-        <div><Bp5Table {...props}>{children}</Bp5Table></div>
+        <Bp5Table {...props}>{children}</Bp5Table>
       </div>
       <div className="bp5-navbar-group">
         <span className="prose max-w-none">Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>

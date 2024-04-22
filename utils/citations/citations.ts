@@ -16,6 +16,7 @@ export default {
   "10.1093/nar/gkaa1024": "Martens, M. et al. WikiPathways: connecting communities. Nucleic Acids Research vol. 49 D613–D621 (2020).",
   "10.1093/nar/gkaa1043": "Köhler, S. et al. The Human Phenotype Ontology in 2021. Nucleic Acids Research vol. 49 D1207–D1217 (2020).",
   "10.1093/nar/gkaa1083": "Blake, J. A. et al. Mouse Genome Database (MGD): Knowledgebase for mouse–human comparative biology. Nucleic Acids Research vol. 49 D981–D987 (2020).",
+  "10.1093/nar/gkab359": " Kuleshov, M. V. et al. KEA3: improved kinase enrichment analysis via data integration. Nucleic Acids Research vol. 49 W304–W316 (2021).",
   "10.1093/nar/gkac1010": "Sollis, E. et al. The NHGRI-EBI GWAS Catalog: knowledgebase and deposition resource. Nucleic Acids Research vol. 51 D977–D985 (2022).",
   "10.1093/nar/gkac328": "Evangelista, J. E. et al. SigCom LINCS: data and metadata search engine for a million gene expression signatures. Nucleic Acids Research vol. 50 W697–W709 (2022).",
   "10.1093/nar/gkac956": " Kim, S. et al. PubChem 2023 update. Nucleic Acids Research vol. 51 D1373–D1380 (2022).",

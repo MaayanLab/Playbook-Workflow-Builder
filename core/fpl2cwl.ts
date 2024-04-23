@@ -7,6 +7,7 @@ import type KRG from "@/core/KRG"
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
 import packageJson from '@/package.json'
+import { Author, Metadata, fpl_expand } from "./common";
 
 const docker_tag = 'maayanlab/playbook-partnership'
 const version = packageJson.version
@@ -65,21 +66,8 @@ export function cwl_cli_for_component(component: ProcessMetaNode) {
   }
 }
 
-export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL }) {
-  const fullFPL = props.fpl.resolve()
-  const processLookup = dict.init(
-    await Promise.all(fullFPL.map(async (step, index) => {
-      const metanode = props.krg.getProcessNode(step.process.type)
-      return {
-        key: step.process.id,
-        value: {
-          index,
-          node: step.process,
-          metanode,
-        },
-      }
-    }))
-  )
+export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }) {
+  const { fullFPL, processLookup, story } = await fpl_expand(props)
   return {
     ...dict.init(array.unique(dict.values(processLookup).map(({ metanode }) => metanode)).map(metanode => ({
       key: `${metanode.spec}.cwl`,

@@ -5,9 +5,8 @@ import IEE2791schema from '@/spec/bco'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import type { FPL } from "@/core/FPPRG"
-import { decode_complete_process_inputs, decode_complete_process_output } from "@/core/engine"
-import extractCitations from "@/utils/citations"
 import packageJson from '@/package.json'
+import { Author, Metadata, fpl_expand } from "./common";
 
 type BCO = z.infer<typeof IEE2791schema>
 type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
@@ -15,18 +14,6 @@ type BaseBCO = Omit<BCO, 'etag' | 'object_id' | 'spec_version'>
 function toBCOTimeString(date?: Date) {
   if (date === undefined) date = new Date()
   return date.toISOString().replace(/Z$/, '000')
-}
-
-type Metadata = {
-  title?: string,
-  description?: string,
-}
-
-type Author = {
-  name: string,
-  affiliation?: string,
-  email?: string,
-  orcid?: string,
 }
 
 function parseMetaNodeAuthor(author: string) {
@@ -37,37 +24,7 @@ function parseMetaNodeAuthor(author: string) {
 }
 
 export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<BCO> {
-  const fullFPL = props.fpl.resolve()
-  const processLookup = dict.init(
-    await Promise.all(fullFPL.map(async (step, index) => {
-      const metanode = props.krg.getProcessNode(step.process.type)
-      let story: string | undefined
-      if (!props.metadata?.description) {
-        let inputs: Record<string, unknown> | undefined
-        try { inputs = await decode_complete_process_inputs(props.krg, step.process) } catch (e) {}
-        let output: unknown | undefined
-        try { output = await decode_complete_process_output(props.krg, step.process) } catch (e) {}
-        story = metanode.story ? metanode.story({ inputs, output }) : undefined
-      }
-      return {
-        key: step.process.id,
-        value: {
-          index,
-          node: step.process,
-          metanode,
-          story,
-        },
-      }
-    }))
-  )
-  const story = props.metadata?.description || (
-    extractCitations(
-      dict.values(processLookup)
-        .filter(({ story }) => !!story)
-        .map(({ story }) => story)
-        .join(' ')
-    )
-  )
+  const { fullFPL, processLookup, story } = await fpl_expand(props)
   const baseBCO: BaseBCO = {
     usability_domain: [story],
     provenance_domain: {

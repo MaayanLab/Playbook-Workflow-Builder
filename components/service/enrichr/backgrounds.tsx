@@ -1,5 +1,11 @@
 import * as dict from '@/utils/dict'
-import { archs4_icon, gtex_icon, lincs_icon } from '@/icons'
+import {
+  archs4_icon,
+  glygen_icon,
+  gtex_icon,
+  idg_icon,
+  lincs_icon,
+} from '@/icons'
 
 export const Disease_backgrounds = [
   {
@@ -84,6 +90,16 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
+  },
+  {
+    name: 'IDG_Drug_Targets_2022',
+    label: 'IDG Drug Targets 2022',
+    termType: 'Drug',
+    termRe: /^(?<term>.+)$/,
+    termLabel: 'IDG Drug Target',
+    termAssociation: 'Targeting',
+    ref: ``,
+    icon: [idg_icon],
   },
 ]
 
@@ -282,6 +298,19 @@ export const Phenotype_backgrounds = [
     icon: [],
     hidden: true,
   },
+  {
+    name: 'KOMP2_Mouse_Phenotypes_2022',
+    label: 'KOMP2 Mouse Phenotypes 2022',
+    termType: 'Phenotype',
+    termRe: /^(?<term>.+?)( \(?<iri>.+?\))?$/,
+    termLabel: 'Mouse Phenotypes',
+    termAssociation: 'Associated with',
+    extra: {
+      organism: 'mouse',
+    },
+    ref: `\\ref{doi:10.1093/nar/gkac972}`,
+    icon: [],
+  },
 ]
 
 export const Tissue_backgrounds = [
@@ -307,6 +336,26 @@ export const Tissue_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
+  },
+  {
+    name: 'HuBMAP_ASCTplusB_augmented_2022',
+    label: 'HuBMAP ASCTplusB augmented 2022',
+    termType: 'Tissue',
+    termRe: /^(?<cell_type>.+) - (?<term>.+?)$/,
+    termLabel: 'HuBMAP ASCT+B Cell Type Biomarkers',
+    termAssociation: 'Containing',
+    ref: `\\ref{HuBMAP ASCT+B Reporter, https://hubmapconsortium.github.io/ccf-asct-reporter/}`,
+    icon: [],
+  },
+  {
+    name: 'MoTrPAC_2023',
+    label: 'MoTrPAC 2023',
+    termType: 'Tissue',
+    termRe: /^(\w+?)-(?<tissue>.+?) (?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down)$/,
+    termLabel: 'MoTrPAC Exercise Signatures',
+    termAssociation: 'Containing',
+    ref: `\\ref{doi:10.1016/j.cell.2020.06.004}`,
+    icon: [],
   },
 ]
 
@@ -353,6 +402,32 @@ export const Gene_backgrounds = [
   },
 ]
 
+export const Glycan_backgrounds = [
+  {
+    name: 'GlyGen_Glycosylated_Proteins_2022',
+    label: 'GlyGen Glycosylated Proteins 2022',
+    termType: 'Glycan',
+    termRe: /^(?<term>.+)$/,
+    termLabel: 'Glycans',
+    termAssociation: 'Glycosylating',
+    ref: `\\ref{doi:10.1093/glycob/cwz080}`,
+    icon: [glygen_icon],
+  },
+]
+
+export const Metabolite_backgrounds = [
+  {
+    name: 'Metabolomics_Workbench_Metabolites_2022',
+    label: 'Metabolomics Workbench Metabolites 2022',
+    termType: 'Metabolite',
+    termRe: /^(\w+?)-(?<tissue>.+?) (?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down)$/,
+    termLabel: 'Metabolites',
+    termAssociation: 'Associated with',
+    ref: `\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}`,
+    icon: [],
+  }
+]
+
 export const backgrounds = dict.init([
   ...Disease_backgrounds,
   ...Drug_backgrounds,
@@ -360,4 +435,6 @@ export const backgrounds = dict.init([
   ...Phenotype_backgrounds,
   ...Tissue_backgrounds,
   ...Gene_backgrounds,
+  ...Glycan_backgrounds,
+  ...Metabolite_backgrounds,
 ].map((value) => ({ key: value.name, value })))

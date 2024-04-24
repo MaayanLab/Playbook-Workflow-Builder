@@ -1,14 +1,50 @@
 import React from 'react'
 import { MetaNode, DataMetaNode, InternalDataMetaNode } from '@/spec/metanode'
-import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/set'
+import {
+  DiseaseSet,
+  DrugSet,
+  GeneSet,
+  GlycanSet,
+  MetaboliteSet,
+  PathwaySet,
+  PhenotypeSet,
+  TissueSet,
+} from '@/components/core/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon, search_icon } from '@/icons'
-import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, Gene_backgrounds } from './backgrounds'
-import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
+import {
+  backgrounds,
+  Disease_backgrounds,
+  Drug_backgrounds,
+  Gene_backgrounds,
+  Glycan_backgrounds,
+  Metabolite_backgrounds,
+  Pathway_backgrounds,
+  Phenotype_backgrounds,
+  Tissue_backgrounds,
+} from './backgrounds'
+import {
+  DiseaseTerm,
+  DrugTerm,
+  GeneTerm,
+  MetaboliteTerm,
+  PathwayTerm,
+  PhenotypeTerm,
+  TissueTerm,
+} from '@/components/core/term'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
-import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/scored'
+import {
+  ScoredDiseases,
+  ScoredDrugs,
+  ScoredGenes,
+  ScoredGlycans,
+  ScoredMetabolites,
+  ScoredPathways,
+  ScoredPhenotypes,
+  ScoredTissues,
+} from '@/components/core/scored'
 import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import type { ValuesOf } from '@/utils/types'
@@ -51,6 +87,8 @@ export const EnrichrPathwaySet = EnrichrSet_T(PathwaySet)
 export const EnrichrPhenotypeSet = EnrichrSet_T(PhenotypeSet)
 export const EnrichrTissueSet = EnrichrSet_T(TissueSet)
 export const EnrichrGeneSet = EnrichrSet_T(GeneSet)
+export const EnrichrGlycanSet = EnrichrSet_T(GlycanSet)
+export const EnrichrMetaboliteSet = EnrichrSet_T(MetaboliteSet)
 
 async function resolveGenesetLibrary({ terms, background }: { background: string, terms: string[] }) {
   const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(terms.join(';'))}`)
@@ -197,6 +235,8 @@ export const EnrichrGenesetSearchT = [
   { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes },
   { backgrounds: Tissue_backgrounds, output: ScoredTissues },
   { backgrounds: Gene_backgrounds, output: ScoredGenes },
+  { backgrounds: Glycan_backgrounds, output: ScoredGlycans },
+  { backgrounds: Metabolite_backgrounds, output: ScoredMetabolites },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -274,6 +314,8 @@ export const EnrichrGeneSearchT = [
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
   { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Glycan_backgrounds, output: EnrichrGlycanSet },
+  { backgrounds: Metabolite_backgrounds, output: EnrichrMetaboliteSet },
 ].flatMap(({ backgrounds, output }) =>
 backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>
@@ -362,6 +404,8 @@ export const EnrichrTermSearchT = [
   { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
   { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
   { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
+  { backgrounds: Glycan_backgrounds, output: EnrichrGlycanSet },
+  { backgrounds: Metabolite_backgrounds, output: EnrichrMetaboliteSet },
 ].flatMap(({ backgrounds, output }) =>
   backgrounds.map(bg => ({ bg, output }))
 ).map(({ bg, output }) =>

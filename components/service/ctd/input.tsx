@@ -57,6 +57,11 @@ export const CTDPrecalculationsFileInput = MetaNode('CTDPrecalculationsFileInput
   .meta({
     label: 'CTD - Precalculations',
     description: 'This card will accept a gene list of interest as well an adjacency matrix (which can be calculated from expression data) to precalculate the permutations of each gene to every other gene with CTD. It will output a RData file with the permutations that is required for the CTD Use with Custom Matrix card.',
+    tags: {
+      Type: {
+        CTD: 1
+      }
+    },
     icon: [input_icon],
   })
   .inputs()
@@ -279,6 +284,11 @@ export const CTDUseCustomMatrixFileInput = MetaNode('CTDUseCustomMatrixFileInput
   .meta({
     label: 'CTD - Use With Custom Matrix',
     description: 'This card allows you to run CTD with your graph of interest. This card requires a gene list, and adjacency matrix, and the RData file generated with the CTD Precalculations card. This card will identify highly connected genes and genes that are "guilty by association" and connect these genes. *Please note 10-150 nodes of interest are required to run CTD',
+    tags: {
+      Type: {
+        CTD: 1
+      }
+    },   
     icon: [input_icon],
   })
   .inputs()

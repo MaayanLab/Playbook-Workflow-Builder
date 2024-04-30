@@ -4,39 +4,62 @@ import { FilePrompt, FileC } from '@/components/core/file'
 import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
 import SafeRender from '@/utils/saferender'
-import {datafile_icon, ctd_icon, file_icon } from '@/icons'
+import {datafile_icon, file_icon } from '@/icons'
 import { clientLoadExample } from  '@/components/data/anndata/api/example.h5ad/client'
 
-export const RData = MetaNode('RData')
-.meta({
-  label: 'CTD RData',
-  description: 'An RData file',
-  icon: [datafile_icon],
-})
-.codec(
-  z.object({
+
+export const CTD_MatrixAndPermutationsC = z.object({
+  ctdPermutations:z.object({
+    url: z.string(),
+    filename: z.string(),
+  }),
+  ctdMatrix: z.object({
     url: z.string(),
     filename: z.string(),
   })
-)
+});
+
+
+export const CTD_MatrixAndPermutations = MetaNode('CTD_MatrixAndPermutations')
+.meta({
+  label: 'CTD Permutations',
+  description: 'CTD Permutations RData file.',
+  icon: [datafile_icon],
+})
+.codec(CTD_MatrixAndPermutationsC)
 .view(props => {
   return (
     <div>
-      <p><b>RData</b></p>
+      <p><b>CTD Permutations</b></p>
       <Table
       cellRendererDependencies={[1]}
       numRows={1}
       downloads={{
-        'URL': () => downloadUrl(props.url, props.filename)
+        'URL': () => downloadUrl(props.ctdPermutations.url, props.ctdPermutations.filename)
       }}
       >
       <Column
         name="Filename"
-        cellRenderer={row => <Cell key={row+''}>{props.filename}</Cell>}
+        cellRenderer={row => <Cell key={row+''}>{props.ctdPermutations.filename}</Cell>}
       />
       <Column
         name="URL"
-        cellRenderer={row => <Cell key={row+''}>{props.url}</Cell>}
+        cellRenderer={row => <Cell key={row+''}>{props.ctdPermutations.url}</Cell>}
+      />
+      </Table>
+
+      <p><b>CTD Matrix</b> (You can dowload this file in the "CTD Adjacency Matrix" output card)</p>
+      <Table
+      cellRendererDependencies={[1]}
+      numRows={1}
+      >
+      <Column
+        name="Filename"
+        cellRenderer={row => <Cell key={row+''}>{props.ctdMatrix.filename}</Cell>}
+      />
+      <Column
+        name="URL"
+        cellRenderer={row => <Cell key={row+''}>{props.ctdMatrix.url}</Cell>}
       />
       </Table>
     </div>

@@ -30,6 +30,7 @@ export default {
   "10.1093/nar/gkz446": "Keenan, A. B. et al. ChEA3: transcription factor enrichment analysis by orthogonal omics integration. Nucleic Acids Research vol. 47 W212–W224 (2019).",
   "10.1186/1471-2105-15-79": " Clark, N. R. et al. The characteristic direction: a geometrical approach to identify differentially expressed genes. BMC Bioinformatics vol. 15 (2014).",
   "10.1186/gb-2014-15-2-r29": " Law, C. W., Chen, Y., Shi, W. & Smyth, G. K. voom: precision weights unlock linear model analysis tools for RNA-seq read counts. Genome Biology vol. 15 R29 (2014).",
+  "10.1186/s12859-022-04590-5": " Kropiwnicki, E. et al. DrugShot: querying biomedical search terms to retrieve prioritized lists of small molecules. BMC Bioinformatics vol. 23 (2022).",
   "10.1186/s13059-016-0953-9": "Xin, J. et al. High-performance web services for querying gene and variant annotation. Genome Biology vol. 17 (2016).",
   "10.1371/journal.pcbi.1009551": " Thistlethwaite, L. R. et al. Correction: CTD: An information-theoretic algorithm to interpret sets of metabolomic and transcriptomic perturbations in the context of graphical models. PLOS Computational Biology vol. 17 e1009551 (2021).",
   "10.1371/journal.pmed.1001779": "Sudlow, C. et al. UK Biobank: An Open Access Resource for Identifying the Causes of a Wide Range of Complex Diseases of Middle and Old Age. PLOS Medicine vol. 12 e1001779 (2015).",

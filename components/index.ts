@@ -195,6 +195,10 @@ import * as service_ctd from "./service/ctd"
 import service_ctd_packageJson from "./service/ctd/package.json"
 metanodes.push(...MetaNodesFromExports(service_ctd, service_ctd_packageJson))
 components.push("service/ctd")
+import * as service_drugshot from "./service/drugshot"
+import service_drugshot_packageJson from "./service/drugshot/package.json"
+metanodes.push(...MetaNodesFromExports(service_drugshot, service_drugshot_packageJson))
+components.push("service/drugshot")
 import * as service_enrichr from "./service/enrichr"
 import service_enrichr_packageJson from "./service/enrichr/package.json"
 metanodes.push(...MetaNodesFromExports(service_enrichr, service_enrichr_packageJson))

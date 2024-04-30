@@ -115,6 +115,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                     icon={process.meta.icon || [func_icon]}
                     parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
                     onClick={() => {
+                      setCellMetadata((cellMetadata) => ({ ...cellMetadata, [step.id]: { ...cellMetadata[step.id], process_visible: true, id: '' } }))
                       scrollTo(`${step.id}:process`)
                     }}
                   />,
@@ -128,6 +129,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                     icon={process.output.meta.icon || [variable_icon]}
                     parents={[step.id]}
                     onClick={() => {
+                      setCellMetadata((cellMetadata) => ({ ...cellMetadata, [step.id]: { ...cellMetadata[step.id], data_visible: true, id: '' } }))
                       scrollTo(`${step.id}:data`)
                     }}
                   />,

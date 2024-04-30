@@ -153,6 +153,15 @@ export default function Introduction({
           <ExportButton
             id={id}
             session_id={session_id}
+            metadata={{
+              title: playbookMetadata.title ?? 'Playbook',
+              description: (
+                playbookMetadata.summary === 'auto' ? story
+                : playbookMetadata.summary === 'gpt' ? playbookMetadata.gpt_summary
+                : playbookMetadata.summary === 'manual' ? playbookMetadata.description
+                : undefined
+              ),
+            }}
           />
         </div>
       </div>

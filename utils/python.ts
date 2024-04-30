@@ -47,14 +47,13 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
     proc.stdout.on('data', (chunk: string) => { stdout += chunk })
     proc.stderr.on('data', callback !== undefined ? (chunk) => callback(chunk.toString()) : (chunk: string) => { console.warn(`[${pathspec}]: ${chunk.toString()}`) })
     proc.on('close', (code) => {
-      if (code !== 0) {
-        reject(new ProcessError(`[${pathspec}]: ${`Process exited with unexpected code ${code}`}`, code))
-      } else {
-        try {
-          resolve(JSON.parse(stdout))
-        } catch (e) {
-          reject(new ProcessError(`[${pathspec}]: Process output could not be parsed as json`, code))
-        }
+      try {
+        const stdout_parsed = JSON.parse(stdout)
+        if (stdout_parsed.error) reject(new ProcessError(stdout_parsed.error, code))
+        else if (code !== 0) reject(new ProcessError(`[${pathspec}]: ${`Process exited with unexpected code ${code}`}`, code))
+        else resolve(stdout_parsed.data)
+      } catch (e) {
+        reject(new ProcessError(`[${pathspec}]: Process output could not be parsed as json`, code))
       }
     })
     proc.stdin.end(stdin)

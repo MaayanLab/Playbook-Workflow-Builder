@@ -71,11 +71,13 @@ export default class APIRouter {
       dict.init(dict.items({ ...match.pathParams, ...Object.fromEntries(url.searchParams.entries()) }).map(({ key, value }) => ({ key, value: tryJsonParse(value) })))
     )
     if (route.method === 'GET') {
-      return res.status(200).json(await route.call({ query }, req, res))
+      const res_ = await route.call({ query }, req, res)
+      if (res_ !== undefined) res.status(200).json(res_)
     } else if (route.method === 'POST') {
       const rawBody = (await getRawBody(req)).toString()
       const body = route.requestBody.parse(rawBody ? JSON.parse(rawBody) : {})
-      return res.status(200).json(await route.call({ query, body }, req, res))
+      const res_ = await route.call({ query, body }, req, res)
+      if (res_ !== undefined) res.status(200).json(res_)
     }
   }
 }

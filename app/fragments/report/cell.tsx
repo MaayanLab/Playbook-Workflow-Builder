@@ -80,7 +80,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
                   </>}
               </div>
             </div>
-            <div className="collapse-content">
+            <div className="collapse-content flex flex-col">
               {outputNode?.view && output ? <SafeRender component={outputNode.view} props={output} /> : isLoading ? 'Waiting for results' : 'Waiting for input'}
             </div>
           </div>}

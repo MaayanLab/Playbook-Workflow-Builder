@@ -33,7 +33,7 @@ export const Disease_backgrounds = [
     label: 'GTEx Aging Signatures 2021',
     termType: 'Disease',
     termRe: /^GTEx (?<term>.+)$/,
-    termLabel: 'GeneRIF Rare Diseases',
+    termLabel: 'GTEx Aging Signatures',
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/ng.265}`,
     icon: [gtex_icon],

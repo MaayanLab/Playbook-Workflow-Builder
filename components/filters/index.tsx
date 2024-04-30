@@ -2,6 +2,7 @@ import React from 'react'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
 import { DrugSet, GeneSet, GlycanSet, ProteinSet, VariantSet, RegulatoryElementSet } from '@/components/core/set'
+import { DrugRanked, GeneRanked, GlycanRanked, ProteinRanked, VariantRanked, RegulatoryElementRanked, DiseaseRanked, PathwayRanked, PhenotypeRanked, TissueRanked } from '@/components/core/ranked'
 import { Disease, Drug, Gene, Glycan, Pathway, Phenotype, Protein, Tissue, Variant, RegulatoryElement } from '@/components/core/primitives'
 import { DiseaseTerm, DrugTerm, GeneTerm, GlycanTerm, PathwayTerm, PhenotypeTerm, ProteinTerm, TissueTerm, VariantTerm, RegulatoryElementTerm } from '@/components/core/term'
 import { ScoredDrugs, ScoredGenes, ScoredGlycans, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredProteins, ScoredTissues, ScoredVariants, ScoredRegulatoryElement } from '@/components/core/scored'
@@ -109,7 +110,7 @@ export const TopKScoredT = [
     })
     .resolve(async (props) => {
       if (!props.inputs.scored.some(({ term }) => term === props.data)) {
-        throw new Error('Please select a gene from the table')
+        throw new Error(`Please select a ${T.label.toLowerCase()} from the table`)
       }
       return props.data
     })
@@ -228,7 +229,7 @@ export const SetFromScoredT = [
     })
     .resolve(async (props) => {
       if (!props.inputs.set.set.some((term) => term === props.data)) {
-        throw new Error('Please select a gene from the table')
+        throw new Error(`Please select a ${T.label.toLowerCase()} from the table`)
       }
       return props.data
     })
@@ -355,4 +356,105 @@ export const ReduceMultiScoredT = [
       })
       .story(props => `Max scores were computed.`)
       .build(),
+])
+
+
+export const TopKRankedT = [
+  { RankedT: DrugRanked, TermT: DrugTerm, T: Drug },
+  { RankedT: GeneRanked, TermT: GeneTerm, T: Gene },
+  { RankedT: VariantRanked, TermT: VariantTerm, T: Variant },
+  { RankedT: RegulatoryElementRanked, TermT: RegulatoryElementTerm, T: RegulatoryElement },
+  { RankedT: DiseaseRanked, TermT: DiseaseTerm, T: Disease },
+  { RankedT: PathwayRanked, TermT: PathwayTerm, T: Pathway },
+  { RankedT: PhenotypeRanked, TermT: PhenotypeTerm, T: Phenotype },
+  { RankedT: TissueRanked, TermT: TissueTerm, T: Tissue },
+].flatMap(({ RankedT, TermT, T }) => [
+  MetaNode(`TopKRankedT[${RankedT.spec}]`)
+    .meta({
+      label: `Top ${RankedT.meta.label}`,
+      description: `Select the top ${RankedT.meta.label}`,
+    })
+    .codec(z.object({
+      k: z.number(),
+    }))
+    .inputs({ ranked: RankedT })
+    .output(RankedT)
+    .prompt(props => {
+      React.useEffect(() => {
+        if (!props.data) props.submit({ k: 10 })
+      }, [props.data])
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-row gap-2">
+            {[10, 20, 50, 100].map(k =>
+              <button
+                key={k}
+                className={classNames('btn', {'btn-primary': props.data?.k === k, 'btn-secondary': props.data?.k !== k})}
+                onClick={() => {props.submit({ k })}}
+              >Top {k}</button>
+            )}
+          </div>
+          {RankedT.view(props.inputs.ranked)}
+        </div>
+      )
+    })
+    .resolve(async (props) => {
+      return {
+        ranked: props.inputs.ranked.ranked.slice(0, props.data.k),
+        description: `Top ${props.data.k} ${props.inputs.ranked.description}`,
+      }
+    })
+    .story(props => `The top ${props.data?.k || 'K'} ${RankedT.meta.label} were selected.`)
+    .build(),
+  MetaNode(`OneRankedT[${RankedT.spec}]`)
+    .meta({
+      label: `Select One ${TermT.meta.label}`,
+      description: `Select one ${TermT.meta.label}`,
+    })
+    .codec(z.string())
+    .inputs({ ranked: RankedT })
+    .output(TermT)
+    .prompt(props => {
+      const ranked = props.inputs.ranked.ranked
+      const [selected, setSelected] = React.useState<string | undefined>(props.data)
+      React.useEffect(() => {
+        if (props.output !== undefined) {
+          setSelected(props.output)
+        }
+      }, [props.output, ranked])
+      return (
+        <div>
+          <Table
+            height={500}
+            cellRendererDependencies={[ranked]}
+            rowHeaderCellRenderer={(row) =>
+              <div
+                className="text-center block"
+                onClick={evt => {
+                  setSelected(ranked[row])
+                  props.submit(ranked[row])
+                }}
+              >
+                <input type="radio" checked={selected === ranked[row]} />
+              </div>
+            }
+            numRows={ranked.length}
+            enableGhostCells
+          >
+            <Column
+              name={T.label}
+              cellRenderer={row => <Cell key={row+''}>{ranked[row]}</Cell>}
+            />
+          </Table>
+        </div>
+      )
+    })
+    .resolve(async (props) => {
+      if (!props.inputs.ranked.ranked.some((term) => term === props.data)) {
+        throw new Error(`Please select a ${T.label.toLowerCase()} from the table`)
+      }
+      return props.data
+    })
+    .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
+    .build()
 ])

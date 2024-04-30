@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
 import { metgene_icon, plot_icon } from '@/icons'
-import { GeneTerm } from '@/components/core/input/term'
+import { GeneTerm } from '@/components/core/term'
 import dynamic from 'next/dynamic'
 
 const IFrame = dynamic(() => import('@/app/components/IFrame'))

@@ -14,5 +14,8 @@ export type Primative = {
     set?: {
       meta?: Partial<InternalIdentifiableMetaNode['meta']>,
     },
+    ranked?: {
+      meta?: Partial<InternalIdentifiableMetaNode['meta']>,
+    },
   }
 }

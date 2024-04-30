@@ -1,7 +1,7 @@
 import python from '@/utils/python'
 import { PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
-import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/input/scored'
+import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/scored'
 import { barchart_icon } from '@/icons'
 
 export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues].map(ScoredT =>

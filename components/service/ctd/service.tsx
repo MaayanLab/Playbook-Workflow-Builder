@@ -1,7 +1,7 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL, FileInput, FilePrompt, FileC } from '@/components/core/file'
 import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
-import { GeneSet } from '@/components/core/input/set'
+import { GeneSet } from '@/components/core/set'
 import { z } from 'zod'
 import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'

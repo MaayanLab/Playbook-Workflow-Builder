@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { GeneTerm } from '@/components/core/input/term'
+import { GeneTerm } from '@/components/core/term'
 import { MetaNode } from '@/spec/metanode'
-import { ScoredDrugs, ScoredGenes } from '@/components/core/input/scored'
+import { ScoredDrugs, ScoredGenes } from '@/components/core/scored'
 import { lincs_icon, plot_icon, up_icon, down_icon } from '@/icons'
 
 const lincs_l1000_reverse_search_dashboard = 'https://lincs-reverse-search-dashboard.dev.maayanlab.cloud'

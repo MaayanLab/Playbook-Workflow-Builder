@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetaNode } from '@/spec/metanode'
-import { ScoredGenes } from '@/components/core/input/scored'
+import { ScoredGenes } from '@/components/core/scored'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import python from '@/utils/python'
 import { archs4_icon, gtex_icon, targetranger_icon } from '@/icons'

@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
+import { GeneTerm } from '@/components/core/term'
 import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon } from '@/icons'
 

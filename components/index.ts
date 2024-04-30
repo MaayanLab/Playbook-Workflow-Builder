@@ -195,6 +195,10 @@ import * as service_archs4 from "./service/archs4"
 import service_archs4_packageJson from "./service/archs4/package.json"
 metanodes.push(...MetaNodesFromExports(service_archs4, service_archs4_packageJson))
 components.push("service/archs4")
+import * as service_chea3 from "./service/chea3"
+import service_chea3_packageJson from "./service/chea3/package.json"
+metanodes.push(...MetaNodesFromExports(service_chea3, service_chea3_packageJson))
+components.push("service/chea3")
 import * as service_ctd from "./service/ctd"
 import service_ctd_packageJson from "./service/ctd/package.json"
 metanodes.push(...MetaNodesFromExports(service_ctd, service_ctd_packageJson))

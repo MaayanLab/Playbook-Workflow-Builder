@@ -1,18 +1,55 @@
 import React from 'react'
 import { MetaNode, DataMetaNode, InternalDataMetaNode } from '@/spec/metanode'
-import { DiseaseSet, DrugSet, GeneSet, PathwaySet, PhenotypeSet, TissueSet } from '@/components/core/set'
+import {
+  DiseaseSet,
+  DrugSet,
+  GeneSet,
+  GlycanSet,
+  MetaboliteSet,
+  PathwaySet,
+  PhenotypeSet,
+  TissueSet,
+} from '@/components/core/set'
 import { z } from 'zod'
 import { gene_icon, enrichr_icon, search_icon } from '@/icons'
-import { backgrounds, Disease_backgrounds, Drug_backgrounds, Pathway_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, Gene_backgrounds } from './backgrounds'
-import { DiseaseTerm, DrugTerm, GeneTerm, MetaboliteTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
+import {
+  backgrounds,
+  Disease_backgrounds,
+  Drug_backgrounds,
+  Gene_backgrounds,
+  Glycan_backgrounds,
+  Metabolite_backgrounds,
+  Pathway_backgrounds,
+  Phenotype_backgrounds,
+  Tissue_backgrounds,
+} from './backgrounds'
+import {
+  DiseaseTerm,
+  DrugTerm,
+  GeneTerm,
+  MetaboliteTerm,
+  PathwayTerm,
+  PhenotypeTerm,
+  TissueTerm,
+} from '@/components/core/term'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
-import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/scored'
-import { Disease, Drug, Gene, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
+import {
+  ScoredDiseases,
+  ScoredDrugs,
+  ScoredGenes,
+  ScoredGlycans,
+  ScoredMetabolites,
+  ScoredPathways,
+  ScoredPhenotypes,
+  ScoredTissues,
+} from '@/components/core/scored'
+import { Disease, Drug, Gene, Glycan, Metabolite, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import type { ValuesOf } from '@/utils/types'
 import { downloadBlob } from '@/utils/download'
+import pluralize from 'pluralize'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
@@ -51,6 +88,8 @@ export const EnrichrPathwaySet = EnrichrSet_T(PathwaySet)
 export const EnrichrPhenotypeSet = EnrichrSet_T(PhenotypeSet)
 export const EnrichrTissueSet = EnrichrSet_T(TissueSet)
 export const EnrichrGeneSet = EnrichrSet_T(GeneSet)
+export const EnrichrGlycanSet = EnrichrSet_T(GlycanSet)
+export const EnrichrMetaboliteSet = EnrichrSet_T(MetaboliteSet)
 
 async function resolveGenesetLibrary({ terms, background }: { background: string, terms: string[] }) {
   const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(terms.join(';'))}`)
@@ -191,20 +230,28 @@ const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof background
 }
 
 export const EnrichrGenesetSearchT = [
-  { backgrounds: Disease_backgrounds, output: ScoredDiseases },
-  { backgrounds: Drug_backgrounds, output: ScoredDrugs },
-  { backgrounds: Pathway_backgrounds, output: ScoredPathways },
-  { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes },
-  { backgrounds: Tissue_backgrounds, output: ScoredTissues },
-  { backgrounds: Gene_backgrounds, output: ScoredGenes },
-].flatMap(({ backgrounds, output }) =>
-backgrounds.map(bg => ({ bg, output }))
-).map(({ bg, output }) =>
+  { backgrounds: Disease_backgrounds, output: ScoredDiseases, T: Disease },
+  { backgrounds: Drug_backgrounds, output: ScoredDrugs, T: Drug },
+  { backgrounds: Pathway_backgrounds, output: ScoredPathways, T: Pathway },
+  { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes, T: Phenotype },
+  { backgrounds: Tissue_backgrounds, output: ScoredTissues, T: Tissue },
+  { backgrounds: Gene_backgrounds, output: ScoredGenes, T: Gene },
+  { backgrounds: Glycan_backgrounds, output: ScoredGlycans, T: Glycan },
+  { backgrounds: Metabolite_backgrounds, output: ScoredMetabolites, T: Metabolite },
+].flatMap(({ backgrounds, output, T }) =>
+backgrounds.map(bg => ({ bg, output, T }))
+).map(({ bg, output, T }) =>
   MetaNode(`ExtractEnrichrGenesetSearch[${bg.name}]`)
     .meta({
       label: `Extract Enriched ${bg.termLabel}`,
       icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Significant Terms from the ${bg.label} Library`,
+      tags: {
+        'Output Type': {
+          [pluralize(T.label)]: 1,
+        },
+        ...('tags' in bg ? bg.tags as Record<string, Record<string, 1>> : {}),
+      },
     })
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
@@ -268,20 +315,28 @@ const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>,
 }
 
 export const EnrichrGeneSearchT = [
-  { backgrounds: Disease_backgrounds, output: EnrichrDiseaseSet },
-  { backgrounds: Drug_backgrounds, output: EnrichrDrugSet },
-  { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
-  { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
-  { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
-].flatMap(({ backgrounds, output }) =>
-backgrounds.map(bg => ({ bg, output }))
-).map(({ bg, output }) =>
+  { backgrounds: Disease_backgrounds, output: EnrichrDiseaseSet, T: Disease },
+  { backgrounds: Drug_backgrounds, output: EnrichrDrugSet, T: Drug },
+  { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet, T: Pathway },
+  { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet, T: Phenotype },
+  { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet, T: Tissue },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet, T: Gene },
+  { backgrounds: Glycan_backgrounds, output: EnrichrGlycanSet, T: Glycan },
+  { backgrounds: Metabolite_backgrounds, output: EnrichrMetaboliteSet, T: Metabolite },
+].flatMap(({ backgrounds, output, T }) =>
+backgrounds.map(bg => ({ bg, output, T }))
+).map(({ bg, output, T }) =>
   MetaNode(`ExtractEnrichrGeneSearch[${bg.name}]`)
     .meta({
       label: `Extract ${bg.termLabel} ${bg.termAssociation} the Gene`,
       icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Terms from the ${bg.label} Library`,
+      tags: {
+        'Output Type': {
+          [pluralize(T.label)]: 1,
+        },
+        ...('tags' in bg ? bg.tags as Record<string, Record<string, 1>> : {}),
+      },
     })
     .inputs({ searchResults: EnrichrGeneSearchResults })
     .output(output)
@@ -356,21 +411,29 @@ const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>,
 }
 
 export const EnrichrTermSearchT = [
-  { backgrounds: Disease_backgrounds, output: EnrichrDiseaseSet },
-  { backgrounds: Drug_backgrounds, output: EnrichrDrugSet },
-  { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet },
-  { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet },
-  { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet },
-  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet },
-].flatMap(({ backgrounds, output }) =>
-  backgrounds.map(bg => ({ bg, output }))
-).map(({ bg, output }) =>
+  { backgrounds: Disease_backgrounds, output: EnrichrDiseaseSet, T: Disease },
+  { backgrounds: Drug_backgrounds, output: EnrichrDrugSet, T: Drug },
+  { backgrounds: Pathway_backgrounds, output: EnrichrPathwaySet, T: Pathway },
+  { backgrounds: Phenotype_backgrounds, output: EnrichrPhenotypeSet, T: Phenotype },
+  { backgrounds: Tissue_backgrounds, output: EnrichrTissueSet, T: Tissue },
+  { backgrounds: Gene_backgrounds, output: EnrichrGeneSet, T: Gene },
+  { backgrounds: Glycan_backgrounds, output: EnrichrGlycanSet, T: Glycan },
+  { backgrounds: Metabolite_backgrounds, output: EnrichrMetaboliteSet, T: Metabolite },
+].flatMap(({ backgrounds, output, T }) =>
+  backgrounds.map(bg => ({ bg, output, T }))
+).map(({ bg, output, T }) =>
   MetaNode(`ExtractEnrichrTermSearch[${bg.name}]`)
     .meta({
       label: `Extract ${bg.termLabel} ${bg.termAssociation} the Term Search`,
       icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Terms from the ${bg.label} Library`,
       hidden: 'hidden' in bg && bg.hidden === true,
+      tags: {
+        'Output Type': {
+          [pluralize(T.label)]: 1,
+        },
+        ...('tags' in bg ? bg.tags as Record<string, Record<string, 1>> : {}),
+      },
     })
     .inputs({ searchResults: EnrichrTermSearchResults })
     .output(output)

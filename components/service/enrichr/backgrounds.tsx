@@ -351,7 +351,7 @@ export const Tissue_backgrounds = [
     name: 'MoTrPAC_2023',
     label: 'MoTrPAC 2023',
     termType: 'Tissue',
-    termRe: /^(\w+?)-(?<tissue>.+?) (?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down)$/,
+    termRe: /^(\w+?)-(?<term>.+?) (Consensus|(?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down))$/,
     termLabel: 'MoTrPAC Exercise Signatures',
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2020.06.004}`,

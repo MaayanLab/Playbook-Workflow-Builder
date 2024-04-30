@@ -161,7 +161,7 @@ import {
   GeneTerm,
   MetaboliteTerm,
   VariantTerm,
-} from '@/components/core/input/term'
+} from '@/components/core/term'
 export const TermToSetT = [
   { SetT: GeneSet, TermT: GeneTerm },
   { SetT: VariantSet, TermT: VariantTerm },

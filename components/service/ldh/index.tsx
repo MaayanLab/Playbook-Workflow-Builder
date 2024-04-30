@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
-import { GeneTerm } from '@/components/core/input/term'
-import { RegulatoryElementSet } from '@/components/core/input/set'
+import { GeneTerm } from '@/components/core/term'
+import { RegulatoryElementSet } from '@/components/core/set'
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { linkeddatahub_icon } from '@/icons'
 import { z } from 'zod'

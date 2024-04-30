@@ -1,5 +1,5 @@
-import { ScoredGenes } from '@/components/core/input/scored'
-import { GeneSet } from '@/components/core/input/set'
+import { ScoredGenes } from '@/components/core/scored'
+import { GeneSet } from '@/components/core/set'
 import { idg_icon } from '@/icons'
 import { MetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'

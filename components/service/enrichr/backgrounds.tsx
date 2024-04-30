@@ -1,5 +1,11 @@
 import * as dict from '@/utils/dict'
-import { archs4_icon, gtex_icon, lincs_icon } from '@/icons'
+import {
+  archs4_icon,
+  glygen_icon,
+  gtex_icon,
+  idg_icon,
+  lincs_icon,
+} from '@/icons'
 
 export const Disease_backgrounds = [
   {
@@ -11,6 +17,11 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gks1193}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        GEO: 1,
+      }
+    },
   },
   {
     name: 'Disease_Signatures_from_GEO_up_2014',
@@ -21,16 +32,26 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gks1193}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        GEO: 1,
+      }
+    },
   },
   {
     name: 'GTEx_Aging_Signatures_2021',
     label: 'GTEx Aging Signatures 2021',
     termType: 'Disease',
     termRe: /^GTEx (?<term>.+)$/,
-    termLabel: 'GeneRIF Rare Diseases',
+    termLabel: 'GTEx Aging Signatures',
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/ng.265}`,
     icon: [gtex_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
@@ -64,6 +85,11 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'LINCS_L1000_Chem_Pert_up',
@@ -74,6 +100,11 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'LINCS_L1000_Chem_Pert_down',
@@ -84,6 +115,26 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
+  },
+  {
+    name: 'IDG_Drug_Targets_2022',
+    label: 'IDG Drug Targets 2022',
+    termType: 'Drug',
+    termRe: /^(?<term>.+)$/,
+    termLabel: 'IDG Drug Target',
+    termAssociation: 'Targeting',
+    ref: ``,
+    icon: [idg_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -282,6 +333,24 @@ export const Phenotype_backgrounds = [
     icon: [],
     hidden: true,
   },
+  {
+    name: 'KOMP2_Mouse_Phenotypes_2022',
+    label: 'KOMP2 Mouse Phenotypes 2022',
+    termType: 'Phenotype',
+    termRe: /^(?<term>.+?)( \(?<iri>.+?\))?$/,
+    termLabel: 'Mouse Phenotypes',
+    termAssociation: 'Associated with',
+    extra: {
+      organism: 'mouse',
+    },
+    ref: `\\ref{doi:10.1093/nar/gkac972}`,
+    icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
+  },
 ]
 
 export const Tissue_backgrounds = [
@@ -297,6 +366,11 @@ export const Tissue_backgrounds = [
     },
     ref: `\\ref{doi:10.1038/ng.2653}`,
     icon: [gtex_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'ARCHS4_Tissues',
@@ -307,6 +381,41 @@ export const Tissue_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
+    tags: {
+      'Data Source': {
+        GEO: 1,
+      }
+    },
+  },
+  {
+    name: 'HuBMAP_ASCTplusB_augmented_2022',
+    label: 'HuBMAP ASCTplusB augmented 2022',
+    termType: 'Tissue',
+    termRe: /^(?<cell_type>.+) - (?<term>.+?)$/,
+    termLabel: 'HuBMAP ASCT+B Cell Type Biomarkers',
+    termAssociation: 'Containing',
+    ref: `\\ref{HuBMAP ASCT+B Reporter, https://hubmapconsortium.github.io/ccf-asct-reporter/}`,
+    icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
+  },
+  {
+    name: 'MoTrPAC_2023',
+    label: 'MoTrPAC 2023',
+    termType: 'Tissue',
+    termRe: /^(\w+?)-(?<term>.+?) (Consensus|(?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down))$/,
+    termLabel: 'MoTrPAC Exercise Signatures',
+    termAssociation: 'Containing',
+    ref: `\\ref{doi:10.1016/j.cell.2020.06.004}`,
+    icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -350,7 +459,48 @@ export const Gene_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
+]
+
+export const Glycan_backgrounds = [
+  {
+    name: 'GlyGen_Glycosylated_Proteins_2022',
+    label: 'GlyGen Glycosylated Proteins 2022',
+    termType: 'Glycan',
+    termRe: /^(?<term>.+)$/,
+    termLabel: 'Glycans',
+    termAssociation: 'Glycosylating',
+    ref: `\\ref{doi:10.1093/glycob/cwz080}`,
+    icon: [glygen_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
+  },
+]
+
+export const Metabolite_backgrounds = [
+  {
+    name: 'Metabolomics_Workbench_Metabolites_2022',
+    label: 'Metabolomics Workbench Metabolites 2022',
+    termType: 'Metabolite',
+    termRe: /^(\w+?)-(?<tissue>.+?) (?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down)$/,
+    termLabel: 'Metabolites',
+    termAssociation: 'Associated with',
+    ref: `\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}`,
+    icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
+  }
 ]
 
 export const backgrounds = dict.init([
@@ -360,4 +510,6 @@ export const backgrounds = dict.init([
   ...Phenotype_backgrounds,
   ...Tissue_backgrounds,
   ...Gene_backgrounds,
+  ...Glycan_backgrounds,
+  ...Metabolite_backgrounds,
 ].map((value) => ({ key: value.name, value })))

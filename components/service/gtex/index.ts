@@ -1,9 +1,9 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
-import { ScoredTissues } from '@/components/core/input/scored'
+import { ScoredTissues } from '@/components/core/scored'
 import { gtex_icon } from '@/icons'
 import python from '@/utils/python'
-import { GeneTerm } from '@/components/core/input/term'
+import { GeneTerm } from '@/components/core/term'
 
 export const GTExTissueExpression = MetaNode('GTExTissueExpression')
   .meta({

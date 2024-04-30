@@ -1,12 +1,12 @@
 import { MetaNode } from '@/spec/metanode'
-import { ScoredDrugs } from '@/components/core/input/scored'
+import { ScoredDrugs } from '@/components/core/scored'
 import { archs4_icon, drugshot_icon } from '@/icons'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
 import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
-import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/input/term'
-import { DrugSet } from '@/components/core/input/set'
+import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
+import { DrugSet } from '@/components/core/set'
 
 export const drugshot_url = 'https://maayanlab.cloud/drugshot'
 

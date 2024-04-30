@@ -1,17 +1,16 @@
 import { MetaNode } from '@/spec/metanode'
-import { FileURL, FileInput, FilePrompt, FileC } from '@/components/core/file'
+import { FileURL } from '@/components/core/file'
 import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
+import {GeneExpressions, CTD_FileDownload, AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
 import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
+import { file_transfer_icon, datafile_icon, ctd_icon, file_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { GraphPlot } from '@/components/viz/graph'
 import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
-import { downloadUrl } from '@/utils/download'
-import { Table, Cell, Column} from '@/app/components/Table'
 import FormData from 'form-data'
 import { Readable } from 'stream'
-import SafeRender from '@/utils/saferender'
+
 
 const CTDResponseC = z.object({
   "highlyConnectedGenes": z.any(),
@@ -74,51 +73,18 @@ export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResp
   return res.data
 }
 
-/*
 export async function getCustomMatrixFromExpressions(formData: FormData): Promise<Readable> {
+  const { default: axios } = await import('axios')
   const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/createCustomMatrix`, formData, {
-    headers: { ...formData.getHeaders() }
+    headers: { ...formData.getHeaders() },
+    responseType: 'stream'
   });
   return res.data
-}*/
-
-export const CTD_FileDownload = MetaNode('CTD_FileDownload')
-  .meta({
-    label: 'CTD File Download',
-    description: '',
-    icon: [datafile_icon]
-  })
-  .codec(
-    z.object({
-      url: z.string(),
-      filename: z.string(),
-    })
-  )
-  .view(props => {
-    return (
-      <Table
-      cellRendererDependencies={[1]}
-      numRows={1}
-      downloads={{
-        'URL': () => downloadUrl(props.url, props.filename)
-      }}
-      >
-      <Column
-        name="Filename"
-        cellRenderer={row => <Cell key={row+''}>{props.filename}</Cell>}
-      />
-      <Column
-        name="URL"
-        cellRenderer={row => <Cell key={row+''}>{props.url}</Cell>}
-      />
-      </Table>
-    )
-  }).build()
-
+}
 
 export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
   .meta({
-    label: `CTD Precalculations With Custom Matrix`,
+    label: `Connect the Dots in Precalculated Graph`,
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
     icon: [ctd_icon],
   })
@@ -134,66 +100,68 @@ export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
     const response = await getCTDPrecalculationsResponse(formData);
-    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
+    const file = await uploadFile(await fileFromStream(response, "ctdCustomPermutations.RData"));
     return file;
   }).story(props =>   
     "The two files where send to the CTD API for precalculations."
   ).build()
 
-export const Execute_CTD_Precalculations_Hybrid = MetaNode('Execute_CTD_Precalculations_Hybrid')
+  export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
   .meta({
-    label: `Connect the Dots in Precalculated Graph`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
-    icon: [ctd_icon],
-    hidden: true,
+    label: `CTD - Create a Custom Adjacency Matrix`,
+    description: "Create a Custom Adjacency Matrix Using a Gene Expressions File.",
+    tags: {
+      Type: {
+        CTD: 1
+      }
+    },
+    icon: [ctd_icon]
   })
-  .inputs({ geneSet: GeneSet, file: FileURL})
-  .output(CTD_FileDownload)
+  .inputs({geneExpressions: GeneExpressions})
+  .output(AdjacencyMatrix)
   .resolve(async (props) => {
-    let geneNamesList = props.inputs.geneSet.set;
-    let adjMatrixFile = props.inputs.file;
-    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
-
-    console.log("geneNamesList: "+JSON.stringify(geneNamesList))
-    console.log("file: "+adjMatrixFile.filename)
+    const fileReader = await fileAsStream(props.inputs.geneExpressions);
+    console.log("CTD-Matrix from gene expressions file: "+props.inputs.geneExpressions.filename);
 
     const formData = new FormData();
-    formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
-    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
+    formData.append('csvExpressionsFile', fileReader, props.inputs.geneExpressions.filename);
 
-    const response = await getCTDPrecalculationsResponse(formData);
-    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
+    const response = await getCustomMatrixFromExpressions(formData);
+    const file = await uploadFile(await fileFromStream(response, 'ctdCustomMatrix.csv')); //`derived.${"customMatrix.csv"}`
     return file;
   }).story(props =>   
-    "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
+    "A custom CTD Adjacency Matrix is being created!"
   ).build()
 
-export const Execute_CTD_Precalculations_Hybrid_Upload = MetaNode('Execute_CTD_Precalculations_Hybrid_Upload')
+export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precalculations_Combined')
   .meta({
     label: `Connect the Dots in Precalculated Graph`,
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
-    icon: [ctd_icon],
+    icon: [ctd_icon]
   })
-  .codec(FileC)
-  .inputs({ geneSet: GeneSet })
-  .output(CTD_FileDownload)
-  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={CTD_FileDownload.view} props={props.output} /> : null}</>)
+  .inputs({ geneSet: GeneSet, ajdMatrix: AdjacencyMatrix})
+  .output(CTD_MatrixAndPermutations)
   .resolve(async (props) => {
     let geneNamesList = props.inputs.geneSet.set;
-    let adjMatrixFile = props.data;
+    let adjMatrixFile = props.inputs.ajdMatrix;
     const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
 
     console.log("geneNamesList: "+JSON.stringify(geneNamesList))
     console.log("file: "+adjMatrixFile.filename)
 
-    const formData = new FormData();
+    const formData = new FormData(); 
     formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
 
     const response = await getCTDPrecalculationsResponse(formData);
-    const file = await uploadFile(await fileFromStream(response, `derived.${"customRDataFile.RData"}`))
-    return file;
-  }).story(props =>   
+    const permutationsfile = await uploadFile(await fileFromStream(response, "ctdCustomPermutations.RData"));
+
+    let output = {
+      'ctdPermutations':permutationsfile,
+      'ctdMatrix': adjMatrixFile
+    }
+    return output;
+  }).story(props =>
     "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
   ).build()
 
@@ -236,33 +204,38 @@ export const Execute_CTD_Precalculations_Hybrid_Upload = MetaNode('Execute_CTD_P
     )
   }).build()
 
-  /*
-  export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
+  export const CTD_UseCustomMatrixCombined = MetaNode('CTD_UseCustomMatrixCombined')
   .meta({
-    label: `CTD Create a Custom Matrix`,
-    description: "Create a Custom Matrix Using a Gene Expressions File."
+    label: `CTD Custom Response - Final`,
+    description: "Get a Final CTD Reponse using a custom gene list, ajd. matrix file and permutations (RData) file."
   })
-  .inputs({file: FileURL})
-  .output(CTD_FileDownload)
+  .inputs({ geneSet: GeneSet, matrixAndPermutations: CTD_MatrixAndPermutations})
+  .output(CTDResponseInfo)
   .resolve(async (props) => {
-    const fileReader = await fileAsStream(props.inputs.file);
-    console.log("CTD-Matrix from gene expressions file: "+props.inputs.file.filename);
+    let geneNamesList = props.inputs.geneSet.set;
+    let adjMatrixFile = props.inputs.matrixAndPermutations.ctdMatrix;
+    let permutationsFile = props.inputs.matrixAndPermutations.ctdPermutations;
 
+    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
+    const permutationsFileReader = await fileAsStream(permutationsFile);
     const formData = new FormData();
-    formData.append('csvExpressionsFile', fileReader, props.inputs.file.filename);
+    formData.append('csvGenesFile', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' });
+    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
+    formData.append('customRData', permutationsFileReader, permutationsFile.filename);
 
-    const response = await getCustomMatrixFromExpressions(formData);
-    const file = await uploadFile(await fileFromStream(response, `derived.${"customMatrix.csv"}`))
-    return file;
+    let response = await getCTDUseCustomMatrix(formData);
+    if(response != null && response.report != null && response.report.type == 'error'){
+      throw new Error(response.report.message);
+    }
+    return response;
   }).story(props =>   
     "The three files where send to the CTD API for precalculations."
   ).build()
-  */
 
   export const CTD_UseCustomMatrix = MetaNode('CTD_UseCustomMatrix')
   .meta({
-    label: `CTD Response With Custom Matrix`,
-    description: "Get CTD Reponse using a custom gene list, ajd. matrix file and RData file. Use the \"CTD Precalculations With Custom Matrix\" card to create the custom  RData file.!"
+    label: `CTD Custom Response - Final`,
+    description: "Get a Final CTD Reponse using a custom gene list, ajd. matrix file and permutations (RData) file. Use the \"Connect the Dots in Precalculated Graph\" card to create the custom permutations (RData) file.!"
   })
   .inputs({ ctdUseCustomMatrixFileURLs: CTDUseCustomMatrixFileURLs })
   .output(CTDResponseInfo)
@@ -374,7 +347,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 
   export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
-    label: `Connect the Dots in STRING`,
+    label: `CTD - Connect the Dots in STRING`,
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins in the STRING protein interaction graph. *Please note 10-150 genes of interest are required to run CTD',
     icon: [ctd_icon],
   })
@@ -398,7 +371,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
-    label: `Connect the Dots in Wikipathways`,
+    label: `CTD - Connect the Dots in Wikipathways`,
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD',
     icon: [ctd_icon],
   })

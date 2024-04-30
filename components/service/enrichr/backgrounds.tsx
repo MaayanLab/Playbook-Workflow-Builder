@@ -17,6 +17,11 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gks1193}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        GEO: 1,
+      }
+    },
   },
   {
     name: 'Disease_Signatures_from_GEO_up_2014',
@@ -27,6 +32,11 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gks1193}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        GEO: 1,
+      }
+    },
   },
   {
     name: 'GTEx_Aging_Signatures_2021',
@@ -37,6 +47,11 @@ export const Disease_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/ng.265}`,
     icon: [gtex_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'Rare_Diseases_GeneRIF_ARCHS4_Predictions',
@@ -70,6 +85,11 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'LINCS_L1000_Chem_Pert_up',
@@ -80,6 +100,11 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'LINCS_L1000_Chem_Pert_down',
@@ -90,6 +115,11 @@ export const Drug_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'IDG_Drug_Targets_2022',
@@ -100,6 +130,11 @@ export const Drug_backgrounds = [
     termAssociation: 'Targeting',
     ref: ``,
     icon: [idg_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -310,6 +345,11 @@ export const Phenotype_backgrounds = [
     },
     ref: `\\ref{doi:10.1093/nar/gkac972}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -326,6 +366,11 @@ export const Tissue_backgrounds = [
     },
     ref: `\\ref{doi:10.1038/ng.2653}`,
     icon: [gtex_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'ARCHS4_Tissues',
@@ -336,6 +381,11 @@ export const Tissue_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
     icon: [archs4_icon],
+    tags: {
+      'Data Source': {
+        GEO: 1,
+      }
+    },
   },
   {
     name: 'HuBMAP_ASCTplusB_augmented_2022',
@@ -346,6 +396,11 @@ export const Tissue_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{HuBMAP ASCT+B Reporter, https://hubmapconsortium.github.io/ccf-asct-reporter/}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
   {
     name: 'MoTrPAC_2023',
@@ -356,6 +411,11 @@ export const Tissue_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1016/j.cell.2020.06.004}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -399,6 +459,11 @@ export const Gene_backgrounds = [
     termAssociation: 'Containing',
     ref: `\\ref{doi:10.1093/nar/gkac328}`,
     icon: [lincs_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -412,6 +477,11 @@ export const Glycan_backgrounds = [
     termAssociation: 'Glycosylating',
     ref: `\\ref{doi:10.1093/glycob/cwz080}`,
     icon: [glygen_icon],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   },
 ]
 
@@ -425,6 +495,11 @@ export const Metabolite_backgrounds = [
     termAssociation: 'Associated with',
     ref: `\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}`,
     icon: [],
+    tags: {
+      'Data Source': {
+        CFDE: 1,
+      }
+    },
   }
 ]
 

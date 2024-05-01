@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { VariantTerm } from '@/components/core/input/term'
+import { VariantTerm } from '@/components/core/term'
 import { z } from 'zod'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink } from '../variantUtils'
 import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'

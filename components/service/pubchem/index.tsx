@@ -1,5 +1,5 @@
-import { ScoredDrugs } from "@/components/core/input/scored"
-import { DrugSet } from "@/components/core/input/set"
+import { ScoredDrugs } from "@/components/core/scored"
+import { DrugSet } from "@/components/core/set"
 import { MetaNode } from "@/spec/metanode"
 import python from "@/utils/python"
 

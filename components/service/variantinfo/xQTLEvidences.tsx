@@ -1,5 +1,5 @@
 import { MetaNode } from '@/spec/metanode'
-import { VariantTerm } from '@/components/core/input/term'
+import { VariantTerm } from '@/components/core/term'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'

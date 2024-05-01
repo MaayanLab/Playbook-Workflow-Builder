@@ -243,10 +243,6 @@ import * as service_mygeneinfo from "./service/mygeneinfo"
 import service_mygeneinfo_packageJson from "./service/mygeneinfo/package.json"
 metanodes.push(...MetaNodesFromExports(service_mygeneinfo, service_mygeneinfo_packageJson))
 components.push("service/mygeneinfo")
-import * as service_myvariantinfo from "./service/myvariantinfo"
-import service_myvariantinfo_packageJson from "./service/myvariantinfo/package.json"
-metanodes.push(...MetaNodesFromExports(service_myvariantinfo, service_myvariantinfo_packageJson))
-components.push("service/myvariantinfo")
 import * as service_pubchem from "./service/pubchem"
 import service_pubchem_packageJson from "./service/pubchem/package.json"
 metanodes.push(...MetaNodesFromExports(service_pubchem, service_pubchem_packageJson))

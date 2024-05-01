@@ -35,6 +35,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app_minimal
+    platform: linux/amd64
     deploy:
       # this can be safely replicated if necessary but an ingress will be required
       replicas: 1
@@ -80,6 +81,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
+    platform: linux/amd64
     x-kubernetes:
       imagePullPolicy: IfNotPresent
     deploy:
@@ -112,6 +114,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
+    platform: linux/amd64
     deploy:
       # this can be safely replicated if necessary but an ingress will be required
       replicas: 0

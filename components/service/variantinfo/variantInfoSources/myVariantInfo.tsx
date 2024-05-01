@@ -13,7 +13,7 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
     return "http://myvariant.info/v1/variant/"+hgvs+"?assembly=hg38";
   }
 
-  export async function getVarinatIntoFromMyVariantInfo( link: string): Promise<MyVariantInfo> {
+  export async function getVarinatInfoFromMyVariantInfo( link: string): Promise<MyVariantInfo> {
     const req = await fetch(link);
     return await req.json()
   }
@@ -44,15 +44,15 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
       throw new Error(variantIdResolveErrorMessage);
     }
 
-    const response = await getAlleleRegistryVariantInfo(varCaId);
-    if(response == null){
+    const alleleRegResponse = await getAlleleRegistryVariantInfo(varCaId);
+    if(alleleRegResponse == null){
       throw new Error(alleleRegRespErrorMessage);
     }
 
-    let myVariantInfoURL = getMyVarintInfoLink(response);
+    let myVariantInfoURL = getMyVarintInfoLink(alleleRegResponse);
 
     if(myVariantInfoURL != null){
-      return await getVarinatIntoFromMyVariantInfo(myVariantInfoURL);
+      return await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
     }else{
       throw new Error("Unable to find requested data, missing MyVarintInfo API link in External resources!");
     }

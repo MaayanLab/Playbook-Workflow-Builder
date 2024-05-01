@@ -6,7 +6,7 @@ import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink, validateHGVSInput } from './variantUtils'
 import { getAlleleRegistryVariantInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo } from './externalRecords'
-import { getVarinatIntoFromMyVariantInfo, assembleMyVarintInfoLinkWithHGVS } from './variantInfoSources/myVariantInfo'
+import { getVarinatInfoFromMyVariantInfo, assembleMyVarintInfoLinkWithHGVS } from './variantInfoSources/myVariantInfo'
 
 const HG38SingleGeneAssociationsC = z.object({
     distance_to_feature : z.string().optional(),
@@ -139,8 +139,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVarinatFromMyVariantInfo = MetaNode('GetGeneForVarinatFromMyVariantInfo')
   .meta({
-    label: 'Identify Closest Gene to Variant (CAID - AlleleRegistry)',
-    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API'
+    label: 'Identify Closest Gene to Variant (CAID)',
+    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API. Input is a CAID varint identifier!'
   })
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)
@@ -156,9 +156,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     }
 
     let response = null;
-    let myVariantInfoURL = getMyVarintInfoLink(response);
+    let myVariantInfoURL = getMyVarintInfoLink(alleleRegResponse);
     if(myVariantInfoURL != null){
-      response = await getVarinatIntoFromMyVariantInfo(myVariantInfoURL);
+      response = await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
     }
 
     return processHG38ExternalRecordsResponse(response);
@@ -166,9 +166,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].`)
   .build()
 
-  export const GetGeneForVarinatFromMyVariantInfoHGVS = MetaNode('GetGeneForVarinatFromMyVariantInfo')
+  export const GetGeneForVarinatFromMyVariantInfoHGVS = MetaNode('GetGeneForVarinatFromMyVariantInfoHGVS')
   .meta({
-    label: 'Identify Closest Gene to Variant (HGVS - MyVariantInfo)',
+    label: 'Identify Closest Gene to Variant (HGVS)',
     description: 'Identify the closest gene to this variant usign the MyVarinetInfo API and a HGVS query as input'
   })
   .inputs({ variantTerm: VariantTerm })
@@ -181,7 +181,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     let response = null;
     let myVariantInfoURL = assembleMyVarintInfoLinkWithHGVS(props.inputs.variantTerm);
     if(myVariantInfoURL != null){
-      response = await getVarinatIntoFromMyVariantInfo(myVariantInfoURL);
+      response = await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
     }
 
     return processHG38ExternalRecordsResponse(response);
@@ -210,7 +210,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     }
 
     if(hg38ExtSourceLink != null){
-      response = await getVarinatIntoFromMyVariantInfo(hg38ExtSourceLink);
+      response = await getVarinatInfoFromMyVariantInfo(hg38ExtSourceLink);
     }
 
     return processHG38ExternalRecordsResponse(response);
@@ -373,7 +373,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       for(let erIdx in externalRecords){
         if(externalRecords[erIdx] != null && externalRecords[erIdx].name == "MyVariantInfo_hg38"){
           let hg38ExtSourceLink = processHG38externalRecords(externalRecords[erIdx]);
-          let response = await getVarinatIntoFromMyVariantInfo(hg38ExtSourceLink);
+          let response = await getVarinatInfoFromMyVariantInfo(hg38ExtSourceLink);
           let associatedGeensList = processHG38ExternalRecordsResponse(response);
 
           let varinatGeneAssociation = {

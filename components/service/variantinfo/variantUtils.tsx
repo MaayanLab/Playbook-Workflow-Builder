@@ -86,7 +86,7 @@ function getCaIdFromAlleleRegistryLink(jsonObj: any){
     }
   }
 
-  export function getMyVarintInfoLink(alleleRegResponse: any){
+  export function getMyVarintInfoLink(alleleRegResponse: any){    
     let myVariantIdLink = null;
     if(alleleRegResponse['externalRecords'] != null){
       let externalRecords = alleleRegResponse['externalRecords'];

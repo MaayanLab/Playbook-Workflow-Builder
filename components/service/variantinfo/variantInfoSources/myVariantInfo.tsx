@@ -1,15 +1,19 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
 import { z } from 'zod'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from '../variantUtils'
+import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink } from '../variantUtils'
 import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
 
-export const MyVariantInfoC = z.object({
+  export const MyVariantInfoC = z.object({
     '_id':z.string()
   })
   export type MyVariantInfo = z.infer<typeof MyVariantInfoC>
   
-  async function getVarinatIntoFromMyVariantInfo( link: string): Promise<MyVariantInfo> {
+  export function assembleMyVarintInfoLinkWithHGVS(hgvs: string){
+    return "http://myvariant.info/v1/variant/"+hgvs+"?assembly=hg38";
+  }
+
+  export async function getVarinatIntoFromMyVariantInfo( link: string): Promise<MyVariantInfo> {
     const req = await fetch(link);
     return await req.json()
   }
@@ -45,25 +49,13 @@ export const MyVariantInfoC = z.object({
       throw new Error(alleleRegRespErrorMessage);
     }
 
-    let myVariantIdLink = null;
+    let myVariantInfoURL = getMyVarintInfoLink(response);
 
-    if(response['externalRecords'] != null){
-      let externalRecords = response['externalRecords'];
-      for(let er in externalRecords){
-        if(er == "MyVariantInfo_hg38"){
-          myVariantIdLink = externalRecords[er][0]['@id'];
-          break;
-        }
-      }
+    if(myVariantInfoURL != null){
+      return await getVarinatIntoFromMyVariantInfo(myVariantInfoURL);
     }else{
-      throw new Error("Unable to find requested data, missing External Records info from Allele Reg. API response!");
-    }
-
-    if(myVariantIdLink != null){
-      return await getVarinatIntoFromMyVariantInfo(myVariantIdLink);
-    }else{
-      throw new Error("Unable to find requested data, missing MyVarintInfo API endpoint!");
+      throw new Error("Unable to find requested data, missing MyVarintInfo API link in External resources!");
     }
   })
-  .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].`)
+  .story(props => ``)
   .build()

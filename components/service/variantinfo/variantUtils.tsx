@@ -75,3 +75,30 @@ function getCaIdFromAlleleRegistryLink(jsonObj: any){
       return variantIdTerm;
     }
   }
+
+  export function validateHGVSInput(variantIdTerm: string){
+    let hgvsRegexObj = new RegExp(hgvsRegex);
+
+    if(hgvsRegexObj.test(variantIdTerm)){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  export function getMyVarintInfoLink(alleleRegResponse: any){
+    let myVariantIdLink = null;
+    if(alleleRegResponse['externalRecords'] != null){
+      let externalRecords = alleleRegResponse['externalRecords'];
+      for(let er in externalRecords){
+        if(er == "MyVariantInfo_hg38"){
+          myVariantIdLink = externalRecords[er][0]['@id'];
+          break;
+        }
+      }
+    }else{
+      throw new Error("Unable to find requested data, missing External Records info from Allele Reg. API response!");
+    }
+
+    return myVariantIdLink;
+  }

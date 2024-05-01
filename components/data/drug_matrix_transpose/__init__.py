@@ -1,7 +1,7 @@
 from components.core.file import file_as_stream
 
 def load_drug_matrix_transpose(file):
-  with file_as_stream(file['url']) as fr:
+  with file_as_stream(file) as fr:
     return {
       term: dict(description=description, set=drugs)
       for line in fr

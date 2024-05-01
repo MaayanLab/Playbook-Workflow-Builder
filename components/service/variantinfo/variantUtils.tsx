@@ -76,10 +76,10 @@ function getCaIdFromAlleleRegistryLink(jsonObj: any){
     }
   }
 
-  export function validateHGVSInput(variantIdTerm: string){
-    let hgvsRegexObj = new RegExp(hgvsRegex);
+  export function validateMyVariantInfoInput(variantIdTerm: string){
+    let myVariantInfoHG38RegexObj = new RegExp(myVariantInfoHG38Regex);
 
-    if(hgvsRegexObj.test(variantIdTerm)){
+    if(myVariantInfoHG38RegexObj.test(variantIdTerm)){
       return true;
     }else{
       return false;

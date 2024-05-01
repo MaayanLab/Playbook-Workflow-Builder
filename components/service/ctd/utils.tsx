@@ -194,39 +194,3 @@ export const GeneExpressionsFileUpload = MetaNode('GeneExpressionsFileUpload')
   `A  Gene Expressions file ${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
 )
 .build()
-
-export const CTD_FileDownload = MetaNode('CTD_FileDownload')
-  .meta({
-    label: 'CTD File Download',
-    description: '',
-    icon: [datafile_icon]
-  })
-  .codec(
-    z.object({
-      url: z.string(),
-      filename: z.string(),
-    })
-  )
-  .view(props => {
-    return (
-      <div>
-        <p><b>CTD File Download</b></p>
-        <Table
-        cellRendererDependencies={[1]}
-        numRows={1}
-        downloads={{
-          'URL': () => downloadUrl(props.url, props.filename)
-        }}
-        >
-        <Column
-          name="Filename"
-          cellRenderer={row => <Cell key={row+''}>{props.filename}</Cell>}
-        />
-        <Column
-          name="URL"
-          cellRenderer={row => <Cell key={row+''}>{props.url}</Cell>}
-        />
-        </Table>
-      </div>
-    )
-  }).build()

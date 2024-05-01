@@ -3,7 +3,7 @@ import { VariantTerm } from '@/components/core/input/term'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink, validateHGVSInput } from './variantUtils'
+import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink, validateMyVariantInfoInput } from './variantUtils'
 import { getAlleleRegistryVariantInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo } from './externalRecords'
 import { getVarinatInfoFromMyVariantInfo, assembleMyVarintInfoLinkWithHGVS } from './variantInfoSources/myVariantInfo'
@@ -174,7 +174,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .inputs({ variantTerm: VariantTerm })
   .output(GeneAssociations_HG38)
   .resolve(async (props) => {
-    if(!validateHGVSInput(props.inputs.variantTerm)){
+    if(!validateMyVariantInfoInput(props.inputs.variantTerm)){
       throw new Error("The value you inputed is not a valid HGVS query, please try again!");
     }
 

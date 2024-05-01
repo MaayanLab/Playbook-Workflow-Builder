@@ -1,10 +1,9 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
-import { CTDPrecalculationsFileURLs, CTDUseCustomMatrixFileURLs } from './input'
-import {GeneExpressions, CTD_FileDownload, AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
+import {GeneExpressions, AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
 import { GeneSet } from '@/components/core/input/set'
 import { z } from 'zod'
-import { file_transfer_icon, datafile_icon, ctd_icon, file_icon } from '@/icons'
+import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'
 import { GraphPlot } from '@/components/viz/graph'
 import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
@@ -81,30 +80,6 @@ export async function getCustomMatrixFromExpressions(formData: FormData): Promis
   });
   return res.data
 }
-
-export const Execute_CTD_Precalculations = MetaNode('Execute_CTD_Precalculations')
-  .meta({
-    label: `Connect the Dots in Precalculated Graph`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
-    icon: [ctd_icon],
-  })
-  .inputs({ ctdPrecalculationsFileURLs: CTDPrecalculationsFileURLs })
-  .output(CTD_FileDownload)
-  .resolve(async (props) => {
-    let { geneListFile, adjMatrixFile } = props.inputs.ctdPrecalculationsFileURLs;
-
-    const geneListFileReader = await fileAsStream(geneListFile);
-    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
-    const formData = new FormData();
-    formData.append('geneList', geneListFileReader, geneListFile.filename);
-    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
-
-    const response = await getCTDPrecalculationsResponse(formData);
-    const file = await uploadFile(await fileFromStream(response, "ctdCustomPermutations.RData"));
-    return file;
-  }).story(props =>   
-    "The two files where send to the CTD API for precalculations."
-  ).build()
 
   export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
   .meta({
@@ -232,34 +207,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     "The three files where send to the CTD API for precalculations."
   ).build()
 
-  export const CTD_UseCustomMatrix = MetaNode('CTD_UseCustomMatrix')
-  .meta({
-    label: `CTD Custom Response - Final`,
-    description: "Get a Final CTD Reponse using a custom gene list, ajd. matrix file and permutations (RData) file. Use the \"Connect the Dots in Precalculated Graph\" card to create the custom permutations (RData) file.!"
-  })
-  .inputs({ ctdUseCustomMatrixFileURLs: CTDUseCustomMatrixFileURLs })
-  .output(CTDResponseInfo)
-  .resolve(async (props) => {
-    let { geneListFile, adjMatrixFile, rDataFile } = props.inputs.ctdUseCustomMatrixFileURLs;
-
-    const geneListFileReader = await fileAsStream(geneListFile);
-    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
-    const rDataFileReader = await fileAsStream(rDataFile);
-    const formData = new FormData();
-    formData.append('csvGenesFile', geneListFileReader, geneListFile.filename);
-    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
-    formData.append('customRData', rDataFileReader, rDataFile.filename);
-
-    let response = await getCTDUseCustomMatrix(formData);
-    if(response != null && response.report != null && response.report.type == 'error'){
-      throw new Error(response.report.message);
-    }
-    return response;
-  }).story(props =>   
-    "The three files where send to the CTD API for precalculations."
-  ).build()
-
-export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
+  export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
   .meta({
     label: `Extract Highly Connected Genes`,
     description: "Extract nodes that are determined to be highly connected by CTD in your initial node set and display them in a table."

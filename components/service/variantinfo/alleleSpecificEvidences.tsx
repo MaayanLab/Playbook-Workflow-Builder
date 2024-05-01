@@ -4,7 +4,8 @@ import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
-import { getGitDataHubVariantInfo, VariantSetInfo } from './variantInfo'
+import { VariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
+import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
 
 export const AlleleSpecificEvidenceInfoC = z.array(
     z.object({

@@ -1,8 +1,8 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/input/term'
 import { z } from 'zod'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from './variantUtils'
-import { getAlleleRegistryVariantInfo } from './variantInfo'
+import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from '../variantUtils'
+import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
 
 export const MyVariantInfoC = z.object({
     '_id':z.string()

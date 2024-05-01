@@ -4,7 +4,7 @@ import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from './variantUtils'
-import { getAlleleRegistryVariantInfo } from './variantInfo'
+import { getAlleleRegistryVariantInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo } from './externalRecords'
 
 const HG38SingleGeneAssociationsC = z.object({

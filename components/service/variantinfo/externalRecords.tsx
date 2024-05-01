@@ -4,7 +4,7 @@ import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from './variantUtils'
-import { getAlleleRegistryVariantInfo,  AlleleRegistryVariantInfo, VariantSetInfo } from './variantInfo'
+import { getAlleleRegistryVariantInfo,  AlleleRegistryVariantInfo, VariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 
 const AlleleRegistryExternalSourcesInfoC = z.array(
     z.object({

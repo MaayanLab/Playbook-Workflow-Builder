@@ -7,47 +7,8 @@ import { z } from 'zod'
 import { linkeddatahub_icon } from '@/icons'
 import { getRegElemPositionData } from '@/components/service/regulatoryElementInfo'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, gitDataHubErroMessage } from './variantUtils'
-import { xQTL_EvidenceEntContent } from './xQTLEvidences'
-import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo } from './externalRecords'
-import { AlleleSpecificEvidenceInfoC } from './alleleSpecificEvidences'
-
-export const GitHubVariantInfoC =  z.object({
-    data: z.object({
-      entId: z.string(),
-      entType: z.string(),
-      ld: z.object({
-        AlleleSpecificEvidence: z.array(
-          z.object({
-            ldhId: z.string(),
-            ldhIri: z.string(),
-            entContent: z.object({
-              sourceDescription: z.string(),
-              AlleleSpecificity:z.any().optional()
-            })
-          })
-        ),
-        xqtlEvidence:  z.array(z.object({
-          entId: z.string(),
-          ldhId: z.string(),
-          ldhIri: z.string(),
-          entContent: xQTL_EvidenceEntContent
-          })
-        )
-      }),
-      ldFor: z.object({
-        RegulatoryElement: z.array(
-            z.object({ entId: z.string() })
-          )
-      })
-    })
-  })
- export type GitHubVariantInfo = z.infer<typeof GitHubVariantInfoC>
-
-export async function getGitDataHubVariantInfo(variantId: string): Promise<GitHubVariantInfo> {
-  const res = await fetch(`https://ldh.genome.network/cfde/ldh/Variant/id/${encodeURIComponent(variantId)}`)
-  return await res.json()
-}
+import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, gitDataHubErroMessage } from '../variantUtils'
+import { getGitDataHubVariantInfo } from './gitDataHubVariantInfo'
 
 const AlleleRegistryVariantInfoC = z.object({
     '@id': z.string(),

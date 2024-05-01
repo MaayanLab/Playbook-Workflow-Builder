@@ -4,34 +4,9 @@ import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
-import { getGitDataHubVariantInfo, GitHubVariantInfoC, VariantSetInfo } from './variantInfo'
-
-  export const xQTL_EvidenceEntContent = z.object({
-    GTExIri: z.string(),
-    score: z.number(),
-    sourceDescription: z.string(),
-    eQTL: z.object({
-      nes: z.string(),
-      sig: z.string()
-    }).optional(),
-    sQTL: z.object({
-      nes: z.string(),
-      sig: z.string()
-    }).optional(),
-    esQTL: z.object({
-      nes: z.string(),
-      sig: z.string()
-    }).optional(),
-    type: z.string().optional()
-  });
-  
-  const xQTL_EvidenceArray = z.array(
-    z.object({
-      ldhId: z.string(),
-      xQTLEntContent: xQTL_EvidenceEntContent
-    })
-  );
-
+import { VariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
+import { getGitDataHubVariantInfo, GitHubVariantInfoC } from './variantInfoSources/gitDataHubVariantInfo'
+import { xQTL_EvidenceArray } from './variantInfoSources/gitDataHubVariantInfo'
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({

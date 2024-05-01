@@ -1,7 +1,7 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
 import {GeneExpressions, AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
-import { GeneSet } from '@/components/core/input/set'
+import { GeneSet } from '@/components/core/set'
 import { z } from 'zod'
 import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
 import { fileAsStream } from  '@/components/core/file/api/download'

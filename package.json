@@ -19,6 +19,7 @@
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "codegen:sql": "mkdir -p db/migrations && ts-node cli/build-sql.ts > db/migrations/00_init.sql",
     "codegen:table": "ts-node cli/build-table.ts > metanodes.tsv",
+    "codegen:use-case-table": "ts-node cli/build-use-case-table.ts > use-cases.tsv",
     "codegen:analytics": "ts-node cli/dump-analytics.ts > analytics.tsv",
     "dev": "npm run --workspace=app dev",
     "start:worker": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) ts-node cli/resolve-process-worker.ts",

@@ -5,7 +5,7 @@ import CytoscapeComponent from 'react-cytoscapejs'
 
 Cytoscape.use(cola)
 
-const palette = [
+const glasbey_palette = [
   '#d21820','#1869ff','#008a00','#f36dff','#710079','#aafb00','#00bec2','#ffa235','#5d3d04','#08008a',
   '#005d5d','#9a7d82','#a2aeff','#96b675','#9e28ff','#4d0014','#ffaebe','#ce0092','#00ffb6','#002d00',
   '#9e7500','#3d3541','#f3eb92','#65618a','#8a3d4d','#5904ba','#558a71','#b2bec2','#ff5d82','#1cc600',
@@ -34,9 +34,10 @@ const palette = [
   '#00e3df','#9204ca','#312859','#007dd2','#a26dff','#825992',
 ]
 
-export default function CytoscapeCanvas(props: {
+export default function CytoscapeCanvas({ palette = glasbey_palette, ...props }: {
   nodes: { id: string, label?: string, type: string }[],
   edges: { source: string, target: string }[],
+  palette?: string[],
 }) {
   const { elements, maxWeight } = React.useMemo(() => {
     const nodes: Record<string, { id: string, label?: string, type: string }> = {}

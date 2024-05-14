@@ -35,12 +35,12 @@ const glasbey_palette = [
 ]
 
 export default function CytoscapeCanvas({ palette = glasbey_palette, ...props }: {
-  nodes: { id: string, label?: string, type: string }[],
+  nodes: { id: string, label?: string, type: string, color?: string }[],
   edges: { source: string, target: string }[],
   palette?: string[],
 }) {
   const { elements, maxWeight } = React.useMemo(() => {
-    const nodes: Record<string, { id: string, label?: string, type: string }> = {}
+    const nodes: Record<string, typeof props.nodes[0]> = {}
     const nodeTypeCounts: Record<string, number> = {}
     props.nodes.forEach(node => {
       nodes[node.id] = node
@@ -67,7 +67,7 @@ export default function CytoscapeCanvas({ palette = glasbey_palette, ...props }:
           id: node.id,
           label: node.label || node.id,
           weight: nodeEdgeCounts[node.id],
-          color: nodeTypeColors[node.type],
+          color: node.color ?? nodeTypeColors[node.type],
         }
       })),
       ...edges.map(node => ({ data: { source: node.source, target: node.target } })),

@@ -16,6 +16,7 @@ export const GraphPlot = MetaNode('GraphPlot')
       id: z.string(),
       label: z.string().optional(),
       type: z.string(),
+      color: z.string().optional(),
     })),
     edges: z.array(z.object({
       source: z.string(),

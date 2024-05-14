@@ -321,28 +321,28 @@ References:
 //       PlotlyPlot,
 //     ],
 //   },
-  {
-    id: 'cc338d00-d22e-08b1-3b74-21710dec3847',
-    label: 'Use Case 9: Identifying regulatory relationships between genes, regulatory regions, and variants',
-    description: `Using exRNA APIs, we identify tissue and allele specific regulatory information to perform regulatory variant burden testing.`,
-    gpt_summary: `The workflow begins by selecting CA13203640 as the search term. Additional information about the variant CA13203640 is then resolved. Regulatory elements associated with the variant CA13203640 are also resolved. Further information about the regulatory element EH38E2924876 is obtained. Genes that are linked to the regulatory element EH38E2924876 are determined. Variants that are linked to the regulatory element EH38E2924876 are also resolved. Allele specific evidences for the variant CA13203640 are then resolved. Lastly, xQTL evidence data for the variant CA13203640 is obtained.`,
-    published: 'July 26, 2023',
-    version: '1.0.0',
-    authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
-    dataSources: [
-      'ClinGen',
-      'STRING',
-      'KEGG',
-    ],
-    inputs: [
-      VariantTerm,
-    ],
-    outputs: [
-      RegulatoryElementSet,
-    ],
-  },
+  // {
+  //   id: 'cc338d00-d22e-08b1-3b74-21710dec3847',
+  //   label: 'Use Case 9: Identifying regulatory relationships between genes, regulatory regions, and variants',
+  //   description: `Using exRNA APIs, we identify tissue and allele specific regulatory information to perform regulatory variant burden testing.`,
+  //   gpt_summary: `The workflow begins by selecting CA13203640 as the search term. Additional information about the variant CA13203640 is then resolved. Regulatory elements associated with the variant CA13203640 are also resolved. Further information about the regulatory element EH38E2924876 is obtained. Genes that are linked to the regulatory element EH38E2924876 are determined. Variants that are linked to the regulatory element EH38E2924876 are also resolved. Allele specific evidences for the variant CA13203640 are then resolved. Lastly, xQTL evidence data for the variant CA13203640 is obtained.`,
+  //   published: 'July 26, 2023',
+  //   version: '1.0.0',
+  //   authors: ['CFDE Playbook Partnership'],
+  //   licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+  //   license: 'CC-BY-NC-SA-4.0',
+  //   dataSources: [
+  //     'ClinGen',
+  //     'STRING',
+  //     'KEGG',
+  //   ],
+  //   inputs: [
+  //     VariantTerm,
+  //   ],
+  //   outputs: [
+  //     RegulatoryElementSet,
+  //   ],
+  // },
   {
     id: '9bad4205-70e2-7f8d-b151-8fbb11e58ea9',
     label: 'Use Case 10: Guilt by Association',

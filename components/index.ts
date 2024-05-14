@@ -187,6 +187,10 @@ import * as gly_gen from "./gly_gen"
 import gly_gen_packageJson from "./gly_gen/package.json"
 metanodes.push(...MetaNodesFromExports(gly_gen, gly_gen_packageJson))
 components.push("gly_gen")
+import * as legacy from "./legacy"
+import legacy_packageJson from "./legacy/package.json"
+metanodes.push(...MetaNodesFromExports(legacy, legacy_packageJson))
+components.push("legacy")
 import * as lincs_l1000_reverse_search from "./lincs/l1000-reverse-search"
 import lincs_l1000_reverse_search_packageJson from "./lincs/l1000-reverse-search/package.json"
 metanodes.push(...MetaNodesFromExports(lincs_l1000_reverse_search, lincs_l1000_reverse_search_packageJson))

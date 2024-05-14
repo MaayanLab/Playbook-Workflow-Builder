@@ -1,11 +1,11 @@
 import React from 'react'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
-import { DrugSet, GeneSet, GlycanSet, ProteinSet, VariantSet, RegulatoryElementSet } from '@/components/core/set'
+import { DrugSet, GeneSet, GlycanSet, ProteinSet, VariantSet, RegulatoryElementSet, MetaboliteSet } from '@/components/core/set'
 import { DrugRanked, GeneRanked, GlycanRanked, ProteinRanked, VariantRanked, RegulatoryElementRanked, DiseaseRanked, PathwayRanked, PhenotypeRanked, TissueRanked } from '@/components/core/ranked'
-import { Disease, Drug, Gene, Glycan, Pathway, Phenotype, Protein, Tissue, Variant, RegulatoryElement } from '@/components/core/primitives'
-import { DiseaseTerm, DrugTerm, GeneTerm, GlycanTerm, PathwayTerm, PhenotypeTerm, ProteinTerm, TissueTerm, VariantTerm, RegulatoryElementTerm } from '@/components/core/term'
-import { ScoredDrugs, ScoredGenes, ScoredGlycans, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredProteins, ScoredTissues, ScoredVariants, ScoredRegulatoryElement } from '@/components/core/scored'
+import { Disease, Drug, Gene, Glycan, Pathway, Phenotype, Protein, Tissue, Variant, RegulatoryElement, Metabolite } from '@/components/core/primitives'
+import { DiseaseTerm, DrugTerm, GeneTerm, GlycanTerm, PathwayTerm, PhenotypeTerm, ProteinTerm, TissueTerm, VariantTerm, RegulatoryElementTerm, MetaboliteTerm } from '@/components/core/term'
+import { ScoredDrugs, ScoredGenes, ScoredGlycans, ScoredDiseases, ScoredPathways, ScoredPhenotypes, ScoredProteins, ScoredTissues, ScoredVariants, ScoredRegulatoryElement, ScoredMetabolites } from '@/components/core/scored'
 import { Table, Cell, Column } from '@/app/components/Table'
 import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
@@ -26,6 +26,7 @@ export const TopKScoredT = [
   { ScoredT: ScoredPathways, TermT: PathwayTerm, T: Pathway },
   { ScoredT: ScoredPhenotypes, TermT: PhenotypeTerm, T: Phenotype },
   { ScoredT: ScoredTissues, TermT: TissueTerm, T: Tissue },
+  { ScoredT: ScoredMetabolites, TermT: MetaboliteTerm, T: Metabolite },
 ].flatMap(({ ScoredT, TermT, T }) => [
   MetaNode(`TopKScoredT[${ScoredT.spec}]`)
     .meta({
@@ -127,6 +128,7 @@ export const SelectScoredT = [
   { ScoredT: ScoredPathways },
   { ScoredT: ScoredPhenotypes },
   { ScoredT: ScoredTissues },
+  { ScoredT: ScoredMetabolites },
 ].flatMap(({ ScoredT }) => [
   MetaNode(`SelectFromScored[${ScoredT.spec}, up]`)
     .meta({
@@ -171,6 +173,7 @@ export const SetFromScoredT = [
   { ScoredT: ScoredProteins, SetT: ProteinSet, TermT: ProteinTerm, T: Protein, },
   { ScoredT: ScoredVariants, SetT: VariantSet, TermT: VariantTerm, T: Variant, },
   { ScoredT: ScoredRegulatoryElement, SetT: RegulatoryElementSet, TermT: RegulatoryElementTerm, T: RegulatoryElement, },
+  { ScoredT: ScoredMetabolites, SetT: MetaboliteSet, TermT: MetaboliteTerm, T: Metabolite, },
 ].flatMap(({ ScoredT, SetT, TermT, T }) => [
   MetaNode(`SetFromScored[${ScoredT.spec}]`)
     .meta({
@@ -311,6 +314,7 @@ export const ReduceMultiScoredT = [
   { ScoredT: ScoredPathways, T: Pathway, },
   { ScoredT: ScoredPhenotypes, T: Phenotype, },
   { ScoredT: ScoredTissues, T: Tissue, },
+  { ScoredT: ScoredMetabolites, T: Metabolite, },
 ].flatMap(({ ScoredT, T }) => [
     MetaNode(`MeanScoredT[${T.label}]`)
       .meta({

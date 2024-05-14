@@ -1,5 +1,5 @@
 import fs from 'fs'
-import glob from 'glob'
+import * as glob from 'glob'
 import path from 'path'
 
 const base = path.join(__dirname, '..', 'components')

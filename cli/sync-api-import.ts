@@ -1,8 +1,6 @@
 import fs from 'fs'
-import glob from 'glob'
 import path from 'path'
-import * as dict from '@/utils/dict'
-import { APIRoute } from '@/spec/api'
+import * as glob from 'glob'
 
 const base = path.join(__dirname, '..', 'app', 'api')
 const apis = glob.sync(path.join(base, '**', 'index.ts').replace(/\\/g, '/'))

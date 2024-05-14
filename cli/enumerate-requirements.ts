@@ -1,6 +1,6 @@
 import fs from 'fs'
-import glob from 'glob'
 import path from 'path'
+import * as glob from 'glob'
 
 const base = path.join(__dirname, '..')
 const requirements = [...glob.sync(path.join(base, 'components', '**', 'requirements.txt').split(path.sep).join(path.posix.sep))

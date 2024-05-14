@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
-import {GeneExpressions, AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
+import {AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
 import { GeneSet } from '@/components/core/set'
 import { z } from 'zod'
 import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
@@ -9,6 +9,8 @@ import { GraphPlot } from '@/components/viz/graph'
 import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
 import FormData from 'form-data'
 import { Readable } from 'stream'
+import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
+import { pythonStream } from '@/utils/python'
 
 
 const CTDResponseC = z.object({
@@ -92,11 +94,13 @@ export async function getCustomMatrixFromExpressions(formData: FormData): Promis
     },
     icon: [ctd_icon]
   })
-  .inputs({geneExpressions: GeneExpressions})
+  .inputs({geneExpressions: GeneCountMatrix})
   .output(AdjacencyMatrix)
   .resolve(async (props) => {
-    const fileReader = await fileAsStream(props.inputs.geneExpressions);
-    console.log("CTD-Matrix from gene expressions file: "+props.inputs.geneExpressions.filename);
+    const fileReader = pythonStream('components.service.ctd.csv_read_stream', {
+      kargs: [props.inputs.geneExpressions],
+    })
+    console.log("CTD-Matrix from gene expressions file: "+props.inputs.geneExpressions.filename.replace(/\.\w+$/g, '.csv'));
 
     const formData = new FormData();
     formData.append('csvExpressionsFile', fileReader, props.inputs.geneExpressions.filename);

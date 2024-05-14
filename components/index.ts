@@ -287,3 +287,7 @@ import * as viz_plotly from "./viz/plotly"
 import viz_plotly_packageJson from "./viz/plotly/package.json"
 metanodes.push(...MetaNodesFromExports(viz_plotly, viz_plotly_packageJson))
 components.push("viz/plotly")
+import * as viz_upset from "./viz/upset"
+import viz_upset_packageJson from "./viz/upset/package.json"
+metanodes.push(...MetaNodesFromExports(viz_upset, viz_upset_packageJson))
+components.push("viz/upset")

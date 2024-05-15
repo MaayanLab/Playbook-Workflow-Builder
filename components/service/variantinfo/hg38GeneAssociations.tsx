@@ -139,8 +139,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVarinatFromMyVariantInfo = MetaNode('GetGeneForVarinatFromMyVariantInfo')
   .meta({
-    label: 'Identify Closest Gene to Variant - New',
-    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API'
+    label: 'Identify Variant To Gene Association HG38',
+    description: 'Get Associated Gene info for a given Variant. Use any of the most common types of Variant identifiers as an input value!'
   })
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)
@@ -168,7 +168,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatToGeneAssociation_HG38 = MetaNode('GetVarinatToGeneAssociation_HG38')
   .meta({
-    label: `Get Variant To Gene Association HG38`,
+    label: `Identify Variant To Gene Association HG38`,
     description: "Get Associated Gene info for a given Variant."
   })
   .inputs({ externalRecords: AlleleRegistryExternalRecordsTable })
@@ -335,7 +335,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
   .meta({
-    label: `Identify Variant And Gene Associations`,
+    label: `Identify Variant (Set) And Gene Associations HG38`,
     description: "Get Associated Gene info for a given set of Variant External records."
   })
   .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })

@@ -152,7 +152,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
       }}
       >
         <Column
-          name="Variant CaId"
+          name="Variant CAID"
           cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
         />
         <Column

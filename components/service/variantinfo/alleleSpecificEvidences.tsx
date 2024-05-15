@@ -203,7 +203,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
         }}
         >
           <Column
-            name="Variant CaID"
+            name="Variant CAID"
             cellRenderer={row => <Cell key={row+''}>{alleleEvidncForVarSetArray[row].caid}</Cell>}
           />
           <Column

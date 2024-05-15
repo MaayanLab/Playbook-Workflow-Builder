@@ -139,7 +139,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVarinatFromMyVariantInfo = MetaNode('GetGeneForVarinatFromMyVariantInfo')
   .meta({
-    label: 'Identify Closest Gene to Variant (CAID)',
+    label: 'Identify Closest Gene to Variant (CAID/MyVariantInfo)',
     description: 'Identify the closest gene to this variant usign the MyVarinetInfo API. Input is a CAID varint identifier!'
   })
   .inputs({ variant: VariantTerm })
@@ -157,29 +157,6 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
     let response = null;
     let myVariantInfoURL = getMyVarintInfoLink(alleleRegResponse);
-    if(myVariantInfoURL != null){
-      response = await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
-    }
-
-    return processHG38ExternalRecordsResponse(response);
-  })
-  .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].`)
-  .build()
-
-  export const GetGeneForVarinatFromMyVariantInfoHGVS = MetaNode('GetGeneForVarinatFromMyVariantInfoHGVS')
-  .meta({
-    label: 'Identify Closest Gene to Variant (HGVS)',
-    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API and a HGVS query as input'
-  })
-  .inputs({ variantTerm: VariantTerm })
-  .output(GeneAssociations_HG38)
-  .resolve(async (props) => {
-    if(!validateMyVariantInfoInput(props.inputs.variantTerm)){
-      throw new Error("The value you inputed is not a valid HGVS query, please try again!");
-    }
-
-    let response = null;
-    let myVariantInfoURL = assembleMyVarintInfoLinkWithHGVS(props.inputs.variantTerm);
     if(myVariantInfoURL != null){
       response = await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
     }
@@ -237,7 +214,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       }}
       >
         <Column
-          name="Variant CaId"
+          name="Variant CAID"
           cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
         />
         <Column

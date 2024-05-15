@@ -139,8 +139,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVarinatFromMyVariantInfo = MetaNode('GetGeneForVarinatFromMyVariantInfo')
   .meta({
-    label: 'Identify Closest Gene to Variant (CAID/MyVariantInfo)',
-    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API. Input is a CAID varint identifier!'
+    label: 'Identify Closest Gene to Variant - New',
+    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API'
   })
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)

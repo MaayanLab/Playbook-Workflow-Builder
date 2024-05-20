@@ -8,7 +8,7 @@ import {datafile_icon, file_icon } from '@/icons'
 import { clientLoadExample } from  '@/components/data/anndata/api/example.h5ad/client'
 
 
-export const CTD_MatrixAndPermutationsC = z.object({
+export const CTD_DataSetC = z.object({
   ctdPermutations:z.object({
     url: z.string(),
     filename: z.string(),
@@ -16,17 +16,18 @@ export const CTD_MatrixAndPermutationsC = z.object({
   ctdMatrix: z.object({
     url: z.string(),
     filename: z.string(),
-  })
+  }),
+  geneSet: z.array(z.string())
 });
 
 
-export const CTD_MatrixAndPermutations = MetaNode('CTD_MatrixAndPermutations')
+export const CTD_DataSet = MetaNode('CTD_DataSet')
 .meta({
-  label: 'CTD Permutations',
-  description: 'CTD Permutations RData file.',
+  label: 'Data set containg all of the inout types for the final CTD request!',
+  description: 'Data set containig the Adjacency Matrix (.csv), PErmutations (.RData) and Gene Set (.csv)',
   icon: [datafile_icon],
 })
-.codec(CTD_MatrixAndPermutationsC)
+.codec(CTD_DataSetC)
 .view(props => {
   return (
     <div>
@@ -62,6 +63,9 @@ export const CTD_MatrixAndPermutations = MetaNode('CTD_MatrixAndPermutations')
         cellRenderer={row => <Cell key={row+''}>{props.ctdMatrix.url}</Cell>}
       />
       </Table>
+
+      <p><b>Gene Set</b></p>
+      <textarea>{props.geneSet}</textarea>
     </div>
   )
 })

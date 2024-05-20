@@ -139,8 +139,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVarinatFromMyVariantInfo = MetaNode('GetGeneForVarinatFromMyVariantInfo')
   .meta({
-    label: 'Identify Closest Gene to Variant (CAID)',
-    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API. Input is a CAID varint identifier!'
+    label: 'Identify Variant To Gene Association HG38',
+    description: 'Get Associated Gene info for a given Variant. Use any of the most common types of Variant identifiers as an input value!'
   })
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)
@@ -166,32 +166,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].`)
   .build()
 
-  export const GetGeneForVarinatFromMyVariantInfoHGVS = MetaNode('GetGeneForVarinatFromMyVariantInfoHGVS')
-  .meta({
-    label: 'Identify Closest Gene to Variant (HGVS)',
-    description: 'Identify the closest gene to this variant usign the MyVarinetInfo API and a HGVS query as input'
-  })
-  .inputs({ variantTerm: VariantTerm })
-  .output(GeneAssociations_HG38)
-  .resolve(async (props) => {
-    if(!validateMyVariantInfoInput(props.inputs.variantTerm)){
-      throw new Error("The value you inputed is not a valid HGVS query, please try again!");
-    }
-
-    let response = null;
-    let myVariantInfoURL = assembleMyVarintInfoLinkWithHGVS(props.inputs.variantTerm);
-    if(myVariantInfoURL != null){
-      response = await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
-    }
-
-    return processHG38ExternalRecordsResponse(response);
-  })
-  .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].`)
-  .build()
-
   export const GetVarinatToGeneAssociation_HG38 = MetaNode('GetVarinatToGeneAssociation_HG38')
   .meta({
-    label: `Get Variant To Gene Association HG38`,
+    label: `Identify Variant To Gene Association HG38`,
     description: "Get Associated Gene info for a given Variant."
   })
   .inputs({ externalRecords: AlleleRegistryExternalRecordsTable })
@@ -237,7 +214,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
       }}
       >
         <Column
-          name="Variant CaId"
+          name="Variant CAID"
           cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
         />
         <Column
@@ -358,7 +335,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
   .meta({
-    label: `Identify Variant And Gene Associations`,
+    label: `Identify Variant (Set) And Gene Associations HG38`,
     description: "Get Associated Gene info for a given set of Variant External records."
   })
   .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })

@@ -147,7 +147,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
         }}
       >
         <Column
-          name="Variant CaID"
+          name="Variant CAID"
           cellRenderer={row => <Cell key={row+''}>{xQTLEvdVariantSet[row].caid}</Cell>}
         />
         <Column

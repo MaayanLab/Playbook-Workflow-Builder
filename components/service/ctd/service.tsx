@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
-import {AdjacencyMatrix, CTD_MatrixAndPermutations} from './utils'
+import {AdjacencyMatrix, CTD_DataSet} from './utils'
 import { GeneSet } from '@/components/core/set'
 import { z } from 'zod'
 import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
@@ -119,7 +119,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     icon: [ctd_icon]
   })
   .inputs({ geneSet: GeneSet, ajdMatrix: AdjacencyMatrix})
-  .output(CTD_MatrixAndPermutations)
+  .output(CTD_DataSet)
   .resolve(async (props) => {
     let geneNamesList = props.inputs.geneSet.set;
     let adjMatrixFile = props.inputs.ajdMatrix;
@@ -137,7 +137,8 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
 
     let output = {
       'ctdPermutations':permutationsfile,
-      'ctdMatrix': adjMatrixFile
+      'ctdMatrix': adjMatrixFile,
+      'geneSet': geneNamesList
     }
     return output;
   }).story(props =>
@@ -186,14 +187,14 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
   export const CTD_UseCustomMatrixCombined = MetaNode('CTD_UseCustomMatrixCombined')
   .meta({
     label: `CTD Custom Response - Final`,
-    description: "Get a Final CTD Reponse using a custom gene list, ajd. matrix file and permutations (RData) file."
+    description: "Get a Final CTD Reponse using a custom Gene list, Ajd. matrix file and Permutations (RData) file."
   })
-  .inputs({ geneSet: GeneSet, matrixAndPermutations: CTD_MatrixAndPermutations})
+  .inputs({ ctdDataSet: CTD_DataSet})
   .output(CTDResponseInfo)
   .resolve(async (props) => {
-    let geneNamesList = props.inputs.geneSet.set;
-    let adjMatrixFile = props.inputs.matrixAndPermutations.ctdMatrix;
-    let permutationsFile = props.inputs.matrixAndPermutations.ctdPermutations;
+    let geneNamesList = props.inputs.ctdDataSet.geneSet;
+    let adjMatrixFile = props.inputs.ctdDataSet.ctdMatrix;
+    let permutationsFile = props.inputs.ctdDataSet.ctdPermutations;
 
     const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
     const permutationsFileReader = await fileAsStream(permutationsFile);

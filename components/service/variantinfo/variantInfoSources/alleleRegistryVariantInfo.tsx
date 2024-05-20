@@ -91,7 +91,7 @@ export const VariantInfoFromVariantTermAlleleReg = MetaNode('VariantInfoFromVari
   export const VariantInfoFromVariantSet = MetaNode('VariantInfoFromVariantSet')
   .meta({
     label: `Variant Info From Variant Set (Allele reg.)`,
-    description: "Get Variant Info from Allele Registry for a set of Variant CaId's."
+    description: "Get Variant Info from Allele Registry for a set of Variant CAID's."
   })
   .inputs({ variantset: VariantSet })
   .output(VariantSetInfo)
@@ -169,7 +169,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
       }}
       >
         <Column
-          name="Variant CaId"
+          name="Variant CAID"
           cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].caid }</Cell>}
         />
         <Column

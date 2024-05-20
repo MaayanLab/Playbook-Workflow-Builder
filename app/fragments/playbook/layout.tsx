@@ -37,7 +37,11 @@ export default function Layout({ children }: React.PropsWithChildren) {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-black dark:stroke-white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               </label>
             </div>
-            <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE}>
+            <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE} className="flex flex-row items-center">
+              <img
+                className="mx-2 w-16 cursor-pointer"
+                src={`${publicUrl}/PWB-logo.svg`}
+              />
               <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
             </Link>
           </div>

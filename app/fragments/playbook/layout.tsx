@@ -39,7 +39,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             </div>
             <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE} className="flex flex-row items-center">
               <img
-                className="mx-2 w-16 cursor-pointer"
+                className="mx-2 w-16 cursor-pointer dark:stroke-white"
                 src={`${publicUrl}/PWB-logo.svg`}
               />
               <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>

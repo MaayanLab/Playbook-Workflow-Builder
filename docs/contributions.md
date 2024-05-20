@@ -16,7 +16,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
   - [Python 3](https://www.python.org/) (optional)
 1. Clone this repository and checkout a branch for your work.
     ```bash
-    git clone https://github.com/nih-cfde/playbook-partnership/
+    git clone https://github.com/MaayanLab/Playbook-Workflow-Builder/
     cd playbook-partnership
     git checkout -b my-new-component
     ```
@@ -247,7 +247,7 @@ numpy
 ```
 
 ### Anything we missed?
-Let us know by [submitting an issue](https://github.com/nihc-cfde/playbook-partnership/issues)!
+Let us know by [submitting an issue](https://github.com/MaayanLab/Playbook-Workflow-Builder/issues)!
 
 ## Learn More
 

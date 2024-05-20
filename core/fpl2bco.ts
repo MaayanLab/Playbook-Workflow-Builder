@@ -96,7 +96,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       script: [
         {
           uri: {
-            uri: 'https://github.com/nih-cfde/playbook-partnership/tree/dev/cli/playbook-partnership-executor.sh',
+            uri: 'https://github.com/MaayanLab/Playbook-Workflow-Builder/tree/dev/cli/playbook-partnership-executor.sh',
             filename: 'playbook-partnership-executor.sh',
           }
         }

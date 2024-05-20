@@ -72,7 +72,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             <a className="prose prose-sm max-w-none" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/contributions.md" target="_blank">Contribute</a>
           </div>
           <div className="grid-cols-1">
-            <a href="https://www.nih-cfde.org/" target="_blank">
+            <a href="https://info.cfde.cloud" target="_blank">
               <img className="rounded h-20 dark:bg-white" src={`${publicUrl}/logos/CFDE.png`} />
             </a>
           </div>

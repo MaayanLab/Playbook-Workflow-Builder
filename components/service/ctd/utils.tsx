@@ -1,11 +1,8 @@
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { FilePrompt, FileC } from '@/components/core/file'
 import { downloadUrl } from '@/utils/download'
 import { Table, Cell, Column} from '@/app/components/Table'
-import SafeRender from '@/utils/saferender'
-import {datafile_icon, file_icon } from '@/icons'
-import { clientLoadExample } from  '@/components/data/anndata/api/example.h5ad/client'
+import {datafile_icon } from '@/icons'
 
 
 export const CTD_DataSetC = z.object({
@@ -108,6 +105,7 @@ export const AdjacencyMatrix = MetaNode('AdjacencyMatrix')
 })
 .build()
 
+/*
 export const AdjacencyMatrixFileUpload = MetaNode('AdjacencyMatrixFileUpload')
 .meta({
   label: 'Upload a CTD Adjacency Matrix',
@@ -134,3 +132,4 @@ export const AdjacencyMatrixFileUpload = MetaNode('AdjacencyMatrixFileUpload')
   `An Adjacency matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
 )
 .build()
+*/

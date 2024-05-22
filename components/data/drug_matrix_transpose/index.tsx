@@ -171,7 +171,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
       setDescriptions(props.data.descriptions ? props.data.descriptions : {} as Record<number, string>)
     }, [props.data])
     return (
-      <div>
+      <>
         <Table
           height={500}
           cellRendererDependencies={[props.inputs.sets, terms, descriptions]}
@@ -208,7 +208,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
           rightIcon="cloud-upload"
           onClick={() => props.submit({ terms, descriptions })}
         />
-      </div>
+      </>
     )
   })
   .resolve(async (props) => {

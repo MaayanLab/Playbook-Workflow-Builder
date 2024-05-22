@@ -172,7 +172,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
       setDescriptions(props.data.descriptions ? props.data.descriptions : {} as Record<number, string>)
     }, [props.data])
     return (
-      <div>
+      <>
         <Table
           height={500}
           cellRendererDependencies={[props.inputs.genesets, terms, descriptions]}
@@ -209,7 +209,7 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
           rightIcon="cloud-upload"
           onClick={() => props.submit({ terms, descriptions })}
         />
-      </div>
+      </>
     )
   })
   .resolve(async (props) => {

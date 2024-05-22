@@ -30,7 +30,7 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
 .codec(CTD_DataSetC)
 .view(props => {
   return (
-    <div>
+    <>
       <p><b>CTD Permutations</b></p>
       <Table
       cellRendererDependencies={[1]}
@@ -66,7 +66,7 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
 
       <p><b>Gene Set</b></p>
       <textarea>{props.geneSet}</textarea>
-    </div>
+    </>
   )
 })
 .build()
@@ -85,7 +85,7 @@ export const AdjacencyMatrix = MetaNode('AdjacencyMatrix')
 )
 .view(props => {
   return (
-    <div>
+    <>
       <p><b>Adjacency Matrix</b></p>
       <Table
       cellRendererDependencies={[1]}
@@ -103,7 +103,7 @@ export const AdjacencyMatrix = MetaNode('AdjacencyMatrix')
         cellRenderer={row => <Cell key={row+''}>{props.url}</Cell>}
       />
       </Table>
-    </div>
+    </>
   )
 })
 .build()

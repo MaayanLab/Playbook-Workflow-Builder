@@ -23,7 +23,7 @@ export default handler(async (req, res) => {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      "model": "gpt-3.5-turbo",
+      "model": "gpt-4o",
       "messages": [{
         "role": "user",
         "content": `Restructure this text so it is easier to read, do not change or omit any information:\n${body.description}`

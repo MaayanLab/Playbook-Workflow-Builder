@@ -108,7 +108,7 @@ export function GetAllNodes_from_MyedgeArray(data:MyedgeArray) {
 export async function Format_StringDBedgeArray_for_GraphPlot(data:StringDBedgeArray, species_id:string = "hsa", geneid_type:string = "SYMBOL_OR_ALIAS") {
     // Need to use async since GetGeneSetIDConv is an async function
     // Given the list of edges in standard StringDB PPI format, get an object in the codec format for network plot:
-    // https://github.com/nih-cfde/playbook-partnership/blob/network-viz/components/viz/graph/index.tsx
+    // https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/network-viz/components/viz/graph/index.tsx
 /*
 .codec(z.object({
     nodes: z.array(z.object({

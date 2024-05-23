@@ -37,7 +37,11 @@ export default function Layout({ children }: React.PropsWithChildren) {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-black dark:stroke-white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               </label>
             </div>
-            <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE}>
+            <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE} className="flex flex-row items-center">
+              <img
+                className="p-2 w-16 cursor-pointer dark:stroke-white"
+                src={`${publicUrl}/PWB-logo.svg`}
+              />
               <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
             </Link>
           </div>
@@ -45,7 +49,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             <div className="hidden lg:flex">
               <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
               <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Explore Components</button></Link>
-              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
+              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -68,20 +72,20 @@ export default function Layout({ children }: React.PropsWithChildren) {
         <div className="grid grid-flow-row md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 justify-items-center items-center text-center mb-2">
           <div className="flex flex-col grid-cols-1">
             <a className="prose prose-sm max-w-none" href="mailto:avi.maayan@mssm.edu">Contact Us</a>
-            <a className="prose prose-sm max-w-none" href="https://github.com/nih-cfde/playbook-partnership/blob/main/LICENSE" target="_blank">Usage License</a>
-            <a className="prose prose-sm max-w-none" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/contributions.md" target="_blank">Contribute</a>
+            <a className="prose prose-sm max-w-none" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/LICENSE" target="_blank">Usage License</a>
+            <a className="prose prose-sm max-w-none" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/contributions.md" target="_blank">Contribute</a>
           </div>
           <div className="grid-cols-1">
-            <a href="https://www.nih-cfde.org/" target="_blank">
+            <a href="https://info.cfde.cloud" target="_blank">
               <img className="rounded h-20 dark:bg-white" src={`${publicUrl}/logos/CFDE.png`} />
             </a>
           </div>
           <div className="flex flex-col grid-cols-1 gap-1">
-            <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/nih-cfde/playbook-partnership" target="_blank">
+            <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/MaayanLab/Playbook-Workflow-Builder" target="_blank">
               <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
               <span className="flex-grow text-black dark:text-white">View source code</span>
             </a>
-            <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/nih-cfde/playbook-partnership/issues/new" target="_blank">
+            <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/issues/new" target="_blank">
               <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
               <span className="flex-grow text-black dark:text-white">Submit an issue</span>
             </a>
@@ -102,7 +106,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
           </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
           <li><Link href="/explore">Explore Components</Link></li>
-          <li><a href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
+          <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
           <li className="menu-title">
             <span>Account</span>
           </li>

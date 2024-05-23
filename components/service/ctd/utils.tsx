@@ -62,7 +62,7 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
       </Table>
 
       <p><b>Gene Set</b></p>
-      <textarea>{props.geneSet}</textarea>
+      <div style={{ overflowY: 'auto', height: '300px',  width: '300px' }}>{( props.geneSet).join('\n')}</div>
     </div>
   )
 })
@@ -105,31 +105,3 @@ export const AdjacencyMatrix = MetaNode('AdjacencyMatrix')
 })
 .build()
 
-/*
-export const AdjacencyMatrixFileUpload = MetaNode('AdjacencyMatrixFileUpload')
-.meta({
-  label: 'Upload a CTD Adjacency Matrix',
-  description: 'A file containing an Adjacency Matrix for CTD - "Connect the Dots in Precalculated Graph"',
-  tags: {
-    Type: {
-      File: 1,
-      CTD: 1,
-      Matrix: 1
-    }
-  },
-  icon: [file_icon]
-})
-.codec(FileC)
-.inputs()
-.output(AdjacencyMatrix)
-.prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={AdjacencyMatrix.view} props={props.output} /> : null}</>)
-.resolve(async (props) => {
-  return {
-    url: props.data.url,
-    filename: props.data.filename
-  };
-}).story(props =>
-  `An Adjacency matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
-)
-.build()
-*/

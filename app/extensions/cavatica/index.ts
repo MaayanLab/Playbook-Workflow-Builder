@@ -19,7 +19,7 @@ const cwl = {
   "s:version": version,
   "s:author": "Daniel J. B. Clarke",
   "s:license": "CC-BY-NC-SA-4.0",
-  "s:codeRepository": "https://github.com/nih-cfde/playbook-partnership",
+  "s:codeRepository": "https://github.com/MaayanLab/Playbook-Workflow-Builder",
   "s:keywords": ["pwb"],
   "inputs": [
     {

@@ -87,7 +87,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     <div className="flex flex-col py-4 gap-2">
       <SessionStatus session_id={session_id}>
         <StoryProvider krg={krg} metapath={data.metapath}>
-          <Waypoint id="head" className="sticky top-0 left-0 z-50 bg-white w-full flex flex-row place-items-center">
+          <Waypoint id="head" className="sticky top-0 left-0 z-50 bg-white dark:bg-current w-full flex flex-row place-items-center">
             <Breadcrumbs>
               <DataBreadcrumb
                 key="start"

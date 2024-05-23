@@ -18,7 +18,7 @@ export default handler(async (req, res) => {
       "url": "https://playbook-workflow-builder.cloud"
     },
     "contactUrl": "mailto:avi.maayan@mssm.edu",
-    "documentationUrl": "https://github.com/nih-cfde/playbook-partnership",
+    "documentationUrl": "https://github.com/MaayanLab/Playbook-Workflow-Builder",
     "createdAt": "2023-04-20T12:20:15Z",
     "updatedAt": "2023-09-05T12:20:15Z",
     "environment": "prod",

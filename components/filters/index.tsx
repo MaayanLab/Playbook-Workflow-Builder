@@ -79,34 +79,32 @@ export const TopKScoredT = [
         }
       }, [props.output, scored])
       return (
-        <div>
-          <Table
-            height={500}
-            cellRendererDependencies={[scored]}
-            rowHeaderCellRenderer={(row) =>
-              <div
-                className="text-center block"
-                onClick={evt => {
-                  setSelected(scored[row].term)
-                  props.submit(scored[row].term)
-                }}
-              >
-                <input type="radio" checked={selected === scored[row].term} />
-              </div>
-            }
-            numRows={scored.length}
-            enableGhostCells
-          >
-            <Column
-              name={T.label}
-              cellRenderer={row => <Cell key={row+''}>{scored[row].term}</Cell>}
-            />
-            <Column
-              name="ZScore"
-              cellRenderer={row => <Cell key={row+''}>{withPrecision(scored[row].zscore, 3)}</Cell>}
-            />
-          </Table>
-        </div>
+        <Table
+          height={500}
+          cellRendererDependencies={[scored]}
+          rowHeaderCellRenderer={(row) =>
+            <div
+              className="text-center block"
+              onClick={evt => {
+                setSelected(scored[row].term)
+                props.submit(scored[row].term)
+              }}
+            >
+              <input type="radio" checked={selected === scored[row].term} />
+            </div>
+          }
+          numRows={scored.length}
+          enableGhostCells
+        >
+          <Column
+            name={T.label}
+            cellRenderer={row => <Cell key={row+''}>{scored[row].term}</Cell>}
+          />
+          <Column
+            name="ZScore"
+            cellRenderer={row => <Cell key={row+''}>{withPrecision(scored[row].zscore, 3)}</Cell>}
+          />
+        </Table>
       )
     })
     .resolve(async (props) => {
@@ -204,30 +202,28 @@ export const SetFromScoredT = [
         }
       }, [props.output, set])
       return (
-        <div>
-          <Table
-            height={500}
-            cellRendererDependencies={[set]}
-            rowHeaderCellRenderer={(row) =>
-              <div
-                className="text-center block"
-                onClick={evt => {
-                  setSelected(set[row])
-                  props.submit(set[row])
-                }}
-              >
-                <input type="radio" checked={selected === set[row]} />
-              </div>
-            }
-            numRows={set.length}
-            enableGhostCells
-          >
-            <Column
-              name={T.label}
-              cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
-            />
-          </Table>
-        </div>
+        <Table
+          height={500}
+          cellRendererDependencies={[set]}
+          rowHeaderCellRenderer={(row) =>
+            <div
+              className="text-center block"
+              onClick={evt => {
+                setSelected(set[row])
+                props.submit(set[row])
+              }}
+            >
+              <input type="radio" checked={selected === set[row]} />
+            </div>
+          }
+          numRows={set.length}
+          enableGhostCells
+        >
+          <Column
+            name={T.label}
+            cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
+          />
+        </Table>
       )
     })
     .resolve(async (props) => {
@@ -261,7 +257,7 @@ export const SetFromScoredT = [
         }
       }, [props.output, set])
       return (
-        <div>
+        <>
           <Table
             height={500}
             cellRendererDependencies={[set]}
@@ -287,7 +283,7 @@ export const SetFromScoredT = [
           <button className="bp5-button bp5-large" onClick={async () => {
             props.submit(selected)
           }}>Submit</button>
-        </div>
+        </>
       )
     })
     .resolve(async (props) => {
@@ -427,7 +423,7 @@ export const TopKRankedT = [
         }
       }, [props.output, ranked])
       return (
-        <div>
+        <>
           <Table
             height={500}
             cellRendererDependencies={[ranked]}
@@ -450,7 +446,7 @@ export const TopKRankedT = [
               cellRenderer={row => <Cell key={row+''}>{ranked[row]}</Cell>}
             />
           </Table>
-        </div>
+        </>
       )
     })
     .resolve(async (props) => {

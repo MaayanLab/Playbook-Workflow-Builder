@@ -109,20 +109,24 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     let geneID: string = "";
     var associatedGeensMap: any = {};
     var associatedGeens = apiResponse.snpeff.ann;
-    for(let agIdx in associatedGeens){
-      let associatedGeenObj = associatedGeens[agIdx];
-      geneID = associatedGeenObj.gene_id+"";
-
-      if(associatedGeenObj.distance_to_feature == null){
-        associatedGeenObj['distance_to_feature'] = "within gene";
-      }
-
-      if(!associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
-        associatedGeensMap[geneID] = [];
-        associatedGeensMap[geneID].push(associatedGeenObj);
-      }else if(associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
-        associatedGeensMap[geneID].push(associatedGeenObj);
-      }
+    if(Array.isArray(associatedGeens)){
+      for(let agIdx in associatedGeens){
+          let associatedGeenObj = associatedGeens[agIdx];
+          geneID = associatedGeenObj.gene_id+"";
+    
+          if(associatedGeenObj.distance_to_feature == null){
+            associatedGeenObj['distance_to_feature'] = "within gene";
+          }
+    
+          if(!associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
+            associatedGeensMap[geneID] = [];
+            associatedGeensMap[geneID].push(associatedGeenObj);
+          }else if(associatedGeensMap.hasOwnProperty(geneID) && geneID != ""){
+            associatedGeensMap[geneID].push(associatedGeenObj);
+          }
+        }
+    }else{
+      associatedGeensMap[associatedGeens.gene_id+""] = associatedGeens;
     }
 
     let associatedGeensList = [];

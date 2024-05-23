@@ -20,7 +20,8 @@ const CTDResponseC = z.object({
     "nodes": z.array(z.object({
       "id": z.string().optional(),
       "name": z.string().optional(),
-      "type": z.string()
+      "type": z.string(),
+      "color": z.string().optional()
     })),
     "edges": z.any().optional(),
     "interactions": z.array(z.object({
@@ -125,9 +126,6 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     let adjMatrixFile = props.inputs.ajdMatrix;
     const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
 
-    console.log("geneNamesList: "+JSON.stringify(geneNamesList))
-    console.log("file: "+adjMatrixFile.filename)
-
     const formData = new FormData(); 
     formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
     formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
@@ -207,6 +205,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     if(response != null && response.report != null && response.report.type == 'error'){
       throw new Error(response.report.message);
     }
+   
     return response;
   }).story(props =>   
     "The three files where send to the CTD API for precalculations."
@@ -266,28 +265,56 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GraphPlot)
   .resolve(async (props) => {
-    let highlyConnectedGenes = props.inputs.ctdResponseInfo.highlyConnectedGenes;
     let jsonGraph = null;
     if(props.inputs.ctdResponseInfo.jsonGraph != null){
       jsonGraph = props.inputs.ctdResponseInfo.jsonGraph;
     }
 
-    if(jsonGraph == null){
+    if(jsonGraph == null || jsonGraph.nodes == null || jsonGraph.nodes.length == 0){
       throw new Error("No Gene Graph Nodes available, please use a different input gene set!");
     }
 
-    let graphNodes = jsonGraph.nodes;
+    let highlyConnectedGenes = props.inputs.ctdResponseInfo.highlyConnectedGenes;
+    let hcN = highlyConnectedGenes.length;
+    let guiltyByAssociationGenes = props.inputs.ctdResponseInfo.guiltyByAssociationGenes;
+    let gbaN = guiltyByAssociationGenes.length;
+    let n = 0;
+    if(hcN > gbaN){
+      n = hcN;
+    }else{
+      n = gbaN
+    }
 
-    if(graphNodes.length > 0){
-      for(let i in highlyConnectedGenes){
-        let hcGene = highlyConnectedGenes[i];
-        for(let k in graphNodes){
-          if(hcGene == graphNodes[k].name){
-            graphNodes[k].type = "hc";
-            break;
-          }
+    let graphNodes = jsonGraph.nodes;  
+    for(let i=0; i<n; i++){
+      let hcGene = null;
+      try {
+        hcGene = highlyConnectedGenes[i];
+      } catch (error) {}      
+      
+      let gbaGene = null;
+      try {
+        gbaGene = guiltyByAssociationGenes[i];  
+      } catch (error) {}
+
+      let chChecked = false;
+      let gbaChecked = false;
+      for(let k in graphNodes){
+        if(!chChecked && hcGene != null && hcGene == graphNodes[k].name){
+          graphNodes[k].type = "hc";
+          graphNodes[k].color = "#ff8566";
+          chChecked = true;
+        }else if(!gbaChecked && gbaGene != null && gbaGene == graphNodes[k].name){
+          graphNodes[k].type = "gba";
+          graphNodes[k].color = "#99bbff";
+          gbaChecked = true;
+        }
+
+        if(chChecked && gbaChecked){
+          break;
         }
       }
+
     }
 
     return {
@@ -317,6 +344,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     if(response != null && response.report != null && response.report.type == 'error'){
       throw new Error(response.report.message);
     }
+
     return response;
   }).story(props =>
     `CTD is applied which diffuses through all nodes in STRING [\\ref{doi:10.1093/nar/gku1003}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`

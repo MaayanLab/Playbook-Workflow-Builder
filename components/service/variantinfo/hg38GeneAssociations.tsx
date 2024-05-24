@@ -1,12 +1,13 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/term'
+import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink, validateMyVariantInfoInput } from './variantUtils'
-import { getAlleleRegistryVariantInfo } from './variantInfoSources/alleleRegistryVariantInfo'
-import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo } from './externalRecords'
-import { getVarinatInfoFromMyVariantInfo, assembleMyVarintInfoLinkWithHGVS } from './variantInfoSources/myVariantInfo'
+import { resolveVarinatCaID, variantIdResolveErrorMessage, getMyVarintInfoLink, alleleRegRespErrorMessage } from './variantUtils'
+import { getAlleleRegistryVariantInfo, getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
+import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo, getExternalRecordsFromAlleleRegistry } from './externalRecords'
+import { getVarinatInfoFromMyVariantInfo } from './variantInfoSources/myVariantInfo'
 
 const HG38SingleGeneAssociationsC = z.object({
     distance_to_feature : z.string().optional(),
@@ -337,17 +338,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   })
   .build()
 
-  export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
-  .meta({
-    label: `Identify Variant (Set) And Gene Associations HG38`,
-    description: "Get Associated Gene info for a given set of Variant External records."
-  })
-  .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })
-  .output(GeneAssociationsSet_HG38)
-  .resolve(async (props) => {
-    let variantExternalRecordsSetInfo = props.inputs.variantSetExternalRecordsInfo;
+  async function getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo: any){
     let varinatGeneAssociationsSet = [];
-
     for(let vERIdx in variantExternalRecordsSetInfo){
       let variantExternalRecords = variantExternalRecordsSetInfo[vERIdx];
       let externalRecords: any = variantExternalRecords.externalRecords;
@@ -365,8 +357,45 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
         }
       }   
     }
-
     return varinatGeneAssociationsSet;
+  }
+
+  export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
+  .meta({
+    label: `Identify Variant (Set) And Gene Associations HG38`,
+    description: "Get Associated Gene info for a given Variant Set."
+  })
+  .inputs({ variantset: VariantSet })
+  .output(GeneAssociationsSet_HG38)
+  .resolve(async (props) => {
+    let varinatSet = props.inputs.variantset.set;
+    let variantSetInfo = await getVariantSetInfo(varinatSet);
+    if(variantSetInfo == null){
+        throw new Error("No data available!");
+    }
+
+    let variantExternalRecordsSetInfo = getExternalRecordsFromAlleleRegistry(variantSetInfo);
+    if(variantExternalRecordsSetInfo == null){
+      throw new Error("No data avaliable!");
+    }
+
+    return await getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo);
+  }).story(props =>
+    `Get Associated Gene info for a given set of Variant External records.`
+  ).build()
+
+
+  export const GetVarinatSetExternalRecToGeneAssociation_HG38 = MetaNode('GetVarinatSetExternalRecToGeneAssociation_HG38')
+  .meta({
+    label: `Identify Variant (Set) And Gene Associations HG38`,
+    description: "Get Associated Gene info for a given set of Variant External records."
+  })
+  .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })
+  .output(GeneAssociationsSet_HG38)
+  .resolve(async (props) => {
+    let variantExternalRecordsSetInfo = props.inputs.variantSetExternalRecordsInfo;
+
+    return await getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo);
   }).story(props =>
     `Get Associated Gene info for a given set of Variant External records.`
   ).build()

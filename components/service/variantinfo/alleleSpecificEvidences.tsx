@@ -1,10 +1,11 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/term'
+import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
-import { VariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
+import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
 
 export const AlleleSpecificEvidenceInfoC = z.array(
@@ -317,10 +318,14 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       label: `Get Variant Set Allele Specific Evidence`,
       description: "Get Allele Specific Evidence form Variant Set."
     })
-    .inputs({ variantSetInfo: VariantSetInfo })
+    .inputs({ variantset: VariantSet})
     .output(AlleleSpecificEvidenceForVariantSet)
     .resolve(async (props) => {
-      let variantSetInfo = props.inputs.variantSetInfo;
+      let varinatSet = props.inputs.variantset.set;
+      let variantSetInfo = await getVariantSetInfo(varinatSet);
+      if(variantSetInfo == null){
+          throw new Error("No data available!");
+      }
   
       let varinatSetAlleleSpecificEvdnc = [];
       for(let indx in variantSetInfo){

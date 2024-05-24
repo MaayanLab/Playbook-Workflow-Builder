@@ -1,10 +1,11 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/term'
+import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
-import { VariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
+import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo, GitHubVariantInfoC } from './variantInfoSources/gitDataHubVariantInfo'
 import { xQTL_EvidenceArray } from './variantInfoSources/gitDataHubVariantInfo'
 
@@ -225,10 +226,14 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     label: `Get Variant Set xQTL Evidence`,
     description: "Get xQTL Evidence form Variant Set."
   })
-  .inputs({ variantSetInfo: VariantSetInfo })
+  .inputs({ variantset: VariantSet })
   .output(xQTL_EvidenceFroVariantSet)
   .resolve(async (props) => {
-    let variantSetInfo = props.inputs.variantSetInfo;
+    let varinatSet = props.inputs.variantset.set;
+    let variantSetInfo = await getVariantSetInfo(varinatSet);
+    if(variantSetInfo == null){
+        throw new Error("No data available!");
+    }
 
     let varinatSetXQTLEvidnc = [];
     for(let indx in variantSetInfo){

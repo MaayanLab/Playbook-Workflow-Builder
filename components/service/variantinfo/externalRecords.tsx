@@ -1,10 +1,11 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/term'
+import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
 import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from './variantUtils'
-import { getAlleleRegistryVariantInfo,  AlleleRegistryVariantInfo, VariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
+import { getAlleleRegistryVariantInfo,  AlleleRegistryVariantInfo, getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 
 const AlleleRegistryExternalSourcesInfoC = z.array(
     z.object({
@@ -193,17 +194,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .build()
 
-  export const GetVarinatSetExternalRecords = MetaNode('GetVarinatSetExternalRecords')
-  .meta({
-    label: `Get Variant Set External Records`,
-    description: "Get External Records for a given Variant Set."
-  })
-  .inputs({ variantSetInfo: VariantSetInfo })
-  .output(VarinatSetExternalRecordsInfo)
-  .resolve(async (props) => {
-    let variantSetInfo = props.inputs.variantSetInfo;
+  export function getExternalRecordsFromAlleleRegistry(variantSetInfo: any){
     let externalRecordsSet = [];
-
     for(let indx in variantSetInfo){
       let variantInfoObj = variantSetInfo[indx];
       if(variantInfoObj['externalRecords'] != null){
@@ -217,6 +209,24 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
       }
     }
     return externalRecordsSet;
+  }
+
+
+  export const GetVarinatSetExternalRecords = MetaNode('GetVarinatSetExternalRecords')
+  .meta({
+    label: `Get Variant Set External Records`,
+    description: "Get External Records for a given Variant Set."
+  })
+  .inputs({ variantset: VariantSet })
+  .output(VarinatSetExternalRecordsInfo)
+  .resolve(async (props) => {
+    let varinatSet = props.inputs.variantset.set;
+    let variantSetInfo = await getVariantSetInfo(varinatSet);
+    if(variantSetInfo == null){
+        throw new Error("No data available!");
+    }
+
+    return getExternalRecordsFromAlleleRegistry(variantSetInfo);
   }).story(props =>
     `Get External Records for a given Variant Set.`
   ).build()

@@ -50,18 +50,6 @@ export const RE_PositionalDataC = z.object({
 });
 type RE_PositionalData = z.infer<typeof RE_PositionalDataC>
 
-export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
-  .meta({
-    label: 'Regulatory Element',
-    description: 'Regulatory Element resolver',
-    icon: [linkeddatahub_icon],
-  })
-  .codec(RegulatoryElementInfoC)
-  .view(regElem => (
-    <div className="prose max-w-none"> {regElem.data.entId} Regulatory Element<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
-  ))
-  .build()
-
 export async function myRegElemInfo_query(regElemId: string): Promise<RegulatoryElementInfo> {
   const res = await fetch(`https://ldh.genome.network/cfde/ldh/RegulatoryElement/id/${encodeURIComponent(regElemId)}`)
   return await res.json()
@@ -84,52 +72,27 @@ export async function getRegElemPositionData(regElemId: string): Promise<RE_Posi
   return await res.json()
 }
 
-export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegElementTerm')
-  .meta({
-    label: 'Resolve Regulatory Element Info from Term',
-    description: 'Resolve Regulatory Element info from variant term',
-    icon: [linkeddatahub_icon],
-  })
-  .inputs({ regulatoryElement: RegulatoryElementTerm })
-  .output(RegulatoryElementInfo)
-  .resolve(async (props) => {
-    const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
-    
-    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
-    if(response == null || response.data == null){
-      throw new Error("Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next atempt!");
-    }
-
-    if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){
-      response.data.coordinates = rePositionData.data.cCREQuery[0].coordinates;
-    }else{
-      response.data.coordinates = {
-          chromosome: "",
-          start: 0,
-          end: 0
-      };
-    }
-    return response;
-  })
-  .story(props => `Additional information about the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} was resolved.`)
-  .build()
-
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
   .meta({
     label: 'Resolve Genes for Regulatory Elements Info',
     description: 'Get Linked Genes For Regulatory Element Info',
   })
-  .inputs({ regElemInfo: RegulatoryElementInfo  })
+  .inputs({  regulatoryElement: RegulatoryElementTerm   })
   .output(GeneSet)
   .resolve(async (props) => {
-    let geneNames =  props.inputs.regElemInfo.data.ldFor.Gene.map(({ entId }) => entId);
+    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    if(response == null || response.data == null){
+      throw new Error("Unable to get data from LInked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    let geneNames =  response.data.ldFor.Gene.map(({ entId }) => entId);
     let geneSet = {
-      description: 'Gene set for regulatory element '+props.inputs.regElemInfo.data.entId,
+      description: 'Gene set for regulatory element '+response.data.entId,
       set: geneNames
     };
     return geneSet;
   })
-  .story(props => `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
+  .story(props => `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.`)
   .build()
 
 export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRegulatoryElementInfo')
@@ -137,17 +100,22 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     label: 'Resolve Variants for Regulatory Elements Info',
     description: 'Get Linked Variants For Regulatory Element Info',
   })
-  .inputs({ regElemInfo: RegulatoryElementInfo  })
+  .inputs({ regulatoryElement: RegulatoryElementTerm  })
   .output(VariantSet)
   .resolve(async (props) => {
-    let variantNames =  props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId);
+    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    if(response == null || response.data == null){
+      throw new Error("Unable to get data from LInked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    let variantNames =  response.data.ld.Variant.map(({ entId }) => entId);
     let variantSet = {
-      description: 'Variant set for regulatory element '+props.inputs.regElemInfo.data.entId,
+      description: 'Variant set for regulatory element '+response.data.entId,
       set: variantNames
     };
     return variantSet;
   })
-  .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
+  .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.`)
   .build()
 
 const MyRegulatoryElementC = z.object({

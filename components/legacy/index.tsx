@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { z_maybe_array } from '@/utils/zod'
+import { VariantInfoFromVariantTermMyVarintInfo } from '../service/variantinfo'
 
 export const MyVariantInfoC = z.object({
   _id: z.string(),
@@ -76,3 +77,15 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
     </div>
   ))
   .build()
+
+export const MyVariantInfoFromVariantTerm = MetaNode('MyVariantInfoFromVariantTerm')
+  .meta({
+    ...VariantInfoFromVariantTermMyVarintInfo.meta,
+    hidden: true,
+  })
+  .inputs(VariantInfoFromVariantTermMyVarintInfo.inputs)
+  .output(VariantInfoFromVariantTermMyVarintInfo.output)
+  .resolve(VariantInfoFromVariantTermMyVarintInfo.resolve)
+  .story(VariantInfoFromVariantTermMyVarintInfo.story)
+  .build()
+

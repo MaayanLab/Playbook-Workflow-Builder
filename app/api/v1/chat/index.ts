@@ -3,7 +3,7 @@ import { z } from 'zod'
 import krg from '@/app/krg'
 import OpenAI from 'openai'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
-import { ResponseCodedError, UnauthorizedError } from '@/spec/error'
+import { ResponseCodedError, UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
 import cache from '@/utils/global_cache'
 import dedent from 'ts-dedent'
 import * as dict from '@/utils/dict'
@@ -11,10 +11,16 @@ import * as array from '@/utils/array'
 import { ProcessMetaNode } from '@/spec/metanode'
 import { GPTAssistantMessageParse, AssembleState, AssistantParsedMessages } from './utils'
 
-const openai = cache('openai', () => new OpenAI({ apiKey: process.env.OPENAI_API_KEY }))
+const openai = cache('openai', async () => {
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn(`OPENAI_API_KEY not defined`)
+    throw new UnsupportedMethodError()
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+})
 const assistant = cache('openai-assistant', async () => {
   if (!process.env.OPENAI_ASSISTANT_ID) {
-    const assistant = await openai.beta.assistants.create({
+    const assistant = await (await openai).beta.assistants.create({
       name: `playbook-gpt`,
       instructions: dedent`
         You are a bot that helps the user construct workflows. You do not answer questions directly, instead you help choose from the applicable workflow steps in an effort to construct a workflow that answer the user's question.
@@ -47,7 +53,7 @@ const assistant = cache('openai-assistant', async () => {
     console.log(assistant.id)
     return assistant
   } else {
-    return await openai.beta.assistants.retrieve(process.env.OPENAI_ASSISTANT_ID)
+    return await (await openai).beta.assistants.retrieve(process.env.OPENAI_ASSISTANT_ID)
   }
 })
 
@@ -63,12 +69,12 @@ export const GPTAssistantCreate = API.post('/api/v1/chat')
   .body(z.object({}))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
-    if (!session || !session.user || !process.env.OPENAI_API_KEY) throw new UnauthorizedError()
+    if (!session || !session.user) throw new UnauthorizedError()
     if (req.method === 'HEAD') {
       res.status(200).end()
       return
     }
-    const thread = await openai.beta.threads.create()
+    const thread = await (await openai).beta.threads.create()
     return thread.id
   })
   .build()
@@ -85,12 +91,12 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
   ]))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
-    if (!session || !session.user || !process.env.OPENAI_API_KEY) throw new UnauthorizedError()
+    if (!session || !session.user) throw new UnauthorizedError()
     if (req.method === 'HEAD') {
       res.status(200).end()
       return
     }
-    const currentMessages = GPTAssistantMessageParse((await openai.beta.threads.messages.list(inputs.query.thread_id, { order: 'asc' })).data)
+    const currentMessages = GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(inputs.query.thread_id, { order: 'asc' })).data)
     const userMessageQueue = [inputs.body]
     const newMessages: AssistantParsedMessages = []
     while (userMessageQueue.length > 0) {
@@ -144,7 +150,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
             description: item.meta.description, story: item.story({}),
           }
         })
-      const userMessage = await openai.beta.threads.messages.create(inputs.query.thread_id, {
+      const userMessage = await (await openai).beta.threads.messages.create(inputs.query.thread_id, {
         role: 'user',
         content: JSON.stringify({
           ...currentUserMessage,
@@ -157,13 +163,13 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         choices,
       })
 
-      let run = await openai.beta.threads.runs.create(inputs.query.thread_id, { assistant_id: (await assistant).id })
+      let run = await (await openai).beta.threads.runs.create(inputs.query.thread_id, { assistant_id: (await assistant).id })
       while (run.status !== 'completed') {
         await new Promise<void>((resolve, reject) => {setTimeout(() => {resolve()}, 500)})
-        run = await openai.beta.threads.runs.retrieve(inputs.query.thread_id, run.id)
+        run = await (await openai).beta.threads.runs.retrieve(inputs.query.thread_id, run.id)
         if (run.status === 'completed') {
           // send all new messages since the user's message to the user
-          newMessages.push(...GPTAssistantMessageParse((await openai.beta.threads.messages.list(inputs.query.thread_id, { after: userMessage.id, order: 'asc' })).data))
+          newMessages.push(...GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(inputs.query.thread_id, { after: userMessage.id, order: 'asc' })).data))
           const lastMessage = newMessages[newMessages.length-1]
           if (lastMessage.role === 'assistant' && lastMessage.suggestions.length === 1) {
             userMessageQueue.push({ step: lastMessage.suggestions[0] })
@@ -183,12 +189,12 @@ export const GPTAssistantMessagesList = API.get('/api/v1/chat/[thread_id]/messag
   .query(z.object({ thread_id: z.string() }))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
-    if (!session || !session.user || !process.env.OPENAI_API_KEY) throw new UnauthorizedError()
+    if (!session || !session.user) throw new UnauthorizedError()
     if (req.method === 'HEAD') {
       res.status(200).end()
       return
     }
-    return GPTAssistantMessageParse((await openai.beta.threads.messages.list(inputs.query.thread_id, { order: 'asc' })).data)
+    return GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(inputs.query.thread_id, { order: 'asc' })).data)
   })
   .build()
 
@@ -197,12 +203,12 @@ export const GPTAssistantDelete = API.post('/api/v1/chat/[thread_id]/delete')
   .body(z.object({}))
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
-    if (!session || !session.user || !process.env.OPENAI_API_KEY) throw new UnauthorizedError()
+    if (!session || !session.user) throw new UnauthorizedError()
     if (req.method === 'HEAD') {
       res.status(200).end()
       return
     }
-    await openai.beta.threads.del(inputs.query.thread_id)
+    await (await openai).beta.threads.del(inputs.query.thread_id)
     return null
   })
   .build()

@@ -6,6 +6,14 @@
 import { APIInterface } from '@/spec/api'
 import type { AdminJobs as AdminJobs_ } from './v1/admin/jobs'
 export const AdminJobs = APIInterface<typeof AdminJobs_>("/api/v1/admin/jobs", "GET")
+import type { GPTAssistantCreate as GPTAssistantCreate_ } from './v1/chat'
+export const GPTAssistantCreate = APIInterface<typeof GPTAssistantCreate_>("/api/v1/chat", "POST")
+import type { GPTAssistantMessage as GPTAssistantMessage_ } from './v1/chat'
+export const GPTAssistantMessage = APIInterface<typeof GPTAssistantMessage_>("/api/v1/chat/[thread_id]/messages", "POST")
+import type { GPTAssistantMessagesList as GPTAssistantMessagesList_ } from './v1/chat'
+export const GPTAssistantMessagesList = APIInterface<typeof GPTAssistantMessagesList_>("/api/v1/chat/[thread_id]/messages", "GET")
+import type { GPTAssistantDelete as GPTAssistantDelete_ } from './v1/chat'
+export const GPTAssistantDelete = APIInterface<typeof GPTAssistantDelete_>("/api/v1/chat/[thread_id]/delete", "POST")
 import type { CWLForPlaybook as CWLForPlaybook_ } from './v1/cwl'
 export const CWLForPlaybook = APIInterface<typeof CWLForPlaybook_>("/api/v1/cwl/[fpl_id]", "GET")
 import type { CWLForPlaybookFile as CWLForPlaybookFile_ } from './v1/cwl'

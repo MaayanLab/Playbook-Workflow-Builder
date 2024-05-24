@@ -1,6 +1,6 @@
 {
   "name": "playbook-partnership",
-  "version": "0.56.2",
+  "version": "0.57.1",
   "description": "A repository for the playbook partnership collaboration.",
   "private": true,
   "workspaces": [
@@ -45,6 +45,7 @@
     "immutable": "^4.3.6",
     "json-canonicalize": "^1.0.6",
     "jszip": "^3.10.1",
+    "openai": "^4.47.1",
     "pg": "^8.11.5",
     "pg-boss": "^9.0.3",
     "pg-listen": "^1.7.0",
@@ -53,6 +54,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "swr": "^2.2.5",
+    "ts-dedent": "^2.2.0",
     "yaml": "^2.4.2",
     "zod": "^3.23.8"
   },

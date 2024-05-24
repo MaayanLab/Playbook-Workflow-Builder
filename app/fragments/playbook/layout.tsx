@@ -1,25 +1,12 @@
 import Link from 'next/link'
 import * as Auth from 'next-auth/react'
-import type { Session } from 'next-auth'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import { Waypoint, Waypoints } from '@/app/components/waypoint'
+import dynamic from 'next/dynamic'
 
-function UserAvatar({ session }: { session: Session | null }) {
-  if (typeof session?.user?.image === 'string') {
-    return <img src={session.user.image} />
-  } else if (session?.user?.name) {
-    const name_split = session.user.name.split(' ')
-    const first_name = name_split[0]
-    const last_name = name_split[name_split.length-1]
-    return <span className="text-xl">{first_name[0].toUpperCase()}{last_name[0].toUpperCase()}</span>
-  } else if (session?.user?.email) {
-    return <span className="text-xl">{session.user.email[0].toUpperCase()}</span>
-  } else {
-    return <span className="text-xl">U</span>
-  }
-}
+const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
 
 export default function Layout({ children }: React.PropsWithChildren) {
   const publicUrl = usePublicUrl()
@@ -48,8 +35,9 @@ export default function Layout({ children }: React.PropsWithChildren) {
           <div className="navbar-end hidden md:flex">
             <div className="hidden lg:flex">
               <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
+              <Link href="/chat"><button className="btn btn-ghost text-black dark:text-white">Chatbot</button></Link>
               <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Explore Components</button></Link>
-              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
+              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -60,10 +48,10 @@ export default function Layout({ children }: React.PropsWithChildren) {
                 </label>
                 <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
                   <li><Link href="/account">Settings</Link></li>
-                  <li><Link href="/api/auth/signout">Sign Out</Link></li>
+                  <li><button className="hover:underline" onClick={() => {Auth.signOut()}}>Sign Out</button></li>
                 </ul>
               </div>
-              : <Link href="/api/auth/signin"><button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white">Sign in</button></Link>}
+              : <button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white" onClick={() => {Auth.signIn()}}>Sign in</button>}
           </div>
         </div>
 
@@ -105,6 +93,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             <span>Playbook</span>
           </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
+          <li><Link href="/chat">Chatbot</Link></li>
           <li><Link href="/explore">Explore Components</Link></li>
           <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
           <li className="menu-title">
@@ -113,9 +102,9 @@ export default function Layout({ children }: React.PropsWithChildren) {
           {session && session.user ?
               <>
                 <li><Link href="/account">Settings</Link></li>
-                <li><Link href="/api/auth/signout">Sign Out</Link></li>
+                <li><button className="hover:underline" onClick={() => {Auth.signOut()}}>Sign Out</button></li>
               </>
-              : <li><Link href="/api/auth/signin">Sign in</Link></li>}
+              : <li><button className="hover:underline" onClick={() => {Auth.signIn()}}>Sign in</button></li>}
         </ul>
       </div>
     </div>

@@ -50,6 +50,18 @@ export const RE_PositionalDataC = z.object({
 });
 type RE_PositionalData = z.infer<typeof RE_PositionalDataC>
 
+export const RegulatoryElementPosition = MetaNode('RegulatoryElementPosition')
+  .meta({
+    label: 'Regulatory Element position',
+    description: 'Regulatory Element position',
+    icon: [linkeddatahub_icon],
+  })
+  .codec(RegulatoryElementInfoC)
+  .view(regElem => (
+    <div className="prose max-w-none"> {regElem.data.entId} Regulatory Element<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
+  ))
+  .build()
+
 export async function myRegElemInfo_query(regElemId: string): Promise<RegulatoryElementInfo> {
   const res = await fetch(`https://ldh.genome.network/cfde/ldh/RegulatoryElement/id/${encodeURIComponent(regElemId)}`)
   return await res.json()
@@ -71,6 +83,36 @@ export async function getRegElemPositionData(regElemId: string): Promise<RE_Posi
   })
   return await res.json()
 }
+
+export const getRegulatoryElementPosition = MetaNode('getRegulatoryElementPosition')
+  .meta({
+    label: 'Regulatory Element Position Info',
+    description: 'Regulatory Element Position Info',
+    icon: [linkeddatahub_icon],
+  })
+  .inputs({ regulatoryElement: RegulatoryElementTerm })
+  .output(RegulatoryElementPosition)
+  .resolve(async (props) => {
+    const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
+    
+    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    if(response == null || response.data == null){
+      throw new Error("Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){
+      response.data.coordinates = rePositionData.data.cCREQuery[0].coordinates;
+    }else{
+      response.data.coordinates = {
+          chromosome: "",
+          start: 0,
+          end: 0
+      };
+    }
+    return response;
+  })
+  .story(props => `Regulatory element genomic position.`)
+  .build()
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
   .meta({

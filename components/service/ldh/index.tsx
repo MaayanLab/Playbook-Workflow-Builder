@@ -26,7 +26,7 @@ export async function myGeneInfoFromLinkDataHub(geneTerm: string): Promise<MyGen
 export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsForGeneInfo')
   .meta({
     label: 'Resolve Regulatory Elements from LDH',
-    description: 'Resolve regulatory elements from gene with Linked Data Hub',
+    description: 'Resolve regulatory elements from gene with CFDE Linked Data Hub',
     icon: [linkeddatahub_icon],
     pagerank: 1,
   })
@@ -48,7 +48,7 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
     return reSet;
   })
   .story(props =>
-    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
+    `Regulatory elements were obtained from the CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
   )
   .build()
 
@@ -61,6 +61,6 @@ export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryE
     return await GetRegulatoryElementsForGeneInfo.resolve({ ...props, inputs: { geneInfo } })
   })
   .story(props =>
-    `Regulatory elements were obtained from the Linked Data Hub [\\ref{Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
+    `Regulatory elements were obtained from the CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
   )
   .build()

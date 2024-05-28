@@ -16,7 +16,7 @@ export default function ChatThread() {
   React.useEffect(() => {
     if (!auth.data?.user?.id) return
     trigger().then((thread_id) => router.push(`/chat/${thread_id}`))
-  }, [auth])
+  }, [auth.data?.user?.id])
   return (
     <Layout>
       <Head><title>Chat</title></Head>

@@ -50,10 +50,10 @@ export const RE_PositionalDataC = z.object({
 });
 type RE_PositionalData = z.infer<typeof RE_PositionalDataC>
 
-export const RegulatoryElementInfo = MetaNode('RegulatoryElementInfo')
+export const RegulatoryElementPosition = MetaNode('RegulatoryElementPosition')
   .meta({
-    label: 'Regulatory Element',
-    description: 'Regulatory Element resolver',
+    label: 'Regulatory Element position',
+    description: 'Regulatory Element position',
     icon: [linkeddatahub_icon],
   })
   .codec(RegulatoryElementInfoC)
@@ -84,14 +84,14 @@ export async function getRegElemPositionData(regElemId: string): Promise<RE_Posi
   return await res.json()
 }
 
-export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegElementTerm')
+export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPosition')
   .meta({
-    label: 'Resolve Regulatory Element Info from Term',
-    description: 'Resolve Regulatory Element info from variant term',
+    label: 'Regulatory Element Position Info',
+    description: 'Regulatory Element Position Info',
     icon: [linkeddatahub_icon],
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
-  .output(RegulatoryElementInfo)
+  .output(RegulatoryElementPosition)
   .resolve(async (props) => {
     const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
     
@@ -111,7 +111,7 @@ export const RegElementInfoFromRegElementTerm = MetaNode('RegElementInfoFromRegE
     }
     return response;
   })
-  .story(props => `Additional information about the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} was resolved.`)
+  .story(props => `Regulatory element genomic position.`)
   .build()
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
@@ -119,17 +119,22 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     label: 'Resolve Genes for Regulatory Elements Info',
     description: 'Get Linked Genes For Regulatory Element Info',
   })
-  .inputs({ regElemInfo: RegulatoryElementInfo  })
+  .inputs({  regulatoryElement: RegulatoryElementTerm   })
   .output(GeneSet)
   .resolve(async (props) => {
-    let geneNames =  props.inputs.regElemInfo.data.ldFor.Gene.map(({ entId }) => entId);
+    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    if(response == null || response.data == null){
+      throw new Error("Unable to get data from LInked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    let geneNames =  response.data.ldFor.Gene.map(({ entId }) => entId);
     let geneSet = {
-      description: 'Gene set for regulatory element '+props.inputs.regElemInfo.data.entId,
+      description: 'Gene set for regulatory element '+response.data.entId,
       set: geneNames
     };
     return geneSet;
   })
-  .story(props => `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
+  .story(props => `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.`)
   .build()
 
 export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRegulatoryElementInfo')
@@ -137,17 +142,22 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     label: 'Resolve Variants for Regulatory Elements Info',
     description: 'Get Linked Variants For Regulatory Element Info',
   })
-  .inputs({ regElemInfo: RegulatoryElementInfo  })
+  .inputs({ regulatoryElement: RegulatoryElementTerm  })
   .output(VariantSet)
   .resolve(async (props) => {
-    let variantNames =  props.inputs.regElemInfo.data.ld.Variant.map(({ entId }) => entId);
+    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    if(response == null || response.data == null){
+      throw new Error("Unable to get data from LInked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    let variantNames =  response.data.ld.Variant.map(({ entId }) => entId);
     let variantSet = {
-      description: 'Variant set for regulatory element '+props.inputs.regElemInfo.data.entId,
+      description: 'Variant set for regulatory element '+response.data.entId,
       set: variantNames
     };
     return variantSet;
   })
-  .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regElemInfo.data.entId}` : ''} were resolved.`)
+  .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.`)
   .build()
 
 const MyRegulatoryElementC = z.object({

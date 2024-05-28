@@ -13,6 +13,7 @@ import { AssembleState } from '@/app/api/v1/chat/utils'
 import SafeRender from '@/utils/saferender'
 
 import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
+import usePublicUrl from '@/utils/next-public-url'
 const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
@@ -141,13 +142,14 @@ function Message({ session, role, children }: React.PropsWithChildren<{ session:
 }
 
 export default function ChatThread() {
+  const publicUrl = usePublicUrl()
   const { data: session } = Auth.useSession()
   const router = useRouter()
   const [state, setState] = React.useState({} as Record<number, string>)
   const [message, setMessage] = React.useState('')
   const { data: messages, mutate } = useAPIQuery(GPTAssistantMessagesList, { thread_id: router.query.thread_id as string })
   const { trigger, isMutating } = useAPIMutation(GPTAssistantMessage, { thread_id: router.query.thread_id as string })
-  const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id: router.query.thread_id as string })
+  // const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id: router.query.thread_id as string })
   const playbookState = React.useMemo(() => messages ? AssembleState(messages, { with_value: true }) : undefined, [messages])
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
     const newMessages = await trigger({ body })
@@ -155,16 +157,23 @@ export default function ChatThread() {
   }, [trigger])
   return (
     <Layout>
-      <Head><title>Chat</title></Head>
+      <Head><title>The Playbook Chatbot</title></Head>
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
-        <div className="flex-grow prose max-w-none flex flex-row justify-between">
-          <h1>Chat</h1>
-          {/* <button
+        <div className="prose"><h1>The Playbook Chatbot</h1></div>
+        <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center", { 'hidden': messages?.length })}>
+          <img
+            className="w-32 cursor-pointer dark:stroke-white"
+            src={`${publicUrl}/PWB-logo.svg`}
+          />
+          <div className="prose"><h2>How can I help you today?</h2></div>
+        </div>
+        {/* <div className="flex-grow prose max-w-none flex flex-row justify-between">
+          <button
             type="button"
             className="btn btn-sm btn-error"
             onClick={() => {triggerDelete().finally(() => {router.push('/chat')})}}
-          >Close</button> */}
-        </div>
+          >Close</button>
+        </div> */}
         <Message role="welcome" session={session}>
           I'm an AI-powered chat assistant interface designed to help you access the functionality of the playbook workflow builder.
           Please start by asking your question of interest, and I'll try my best to help you answer it through the construction of a playbook workflow.

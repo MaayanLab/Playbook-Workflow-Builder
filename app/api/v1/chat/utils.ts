@@ -33,13 +33,24 @@ const UserC = z.intersection(
 
 export function GPTAssistantMessageParse(messages: OpenAI.Beta.Threads.Messages.Message[]) {
   return messages.flatMap(msg =>
-    msg.content.flatMap(content => (
-      content.type === 'text' ?
-        msg.role === 'assistant' ? [{ role: 'assistant', ...AgentC.parse(JSON.parse(content.text.value)) }]
-        : msg.role === 'user' ? [{ role: 'user', ...UserC.parse(JSON.parse(content.text.value)) }]
-        : []
-      : []
-    ) as Array<({ role: 'assistant' } & z.infer<typeof AgentC>) | ({ role: 'user' } & z.infer<typeof UserC>)>)
+    msg.content.flatMap(content => {
+      if (content.type === 'text') {
+        if (msg.role === 'assistant') {
+          const { data, error } = AgentC.safeParse(JSON.parse(content.text.value))
+          if (data) return [{ role: 'assistant' as const, ...data }]
+          else return [{ role: 'error' as const, error }]
+        } else if (msg.role === 'user') {
+          const { data, error } = UserC.safeParse(JSON.parse(content.text.value))
+          if (data) return [{ role: 'user' as const, ...data }]
+          else return [{ role: 'error' as const, error }]
+        }
+      }
+      return [] as Array<
+        ({ role: 'assistant' } & z.infer<typeof AgentC>)
+        | ({ role: 'user' } & z.infer<typeof UserC>)
+        | ({ role: 'error', error: any })
+      >
+    })
   )
 }
 

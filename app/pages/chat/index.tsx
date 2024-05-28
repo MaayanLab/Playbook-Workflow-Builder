@@ -13,6 +13,10 @@ export default function ChatThread() {
   const router = useRouter()
   const auth = useSessionWithId()
   const {trigger, error, isMutating} = useAPIMutation(GPTAssistantCreate)
+  React.useEffect(() => {
+    if (!auth.data?.user?.id) return
+    trigger().then((thread_id) => router.push(`/chat/${thread_id}`))
+  }, [auth])
   return (
     <Layout>
       <Head><title>Chat</title></Head>

@@ -159,13 +159,13 @@ export default function ChatThread() {
     <Layout>
       <Head><title>The Playbook Chatbot</title></Head>
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
-        <div className="prose"><h1>The Playbook Chatbot</h1></div>
+        <div className="prose"><h2>The Playbook Chatbot</h2></div>
         <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center", { 'hidden': messages?.length })}>
           <img
-            className="w-32 cursor-pointer dark:stroke-white"
+            className="w-32"
             src={`${publicUrl}/PWB-logo.svg`}
           />
-          <div className="prose"><h2>How can I help you today?</h2></div>
+          <div className="prose"><h1>How can I help you today?</h1></div>
         </div>
         {/* <div className="flex-grow prose max-w-none flex flex-row justify-between">
           <button
@@ -178,7 +178,7 @@ export default function ChatThread() {
           I'm an AI-powered chat assistant interface designed to help you access the functionality of the playbook workflow builder.
           Please start by asking your question of interest, and I'll try my best to help you answer it through the construction of a playbook workflow.
         </Message>
-        <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+        <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center prose">
           {[
             'Show me the expression of ACE2 in healthy human tissues from GTEx',
             'Find drugs from the LINCS L1000 Chemical Perturbations the up regulate STAT3',

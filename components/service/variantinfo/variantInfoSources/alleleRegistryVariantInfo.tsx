@@ -13,19 +13,19 @@ export async function getAlleleRegistryVariantInfo(variantId: string): Promise<A
   return await res.json();
 }
 
-export async function getVariantSetInfo(varinatSetInpt: String[]){
-  if(varinatSetInpt == null || varinatSetInpt.length == 0){
+export async function getVariantSetInfo(variantSetInpt: String[]){
+  if(variantSetInpt == null || variantSetInpt.length == 0){
     return;
   }
   
   var varInfoSet = [];
   var varAlleleRegResponse = null;
-  for(let indx in varinatSetInpt){
-    varAlleleRegResponse = await getAlleleRegistryVariantInfo(varinatSetInpt[indx].trim());
+  for(let indx in variantSetInpt){
+    varAlleleRegResponse = await getAlleleRegistryVariantInfo(variantSetInpt[indx].trim());
     if(varAlleleRegResponse == null){
       continue;
     }
-    varAlleleRegResponse.entId = varinatSetInpt[indx].trim();
+    varAlleleRegResponse.entId = variantSetInpt[indx].trim();
     varInfoSet.push(varAlleleRegResponse);
   }
 

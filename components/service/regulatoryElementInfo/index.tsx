@@ -84,7 +84,7 @@ export async function getRegElemPositionData(regElemId: string): Promise<RE_Posi
   return await res.json()
 }
 
-export const getRegulatoryElementPosition = MetaNode('getRegulatoryElementPosition')
+export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPosition')
   .meta({
     label: 'Regulatory Element Position Info',
     description: 'Regulatory Element Position Info',

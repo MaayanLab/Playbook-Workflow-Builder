@@ -1,7 +1,7 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/term'
 import { z } from 'zod'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink } from '../variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage, getMyVarintInfoLink } from '../variantUtils'
 import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
 
   export const MyVariantInfoC = z.object({
@@ -13,7 +13,7 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
     return "http://myvariant.info/v1/variant/"+hgvs+"?assembly=hg38";
   }
 
-  export async function getVarinatInfoFromMyVariantInfo( link: string): Promise<MyVariantInfo> {
+  export async function getVariantInfoFromMyVariantInfo( link: string): Promise<MyVariantInfo> {
     const req = await fetch(link);
     return await req.json()
   }
@@ -37,7 +37,7 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
   .inputs({ variant: VariantTerm })
   .output(MyVariantInfo)
   .resolve(async (props) => {
-    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    var varCaId = await resolveVariantCaID(props.inputs.variant);
     if(varCaId == null || varCaId == ''){
       throw new Error(variantIdResolveErrorMessage);
     }
@@ -50,7 +50,7 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
     let myVariantInfoURL = getMyVarintInfoLink(alleleRegResponse);
 
     if(myVariantInfoURL != null){
-      return await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
+      return await getVariantInfoFromMyVariantInfo(myVariantInfoURL);
     }else{
       throw new Error("Unable to find requested data, missing MyVarintInfo API link in External resources!");
     }

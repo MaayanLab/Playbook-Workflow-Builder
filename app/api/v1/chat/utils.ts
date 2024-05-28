@@ -31,16 +31,42 @@ const UserC = z.intersection(
   }),
 )
 
+const zJson = z.string().transform((content, ctx) => {
+  try {
+    const m = /({.+})/sg.exec(content)
+    if (!m) return content
+    return JSON.parse(m[1])
+  } catch (e) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.invalid_string,
+      validation: 'json' as any,
+      message: (e as Error).message,
+    })
+    return z.NEVER
+  }
+})
+
+function zodCodecTransform<Output = any, Def extends z.ZodTypeDef = z.ZodTypeDef, Input = Output>(zodCodec: z.ZodType<Output, Def, Input>) {
+  return (content: Input, ctx: z.RefinementCtx): Output => {
+    const { data, error } = zodCodec.safeParse(content)
+    if (error) {
+      error.issues.forEach(issue => ctx.addIssue(issue))
+      return z.NEVER
+    }
+    return data
+  }
+}
+
 export function GPTAssistantMessageParse(messages: OpenAI.Beta.Threads.Messages.Message[]) {
   return messages.flatMap(msg =>
     msg.content.flatMap(content => {
       if (content.type === 'text') {
         if (msg.role === 'assistant') {
-          const { data, error } = AgentC.safeParse(JSON.parse(content.text.value))
+          const { data, error } = zJson.transform(zodCodecTransform(AgentC)).safeParse(content.text.value)
           if (data) return [{ role: 'assistant' as const, ...data }]
           else return [{ role: 'error' as const, error }]
         } else if (msg.role === 'user') {
-          const { data, error } = UserC.safeParse(JSON.parse(content.text.value))
+          const { data, error } = zJson.transform(zodCodecTransform(UserC)).safeParse(content.text.value)
           if (data) return [{ role: 'user' as const, ...data }]
           else return [{ role: 'error' as const, error }]
         }

@@ -279,6 +279,10 @@ import * as viz_graph from "./viz/graph"
 import viz_graph_packageJson from "./viz/graph/package.json"
 metanodes.push(...MetaNodesFromExports(viz_graph, viz_graph_packageJson))
 components.push("viz/graph")
+import * as viz_idf_umap from "./viz/idf_umap"
+import viz_idf_umap_packageJson from "./viz/idf_umap/package.json"
+metanodes.push(...MetaNodesFromExports(viz_idf_umap, viz_idf_umap_packageJson))
+components.push("viz/idf_umap")
 import * as viz_kf_barplot from "./viz/kf_barplot"
 import viz_kf_barplot_packageJson from "./viz/kf_barplot/package.json"
 metanodes.push(...MetaNodesFromExports(viz_kf_barplot, viz_kf_barplot_packageJson))

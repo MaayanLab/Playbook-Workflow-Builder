@@ -19,7 +19,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
         <Waypoint id="top" />
         <div className="w-full navbar bg-primary gap-2">
           <div className="flex-grow flex-none">
-            <div className="flex-none lg:hidden">
+            <div className="flex-none xl:hidden">
               <label htmlFor="my-drawer-3" className="btn btn-square btn-ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-black dark:stroke-white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               </label>
@@ -33,10 +33,11 @@ export default function Layout({ children }: React.PropsWithChildren) {
             </Link>
           </div>
           <div className="navbar-end hidden md:flex">
-            <div className="hidden lg:flex">
+            <div className="hidden xl:flex">
               <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
               <Link href="/chat"><button className="btn btn-ghost text-black dark:text-white">Chatbot</button></Link>
-              <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Explore Components</button></Link>
+              <Link href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></Link>
+              <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></Link>
               <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
             </div>
             {session && session.user ?
@@ -94,7 +95,8 @@ export default function Layout({ children }: React.PropsWithChildren) {
           </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
           <li><Link href="/chat">Chatbot</Link></li>
-          <li><Link href="/explore">Explore Components</Link></li>
+          <li><Link href="/components">Component Catalog</Link></li>
+          <li><Link href="/explore">Component Graph</Link></li>
           <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
           <li className="menu-title">
             <span>Account</span>

@@ -9,29 +9,16 @@ import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
-import { extend_icon, func_icon, start_icon, variable_icon, view_in_graph_icon } from '@/icons'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
-import Link from 'next/link'
 
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
-const Icon = dynamic(() => import('@/app/components/icon'))
 const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button'))
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
-
-function GraphButton({ session_id, graph_id }: { session_id?: string, graph_id: string }) {
-  const router = useRouter()
-  const disabled = router.asPath.endsWith('/graph') || router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
-  return (
-    <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${graph_id === 'start' ? `/` : `/${graph_id}`}/extend`}>
-      <button className='bp5-button bp5-minimal' disabled={disabled}>
-        <Icon icon={view_in_graph_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
-      </button>
-    </Link>
-  )
-}
+const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
 
 export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
   const router = useRouter()

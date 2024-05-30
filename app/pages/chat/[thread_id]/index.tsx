@@ -127,7 +127,7 @@ function Component({ state, setState, component }: {
   </div>
 }
 
-function Message({ session, role, children }: React.PropsWithChildren<{ session: Session | null, role: string }>) {
+function Message({ id, session, role, children }: React.PropsWithChildren<{ id: string, session: Session | null, role: string }>) {
   return (
     <>
       <div className={classNames('chat', { 'chat-end': role === 'user', 'chat-start': role !== 'user', 'hidden': role === 'system' })}>
@@ -266,7 +266,7 @@ export default function ChatThread() {
           const component = 'step' in message && playbookState ? playbookState.all_nodes[message.step.id] : undefined
           return (
             <React.Fragment key={i}>
-              {'message' in message ? <Message role={message.role} session={session}>{message.message}</Message> : null}
+              {'message' in message ? <Message id={message.id} role={message.role} session={session}>{message.message}</Message> : null}
               {component ? <Component component={component} state={state} setState={setState} /> : null}
               {message.role === 'assistant' && message.suggestions.length > 1 ?
                 <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">

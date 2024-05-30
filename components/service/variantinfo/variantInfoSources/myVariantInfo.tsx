@@ -55,5 +55,5 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
       throw new Error("Unable to find requested data, missing MyVarintInfo API link in External resources!");
     }
   })
-  .story(props => ``)
+  .story(props => ({}))
   .build()

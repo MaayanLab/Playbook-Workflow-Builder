@@ -136,7 +136,9 @@ export const PromptName = MetaNode('PromptName')
       </div>
     )
   })
-  .story(props => `The start with a gene${props.output ? ` ${props.output}` : ''} from the user.`)
+  .story(props => ({
+    abstract: `The start with a gene${props.output ? ` ${props.output}` : ''} from the user.`,
+  }))
   .build()
 
 ```
@@ -167,7 +169,17 @@ export const ResolverName = MetaNode('ResolverName')
     return props.inputs.gene
   })
   // here you describe the step as a sentence in a methods section, ideally with an applicable citation
-  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)
+  .story(props => ({
+    // each of these are optional but recommended:
+    // this is a sentence placed in the abstract
+    abstract: `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`,
+    // this should be a paragraph for the introduction section
+    introduction: `A common function used is the Identity function.`,
+    // this should be a paragraph for the methods section
+    methods: `The identity function does absolutely nothing when applied to genes, as shown in [\\ref{doi:somedoi}].`,
+    // this will appear as the figure legend of the resulting figure
+    legend: `This gene shows exactly what we started with.`,
+  }))
   .build()
 ```
 
@@ -199,7 +211,7 @@ export const ResolverName = MetaNode('ResolverName')
       message => props.notify({ type: 'info', message }),
     )
   })
-  .story(props => `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`)
+  .story(props => ({ abstract: `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].` }))
   .build()
 
 ```

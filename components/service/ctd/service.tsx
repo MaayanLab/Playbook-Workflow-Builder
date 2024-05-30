@@ -395,7 +395,7 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     }
     return response;
   })
-  .story(props => ``)
+  .story(props => ({}))
   .build()
 
   export const GenesFile_CTD_Wikipathways = MetaNode('GenesFile_CTD_Wikipathways')
@@ -419,5 +419,5 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     }
     return response;
   })
-  .story(props => ``)
+  .story(props => ({}))
   .build()

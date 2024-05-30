@@ -33,7 +33,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
     }
     return "N/A";
   })
-  .story(props => ``)
+  .story(props => ({}))
   .build()
 
   export const REforVariantSetInfo = MetaNode('REforVariantSetInfo')

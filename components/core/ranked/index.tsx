@@ -108,6 +108,6 @@ export const RankedToSetT = [
     .resolve(async (props) => {
       return { set: props.inputs.ranked.ranked, description: props.inputs.ranked.description }
     })
-    .story(props => ``)
+    .story(props => ({}))
     .build()
 )

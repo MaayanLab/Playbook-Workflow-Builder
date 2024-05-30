@@ -177,7 +177,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
     })
-    .story(props => `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`)
+    .story(props => ({ abstract: `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
     .build()
 
     export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')

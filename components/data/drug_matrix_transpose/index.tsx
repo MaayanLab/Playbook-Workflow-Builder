@@ -65,7 +65,7 @@ export const DMT = MetaNode(`DMT`)
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a drug matrix transpose.`)
+  .story(props => ({ abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a drug matrix transpose.` }))
   .build()
 
 export const DMTFileUpload = MetaNode('DMTFileUpload')
@@ -92,7 +92,7 @@ export const DMTFileUpload = MetaNode('DMTFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `A drug matrix transpose${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
+  .story(props => ({ abstract: `A drug matrix transpose${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.` }))
   .build()
 
 export const DMTUnion = MetaNode('DMTUnion')

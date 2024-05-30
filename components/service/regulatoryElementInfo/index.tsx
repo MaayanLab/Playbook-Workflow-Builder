@@ -111,7 +111,7 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     }
     return response;
   })
-  .story(props => `Regulatory element genomic position.`)
+  .story(props => ({ abstract: `Regulatory element genomic position.` }))
   .build()
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
@@ -134,7 +134,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     };
     return geneSet;
   })
-  .story(props => `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.`)
+  .story(props => ({ abstract: `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.` }))
   .build()
 
 export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRegulatoryElementInfo')
@@ -157,7 +157,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     };
     return variantSet;
   })
-  .story(props => `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.`)
+  .story(props => ({ abstract: `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.` }))
   .build()
 
 const MyRegulatoryElementC = z.object({
@@ -254,5 +254,5 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
 
     return response;
   })
-  .story(props => `Additional information about the regulatory elements was resolved.`)
+  .story(props => ({ abstract: `Additional information about the regulatory elements was resolved.` }))
   .build()

@@ -61,7 +61,7 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
     if (gene === undefined) throw new Error('Gene not identified in MyVariantInfo')
     return gene
   })
-  .story(props => `The closest gene to the variant was found using MyVariant.info [\\ref{doi:10.1093/bioinformatics/btac017}].`)
+  .story(props => ({ abstract: `The closest gene to the variant was found using MyVariant.info [\\ref{doi:10.1093/bioinformatics/btac017}].` }))
   .build()
 
 export const MyVariantInfo = MetaNode('MyVariantInfo')

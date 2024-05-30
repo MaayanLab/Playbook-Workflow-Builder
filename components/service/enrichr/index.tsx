@@ -120,7 +120,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
       .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
-      .story(props => `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.`)
+      .story(props => ({ abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
@@ -131,7 +131,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
       .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
-      .story(props => `A GMT was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.`)
+      .story(props => ({ abstract: `A GMT was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
       .build(),
 
   ]

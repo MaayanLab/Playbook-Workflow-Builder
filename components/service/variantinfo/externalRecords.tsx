@@ -130,7 +130,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     }
     return reponse;
   })
-  .story(props => `External records for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`)
+  .story(props => ({ abstract: `External records for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
   .build()
 
   export const VariantSetExternalRecordsInfo = MetaNode('VariantSetExternalRecordsInfo')

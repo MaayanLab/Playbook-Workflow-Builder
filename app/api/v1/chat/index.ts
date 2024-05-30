@@ -147,7 +147,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
           return {
             id: id.next(), name: item.spec, inputs,
             type: 'prompt' in item ? 'prompt' : 'resolver', label: item.meta.label,
-            description: item.meta.description, story: item.story({}),
+            description: item.meta.description, ...item.story({}),
           }
         })
       const userMessage = await (await openai).beta.threads.messages.create(inputs.query.thread_id, {

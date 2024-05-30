@@ -27,7 +27,7 @@ export async function fpl_expand(props: { krg: KRG, fpl: FPL, metadata?: Metadat
         try { inputs = await decode_complete_process_inputs(props.krg, step.process) } catch (e) {}
         let output: unknown | undefined
         try { output = await decode_complete_process_output(props.krg, step.process) } catch (e) {}
-        story = metanode.story ? metanode.story({ inputs, output }) : undefined
+        story = metanode.story ? metanode.story({ inputs, output }).abstract : undefined
       }
       return {
         key: step.process.id,

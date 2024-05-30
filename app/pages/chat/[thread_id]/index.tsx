@@ -81,7 +81,7 @@ function Component({ state, setState, component }: {
       <div className="card card-bordered rounded-3xl p-4">
         <div className="card-title flex-col place-items-start">
           <h3 className="prose text-xl">{metanode.meta.label}</h3>
-          <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
+          <h5 className="prose text-md">{metanode.story({ inputs, output }).abstract}</h5>
         </div>
         <div className="card-body">
           {inputs ?
@@ -107,7 +107,7 @@ function Component({ state, setState, component }: {
     <div className="card card-bordered rounded-3xl p-4">
       <div className="card-title flex-col place-items-start">
         <h3 className="prose text-xl">{metanode.meta.label}</h3>
-        <h5 className="prose text-md">{metanode.story({ inputs, output })}</h5>
+        <h5 className="prose text-md">{metanode.story({ inputs, output }).abstract}</h5>
       </div>
       <div className="card-body">
         {output ? <SafeRender component={metanode.output.view} props={metanode.output.codec.decode(output)} /> : <>Waiting...</>}

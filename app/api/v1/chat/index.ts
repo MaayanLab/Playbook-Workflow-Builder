@@ -100,7 +100,13 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
     }
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
-    const currentMessages = GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { order: 'asc' })).data)
+    const currentMessages = GPTAssistantMessageParse(
+      (await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { order: 'asc' })).data
+        .flatMap(msg => {
+          const content = msg.content.flatMap(content => content.type === 'text' ? [content.text.value] : []).join('\n')
+          return { id: msg.id, role: msg.role, content }
+        })
+    )
     const userMessageQueue = [inputs.body]
     const newMessages: AssistantParsedMessages = []
     while (userMessageQueue.length > 0) {
@@ -162,6 +168,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         }),
       })
       newMessages.push({
+        id: '',
         ...currentUserMessage,
         role: 'user',
         choices,
@@ -173,7 +180,13 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         run = await (await openai).beta.threads.runs.retrieve(pwb_thread.openai_thread_id, run.id)
         if (run.status === 'completed') {
           // send all new messages since the user's message to the user
-          newMessages.push(...GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { after: userMessage.id, order: 'asc' })).data))
+          newMessages.push(...GPTAssistantMessageParse(
+            (await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { after: userMessage.id, order: 'asc' })).data
+              .flatMap(msg => {
+                const content = msg.content.flatMap(content => content.type === 'text' ? [content.text.value] : []).join('\n')
+                return { id: msg.id, role: msg.role, content }
+              })
+          ))
           const lastMessage = newMessages[newMessages.length-1]
           if (lastMessage.role === 'assistant' && lastMessage.suggestions.length === 1) {
             userMessageQueue.push({ step: lastMessage.suggestions[0] })
@@ -186,7 +199,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       }
     }
     // TODO: update fpl
-    const newMessagesWithIds: Array<AssistantParsedMessages[0] & { id: string }> = []
+    const newMessagesWithIds: AssistantParsedMessages = []
     for (const newMessage of newMessages) {
       const { role, ...message } = newMessage
       if (role === 'user' && 'step' in message) {
@@ -229,7 +242,8 @@ export const GPTAssistantMessagesList = API.get('/api/v1/chat/[thread_id]/messag
     }
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
-    return GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { order: 'asc' })).data)
+    const pwb_thread_messages = await db.objects.thread_message.findMany({ where: { thread: inputs.query.thread_id }, orderBy: { created: 'asc' } })
+    return GPTAssistantMessageParse(pwb_thread_messages)
   })
   .build()
 

@@ -10,6 +10,8 @@ import type { GPTAssistantCreate as GPTAssistantCreate_ } from './v1/chat'
 export const GPTAssistantCreate = APIInterface<typeof GPTAssistantCreate_>("/api/v1/chat", "POST")
 import type { GPTAssistantMessage as GPTAssistantMessage_ } from './v1/chat'
 export const GPTAssistantMessage = APIInterface<typeof GPTAssistantMessage_>("/api/v1/chat/[thread_id]/messages", "POST")
+import type { GPTAssistantMessageFeedback as GPTAssistantMessageFeedback_ } from './v1/chat'
+export const GPTAssistantMessageFeedback = APIInterface<typeof GPTAssistantMessageFeedback_>("/api/v1/chat/[thread_id]/messages/[message_id]/feedback", "POST")
 import type { GPTAssistantMessagesList as GPTAssistantMessagesList_ } from './v1/chat'
 export const GPTAssistantMessagesList = APIInterface<typeof GPTAssistantMessagesList_>("/api/v1/chat/[thread_id]/messages", "GET")
 import type { GPTAssistantDelete as GPTAssistantDelete_ } from './v1/chat'

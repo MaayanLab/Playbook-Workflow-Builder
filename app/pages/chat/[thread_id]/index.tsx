@@ -14,9 +14,17 @@ import SafeRender from '@/utils/saferender'
 
 import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
 import usePublicUrl from '@/utils/next-public-url'
+import { Breadcrumbs } from '@/app/fragments/breadcrumbs'
+import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
+import { useFPL } from '@/app/fragments/metapath'
 const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
+const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button'))
+const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
+const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
+const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
 
 type Component = {
   id: number,
@@ -153,12 +161,74 @@ export default function ChatThread() {
   const playbookState = React.useMemo(() => messages ? AssembleState(messages, { with_value: true }) : undefined, [messages])
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
     const newMessages = await trigger({ body })
-    await mutate(messages => [...messages ?? [], ...newMessages ?? []])
+    await mutate(messages => [...messages ?? [], ...newMessages?.messages ?? []])
   }, [trigger])
+  const [id, setId] = React.useState('')
+  const { data: metapath } = useFPL(id)
+  const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
+  const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   return (
     <Layout>
       <Head><title>The Playbook Chatbot</title></Head>
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
+        {metapath ?
+          <div className="sticky top-0 left-0 z-50 bg-white dark:bg-current w-full flex flex-row place-items-center">
+            <Breadcrumbs>
+              <DataBreadcrumb
+                key="start"
+                index={0}
+                id="start"
+                label="Start"
+                active={false}
+                icon={[start_icon]}
+                parents={[]}
+                onClick={() => {}}
+              />
+              {metapath.flatMap((step, i) => {
+                const process = krg.getProcessNode(step.process.type)
+                if (process === undefined) return []
+                return [
+                  <ProcessBreadcrumb
+                    key={step.id}
+                    index={i * 2 + 1}
+                    id={step.id}
+                    label={process.meta.label}
+                    head={step}
+                    active={false}
+                    icon={process.meta.icon || [func_icon]}
+                    parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
+                    onClick={() => {}}
+                  />,
+                  <DataBreadcrumb
+                    key={`${step.id}:${step.process.id}`}
+                    index={i * 2 + 2}
+                    id={`${step.id}:${step.process.id}`}
+                    label={process.output.meta.label}
+                    head={step}
+                    active={false}
+                    icon={process.output.meta.icon || [variable_icon]}
+                    parents={[step.id]}
+                    onClick={() => {}}
+                  />,
+                ]
+              })}
+              <ProcessBreadcrumb
+                key="extend"
+                index={metapath.length * 2 + 1}
+                id="extend"
+                label="Extend"
+                active={false}
+                icon={extend_icon}
+                parents={[head ? `${head.id}:${head.process.id}` : `start`]}
+                onClick={() => {}}
+              />
+            </Breadcrumbs>
+            <ImportButton />
+            <CAVATICAButton />
+            <RestartButton />
+            <GraphButton graph_id={id} />
+          </div>
+          : null}
         <div className="prose"><h2>The Playbook Chatbot</h2></div>
         <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center", { 'hidden': messages?.length })}>
           <img

@@ -24,6 +24,6 @@ export const TargtRangerScreenTargetsT = [
         message => props.notify({ type: 'info', message }),
       )
     })
-    .story(props => `Significantly over-expressed genes when compared to normal tissue in ${label} [${ref}] were identified.`)
+    .story(props => ({ abstract: `Significantly over-expressed genes when compared to normal tissue in ${label} [${ref}] were identified.` }))
     .build()
 )

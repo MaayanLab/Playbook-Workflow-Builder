@@ -134,7 +134,9 @@ export default function Playbooks() {
     >
       {showTitle ? <span className={classNames('prose prose-sm max-w-none', { 'text-shadow': dataSourceFilters[dataSource] })}>{dataSource}</span> : null}
       {dataSource in dataSourceIcons ?
-        <Image src={dataSourceIcons[dataSource]} objectFit="scale-down" width={size} height={size} alt={dataSource} />
+        <div style={{ position: 'relative', width: size, height: size }}>
+          <Image src={dataSourceIcons[dataSource]} layout="fill" objectFit="contain" alt={dataSource} />
+        </div>
         : null}
     </button>
   ), [dataSourceFilters, setDataSourceFilters])

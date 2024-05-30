@@ -51,7 +51,7 @@ function getCaIdFromAlleleRegistryLink(jsonObj: any){
     return getCaIdFromAlleleRegistryLink(respObj);
   }
   
-  export async function resolveVarinatCaID(variantIdTerm: string){
+  export async function resolveVariantCaID(variantIdTerm: string){
     let caIdRegexObj = new RegExp(caIdRegex);
     let rsIdRegexObj = new RegExp(rsIdRegex);
     let hgvsRegexObj = new RegExp(hgvsRegex);

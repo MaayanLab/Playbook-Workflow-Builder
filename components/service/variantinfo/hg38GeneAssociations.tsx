@@ -4,10 +4,10 @@ import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, getMyVarintInfoLink, alleleRegRespErrorMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, getMyVarintInfoLink, alleleRegRespErrorMessage } from './variantUtils'
 import { getAlleleRegistryVariantInfo, getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
-import { AlleleRegistryExternalRecordsTable, VarinatSetExternalRecordsInfo, getExternalRecordsFromAlleleRegistry } from './externalRecords'
-import { getVarinatInfoFromMyVariantInfo } from './variantInfoSources/myVariantInfo'
+import { AlleleRegistryExternalRecordsTable, VariantSetExternalRecordsInfo, getExternalRecordsFromAlleleRegistry } from './externalRecords'
+import { getVariantInfoFromMyVariantInfo } from './variantInfoSources/myVariantInfo'
 
 const HG38SingleGeneAssociationsC = z.object({
     distance_to_feature : z.string().optional(),
@@ -142,7 +142,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     return associatedGeensList;
   }
 
-  export const GetGeneForVarinatFromMyVariantInfo = MetaNode('GetGeneForVarinatFromMyVariantInfo')
+  export const GetGeneForVariantFromMyVariantInfo = MetaNode('GetGeneForVariantFromMyVariantInfo')
   .meta({
     label: 'Identify Variant To Gene Association HG38',
     description: 'Get Associated Gene info for a given Variant. Use any of the most common types of Variant identifiers as an input value!'
@@ -150,7 +150,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)
   .resolve(async (props) => {
-    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    var varCaId = await resolveVariantCaID(props.inputs.variant);
     if(varCaId == null || varCaId == ''){
       throw new Error(variantIdResolveErrorMessage);
     }
@@ -163,15 +163,15 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     let response = null;
     let myVariantInfoURL = getMyVarintInfoLink(alleleRegResponse);
     if(myVariantInfoURL != null){
-      response = await getVarinatInfoFromMyVariantInfo(myVariantInfoURL);
+      response = await getVariantInfoFromMyVariantInfo(myVariantInfoURL);
     }
 
     return processHG38ExternalRecordsResponse(response);
   })
-  .story(props => `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].`)
+  .story(props => ({ abstract: `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].` }))
   .build()
 
-  export const GetVarinatToGeneAssociation_HG38 = MetaNode('GetVarinatToGeneAssociation_HG38')
+  export const GetVariantToGeneAssociation_HG38 = MetaNode('GetVariantToGeneAssociation_HG38')
   .meta({
     label: `Identify Variant To Gene Association HG38`,
     description: "Get Associated Gene info for a given Variant."
@@ -192,7 +192,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     }
 
     if(hg38ExtSourceLink != null){
-      response = await getVarinatInfoFromMyVariantInfo(hg38ExtSourceLink);
+      response = await getVariantInfoFromMyVariantInfo(hg38ExtSourceLink);
     }
 
     return processHG38ExternalRecordsResponse(response);
@@ -339,28 +339,28 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .build()
 
   async function getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo: any){
-    let varinatGeneAssociationsSet = [];
+    let variantGeneAssociationsSet = [];
     for(let vERIdx in variantExternalRecordsSetInfo){
       let variantExternalRecords = variantExternalRecordsSetInfo[vERIdx];
       let externalRecords: any = variantExternalRecords.externalRecords;
       for(let erIdx in externalRecords){
         if(externalRecords[erIdx] != null && externalRecords[erIdx].name == "MyVariantInfo_hg38"){
           let hg38ExtSourceLink = processHG38externalRecords(externalRecords[erIdx]);
-          let response = await getVarinatInfoFromMyVariantInfo(hg38ExtSourceLink);
+          let response = await getVariantInfoFromMyVariantInfo(hg38ExtSourceLink);
           let associatedGeensList = processHG38ExternalRecordsResponse(response);
 
-          let varinatGeneAssociation = {
+          let variantGeneAssociation = {
             "variantCaId": variantExternalRecords.variantCaId,
             "geneAssociationsHg38": associatedGeensList
           }
-          varinatGeneAssociationsSet.push(varinatGeneAssociation);
+          variantGeneAssociationsSet.push(variantGeneAssociation);
         }
       }   
     }
-    return varinatGeneAssociationsSet;
+    return variantGeneAssociationsSet;
   }
 
-  export const GetVarinatSetToGeneAssociation_HG38 = MetaNode('GetVarinatSetToGeneAssociation_HG38')
+  export const GetVariantSetToGeneAssociation_HG38 = MetaNode('GetVariantSetToGeneAssociation_HG38')
   .meta({
     label: `Identify Variant (Set) And Gene Associations HG38`,
     description: "Get Associated Gene info for a given Variant Set."
@@ -368,8 +368,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .inputs({ variantset: VariantSet })
   .output(GeneAssociationsSet_HG38)
   .resolve(async (props) => {
-    let varinatSet = props.inputs.variantset.set;
-    let variantSetInfo = await getVariantSetInfo(varinatSet);
+    let variantSet = props.inputs.variantset.set;
+    let variantSetInfo = await getVariantSetInfo(variantSet);
     if(variantSetInfo == null){
         throw new Error("No data available!");
     }
@@ -385,12 +385,12 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   ).build()
 
 
-  export const GetVarinatSetExternalRecToGeneAssociation_HG38 = MetaNode('GetVarinatSetExternalRecToGeneAssociation_HG38')
+  export const GetVariantSetExternalRecToGeneAssociation_HG38 = MetaNode('GetVariantSetExternalRecToGeneAssociation_HG38')
   .meta({
     label: `Identify Variant (Set) And Gene Associations HG38`,
     description: "Get Associated Gene info for a given set of Variant External records."
   })
-  .inputs({ variantSetExternalRecordsInfo: VarinatSetExternalRecordsInfo })
+  .inputs({ variantSetExternalRecordsInfo: VariantSetExternalRecordsInfo })
   .output(GeneAssociationsSet_HG38)
   .resolve(async (props) => {
     let variantExternalRecordsSetInfo = props.inputs.variantSetExternalRecordsInfo;

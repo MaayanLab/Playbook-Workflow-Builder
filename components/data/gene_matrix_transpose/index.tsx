@@ -66,7 +66,7 @@ export const GMTFromFile = MetaNode('GMTFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene matrix transpose.`)
+  .story(props => ({ abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene matrix transpose.` }))
   .build()
 
 export const GMTFileUpload = MetaNode('GMTFileUpload')
@@ -93,7 +93,7 @@ export const GMTFileUpload = MetaNode('GMTFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `The gene matrix transpose${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
+  .story(props => ({ abstract: `The gene matrix transpose${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.` }))
   .build()
 
 export const GMTUnion = MetaNode('GMTUnion')

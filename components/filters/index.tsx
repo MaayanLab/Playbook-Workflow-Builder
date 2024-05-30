@@ -60,7 +60,7 @@ export const TopKScoredT = [
     .resolve(async (props) => {
       return props.inputs.scored.slice(0, props.data.k)
     })
-    .story(props => `The top ${props.data?.k || 'K'} ${ScoredT.meta.label} were selected.`)
+    .story(props => ({ abstract: `The top ${props.data?.k || 'K'} ${ScoredT.meta.label} were selected.` }))
     .build(),
   MetaNode(`OneScoredT[${ScoredT.spec}]`)
     .meta({
@@ -332,7 +332,7 @@ export const ReduceMultiScoredT = [
         results.sort((a, b) => b.zscore - a.zscore)
         return results
       })
-      .story(props => `Mean scores were computed.`)
+      .story(props => ({ abstract: `Mean scores were computed.` }))
       .build(),
     MetaNode(`AbsMaxScoredT[${T.label}]`)
       .meta({
@@ -354,7 +354,7 @@ export const ReduceMultiScoredT = [
         results.sort((a, b) => b.zscore - a.zscore)
         return results
       })
-      .story(props => `Max scores were computed.`)
+      .story(props => ({ abstract: `Max scores were computed.` }))
       .build(),
 ])
 
@@ -404,7 +404,7 @@ export const TopKRankedT = [
         description: `Top ${props.data.k} ${props.inputs.ranked.description}`,
       }
     })
-    .story(props => `The top ${props.data?.k || 'K'} ${RankedT.meta.label} were selected.`)
+    .story(props => ({ abstract: `The top ${props.data?.k || 'K'} ${RankedT.meta.label} were selected.` }))
     .build(),
   MetaNode(`OneRankedT[${RankedT.spec}]`)
     .meta({

@@ -63,7 +63,7 @@ export const SomeFileOp = MetaNode('SomeFileOp')
     const file = await uploadFile(await fileFromStream(res.data, `derived.${props.inputs.file.filename}`))
     return file
   })
-  .story(props => `The performed some operation on the file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''}.`)
+  .story(props => ({ abstract: `The performed some operation on the file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''}.` }))
   .build()
 ```
 

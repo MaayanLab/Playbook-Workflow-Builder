@@ -59,7 +59,7 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature.`)
+  .story(props => ({ abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature.` }))
   .build()
 
 export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
@@ -86,7 +86,7 @@ export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `A gene signature${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
+  .story(props => ({ abstract: `A gene signature${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.` }))
   .build()
 
 export const GMTFromSignature = MetaNode('GMTFromSignature')
@@ -101,7 +101,7 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
     { kargs: [props.inputs.sig] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `The ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'} was reformatted into gene matrix transpose format.`)
+  .story(props => ({ abstract: `The ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'} was reformatted into gene matrix transpose format.` }))
   .build()
 
 export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
@@ -116,7 +116,7 @@ export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
     'components.data.gene_signature.geneset_from_sig',
     { kargs: [props.inputs.sig, 'up'] }
   ))
-  .story(props => `The up-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`)
+  .story(props => ({ abstract: `The up-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.` }))
   .build()
 
 export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
@@ -131,7 +131,7 @@ export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
     'components.data.gene_signature.geneset_from_sig',
     { kargs: [props.inputs.sig, 'down'] }
   ))
-  .story(props => `The down-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`)
+  .story(props => ({ abstract: `The down-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.` }))
   .build()
 
 export const ScoredGenesFromSignature = MetaNode('ScoredGenesFromSignature')
@@ -146,5 +146,5 @@ export const ScoredGenesFromSignature = MetaNode('ScoredGenesFromSignature')
     { kargs: [props.inputs.sig] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `Significant genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`)
+  .story(props => ({ abstract: `Significant genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.` }))
   .build()

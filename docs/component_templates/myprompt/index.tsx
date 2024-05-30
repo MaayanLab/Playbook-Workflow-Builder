@@ -40,5 +40,5 @@ export const MyPrompt = MetaNode('MyPrompt')
     )
   })
   // Write up what this node has done doing
-  .story(props => `The workflow starts with ${props.output ? props.output : 'a gene'}.`)
+  .story(props => ({ abstract: `The workflow starts with ${props.output ? props.output : 'a gene'}.` }))
   .build()

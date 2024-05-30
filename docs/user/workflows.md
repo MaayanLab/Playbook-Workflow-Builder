@@ -18,7 +18,7 @@ We can now type in a gene symbol, using autocomplete suggestions powered by NCBI
 ![A screenshot illustrating submitting a gene](./figures/workflows/04-submit-a-gene.png)
 **Figure 4.** A screenshot illustrating submitting a gene.
 
-Once we've clicked submit, the playbook is extended to reveal a slew of new options which can be applied to the gene we specified. Examples include identifying RNA-seq-like LINCS L1000 signatures which reverse the expression of the gene, identifying gene-centric information from metabolomics, finding protein product records in GlyGen or finding regulatory elements in LDH among other possibilities. Let's click on the card: "Query GTEx Median Tissue Expression," which will "Use the GTEx API to obtain median tissue expression for the given gene."
+Once we've clicked submit, the playbook is extended to reveal a slew of new options which can be applied to the gene we specified. Examples include identifying RNA-seq-like LINCS L1000 signatures which reverse the expression of the gene, identifying gene-centric information from metabolomics, finding protein product records in GlyGen or finding regulatory elements in CFDE LDH among other possibilities. Let's click on the card: "Query GTEx Median Tissue Expression," which will "Use the GTEx API to obtain median tissue expression for the given gene."
 
 ![A screenshot showing options given a gene](./figures/workflows/05-gene-extend.png)
 **Figure 5.** A screenshot showing options given a gene.

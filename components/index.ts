@@ -199,6 +199,10 @@ import * as service_archs4 from "./service/archs4"
 import service_archs4_packageJson from "./service/archs4/package.json"
 metanodes.push(...MetaNodesFromExports(service_archs4, service_archs4_packageJson))
 components.push("service/archs4")
+import * as service_cfde_gse from "./service/cfde-gse"
+import service_cfde_gse_packageJson from "./service/cfde-gse/package.json"
+metanodes.push(...MetaNodesFromExports(service_cfde_gse, service_cfde_gse_packageJson))
+components.push("service/cfde-gse")
 import * as service_chea3 from "./service/chea3"
 import service_chea3_packageJson from "./service/chea3/package.json"
 metanodes.push(...MetaNodesFromExports(service_chea3, service_chea3_packageJson))
@@ -279,6 +283,10 @@ import * as viz_graph from "./viz/graph"
 import viz_graph_packageJson from "./viz/graph/package.json"
 metanodes.push(...MetaNodesFromExports(viz_graph, viz_graph_packageJson))
 components.push("viz/graph")
+import * as viz_idf_umap from "./viz/idf_umap"
+import viz_idf_umap_packageJson from "./viz/idf_umap/package.json"
+metanodes.push(...MetaNodesFromExports(viz_idf_umap, viz_idf_umap_packageJson))
+components.push("viz/idf_umap")
 import * as viz_kf_barplot from "./viz/kf_barplot"
 import viz_kf_barplot_packageJson from "./viz/kf_barplot/package.json"
 metanodes.push(...MetaNodesFromExports(viz_kf_barplot, viz_kf_barplot_packageJson))
@@ -287,3 +295,7 @@ import * as viz_plotly from "./viz/plotly"
 import viz_plotly_packageJson from "./viz/plotly/package.json"
 metanodes.push(...MetaNodesFromExports(viz_plotly, viz_plotly_packageJson))
 components.push("viz/plotly")
+import * as viz_upset from "./viz/upset"
+import viz_upset_packageJson from "./viz/upset/package.json"
+metanodes.push(...MetaNodesFromExports(viz_upset, viz_upset_packageJson))
+components.push("viz/upset")

@@ -4,7 +4,7 @@ import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from './variantUtils'
 import { getAlleleRegistryVariantInfo,  AlleleRegistryVariantInfo, getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 
 const AlleleRegistryExternalSourcesInfoC = z.array(
@@ -114,7 +114,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   .inputs({ variant: VariantTerm  })
   .output(AlleleRegistryExternalRecordsTable)
   .resolve(async (props) => {
-    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    var varCaId = await resolveVariantCaID(props.inputs.variant);
     if(varCaId == null || varCaId == ''){
       throw new Error(variantIdResolveErrorMessage);
     }
@@ -130,10 +130,10 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     }
     return reponse;
   })
-  .story(props => `External records for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`)
+  .story(props => ({ abstract: `External records for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
   .build()
 
-  export const VarinatSetExternalRecordsInfo = MetaNode('VarinatSetExternalRecordsInfo')
+  export const VariantSetExternalRecordsInfo = MetaNode('VariantSetExternalRecordsInfo')
   .meta({
     label: 'Variant Set External Records Info',
     description: ''
@@ -212,16 +212,16 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   }
 
 
-  export const GetVarinatSetExternalRecords = MetaNode('GetVarinatSetExternalRecords')
+  export const GetVariantSetExternalRecords = MetaNode('GetVariantSetExternalRecords')
   .meta({
     label: `Get Variant Set External Records`,
     description: "Get External Records for a given Variant Set."
   })
   .inputs({ variantset: VariantSet })
-  .output(VarinatSetExternalRecordsInfo)
+  .output(VariantSetExternalRecordsInfo)
   .resolve(async (props) => {
-    let varinatSet = props.inputs.variantset.set;
-    let variantSetInfo = await getVariantSetInfo(varinatSet);
+    let variantSet = props.inputs.variantset.set;
+    let variantSetInfo = await getVariantSetInfo(variantSet);
     if(variantSetInfo == null){
         throw new Error("No data available!");
     }

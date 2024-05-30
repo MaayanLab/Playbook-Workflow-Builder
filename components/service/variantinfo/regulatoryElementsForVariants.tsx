@@ -6,7 +6,7 @@ import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { getRegElemPositionData } from '@/components/service/regulatoryElementInfo'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
 import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
 
 
@@ -18,7 +18,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
   .inputs({ variant: VariantTerm })
   .output(RegulatoryElementTerm)
   .resolve(async (props) => {
-    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    var varCaId = await resolveVariantCaID(props.inputs.variant);
     if(varCaId == null || varCaId == ''){
       throw new Error(variantIdResolveErrorMessage);
     }
@@ -33,7 +33,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
     }
     return "N/A";
   })
-  .story(props => ``)
+  .story(props => ({}))
   .build()
 
   export const REforVariantSetInfo = MetaNode('REforVariantSetInfo')
@@ -85,12 +85,12 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
   .inputs({ variantset: VariantSet })
   .output(REforVariantSetInfo)
   .resolve(async (props) => {
-    var varinatSetInpt = props.inputs.variantset.set;
+    var variantSetInpt = props.inputs.variantset.set;
     
     let varAndRegulatoryElem = [];
 
-    for(let indx in varinatSetInpt){
-      let varCaID = varinatSetInpt[indx];
+    for(let indx in variantSetInpt){
+      let varCaID = variantSetInpt[indx];
       const response = await getGitDataHubVariantInfo(varCaID);
       if(response == null || response.data == null){
         continue;

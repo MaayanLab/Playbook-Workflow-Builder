@@ -4,7 +4,7 @@ import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
 import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo, GitHubVariantInfoC } from './variantInfoSources/gitDataHubVariantInfo'
 import { xQTL_EvidenceArray } from './variantInfoSources/gitDataHubVariantInfo'
@@ -102,7 +102,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .inputs({ variant: VariantTerm  })
   .output(xQTL_EvidenceDataTable)
   .resolve(async (props) => {
-    var varCaId = await resolveVarinatCaID(props.inputs.variant);
+    var varCaId = await resolveVariantCaID(props.inputs.variant);
     if(varCaId == null || varCaId == ''){
       throw new Error(variantIdResolveErrorMessage);
     }
@@ -120,7 +120,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     
     return response;
   })
-  .story(props => `xQTL evidence data for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} was resolved.`)
+  .story(props => ({ abstract: `xQTL evidence data for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} was resolved.` }))
   .build()
 
   
@@ -221,7 +221,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     )
   }).build()
 
-  export const GetVarinatSetXQTLEvidence = MetaNode('GetVarinatSetXQTLEvidence')
+  export const GetVariantSetXQTLEvidence = MetaNode('GetVariantSetXQTLEvidence')
   .meta({
     label: `Get Variant Set xQTL Evidence`,
     description: "Get xQTL Evidence form Variant Set."
@@ -229,13 +229,13 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .inputs({ variantset: VariantSet })
   .output(xQTL_EvidenceFroVariantSet)
   .resolve(async (props) => {
-    let varinatSet = props.inputs.variantset.set;
-    let variantSetInfo = await getVariantSetInfo(varinatSet);
+    let variantSet = props.inputs.variantset.set;
+    let variantSetInfo = await getVariantSetInfo(variantSet);
     if(variantSetInfo == null){
         throw new Error("No data available!");
     }
 
-    let varinatSetXQTLEvidnc = [];
+    let variantSetXQTLEvidnc = [];
     for(let indx in variantSetInfo){
       let variantInfoObj = variantSetInfo[indx];
       const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
@@ -254,14 +254,14 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
       }
       tempObj.xQTL_Evidence = evidenceReponse;     
 
-      varinatSetXQTLEvidnc.push(tempObj);
+      variantSetXQTLEvidnc.push(tempObj);
     }
 
-    if(varinatSetXQTLEvidnc.length == 0){
+    if(variantSetXQTLEvidnc.length == 0){
       throw new Error(gitDataHubErroMessage);
     }
 
-    return varinatSetXQTLEvidnc;
+    return variantSetXQTLEvidnc;
   }).story(props =>
     "Get xQTL Evidence form Variant Set."
   ).build()

@@ -5,10 +5,10 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import * as dict from '@/utils/dict'
 import { func_icon, variable_icon } from '@/icons'
+import MetaNodeListing, { metanodeType } from '@/app/fragments/components/listing'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
-const MetaNodeListing = dynamic(() => import('@/app/fragments/components/listing'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export function getServerSideProps({ query }: { query: { spec: string } }) {
@@ -21,7 +21,6 @@ export function getServerSideProps({ query }: { query: { spec: string } }) {
     },
   }
 }
-
 
 export default function ComponentPage({ spec, kind }: { spec: string, kind: 'data' | 'process' }) {
   const router = useRouter()
@@ -43,7 +42,7 @@ export default function ComponentPage({ spec, kind }: { spec: string, kind: 'dat
           <Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} size={3} title={null} />
           <div className="flex flex-col prose max-w-none">
             <h1 className="m-0 whitespace-pre-wrap">{metanode.meta.label}</h1>
-            <h2 className="m-0 text-gray-500">{metanode.kind === 'data' ? 'Data' : 'prompt' in metanode ? 'Prompt' : 'Resolver'} Node</h2>
+            <h2 className="m-0 text-gray-500">{metanodeType(metanode)}</h2>
           </div>
         </div>
         {metanode.meta.version ? <p className="prose max-w-none"><strong>Version</strong>: {metanode.meta.version}</p> : null}
@@ -64,9 +63,9 @@ export default function ComponentPage({ spec, kind }: { spec: string, kind: 'dat
                 .flatMap(({ key, value }) => (Array.isArray(value) ? value : [value]).map(v =>
                   ({ metanode: v, type: Array.isArray(value) ? `Multi-Input Data` : 'Input Data' })
                 )) : [],
-              ...outputMetanode ? [{ metanode: outputMetanode, type: 'Output Data' }] : [],
-              ...prevMetanodes ? prevMetanodes.map(metanode => ({ metanode, type: 'Previous Data' })) : [],
-              ...nextMetanodes ? nextMetanodes.map(metanode => ({ metanode, type: 'Next Data' })) : [],
+              ...outputMetanode ? [{ metanode: outputMetanode, type: `Output ${metanodeType(outputMetanode)}` }] : [],
+              ...prevMetanodes ? prevMetanodes.map(metanode => ({ metanode, type: `Previous ${metanodeType(metanode)}` })) : [],
+              ...nextMetanodes ? nextMetanodes.map(metanode => ({ metanode, type: `Next ${metanodeType(metanode)}` })) : [],
             ]}
           />
         <div className="justify-self-end"><Link href="/components" className="btn btn-sm">&lt;- All Components</Link></div>

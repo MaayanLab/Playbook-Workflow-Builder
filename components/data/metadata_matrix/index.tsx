@@ -54,7 +54,7 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`)
+  .story(props => ({ abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.` }))
   .build()
 
 export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
@@ -80,5 +80,5 @@ export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => `A metadata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`)
+  .story(props => ({ abstract: `A metadata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.` }))
   .build()

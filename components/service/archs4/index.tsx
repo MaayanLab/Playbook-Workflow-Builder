@@ -111,6 +111,6 @@ export const ARCHS4SignatureSearchT = [
       }).parse(await req.json()).samples.map(sample => `GSM${sample}`)
     }
   })
-  .story(props => `Reversers and mimickers from GEO signatures were identified using ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`)
+  .story(props => ({ abstract: `Reversers and mimickers from GEO signatures were identified using ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].` }))
   .build()
 )

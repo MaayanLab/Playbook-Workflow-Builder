@@ -55,6 +55,45 @@ export type InternalIdentifiableMetaNode = {
   }
 }
 
+export type Story = {
+  /**
+   * A single sentence to add to the abstract about this step.
+   */
+  abstract?: string,
+  /**
+   * A paragraph about this step to add to the introduction.
+   */
+  introduction?: string,
+  /**
+   * A paragraph about this step to add to the methods.
+   */
+  methods?: string,
+  /**
+   * A paragraph about this step to add to the results.
+   */
+  results?: string,
+  /**
+   * A figure legend describing this metanode's output figure.
+   */
+  legend?: string,
+}
+type FnArgs<T> = T extends (...args: infer A) => infer R ? A : never
+type FnCanReturnString<T> = T extends (...args: infer A) => infer R ? (...args: A) => R|string : never
+function convertLegacyStory<Fn extends (...args: any[]) => Story | string>(story: FnCanReturnString<Fn>) {
+  return (...args: FnArgs<Fn>) => {
+    const ret = story(...args)
+    if (typeof ret === 'string') {
+      console.warn('Please upgrade your story')
+      return { abstract: ret }
+    } else if (typeof ret === 'object') {
+      return ret
+    } else {
+      console.error('Invalid story return')
+      return {}
+    }
+  }
+}
+
 /**
  * The broadest type parameter for a DataMetaNode
  */
@@ -146,7 +185,7 @@ export type ResolveMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T
     inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     /* The output of this process */
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-  }): string
+  }): Story
 }
 
 /**
@@ -177,7 +216,7 @@ export type PromptMetaNode<T = InternalDataMetaNode & InternalProcessMetaNode> =
     inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     /* The output of this process */
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
-  }): string
+  }): Story
 }
 
 /**
@@ -242,11 +281,11 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
                 /**
                  * Describe this metanode's story
                  */
-                story: (story: PromptMetaNode<{ data: DATA, inputs: INPUTS, output: OUTPUT }>['story']) => ({
+                story: (story: FnCanReturnString<PromptMetaNode<{ data: DATA, inputs: INPUTS, output: OUTPUT }>['story']>) => ({
                   /**
                    * Build a ProcessMetaNode
                    */
-                  build: () => ({ spec, meta, kind: 'process', codec: 'parse' in codec ? codecFrom(codec) : codec, inputs, output, prompt, resolve, story }) as PromptMetaNode<{ spec: ID, meta: META, data: DATA, inputs: INPUTS, output: OUTPUT }>,
+                  build: () => ({ spec, meta, kind: 'process', codec: 'parse' in codec ? codecFrom(codec) : codec, inputs, output, prompt, resolve, story: convertLegacyStory(story) }) as PromptMetaNode<{ spec: ID, meta: META, data: DATA, inputs: INPUTS, output: OUTPUT }>,
                 })
               })
             })
@@ -273,11 +312,11 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
             /**
              * Describe this metanode's story
              */
-            story: (story: ResolveMetaNode<{ inputs: INPUTS, output: OUTPUT }>['story']) => ({
+            story: (story: FnCanReturnString<ResolveMetaNode<{ inputs: INPUTS, output: OUTPUT }>['story']>) => ({
               /**
                * Build a ProcessMetaNode
                */
-              build: () => ({ spec, meta, kind: 'process', inputs, output, resolve, story }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
+              build: () => ({ spec, meta, kind: 'process', inputs, output, resolve, story: convertLegacyStory(story) }) as ResolveMetaNode<{ spec: ID, meta: META, inputs: INPUTS, output: OUTPUT }>,
             })
           }),
           /**
@@ -289,11 +328,11 @@ export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: 
             /**
              * Describe this metanode's story
              */
-            story: (story: PromptMetaNode<{ data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>['story']) => ({
+            story: (story: FnCanReturnString<PromptMetaNode<{ data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>['story']>) => ({
               /**
                * Build a ProcessMetaNode
                */
-              build: () => ({ spec, meta, kind: 'process', codec: output.codec, inputs, output, prompt, resolve: async (props) => { return props.data }, story }) as PromptMetaNode<{ spec: ID, meta: META, data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>,
+              build: () => ({ spec, meta, kind: 'process', codec: output.codec, inputs, output, prompt, resolve: async (props) => { return props.data }, story: convertLegacyStory(story) }) as PromptMetaNode<{ spec: ID, meta: META, data: DataMetaNodeData<OUTPUT>, inputs: INPUTS, output: OUTPUT }>,
             })
           })
         })

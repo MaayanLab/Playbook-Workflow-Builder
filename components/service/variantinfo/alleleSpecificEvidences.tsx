@@ -4,7 +4,7 @@ import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVarinatCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
 import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
 
@@ -161,7 +161,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     .inputs({ variant: VariantTerm })
     .output(AlleleSpecificEvidencesTable)
     .resolve(async (props) => {
-      var varCaId = await resolveVarinatCaID(props.inputs.variant);
+      var varCaId = await resolveVariantCaID(props.inputs.variant);
       if(varCaId == null || varCaId == ''){
         throw new Error(variantIdResolveErrorMessage);
       }
@@ -177,7 +177,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
     })
-    .story(props => `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`)
+    .story(props => ({ abstract: `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
     .build()
 
     export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')
@@ -313,7 +313,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     })
     .build()
 
-    export const GetVarinatSetAlleleSpecificEvidence = MetaNode('GetVarinatSetAlleleSpecificEvidence')
+    export const GetVariantSetAlleleSpecificEvidence = MetaNode('GetVariantSetAlleleSpecificEvidence')
     .meta({
       label: `Get Variant Set Allele Specific Evidence`,
       description: "Get Allele Specific Evidence form Variant Set."
@@ -321,13 +321,13 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     .inputs({ variantset: VariantSet})
     .output(AlleleSpecificEvidenceForVariantSet)
     .resolve(async (props) => {
-      let varinatSet = props.inputs.variantset.set;
-      let variantSetInfo = await getVariantSetInfo(varinatSet);
+      let variantSet = props.inputs.variantset.set;
+      let variantSetInfo = await getVariantSetInfo(variantSet);
       if(variantSetInfo == null){
           throw new Error("No data available!");
       }
   
-      let varinatSetAlleleSpecificEvdnc = [];
+      let variantSetAlleleSpecificEvdnc = [];
       for(let indx in variantSetInfo){
         let variantInfoObj = variantSetInfo[indx];
         const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
@@ -346,14 +346,14 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
         }
         tempObj.alleleSpecificEvidence = evidenceReponse;
         
-        varinatSetAlleleSpecificEvdnc.push(tempObj);
+        variantSetAlleleSpecificEvdnc.push(tempObj);
       }
   
-      if(varinatSetAlleleSpecificEvdnc.length == 0){
+      if(variantSetAlleleSpecificEvdnc.length == 0){
         throw new Error(gitDataHubErroMessage);
       }
   
-      return varinatSetAlleleSpecificEvdnc;
+      return variantSetAlleleSpecificEvdnc;
     }).story(props =>
       `Get Allele Specific Evidence form Variant Set.`
     ).build()

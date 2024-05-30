@@ -1,9 +1,10 @@
 import { API } from '@/spec/api'
 import { z } from 'zod'
+import db from '@/app/db'
 import krg from '@/app/krg'
 import OpenAI from 'openai'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
-import { ResponseCodedError, UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
+import { NotFoundError, ResponseCodedError, UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
 import cache from '@/utils/global_cache'
 import dedent from 'ts-dedent'
 import * as dict from '@/utils/dict'
@@ -74,8 +75,9 @@ export const GPTAssistantCreate = API.post('/api/v1/chat')
       res.status(200).end()
       return
     }
-    const thread = await (await openai).beta.threads.create()
-    return thread.id
+    const openai_thread = await (await openai).beta.threads.create()
+    const pwb_thread = await db.objects.thread.create({ data: { openai_thread_id: openai_thread.id, user: session.user.id } })
+    return pwb_thread.id
   })
   .build()
 
@@ -96,7 +98,9 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       res.status(200).end()
       return
     }
-    const currentMessages = GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(inputs.query.thread_id, { order: 'asc' })).data)
+    const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
+    if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
+    const currentMessages = GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { order: 'asc' })).data)
     const userMessageQueue = [inputs.body]
     const newMessages: AssistantParsedMessages = []
     while (userMessageQueue.length > 0) {
@@ -150,7 +154,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
             description: item.meta.description, ...item.story({}),
           }
         })
-      const userMessage = await (await openai).beta.threads.messages.create(inputs.query.thread_id, {
+      const userMessage = await (await openai).beta.threads.messages.create(pwb_thread.openai_thread_id, {
         role: 'user',
         content: JSON.stringify({
           ...currentUserMessage,
@@ -163,13 +167,13 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         choices,
       })
 
-      let run = await (await openai).beta.threads.runs.create(inputs.query.thread_id, { assistant_id: (await assistant).id })
+      let run = await (await openai).beta.threads.runs.create(pwb_thread.openai_thread_id, { assistant_id: (await assistant).id })
       while (run.status !== 'completed') {
         await new Promise<void>((resolve, reject) => {setTimeout(() => {resolve()}, 500)})
-        run = await (await openai).beta.threads.runs.retrieve(inputs.query.thread_id, run.id)
+        run = await (await openai).beta.threads.runs.retrieve(pwb_thread.openai_thread_id, run.id)
         if (run.status === 'completed') {
           // send all new messages since the user's message to the user
-          newMessages.push(...GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(inputs.query.thread_id, { after: userMessage.id, order: 'asc' })).data))
+          newMessages.push(...GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { after: userMessage.id, order: 'asc' })).data))
           const lastMessage = newMessages[newMessages.length-1]
           if (lastMessage.role === 'assistant' && lastMessage.suggestions.length === 1) {
             userMessageQueue.push({ step: lastMessage.suggestions[0] })
@@ -181,7 +185,36 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         }
       }
     }
-    return newMessages
+    // TODO: update fpl
+    const newMessagesWithIds: Array<AssistantParsedMessages[0] & { id: string }> = []
+    for (const newMessage of newMessages) {
+      const { role, ...message } = newMessage
+      if (role === 'user' && 'step' in message) {
+        message.step.id
+      }
+      const thread_message = await db.objects.thread_message.create({
+        data: {
+          role,
+          content: JSON.stringify(message),
+        }
+      })
+      newMessagesWithIds.push({...newMessage, id: thread_message.id })
+    }
+    return { messages: newMessagesWithIds }
+  })
+  .build()
+
+export const GPTAssistantMessageFeedback = API.post('/api/v1/chat/[thread_id]/messages/[message_id]/feedback')
+  .query(z.object({ thread_id: z.string(), message_id: z.string() }))
+  .body(z.string())
+  .call(async (inputs, req, res) => {
+    const session = await getServerSessionWithId(req, res)
+    if (!session || !session.user) throw new UnauthorizedError()
+    await db.objects.thread_message.update({
+      where: { id: inputs.query.message_id, thread: inputs.query.thread_id },
+      data: { feedback: inputs.body },
+    })
+    return null
   })
   .build()
 
@@ -194,7 +227,9 @@ export const GPTAssistantMessagesList = API.get('/api/v1/chat/[thread_id]/messag
       res.status(200).end()
       return
     }
-    return GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(inputs.query.thread_id, { order: 'asc' })).data)
+    const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
+    if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
+    return GPTAssistantMessageParse((await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { order: 'asc' })).data)
   })
   .build()
 
@@ -208,7 +243,11 @@ export const GPTAssistantDelete = API.post('/api/v1/chat/[thread_id]/delete')
       res.status(200).end()
       return
     }
-    await (await openai).beta.threads.del(inputs.query.thread_id)
+    const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
+    if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
+    pwb_thread.openai_thread_id
+    await (await openai).beta.threads.del(pwb_thread.openai_thread_id)
+    await db.objects.thread.delete({ where: { id: inputs.query.thread_id } })
     return null
   })
   .build()

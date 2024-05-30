@@ -24,5 +24,7 @@ export default cache('db', () => create_database({
     user_upload: schema.user_upload,
     user_upload_complete: schema.user_upload_complete,
     user_playbook: schema.user_playbook,
+    thread: schema.thread,
+    thread_message: schema.thread_message,
   },
 }))

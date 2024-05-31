@@ -1,5 +1,5 @@
 import React from 'react'
-import { GPTAssistantDelete, GPTAssistantMessage, GPTAssistantMessagesList } from "@/app/api/client"
+import { GPTAssistantMessage, GPTAssistantMessageFeedback, GPTAssistantMessagesList } from "@/app/api/client"
 import { useAPIMutation, useAPIQuery } from "@/core/api/client"
 import dynamic from "next/dynamic"
 import Head from "next/head"
@@ -127,7 +127,9 @@ function Component({ state, setState, component }: {
   </div>
 }
 
-function Message({ id, session, role, children }: React.PropsWithChildren<{ id: string, session: Session | null, role: string }>) {
+function Message({ thread_id, message_id, session, role, children }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string }>) {
+  const [feedback, setFeedback] = React.useState('')
+  const { trigger } = useAPIMutation(GPTAssistantMessageFeedback, { thread_id, message_id })
   return (
     <>
       <div className={classNames('chat', { 'chat-end': role === 'user', 'chat-start': role !== 'user', 'hidden': role === 'system' })}>
@@ -139,11 +141,27 @@ function Message({ id, session, role, children }: React.PropsWithChildren<{ id: 
         <div className={classNames('chat-bubble rounded-xl w-full prose', { 'chat-bubble-primary': role === 'user', 'chat-bubble-secondary': role === 'assistant' || role === 'welcome', 'chat-bubble-error': role === 'error' })}>
           {typeof children === 'string' ? <ReactMarkdown>{children}</ReactMarkdown> : children}
         </div>
-        {/* {role !== 'user' ?
+        {role === 'assistant' ?
           <div className={classNames('chat-footer text-lg cursor-pointer')}>
-            <div className="bp5-icon bp5-icon-link" /> <div className="bp5-icon bp5-icon-thumbs-up" /> <div className="bp5-icon bp5-icon-thumbs-down" />
+            {/* <div
+              className={classNames('bp5-icon bp5-icon-link', {'text-green-500': feedback === '+1'})}
+            /> */}
+            &nbsp;
+            <div
+              className={classNames('bp5-icon bp5-icon-thumbs-up', {'text-green-500': feedback === '+1'})}
+              onClick={() => {
+                trigger({ body: '+1' }).then(() => setFeedback('+1'))
+              }}
+            />
+            &nbsp;
+            <div
+              className={classNames('bp5-icon bp5-icon-thumbs-down', {'text-red-500': feedback === '-1'})}
+              onClick={() => {
+                trigger({ body: '-1' }).then(() => setFeedback('-1'))
+              }}
+            />
           </div>
-          : null} */}
+          : null}
       </div>
     </>
   )
@@ -155,9 +173,10 @@ export default function ChatThread() {
   const router = useRouter()
   const [state, setState] = React.useState({} as Record<number, string>)
   const [message, setMessage] = React.useState('')
-  const { data: messages, mutate } = useAPIQuery(GPTAssistantMessagesList, { thread_id: router.query.thread_id as string })
-  const { trigger, isMutating } = useAPIMutation(GPTAssistantMessage, { thread_id: router.query.thread_id as string })
-  // const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id: router.query.thread_id as string })
+  const thread_id = router.query.thread_id as string
+  const { data: messages, mutate } = useAPIQuery(GPTAssistantMessagesList, { thread_id })
+  const { trigger, isMutating } = useAPIMutation(GPTAssistantMessage, { thread_id })
+  // const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id })
   const playbookState = React.useMemo(() => messages ? AssembleState(messages, { with_value: true }) : undefined, [messages])
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
     const newMessages = await trigger({ body })
@@ -266,7 +285,14 @@ export default function ChatThread() {
           const component = 'step' in message && playbookState ? playbookState.all_nodes[message.step.id] : undefined
           return (
             <React.Fragment key={i}>
-              {'message' in message ? <Message id={message.id} role={message.role} session={session}>{message.message}</Message> : null}
+              {'message' in message ?
+                <Message
+                  thread_id={thread_id}
+                  message_id={message.id}
+                  role={message.role}
+                  session={session}
+                >{message.message}</Message>
+                : null}
               {component ? <Component component={component} state={state} setState={setState} /> : null}
               {message.role === 'assistant' && message.suggestions.length > 1 ?
                 <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">

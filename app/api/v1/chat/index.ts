@@ -205,13 +205,14 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       if (role === 'user' && 'step' in message) {
         message.step.id
       }
-      const thread_message = await db.objects.thread_message.create({
+      const pwb_thread_message = await db.objects.thread_message.create({
         data: {
+          thread: pwb_thread.id,
           role,
           content: JSON.stringify(message),
         }
       })
-      newMessagesWithIds.push({...newMessage, id: thread_message.id })
+      newMessagesWithIds.push({...newMessage, id: pwb_thread_message.id })
     }
     return { messages: newMessagesWithIds }
   })

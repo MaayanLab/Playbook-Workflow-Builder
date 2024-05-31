@@ -61,16 +61,16 @@ export function GPTAssistantMessageParse(messages: { id: string, role: string, c
     if (msg.role === 'assistant') {
       const { data, error } = zJson.transform(zodCodecTransform(AgentC)).safeParse(msg.content)
       if (data) return [{ id: msg.id, role: 'assistant' as const, ...data }]
-      else return [{ id: msg.id, role: 'error' as const, error }]
+      else return [{ id: msg.id, role: 'error' as const, message: error.toString() }]
     } else if (msg.role === 'user') {
       const { data, error } = zJson.transform(zodCodecTransform(UserC)).safeParse(msg.content)
       if (data) return [{ id: msg.id, role: 'user' as const, ...data }]
-      else return [{ id: msg.id, role: 'error' as const, error }]
+      else return [{ id: msg.id, role: 'error' as const, message: error.toString() }]
     }
     return [] as Array<
       ({ id: string, role: 'assistant' } & z.infer<typeof AgentC>)
       | ({ id: string, role: 'user' } & z.infer<typeof UserC>)
-      | ({ id: string, role: 'error', error: any })
+      | ({ id: string, role: 'error', message: string })
     >
   })
 }

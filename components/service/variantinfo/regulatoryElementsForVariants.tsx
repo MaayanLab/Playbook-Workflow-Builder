@@ -51,6 +51,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
   .view( varAndReIdArray => {
     return ( 
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
         <Table
         height={500}
         cellRendererDependencies={[varAndReIdArray]}
@@ -81,8 +82,8 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
 
   export const GetRegulatoryElementsForVariantSet = MetaNode('GetRegulatoryElementsForVariantSet')
   .meta({
-    label: `Regulatory Elements For Variant Set`,
-    description: "Get Regulatory Elements for the Variant Set"
+    label: `Identify regulatory elements associated with variant`,
+    description: "Description change: Identify regulatory elements in the region of the variant."
   })
   .inputs({ variantset: VariantSet })
   .output(REforVariantSetInfo)
@@ -120,5 +121,5 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
 
     return varAndRegulatoryElem;
   }).story(props =>
-    `Get Regulatory Elements id and posotion for Variant Set.`
+    `Description change: Identify regulatory elements in the region of the variant.`
   ).build()

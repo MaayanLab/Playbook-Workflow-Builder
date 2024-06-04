@@ -36,6 +36,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
     return (
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
         <Table
           height={500}
           cellRendererDependencies={[sourcesList]}
@@ -47,11 +48,11 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
           }}
         >
           <Column
-            name="Data Base Name"
+            name="Database Name"
             cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
           />
           <Column
-            name="Variant Id"
+            name="Variant id"
             cellRenderer={row =>
             <Cell  key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -62,12 +63,12 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
             </Cell>}
           />
           <Column
-            name="Link"
+            name="Source link"
             cellRenderer={row =>
             <Cell  key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                       {sourcesList[row].sources.map(sources =>
-                          <tr><td><a target="_blank" href={`${sources['@id']}`}>Link</a></td></tr>
+                          <tr><td><a target="_blank" href={`${sources['@id']}`}>Source link</a></td></tr>
                       )}
                 </table>
             </Cell>}
@@ -110,8 +111,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
   export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
-    label: 'Resolve Allele Registry External Records',
-    description: 'Get allele registry external records',
+    label: 'Retrieve alternative identifiers for variant',
+    description: 'Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant from ClinGen Allele Registry.',
   })
   .inputs({ variant: VariantTerm  })
   .output(AlleleRegistryExternalRecordsTable)
@@ -144,6 +145,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   .view( externalRecordsSet => {
     return ( 
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
         <Table
         height={500}
         cellRendererDependencies={[externalRecordsSet]}
@@ -155,11 +157,11 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
         }}
         >
           <Column
-            name="Variant CAID"
+            name="Variant CAid"
             cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
           />
           <Column
-            name="External Resource Name"
+            name="Database name"
             cellRenderer={row =>
               <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -170,7 +172,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
               </Cell>}
           />
           <Column
-            name="Resource ID"
+            name="Variant id"
             cellRenderer={row =>
               <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -181,12 +183,12 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
               </Cell>}
           />
           <Column
-            name="Resource link"
+            name="Source link "
             cellRenderer={row =>
               <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                   {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                      <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Resource link</a></td></tr>
+                      <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Source link</a></td></tr>
                   )}
                 </table>
               </Cell>}
@@ -217,8 +219,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
   export const GetVariantSetExternalRecords = MetaNode('GetVariantSetExternalRecords')
   .meta({
-    label: `Get Variant Set External Records`,
-    description: "Get External Records for a given Variant Set."
+    label: `Retrieve Alternative Identifiers For Variants`,
+    description: "Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry."
   })
   .inputs({ variantset: VariantSet })
   .output(VariantSetExternalRecordsInfo)
@@ -231,5 +233,5 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
     return getExternalRecordsFromAlleleRegistry(variantSetInfo);
   }).story(props =>
-    `Get External Records for a given Variant Set.`
+    `Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
   ).build()

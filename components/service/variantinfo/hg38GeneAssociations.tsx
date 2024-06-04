@@ -44,13 +44,14 @@ const HG38GeneAssociationsProcessedForViewC = z.array(
 
 export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .meta({
-    label: 'Gene Associations HG38',
+    label: 'Gene Associations (HG38)',
     description: ''
   })
   .codec(HG38GeneAssociationsProcessedForViewC)
   .view(GeneAssociationsList => {
     return (
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
         <Table
           height={500}
           cellRendererDependencies={[GeneAssociationsList]}
@@ -62,12 +63,12 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
           }}
         >
           <Column
-            name="Gene ID"
+            name="Gene id"
             cellRenderer={row => <Cell key={row+''}>{GeneAssociationsList[row].geneId}</Cell>}
           />
           <Column
-            name="Variant association to Transcript"
-            cellRenderer={row => <Cell key={row+''}>
+            name="Variant association to transcript"
+            cellRenderer={row => <Cell key={row+''}>                
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {GeneAssociationsList[row].associations.map(associations =>
                         <tr><td>{ associations.effect }</td></tr>
@@ -76,7 +77,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
             </Cell>}
           />
           <Column
-            name="Distance To Transcript (bp)"
+            name="Distance to transcript (bp)"
             cellRenderer={row => <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {GeneAssociationsList[row].associations.map(associations =>
@@ -86,11 +87,41 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
             </Cell>}
           />
           <Column
-            name="Transcript ID"
+            name="NCBI Feature Accession"
             cellRenderer={row => <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {GeneAssociationsList[row].associations.map(associations =>
                         <tr><td>{ associations.feature_id }</td></tr>
+                    )}
+                  </table>
+            </Cell>}
+          />
+          <Column
+            name="HGVS"
+            cellRenderer={row => <Cell key={row+''}>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {GeneAssociationsList[row].associations.map(associations =>
+                        <tr><td>{ associations.hgvs_c }</td></tr>
+                    )}
+                  </table>
+            </Cell>}
+          />
+          <Column
+            name="Putative impact"
+            cellRenderer={row => <Cell key={row+''}>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {GeneAssociationsList[row].associations.map(associations =>
+                        <tr><td>{ associations.putative_impact }</td></tr>
+                    )}
+                  </table>
+            </Cell>}
+          />
+          <Column
+            name="Transcript biotype"
+            cellRenderer={row => <Cell key={row+''}>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {GeneAssociationsList[row].associations.map(associations =>
+                        <tr><td>{ associations.transcript_biotype }</td></tr>
                     )}
                   </table>
             </Cell>}
@@ -146,8 +177,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVariantFromMyVariantInfo = MetaNode('GetGeneForVariantFromMyVariantInfo')
   .meta({
-    label: 'Identify Variant To Gene Association HG38',
-    description: 'Get Associated Gene info for a given Variant. Use any of the most common types of Variant identifiers as an input value!'
+    label: 'Identify genes in the vicinity of given variant(s)',
+    description: 'Retrieve gene(s) in the vicinity of given variant from MyVariant.info.'
   })
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)
@@ -175,7 +206,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVariantToGeneAssociation_HG38 = MetaNode('GetVariantToGeneAssociation_HG38')
   .meta({
-    label: `Identify Variant To Gene Association HG38`,
+    label: `Identify Variant And Gene Association (HG38)`,
     description: "Get Associated Gene info for a given Variant."
   })
   .inputs({ externalRecords: AlleleRegistryExternalRecordsTable })
@@ -211,6 +242,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .view( geneAssociationsSet => {
     return ( 
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
         <Table
         height={500}
         cellRendererDependencies={[geneAssociationsSet]}
@@ -246,7 +278,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
               </Cell>}
           />
           <Column
-            name="Effect"
+            name="Variant Type"
             cellRenderer={row =>
               <Cell key={row+''}>             
                   {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
@@ -259,7 +291,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
               </Cell>}
           />
           <Column
-            name="Feature ID"
+            name="NCBI Feature Accession"
             cellRenderer={row =>
               <Cell key={row+''}>             
                   {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
@@ -366,7 +398,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVariantSetToGeneAssociation_HG38 = MetaNode('GetVariantSetToGeneAssociation_HG38')
   .meta({
-    label: `Identify Variant (Set) And Gene Associations HG38`,
+    label: `Identify Variant (Set) And Gene Associations (HG38)`,
     description: "Get Associated Gene info for a given Variant Set."
   })
   .inputs({ variantset: VariantSet })

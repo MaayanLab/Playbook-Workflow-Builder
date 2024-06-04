@@ -8,6 +8,7 @@ import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage
 import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo, GitHubVariantInfoC } from './variantInfoSources/gitDataHubVariantInfo'
 import { xQTL_EvidenceArray } from './variantInfoSources/gitDataHubVariantInfo'
+import { title } from 'process'
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
@@ -19,6 +20,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     let xqtlEvidences = variantinfo.data.ld.xqtlEvidence;
     return (
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
         <Table
           height={500}
           cellRendererDependencies={[xqtlEvidences]}
@@ -30,12 +32,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           }}
         >
           <Column
-            name="LHD Id"
+            name="LHD id"
             cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].ldhId}</Cell>}
-          />
-          <Column
-            name="Evidence link"
-            cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
           />
           <Column
             name="QTL Type"
@@ -53,6 +51,10 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
             name="Tissue site"
             cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
           />
+          <Column
+            name="Evidence link"
+            cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
+          />
         </Table>
       </>
     )
@@ -62,6 +64,9 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   function reformatxQTLEvidences(xqtlEvidences: any){
     for(let e in xqtlEvidences){
       let xqtlE_entContent = xqtlEvidences[e].entContent;
+      if(xqtlE_entContent == null){
+        continue;
+      }
       if(xqtlE_entContent.hasOwnProperty('eQTL')){
         xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
         xqtlE_entContent.type = "eQTL";
@@ -78,6 +83,9 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     let newXQTLArray : any= [];
     for(let e in xqtlEvidences){
       let xqtlE_entContent = xqtlEvidences[e].entContent;
+      if(xqtlE_entContent == null){
+        continue;
+      }
       if(xqtlE_entContent.hasOwnProperty('eQTL')){
         xqtlE_entContent.esQTL = xqtlE_entContent.eQTL;
         xqtlE_entContent.type = "eQTL";
@@ -98,8 +106,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
 
   export const GetxQTL_EvidencesDataForVariantInfo = MetaNode('GetxQTL_EvidencesDataForVariantInfo')
   .meta({
-    label: 'Resolve xQTL Evidence Data for Variant Info',
-    description: 'Resolve xQTL Evidence Data for Variant Info Data',
+    label: 'Retrieve Variant Associated eQTL Or sQTL Evidence',
+    description: 'Identify eQTL and sQTL information ro the given variant based on GTEx data.',
   })
   .inputs({ variant: VariantTerm  })
   .output(xQTL_EvidenceDataTable)
@@ -140,6 +148,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .view( xQTLEvdVariantSet => {
     return (
       <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
+        <p style={{margin:'15px 0px 15px 0px'}}>xQTL evidence found for x out of n variants queried.</p>
         <Table
           height={500}
           cellRendererDependencies={[xQTLEvdVariantSet]}
@@ -151,19 +161,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
           }}
         >
           <Column
-            name="Variant CAID"
+            name="Variant CAid"
             cellRenderer={row => <Cell key={row+''}>{xQTLEvdVariantSet[row].caid}</Cell>}
-          />
-          <Column
-            name="LDH Id"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                  <tr><td>{ sources.ldhId }</td></tr>
-                )}
-              </table>
-            }</Cell>}
           />
           <Column
             name="Evidence link"
@@ -227,8 +226,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
 
   export const GetVariantSetXQTLEvidence = MetaNode('GetVariantSetXQTLEvidence')
   .meta({
-    label: `Get Variant Set xQTL Evidence`,
-    description: "Get xQTL Evidence form Variant Set."
+    label: `Identify eQTLs and sQTLs and retrieve evidence`,
+    description: "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
   })
   .inputs({ variantset: VariantSet })
   .output(xQTL_EvidenceFroVariantSet)
@@ -267,5 +266,5 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
 
     return variantSetXQTLEvidnc;
   }).story(props =>
-    "Get xQTL Evidence form Variant Set."
+    "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
   ).build()

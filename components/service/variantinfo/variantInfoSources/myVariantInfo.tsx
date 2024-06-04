@@ -29,6 +29,8 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
     </div>
   ))
   .build()
+
+  
   export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromVariantTermMyVarintInfo')
   .meta({
     label: 'Resolve Variant Info from Term (MyVarintInfo)',
@@ -57,3 +59,4 @@ import { getAlleleRegistryVariantInfo } from './alleleRegistryVariantInfo'
   })
   .story(props => ({}))
   .build()
+  

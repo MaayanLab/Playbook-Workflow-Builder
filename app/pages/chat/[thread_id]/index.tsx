@@ -270,7 +270,7 @@ export default function ChatThread() {
         <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center prose">
           {[
             'Show me the expression of ACE2 in healthy human tissues from GTEx',
-            'Find drugs from the LINCS L1000 Chemical Perturbations the up regulate STAT3',
+                'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
           ].map((suggestion, i) => {
             return (
               <button

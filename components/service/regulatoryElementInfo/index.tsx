@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { RegulatoryElementTerm } from '@/components/core/term'
 import { GeneSet, RegulatoryElementSet, VariantSet } from '@/components/core/set'
-import { z } from 'zod'
+import { nullable, z } from 'zod'
 import { linkeddatahub_icon, datafile_icon } from '@/icons'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { downloadBlob } from '@/utils/download'
@@ -260,17 +260,24 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   .story(props => ({ abstract: `Additional information about the regulatory elements was resolved.` }))
   .build()
 
-  export const RE_UniqueRegionC = z.array(
+  const RE_UniqueRegionC = z.array(
       z.object({
         '@id': z.string(),
         communityStandardTitle: z.string(),
         id: z.string(),
         type:  z.string()
       })
-    ).nullable().optional();
-  type RE_UniqueRegion = z.infer<typeof RE_UniqueRegionC>
+    );
+  type RE_UniqueRegion = z.infer<typeof RE_UniqueRegionC>;
 
-
+  const RE_UniqueRegionSetC = z.array(
+    z.object({
+      reId: z.string(),
+      reference: RE_UniqueRegionC
+    })
+  );
+  type RE_UniqueRegionSet = z.infer<typeof RE_UniqueRegionSetC>;
+  
   async function getUniqueGenomicRegions(genomicRegion: string):  Promise<RE_UniqueRegion> {
     const res = await fetch(`https://reg.test.genome.network/reg/loc/desc/GRCh38%20(${encodeURIComponent(genomicRegion)})`)
     return await res.json()
@@ -336,10 +343,10 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
     let positionString = rePositionData.data.cCREQuery[0].coordinates.chromosome+":"+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
     let response = await getUniqueGenomicRegions(positionString);
-    if(response != null && response.length > 0){
-      return response;
+    if(response == null){
+      throw new Error("Unable to find any data for the queried position!");
     }
-    return null;
+    return response;
   })
   .story(props => ({ abstract: `Get unique name for genomic region(s).` }))
   .build()
@@ -350,12 +357,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     description: '',
     icon: [datafile_icon]
   })
-  .codec(z.array(
-    z.object({
-      reId: z.string(),
-      reference: RE_UniqueRegionC
-    })
-  ))
+  .codec(RE_UniqueRegionSetC)
   .view(uniqueRegions => {
     if(uniqueRegions == null || uniqueRegions.length == 0){
       return (
@@ -425,7 +427,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   .output(UniqueGenomicRegionRESet)
   .resolve(async (props) => {
     let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
-    let referenceArray: any = [];
+    let referenceArray: RE_UniqueRegionSet = [];
     for(let i in regElemeIdsSet){
       let rgId = regElemeIdsSet[i];
       const rePositionData = await getRegElemPositionData(rgId);

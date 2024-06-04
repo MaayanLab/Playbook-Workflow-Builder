@@ -50,29 +50,31 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
   )
   .view( varAndReIdArray => {
     return ( 
-      <Table
-      height={500}
-      cellRendererDependencies={[varAndReIdArray]}
-      numRows={varAndReIdArray.length}
-      enableGhostCells
-      enableFocusedCell
-      downloads={{
-        JSON: () => downloadBlob(new Blob([JSON.stringify(varAndReIdArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
-      }}
-      >
-        <Column
-          name="Variant CAID"
-          cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].caid }</Cell>}
-        />
-        <Column
-          name="Regulatory Element EntId"
-          cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].reEntId }</Cell>}
-        />
-        <Column
-          name="Regulatory Element Position"
-          cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].rePosition }</Cell>}
-        />
-      </Table>  
+      <>
+        <Table
+        height={500}
+        cellRendererDependencies={[varAndReIdArray]}
+        numRows={varAndReIdArray.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(varAndReIdArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
+        >
+          <Column
+            name="Variant CAID"
+            cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].caid }</Cell>}
+          />
+          <Column
+            name="Regulatory Element EntId"
+            cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].reEntId }</Cell>}
+          />
+          <Column
+            name="Regulatory Element Position"
+            cellRenderer={row => <Cell key={row+''}>{ varAndReIdArray[row].rePosition }</Cell>}
+          />
+        </Table> 
+      </> 
     )
   })
   .build()

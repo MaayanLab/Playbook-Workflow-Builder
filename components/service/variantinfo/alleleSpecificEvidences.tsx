@@ -30,6 +30,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
   .codec(AlleleSpecificEvidenceInfoC)
   .view(alleleSpecificEvidence => {
       return (
+        <>
           <Table
             height={500}
             cellRendererDependencies={[alleleSpecificEvidence]}
@@ -94,6 +95,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               }</Cell>}
             />
           </Table>
+        </>  
       )
   })
   .build()
@@ -193,122 +195,124 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     )
     .view( alleleEvidncForVarSetArray => {
       return ( 
-        <Table
-        height={500}
-        cellRendererDependencies={[alleleEvidncForVarSetArray]}
-        numRows={alleleEvidncForVarSetArray.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(alleleEvidncForVarSetArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-        >
-          <Column
-            name="Variant CAID"
-            cellRenderer={row => <Cell key={row+''}>{alleleEvidncForVarSetArray[row].caid}</Cell>}
-          />
-          <Column
-            name="LDH Id"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>{ sources.ldhId }</td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Tissue Site or Cell Type"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>{ sources.sourceDescription.replace(/_/g, " ") }</td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="LDH Iri"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td><a target="_blank" href={`${sources.ldhIri}`}>evidence link</a></td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Allele Specificity Type"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.name }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Allele Specificity Ref. Count"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.refAlleleQuant }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Allele Specificity Alt. Count"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.altAlleleQuant }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Adjusted P-Value"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.sig }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-        </Table>
+        <>  
+          <Table
+          height={500}
+          cellRendererDependencies={[alleleEvidncForVarSetArray]}
+          numRows={alleleEvidncForVarSetArray.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(alleleEvidncForVarSetArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+          >
+            <Column
+              name="Variant CAID"
+              cellRenderer={row => <Cell key={row+''}>{alleleEvidncForVarSetArray[row].caid}</Cell>}
+            />
+            <Column
+              name="LDH Id"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>{ sources.ldhId }</td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Tissue Site or Cell Type"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>{ sources.sourceDescription.replace(/_/g, " ") }</td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="LDH Iri"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td><a target="_blank" href={`${sources.ldhIri}`}>evidence link</a></td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Allele Specificity Type"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.name }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Allele Specificity Ref. Count"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.refAlleleQuant }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Allele Specificity Alt. Count"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.altAlleleQuant }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Adjusted P-Value"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.sig }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+          </Table>
+        </>
       )
     })
     .build()

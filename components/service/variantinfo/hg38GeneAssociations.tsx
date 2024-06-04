@@ -50,51 +50,53 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .codec(HG38GeneAssociationsProcessedForViewC)
   .view(GeneAssociationsList => {
     return (
-      <Table
-        height={500}
-        cellRendererDependencies={[GeneAssociationsList]}
-        numRows={GeneAssociationsList.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(GeneAssociationsList)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-      >
-        <Column
-          name="Gene ID"
-          cellRenderer={row => <Cell key={row+''}>{GeneAssociationsList[row].geneId}</Cell>}
-        />
-        <Column
-          name="Variant association to Transcript"
-          cellRenderer={row => <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {GeneAssociationsList[row].associations.map(associations =>
-                      <tr><td>{ associations.effect }</td></tr>
-                  )}
-                </table>
-          </Cell>}
-        />
-        <Column
-          name="Distance To Transcript (bp)"
-          cellRenderer={row => <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {GeneAssociationsList[row].associations.map(associations =>
-                      <tr><td>{ associations.distance_to_feature }</td></tr>
-                  )}
-                </table>
-          </Cell>}
-        />
-        <Column
-          name="Transcript ID"
-          cellRenderer={row => <Cell key={row+''}>
-                <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {GeneAssociationsList[row].associations.map(associations =>
-                      <tr><td>{ associations.feature_id }</td></tr>
-                  )}
-                </table>
-          </Cell>}
-        />
-      </Table>
+      <>
+        <Table
+          height={500}
+          cellRendererDependencies={[GeneAssociationsList]}
+          numRows={GeneAssociationsList.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(GeneAssociationsList)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+        >
+          <Column
+            name="Gene ID"
+            cellRenderer={row => <Cell key={row+''}>{GeneAssociationsList[row].geneId}</Cell>}
+          />
+          <Column
+            name="Variant association to Transcript"
+            cellRenderer={row => <Cell key={row+''}>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {GeneAssociationsList[row].associations.map(associations =>
+                        <tr><td>{ associations.effect }</td></tr>
+                    )}
+                  </table>
+            </Cell>}
+          />
+          <Column
+            name="Distance To Transcript (bp)"
+            cellRenderer={row => <Cell key={row+''}>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {GeneAssociationsList[row].associations.map(associations =>
+                        <tr><td>{ associations.distance_to_feature }</td></tr>
+                    )}
+                  </table>
+            </Cell>}
+          />
+          <Column
+            name="Transcript ID"
+            cellRenderer={row => <Cell key={row+''}>
+                  <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                    {GeneAssociationsList[row].associations.map(associations =>
+                        <tr><td>{ associations.feature_id }</td></tr>
+                    )}
+                  </table>
+            </Cell>}
+          />
+        </Table>
+      </>
     )
   })
   .build()
@@ -208,132 +210,134 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   .codec(HG38GeneAssociationsSetC)
   .view( geneAssociationsSet => {
     return ( 
-      <Table
-      height={500}
-      cellRendererDependencies={[geneAssociationsSet]}
-      numRows={geneAssociationsSet.length}
-      enableGhostCells
-      enableFocusedCell
-      downloads={{
-        JSON: () => downloadBlob(new Blob([JSON.stringify(geneAssociationsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
-      }}
-      >
-        <Column
-          name="Variant CAID"
-          cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
-        />
-        <Column
-          name="Gene ID"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>              
-                    <tr style={{borderBottom:'1px solid lightgrey'}}>
-                      <td>{ associationsList.geneId }</td>
-                      <td>
-                        <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                            {associationsList.associations.map(association =>
-                                <tr><td style={{visibility:'hidden'}}>{association.effect}</td></tr>
-                            )}
-                        </table>
-                      </td>
-                    </tr>     
-                )}
-              </table>
-            </Cell>}
-        />
-        <Column
-          name="Effect"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.effect }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-        <Column
-          name="Feature ID"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.feature_id }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-        <Column
-          name="Feature Type"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.feature_type }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-        <Column
-          name="Distance To Feature (bp)"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.distance_to_feature }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-        <Column
-          name="HGVS"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.hgvs_c }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-        <Column
-          name="Putative Impact"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.putative_impact }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-        <Column
-          name="Transcript Biotype"
-          cellRenderer={row =>
-            <Cell key={row+''}>             
-                {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
-                    <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
-                        {associationsList.associations.map(association =>
-                            <tr><td>{ association.transcript_biotype }</td></tr>
-                        )}
-                    </table>
-                )}             
-            </Cell>}
-        />
-      </Table>
+      <>
+        <Table
+        height={500}
+        cellRendererDependencies={[geneAssociationsSet]}
+        numRows={geneAssociationsSet.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(geneAssociationsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
+        >
+          <Column
+            name="Variant CAID"
+            cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
+          />
+          <Column
+            name="Gene ID"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>              
+                      <tr style={{borderBottom:'1px solid lightgrey'}}>
+                        <td>{ associationsList.geneId }</td>
+                        <td>
+                          <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                              {associationsList.associations.map(association =>
+                                  <tr><td style={{visibility:'hidden'}}>{association.effect}</td></tr>
+                              )}
+                          </table>
+                        </td>
+                      </tr>     
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Effect"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.effect }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+          <Column
+            name="Feature ID"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.feature_id }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+          <Column
+            name="Feature Type"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.feature_type }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+          <Column
+            name="Distance To Feature (bp)"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.distance_to_feature }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+          <Column
+            name="HGVS"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.hgvs_c }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+          <Column
+            name="Putative Impact"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.putative_impact }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+          <Column
+            name="Transcript Biotype"
+            cellRenderer={row =>
+              <Cell key={row+''}>             
+                  {geneAssociationsSet[row].geneAssociationsHg38.map(associationsList =>
+                      <table style={{borderCollapse: 'collapse', borderBottom:'1px solid lightgrey', width:'100%'}}>
+                          {associationsList.associations.map(association =>
+                              <tr><td>{ association.transcript_biotype }</td></tr>
+                          )}
+                      </table>
+                  )}             
+              </Cell>}
+          />
+        </Table>
+      </>
     )  
   })
   .build()

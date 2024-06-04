@@ -187,32 +187,34 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
   .codec(MyRegulatoryElementSetInfoC)
   .view(regulatoryElementSet => {
     return( 
-      <Table
-        height={500}
-        cellRendererDependencies={[regulatoryElementSet]}
-        numRows={regulatoryElementSet.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}>
-        <Column
-          name="Entity id"
-          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
-        />
-        <Column
-          name="Chromosome"
-          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.chromosome}</Cell>}
-        />
-        <Column
-          name="Start Pos."
-          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.start}</Cell>}
-        />
-        <Column
-          name="End Pos."
-          cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.end}</Cell>}
-        />
-      </Table>
+      <>
+        <Table
+          height={500}
+          cellRendererDependencies={[regulatoryElementSet]}
+          numRows={regulatoryElementSet.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}>
+          <Column
+            name="Entity id"
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
+          />
+          <Column
+            name="Chromosome"
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.chromosome}</Cell>}
+          />
+          <Column
+            name="Start Pos."
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.start}</Cell>}
+          />
+          <Column
+            name="End Pos."
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.end}</Cell>}
+          />
+        </Table>
+      </>
     )
   })
   .build()

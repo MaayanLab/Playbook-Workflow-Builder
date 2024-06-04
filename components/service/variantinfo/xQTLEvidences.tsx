@@ -18,41 +18,43 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .view(variantinfo => {
     let xqtlEvidences = variantinfo.data.ld.xqtlEvidence;
     return (
-      <Table
-        height={500}
-        cellRendererDependencies={[xqtlEvidences]}
-        numRows={xqtlEvidences.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(xqtlEvidences)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-      >
-        <Column
-          name="LHD Id"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].ldhId}</Cell>}
-        />
-        <Column
-          name="Evidence link"
-          cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
-        />
-        <Column
-          name="QTL Type"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.type}</Cell>}
-        />
-        <Column
-          name="Normalized Effect Size (nes)"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.nes ?? null}</Cell>}
-        />
-        <Column
-          name="P-Value"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.sig ?? null}</Cell>}
-        />
-        <Column
-          name="Tissue site"
-          cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
-        />
-      </Table>
+      <>
+        <Table
+          height={500}
+          cellRendererDependencies={[xqtlEvidences]}
+          numRows={xqtlEvidences.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(xqtlEvidences)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+        >
+          <Column
+            name="LHD Id"
+            cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].ldhId}</Cell>}
+          />
+          <Column
+            name="Evidence link"
+            cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${xqtlEvidences[row].entContent.GTExIri}`}>evidence link</a></Cell>}
+          />
+          <Column
+            name="QTL Type"
+            cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.type}</Cell>}
+          />
+          <Column
+            name="Normalized Effect Size (nes)"
+            cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.nes ?? null}</Cell>}
+          />
+          <Column
+            name="P-Value"
+            cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.esQTL?.sig ?? null}</Cell>}
+          />
+          <Column
+            name="Tissue site"
+            cellRenderer={row => <Cell key={row+''}>{xqtlEvidences[row].entContent.sourceDescription.replace(/_/g, " ")}</Cell>}
+          />
+        </Table>
+      </>
     )
   })
   .build()
@@ -137,87 +139,89 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   )
   .view( xQTLEvdVariantSet => {
     return (
-      <Table
-        height={500}
-        cellRendererDependencies={[xQTLEvdVariantSet]}
-        numRows={xQTLEvdVariantSet.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(xQTLEvdVariantSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-      >
-        <Column
-          name="Variant CAID"
-          cellRenderer={row => <Cell key={row+''}>{xQTLEvdVariantSet[row].caid}</Cell>}
-        />
-        <Column
-          name="LDH Id"
-          cellRenderer={row =>
-          <Cell key={row+''}>{
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                <tr><td>{ sources.ldhId }</td></tr>
-              )}
-            </table>
-          }</Cell>}
-        />
-        <Column
-          name="Evidence link"
-          cellRenderer={row =>
-          <Cell key={row+''}>{
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                <tr><td>{ sources.ldhId }</td></tr>
-              )}
-            </table>
-          }</Cell>}
-        />
-        <Column
-          name="QTL Type"
-          cellRenderer={row =>
-          <Cell key={row+''}>{
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                <tr><td>{ sources.xQTLEntContent.type }</td></tr>
-              )}
-            </table>
-          }</Cell>}
-        />
-        <Column
-          name="Normalized Effect Size (nes)"
-          cellRenderer={row =>
-          <Cell key={row+''}>{
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                <tr><td>{ sources.xQTLEntContent.esQTL?.nes ?? null }</td></tr>
-              )}
-            </table>
-          }</Cell>}
-        />
-        <Column
-          name="P-Value"
-          cellRenderer={row =>
-          <Cell key={row+''}>{
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                <tr><td>{ sources.xQTLEntContent.esQTL?.sig ?? null }</td></tr>
-              )}
-            </table>
-          }</Cell>}
-        />
-        <Column
-          name="Tissue site"
-          cellRenderer={row =>
-          <Cell key={row+''}>{
-            <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
-                <tr><td>{ sources.xQTLEntContent.sourceDescription.replace(/_/g, " ") }</td></tr>
-              )}
-            </table>
-          }</Cell>}
-        />
-      </Table>
+      <>
+        <Table
+          height={500}
+          cellRendererDependencies={[xQTLEvdVariantSet]}
+          numRows={xQTLEvdVariantSet.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(xQTLEvdVariantSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+        >
+          <Column
+            name="Variant CAID"
+            cellRenderer={row => <Cell key={row+''}>{xQTLEvdVariantSet[row].caid}</Cell>}
+          />
+          <Column
+            name="LDH Id"
+            cellRenderer={row =>
+            <Cell key={row+''}>{
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                  <tr><td>{ sources.ldhId }</td></tr>
+                )}
+              </table>
+            }</Cell>}
+          />
+          <Column
+            name="Evidence link"
+            cellRenderer={row =>
+            <Cell key={row+''}>{
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                  <tr><td>{ sources.ldhId }</td></tr>
+                )}
+              </table>
+            }</Cell>}
+          />
+          <Column
+            name="QTL Type"
+            cellRenderer={row =>
+            <Cell key={row+''}>{
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                  <tr><td>{ sources.xQTLEntContent.type }</td></tr>
+                )}
+              </table>
+            }</Cell>}
+          />
+          <Column
+            name="Normalized Effect Size (nes)"
+            cellRenderer={row =>
+            <Cell key={row+''}>{
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                  <tr><td>{ sources.xQTLEntContent.esQTL?.nes ?? null }</td></tr>
+                )}
+              </table>
+            }</Cell>}
+          />
+          <Column
+            name="P-Value"
+            cellRenderer={row =>
+            <Cell key={row+''}>{
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                  <tr><td>{ sources.xQTLEntContent.esQTL?.sig ?? null }</td></tr>
+                )}
+              </table>
+            }</Cell>}
+          />
+          <Column
+            name="Tissue site"
+            cellRenderer={row =>
+            <Cell key={row+''}>{
+              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {xQTLEvdVariantSet[row].xQTL_Evidence.map(sources =>
+                  <tr><td>{ sources.xQTLEntContent.sourceDescription.replace(/_/g, " ") }</td></tr>
+                )}
+              </table>
+            }</Cell>}
+          />
+        </Table>
+      </>
     )
   }).build()
 

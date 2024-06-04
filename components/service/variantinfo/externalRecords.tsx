@@ -35,43 +35,45 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     let sourcesList = AlleleRegistryExternalSourcesList ?? [];
 
     return (
-      <Table
-        height={500}
-        cellRendererDependencies={[sourcesList]}
-        numRows={sourcesList.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(sourcesList)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-      >
-        <Column
-          name="Data Base Name"
-          cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
-        />
-        <Column
-          name="Variant Id"
-          cellRenderer={row =>
-          <Cell  key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {sourcesList[row].sources.map(sources =>
-                      <tr><td>{ sources.id }</td></tr>
-                  )}
-              </table>
-          </Cell>}
-        />
-        <Column
-          name="Link"
-          cellRenderer={row =>
-          <Cell  key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+      <>
+        <Table
+          height={500}
+          cellRendererDependencies={[sourcesList]}
+          numRows={sourcesList.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(sourcesList)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+        >
+          <Column
+            name="Data Base Name"
+            cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
+          />
+          <Column
+            name="Variant Id"
+            cellRenderer={row =>
+            <Cell  key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {sourcesList[row].sources.map(sources =>
-                        <tr><td><a target="_blank" href={`${sources['@id']}`}>Link</a></td></tr>
+                        <tr><td>{ sources.id }</td></tr>
                     )}
-              </table>
-          </Cell>}
-        />
-      </Table>
+                </table>
+            </Cell>}
+          />
+          <Column
+            name="Link"
+            cellRenderer={row =>
+            <Cell  key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      {sourcesList[row].sources.map(sources =>
+                          <tr><td><a target="_blank" href={`${sources['@id']}`}>Link</a></td></tr>
+                      )}
+                </table>
+            </Cell>}
+          />
+        </Table>
+      </>
     )
   })
   .build()
@@ -140,56 +142,57 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .codec(AlleleRegistryExternalSourcesSetInfoC)
   .view( externalRecordsSet => {
-    //let externalRecords = externalRecordsSet;
     return ( 
-      <Table
-      height={500}
-      cellRendererDependencies={[externalRecordsSet]}
-      numRows={externalRecordsSet.length}
-      enableGhostCells
-      enableFocusedCell
-      downloads={{
-        JSON: () => downloadBlob(new Blob([JSON.stringify(externalRecordsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
-      }}
-      >
-        <Column
-          name="Variant CAID"
-          cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
-        />
-        <Column
-          name="External Resource Name"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                    <tr><td>{ externalRecord.name}</td></tr>
-                )}
-              </table>
-            </Cell>}
-        />
-        <Column
-          name="Resource ID"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                    <tr><td>{ externalRecord.sources[0].id}</td></tr>
-                )}
-              </table>
-            </Cell>}
-        />
-        <Column
-          name="Resource link"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                    <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Resource link</a></td></tr>
-                )}
-              </table>
-            </Cell>}
+      <>
+        <Table
+        height={500}
+        cellRendererDependencies={[externalRecordsSet]}
+        numRows={externalRecordsSet.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(externalRecordsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
+        >
+          <Column
+            name="Variant CAID"
+            cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
           />
-      </Table>
+          <Column
+            name="External Resource Name"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {externalRecordsSet[row].externalRecords?.map(externalRecord =>
+                      <tr><td>{ externalRecord.name}</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Resource ID"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {externalRecordsSet[row].externalRecords?.map(externalRecord =>
+                      <tr><td>{ externalRecord.sources[0].id}</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Resource link"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {externalRecordsSet[row].externalRecords?.map(externalRecord =>
+                      <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Resource link</a></td></tr>
+                  )}
+                </table>
+              </Cell>}
+            />
+        </Table>
+      </>
     )  
   })
   .build()

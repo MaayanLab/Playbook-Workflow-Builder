@@ -11,6 +11,8 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { ProcessMetaNode } from '@/spec/metanode'
 import { GPTAssistantMessageParse, AssembleState, AssistantParsedMessages } from './utils'
+import { FPL, Process } from '@/core/FPPRG'
+import fpprg from '@/app/fpprg'
 
 const openai = cache('openai', async () => {
   if (!process.env.OPENAI_API_KEY) {
@@ -198,13 +200,11 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         }
       }
     }
-    // TODO: update fpl
+
+    // upload new messages
     const newMessagesWithIds: AssistantParsedMessages = []
     for (const newMessage of newMessages) {
       const { role, ...message } = newMessage
-      if (role === 'user' && 'step' in message) {
-        message.step.id
-      }
       const pwb_thread_message = await db.objects.thread_message.create({
         data: {
           thread: pwb_thread.id,
@@ -213,8 +213,51 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         }
       })
       newMessagesWithIds.push({...newMessage, id: pwb_thread_message.id })
+      currentMessages.push(newMessage)
     }
-    return { messages: newMessagesWithIds }
+    // get updated FPL
+    const processArray: Process[] = []
+    const processArrayLookup: Record<string|number, string> = {}
+    let max_id = 0
+    const all_nodes: Record<number, { id: number, name: string, value?: string, inputs: Record<string, { id: number }> }> = {}
+    const workflow: { id: number, name: string, value?: string, inputs: Record<string, { id: number }> }[] = []
+    for (const { role, ...message } of currentMessages) {
+      if ('step' in message) {
+        workflow.push(all_nodes[message.step.id])
+        if (message.step.value) all_nodes[message.step.id].value = message.step.value
+
+        const component = all_nodes[message.step.id]
+        const metanode = krg.getProcessNode(component.name)
+
+        const proc: {
+          type: string,
+          inputs?: Record<string, { id: string }>,
+          data?: { type: string, value: string }
+        } = { type: metanode.spec }
+        if (component.value) proc.data = { type: metanode.output.spec, value: component.value }
+        if (!dict.isEmpty(component.inputs)) {
+          proc.inputs = {}
+          for (const k in component.inputs) {
+            if (!(component.inputs[k].id in processArrayLookup)) throw new ResponseCodedError(400, `${component.inputs[k].id} not found in preceeding graph`)
+            proc.inputs[k].id = processArrayLookup[proc.inputs[k].id]
+          }
+        }
+        const resolvedProc = await fpprg.resolveProcess(proc)
+        processArrayLookup[component.id] = resolvedProc.id
+        processArray.push(resolvedProc)
+      }
+      if ('choices' in message && message.choices) {
+        message.choices.forEach(choice => {
+          all_nodes[+choice.id] = choice
+          max_id = Math.max(max_id, +choice.id)
+        })
+      }
+    }
+    const processArrayFPL = FPL.fromProcessArray(processArray, undefined)
+    if (!processArrayFPL) throw new NotFoundError()
+    const fpl = await fpprg.upsertFPL(processArrayFPL)
+    
+    return { messages: newMessagesWithIds, fpl: fpl.id }
   })
   .build()
 

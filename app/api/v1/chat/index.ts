@@ -78,7 +78,7 @@ export const GPTAssistantCreate = API.post('/api/v1/chat')
       return
     }
     const openai_thread = await (await openai).beta.threads.create()
-    const pwb_thread = await db.objects.thread.create({ data: { openai_thread_id: openai_thread.id, user: session.user.id } })
+    const pwb_thread = await db.objects.thread.create({ data: { openai_thread: openai_thread.id, user: session.user.id } })
     return pwb_thread.id
   })
   .build()
@@ -103,11 +103,10 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
     const currentMessages = GPTAssistantMessageParse(
-      (await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { order: 'asc' })).data
-        .flatMap(msg => {
-          const content = msg.content.flatMap(content => content.type === 'text' ? [content.text.value] : []).join('\n')
-          return { id: msg.id, role: msg.role, content }
-        })
+      await db.objects.thread_message.findMany({
+        where: { thread: pwb_thread.id },
+        orderBy: { created: 'asc' },
+      })
     )
     const userMessageQueue = [inputs.body]
     const newMessages: AssistantParsedMessages = []
@@ -162,7 +161,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
             description: item.meta.description, ...item.story({}),
           }
         })
-      const userMessage = await (await openai).beta.threads.messages.create(pwb_thread.openai_thread_id, {
+      const userMessage = await (await openai).beta.threads.messages.create(pwb_thread.openai_thread, {
         role: 'user',
         content: JSON.stringify({
           ...currentUserMessage,
@@ -176,17 +175,17 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         choices,
       })
 
-      let run = await (await openai).beta.threads.runs.create(pwb_thread.openai_thread_id, { assistant_id: (await assistant).id })
+      let run = await (await openai).beta.threads.runs.create(pwb_thread.openai_thread, { assistant_id: (await assistant).id })
       while (run.status !== 'completed') {
         await new Promise<void>((resolve, reject) => {setTimeout(() => {resolve()}, 500)})
-        run = await (await openai).beta.threads.runs.retrieve(pwb_thread.openai_thread_id, run.id)
+        run = await (await openai).beta.threads.runs.retrieve(pwb_thread.openai_thread, run.id)
         if (run.status === 'completed') {
           // send all new messages since the user's message to the user
           newMessages.push(...GPTAssistantMessageParse(
-            (await (await openai).beta.threads.messages.list(pwb_thread.openai_thread_id, { after: userMessage.id, order: 'asc' })).data
+            (await (await openai).beta.threads.messages.list(pwb_thread.openai_thread, { after: userMessage.id, order: 'asc' })).data
               .flatMap(msg => {
                 const content = msg.content.flatMap(content => content.type === 'text' ? [content.text.value] : []).join('\n')
-                return { id: msg.id, role: msg.role, content }
+                return { id: '', role: msg.role, content }
               })
           ))
           const lastMessage = newMessages[newMessages.length-1]
@@ -201,32 +200,17 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       }
     }
 
-    // upload new messages
-    const newMessagesWithIds: AssistantParsedMessages = []
-    for (const newMessage of newMessages) {
-      const { role, ...message } = newMessage
-      const pwb_thread_message = await db.objects.thread_message.create({
-        data: {
-          thread: pwb_thread.id,
-          role,
-          content: JSON.stringify(message),
-        }
-      })
-      newMessagesWithIds.push({...newMessage, id: pwb_thread_message.id })
-      currentMessages.push(newMessage)
-    }
-    // get updated FPL
-    const processArray: Process[] = []
+    // upload new messages & update FPL
     const processArrayLookup: Record<string|number, string> = {}
     let max_id = 0
     const all_nodes: Record<number, { id: number, name: string, value?: string, inputs: Record<string, { id: number }> }> = {}
     const workflow: { id: number, name: string, value?: string, inputs: Record<string, { id: number }> }[] = []
-    for (const { role, ...message } of currentMessages) {
+    let head: FPL | undefined = undefined
+    for (const { role, ...message } of [...currentMessages, ...newMessages]) {
       if ('step' in message) {
-        workflow.push(all_nodes[message.step.id])
-        if (message.step.value) all_nodes[message.step.id].value = message.step.value
-
         const component = all_nodes[message.step.id]
+        component.value = message.step.value
+        workflow.push(component)
         const metanode = krg.getProcessNode(component.name)
 
         const proc: {
@@ -239,12 +223,12 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
           proc.inputs = {}
           for (const k in component.inputs) {
             if (!(component.inputs[k].id in processArrayLookup)) throw new ResponseCodedError(400, `${component.inputs[k].id} not found in preceeding graph`)
-            proc.inputs[k].id = processArrayLookup[proc.inputs[k].id]
+            proc.inputs[k] = {id: processArrayLookup[component.inputs[k].id]}
           }
         }
         const resolvedProc = await fpprg.resolveProcess(proc)
         processArrayLookup[component.id] = resolvedProc.id
-        processArray.push(resolvedProc)
+        head = new FPL(resolvedProc, head)
       }
       if ('choices' in message && message.choices) {
         message.choices.forEach(choice => {
@@ -252,12 +236,20 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
           max_id = Math.max(max_id, +choice.id)
         })
       }
+      if (!message.id) {
+        const pwb_thread_message = await db.objects.thread_message.create({
+          data: {
+            thread: pwb_thread.id,
+            fpl: head?.id ?? null,
+            role,
+            content: JSON.stringify(message),
+          }
+        })
+        Object.assign(message, { id: pwb_thread_message.id, fpl: pwb_thread_message.fpl })
+      }
     }
-    const processArrayFPL = FPL.fromProcessArray(processArray, undefined)
-    if (!processArrayFPL) throw new NotFoundError()
-    const fpl = await fpprg.upsertFPL(processArrayFPL)
-    
-    return { messages: newMessagesWithIds, fpl: fpl.id }
+    const fpl = head ? await fpprg.upsertFPL(head) : null
+    return { messages: newMessages, fpl: fpl?.id ?? null }
   })
   .build()
 
@@ -287,7 +279,7 @@ export const GPTAssistantMessagesList = API.get('/api/v1/chat/[thread_id]/messag
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
     const pwb_thread_messages = await db.objects.thread_message.findMany({ where: { thread: inputs.query.thread_id }, orderBy: { created: 'asc' } })
-    return GPTAssistantMessageParse(pwb_thread_messages)
+    return { messages: GPTAssistantMessageParse(pwb_thread_messages), fpl: pwb_thread_messages[pwb_thread_messages.length-1]?.fpl ?? null }
   })
   .build()
 
@@ -303,8 +295,8 @@ export const GPTAssistantDelete = API.post('/api/v1/chat/[thread_id]/delete')
     }
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
-    pwb_thread.openai_thread_id
-    await (await openai).beta.threads.del(pwb_thread.openai_thread_id)
+    pwb_thread.openai_thread
+    await (await openai).beta.threads.del(pwb_thread.openai_thread)
     await db.objects.thread.delete({ where: { id: inputs.query.thread_id } })
     return null
   })

@@ -22,7 +22,7 @@ export default function ChatThread() {
       <Head><title>Chat</title></Head>
       <main className="flex-grow container mx-auto py-4 flex flex-col">
         <div className="prose">
-          <h2>The Playbook Chatbot</h2>
+          <h2>Text to Workflow</h2>
           <p>This is an experimental chat interface that translates your instructions to PWB workflows. Click start to begin!</p>
           {!auth.data?.user?.id ? (
             <div className="alert alert-warning shadow-lg block max-w-none">

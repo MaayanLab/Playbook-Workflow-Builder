@@ -35,7 +35,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
           <div className="navbar-end hidden md:flex">
             <div className="hidden xl:flex">
               <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
-              <Link href="/chat"><button className="btn btn-ghost text-black dark:text-white">Chatbot</button></Link>
+              <Link href="/chat"><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></Link>
               <Link href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></Link>
               <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></Link>
               <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
@@ -94,7 +94,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
             <span>Playbook</span>
           </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
-          <li><Link href="/chat">Chatbot</Link></li>
+          <li><Link href="/chat">Text to Workflow</Link></li>
           <li><Link href="/components">Component Catalog</Link></li>
           <li><Link href="/explore">Component Graph</Link></li>
           <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>

@@ -68,7 +68,7 @@ export async function getCTDAdjacency(formData: FormData): Promise<Readable> {
 
 export async function getCTDPrecalculations(formData: FormData): Promise<Readable> {
   const { default: axios } = await import('axios')
-  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/getCtdCustomMatrix`, formData, {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/getCustomPermutations`, formData, {
     headers: { ...formData.getHeaders() },
     responseType: 'stream',
   });
@@ -87,8 +87,8 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
 
   export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
   .meta({
-    label: `CTD - Create a Custom Adjacency Matrix`,
-    description: "Create a Custom Adjacency Matrix Using a Gene Expressions File.",
+    label: `CTD - Create a Custom Adjacency File`,
+    description: "Create a Custom Adjacency JSON File Using a Gene Expressions File.",
     tags: {
       Type: {
         CTD: 1
@@ -116,7 +116,7 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
     }
     return output;
   }).story(props =>   
-    "A custom CTD Adjacency Matrix is being created!"
+    "A custom CTD Adjacency JSON File is being created!"
   ).build()
 
 export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precalculations_Combined')
@@ -132,12 +132,16 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     let ctdAdjacencyFile = props.inputs.ctdAdjacencyAndExpressions.adjacency;
     const ctdAdjacencyFileReader = await fileAsStream(ctdAdjacencyFile);
 
+
+    console.log("Adjacency file: "+ctdAdjacencyFile.filename);
+    console.log("Expressions file: "+props.inputs.ctdAdjacencyAndExpressions.expressions.filename);
+
     const formData = new FormData(); 
     formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
     formData.append('customAdjacency', ctdAdjacencyFileReader, ctdAdjacencyFile.filename);
 
     const response = await getCTDPrecalculations(formData);
-    const permutationsfile = await uploadFile(await fileFromStream(response, "ctdCustomPermutations.RData"));
+    const permutationsfile = await uploadFile(await fileFromStream(response, "ctdPermutations.json"));
 
     let output = {
       'ctdPermutations':permutationsfile,

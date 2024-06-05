@@ -68,7 +68,7 @@ export async function getCTDAdjacency(formData: FormData): Promise<Readable> {
 
 export async function getCTDPrecalculations(formData: FormData): Promise<Readable> {
   const { default: axios } = await import('axios')
-  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd//ctd/getCustomPermutations`, formData, {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/getCustomPermutations`, formData, {
     headers: { ...formData.getHeaders() },
     responseType: 'stream',
   });

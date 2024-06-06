@@ -237,6 +237,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         })
       }
       if (!message.id) {
+        if (head) head = await fpprg.upsertFPL(head)
         const pwb_thread_message = await db.objects.thread_message.create({
           data: {
             thread: pwb_thread.id,
@@ -248,8 +249,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         Object.assign(message, { id: pwb_thread_message.id, fpl: pwb_thread_message.fpl })
       }
     }
-    const fpl = head ? await fpprg.upsertFPL(head) : null
-    return { messages: newMessages, fpl: fpl?.id ?? null }
+    return { messages: newMessages, fpl: head?.id ?? null }
   })
   .build()
 

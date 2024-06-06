@@ -159,7 +159,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                   })}
                 </div>
                 {messages?.map((message, i) => {
-                  const head = 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
+                  const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
                   return (
                     <React.Fragment key={i}>
                       {head ?

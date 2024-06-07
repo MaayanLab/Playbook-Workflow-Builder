@@ -35,43 +35,46 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     let sourcesList = AlleleRegistryExternalSourcesList ?? [];
 
     return (
-      <Table
-        height={500}
-        cellRendererDependencies={[sourcesList]}
-        numRows={sourcesList.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(sourcesList)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-      >
-        <Column
-          name="Data Base Name"
-          cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
-        />
-        <Column
-          name="Variant Id"
-          cellRenderer={row =>
-          <Cell  key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                  {sourcesList[row].sources.map(sources =>
-                      <tr><td>{ sources.id }</td></tr>
-                  )}
-              </table>
-          </Cell>}
-        />
-        <Column
-          name="Link"
-          cellRenderer={row =>
-          <Cell  key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
+      <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
+        <Table
+          height={500}
+          cellRendererDependencies={[sourcesList]}
+          numRows={sourcesList.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(sourcesList)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+        >
+          <Column
+            name="Database Name"
+            cellRenderer={row => <Cell key={row+''}>{sourcesList[row].name}</Cell>}
+          />
+          <Column
+            name="Variant id"
+            cellRenderer={row =>
+            <Cell  key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {sourcesList[row].sources.map(sources =>
-                        <tr><td><a target="_blank" href={`${sources['@id']}`}>Link</a></td></tr>
+                        <tr><td>{ sources.id }</td></tr>
                     )}
-              </table>
-          </Cell>}
-        />
-      </Table>
+                </table>
+            </Cell>}
+          />
+          <Column
+            name="Source link"
+            cellRenderer={row =>
+            <Cell  key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                      {sourcesList[row].sources.map(sources =>
+                          <tr><td><a target="_blank" href={`${sources['@id']}`}>Source link</a></td></tr>
+                      )}
+                </table>
+            </Cell>}
+          />
+        </Table>
+      </>
     )
   })
   .build()
@@ -108,8 +111,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
   export const GetAlleleRegistryExternalRecordsForVariant = MetaNode('GetAlleleRegistryExternalRecordsForVariant')
   .meta({
-    label: 'Resolve Allele Registry External Records',
-    description: 'Get allele registry external records',
+    label: 'Retrieve alternative identifiers for variant',
+    description: 'Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant from ClinGen Allele Registry.',
   })
   .inputs({ variant: VariantTerm  })
   .output(AlleleRegistryExternalRecordsTable)
@@ -140,56 +143,58 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .codec(AlleleRegistryExternalSourcesSetInfoC)
   .view( externalRecordsSet => {
-    //let externalRecords = externalRecordsSet;
     return ( 
-      <Table
-      height={500}
-      cellRendererDependencies={[externalRecordsSet]}
-      numRows={externalRecordsSet.length}
-      enableGhostCells
-      enableFocusedCell
-      downloads={{
-        JSON: () => downloadBlob(new Blob([JSON.stringify(externalRecordsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
-      }}
-      >
-        <Column
-          name="Variant CAID"
-          cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
-        />
-        <Column
-          name="External Resource Name"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                    <tr><td>{ externalRecord.name}</td></tr>
-                )}
-              </table>
-            </Cell>}
-        />
-        <Column
-          name="Resource ID"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                    <tr><td>{ externalRecord.sources[0].id}</td></tr>
-                )}
-              </table>
-            </Cell>}
-        />
-        <Column
-          name="Resource link"
-          cellRenderer={row =>
-            <Cell key={row+''}>
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                {externalRecordsSet[row].externalRecords?.map(externalRecord =>
-                    <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Resource link</a></td></tr>
-                )}
-              </table>
-            </Cell>}
+      <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
+        <Table
+        height={500}
+        cellRendererDependencies={[externalRecordsSet]}
+        numRows={externalRecordsSet.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(externalRecordsSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+        }}
+        >
+          <Column
+            name="Variant CAid"
+            cellRenderer={row => <Cell key={row+''}>{externalRecordsSet[row].variantCaId}</Cell>}
           />
-      </Table>
+          <Column
+            name="Database name"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {externalRecordsSet[row].externalRecords?.map(externalRecord =>
+                      <tr><td>{ externalRecord.name}</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Variant id"
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {externalRecordsSet[row].externalRecords?.map(externalRecord =>
+                      <tr><td>{ externalRecord.sources[0].id}</td></tr>
+                  )}
+                </table>
+              </Cell>}
+          />
+          <Column
+            name="Source link "
+            cellRenderer={row =>
+              <Cell key={row+''}>
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                  {externalRecordsSet[row].externalRecords?.map(externalRecord =>
+                      <tr><td><a target="_blank" href={externalRecord.sources[0]['@id']}>Source link</a></td></tr>
+                  )}
+                </table>
+              </Cell>}
+            />
+        </Table>
+      </>
     )  
   })
   .build()
@@ -214,8 +219,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
   export const GetVariantSetExternalRecords = MetaNode('GetVariantSetExternalRecords')
   .meta({
-    label: `Get Variant Set External Records`,
-    description: "Get External Records for a given Variant Set."
+    label: `Retrieve Alternative Identifiers For Variants`,
+    description: "Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry."
   })
   .inputs({ variantset: VariantSet })
   .output(VariantSetExternalRecordsInfo)
@@ -228,5 +233,5 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
     return getExternalRecordsFromAlleleRegistry(variantSetInfo);
   }).story(props =>
-    `Get External Records for a given Variant Set.`
+    `Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
   ).build()

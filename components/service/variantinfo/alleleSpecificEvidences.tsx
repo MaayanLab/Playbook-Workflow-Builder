@@ -13,6 +13,7 @@ export const AlleleSpecificEvidenceInfoC = z.array(
       ldhId: z.string(),
       ldhIri: z.string(),
       sourceDescription: z.string(),
+      kbIri: z.string(),
       alleleSpecificityList: z.array(z.object({
         name: z.string(),
         altAlleleQuant: z.any(),
@@ -30,6 +31,8 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
   .codec(AlleleSpecificEvidenceInfoC)
   .view(alleleSpecificEvidence => {
       return (
+        <>
+          <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
           <Table
             height={500}
             cellRendererDependencies={[alleleSpecificEvidence]}
@@ -94,14 +97,63 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               }</Cell>}
             />
           </Table>
+        </>  
       )
   })
   .build()
 
+/*
+{
+          "created": "2023-05-29T23:03:49.905Z",
+          "creator": "brl_clingen",
+          "entContent": {
+            "AlleleSpecificity": {
+              "DNAme": {
+                "altAlleleQuant": "7.33e-1",
+                "refAlleleQuant": "5.74e-1",
+                "sig": 1
+              }
+            },
+            "EvidenceNames": [
+              {
+                "evidenceName": "ASM_chr2_113993073_A_G_STL011_Adult_Liver",
+                "sourceName": "Milosavljevic_Lab_Roadmap_ASM_2018-08-08"
+              }
+            ],
+            "kbIri": "https://genboree.org/ae/api/fullSet/doc/CA123456",
+            "score": 1,
+            "sourceDescription": "Adult_Liver"
+          },
+          "entId": "6c8355d0dfe176b7050a6811b637a0fe3b45683b",
+          "entType": "AlleleSpecificEvidence",
+          "ldhId": "3050485741",
+          "ldhIri": "https://ldh.genome.network/cfde/ldh/AlleleSpecificEvidence/id/3050485741",
+          "modified": "2023-05-29T23:03:49.905Z",
+          "modifier": "brl_clingen",
+          "rev": "_hmUx-s6--m"
+}
+*/
+
+
 function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     var alleleSpecificEvidence: any = [];
     for(let a in alleleSpecificEvidencesList){
-      let specificities = alleleSpecificEvidencesList[a].entContent.AlleleSpecificity;
+      let entContent = alleleSpecificEvidencesList[a].entContent;
+      if(entContent == null){
+        continue;
+      }
+
+      let kbIri = 'NA';
+      if(entContent.kbIri != null){
+        kbIri = entContent.kbIri;
+      }
+
+      let sourceDescription = 'NA';
+      if(entContent.sourceDescription != null){
+        sourceDescription = entContent.sourceDescription;
+      }
+
+      let specificities = entContent.AlleleSpecificity;
       if(specificities == null){
         continue;
       }
@@ -145,7 +197,8 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       let specificEvidence = {
         "ldhId": alleleSpecificEvidencesList[a].ldhId,
         "ldhIri": alleleSpecificEvidencesList[a].ldhIri,
-        "sourceDescription": alleleSpecificEvidencesList[a].entContent.sourceDescription,
+        "sourceDescription": sourceDescription,
+        "kbIri": kbIri,
         "alleleSpecificityList": alleleSpecificityList
       }
       alleleSpecificEvidence.push(specificEvidence)
@@ -155,7 +208,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
   
   export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpecificEvidencesForThisVariant')
     .meta({
-      label: 'Resolve Allele Specific Evidences',
+      label: 'Get Allele Specific Evidences',
       description: 'Get allele specific evidences for this variant',
     })
     .inputs({ variant: VariantTerm })
@@ -193,130 +246,134 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     )
     .view( alleleEvidncForVarSetArray => {
       return ( 
-        <Table
-        height={500}
-        cellRendererDependencies={[alleleEvidncForVarSetArray]}
-        numRows={alleleEvidncForVarSetArray.length}
-        enableGhostCells
-        enableFocusedCell
-        downloads={{
-          JSON: () => downloadBlob(new Blob([JSON.stringify(alleleEvidncForVarSetArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
-        }}
-        >
-          <Column
-            name="Variant CAID"
-            cellRenderer={row => <Cell key={row+''}>{alleleEvidncForVarSetArray[row].caid}</Cell>}
-          />
-          <Column
-            name="LDH Id"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>{ sources.ldhId }</td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Tissue Site or Cell Type"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>{ sources.sourceDescription.replace(/_/g, " ") }</td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="LDH Iri"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td><a target="_blank" href={`${sources.ldhIri}`}>evidence link</a></td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Allele Specificity Type"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.name }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Allele Specificity Ref. Count"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.refAlleleQuant }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Allele Specificity Alt. Count"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.altAlleleQuant }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-          <Column
-            name="Adjusted P-Value"
-            cellRenderer={row =>
-            <Cell key={row+''}>{
-              <table style={{borderCollapse: 'collapse', width:'100%'}}>
-              {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
-                  <tr><td>
-                    <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                        {  sources.alleleSpecificityList.map(sources =>  
-                          <tr><td>{ sources.sig }</td></tr>  
-                        )}
-                    </table>
-                  </td></tr>
-                )}
-              </table>
-            }</Cell>}
-          />
-        </Table>
+        <>  
+          <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
+          <p style={{margin:'15px 0px 15px 0px'}}>Allele specificity evidence found for x out of n variants queried.</p>
+          <Table
+          height={500}
+          cellRendererDependencies={[alleleEvidncForVarSetArray]}
+          numRows={alleleEvidncForVarSetArray.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(alleleEvidncForVarSetArray)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}
+          >
+            <Column
+              name="Variant CAid"
+              cellRenderer={row => <Cell key={row+''}>{alleleEvidncForVarSetArray[row].caid}</Cell>}
+            />
+            <Column
+              name="Tissue Site or Cell Type"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>{ sources.sourceDescription.replace(/_/g, " ") }</td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Evidence doc link"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td><a target="_blank" href={`${sources.ldhIri}`}>evidence link</a></td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Source Iri"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td><a target="_blank" href={`${sources.kbIri}`}>Source Iri link</a></td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Allele Specificity Type"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.name }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Ref. allele level"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.refAlleleQuant }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Alt. allele level"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.altAlleleQuant }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+            <Column
+              name="Adjusted P-Value"
+              cellRenderer={row =>
+              <Cell key={row+''}>{
+                <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                {alleleEvidncForVarSetArray[row].alleleSpecificEvidence.map(sources =>
+                    <tr><td>
+                      <table style={{borderCollapse: 'collapse', width:'100%'}}>
+                          {  sources.alleleSpecificityList.map(sources =>  
+                            <tr><td>{ sources.sig }</td></tr>  
+                          )}
+                      </table>
+                    </td></tr>
+                  )}
+                </table>
+              }</Cell>}
+            />
+          </Table>
+        </>
       )
     })
     .build()
 
     export const GetVariantSetAlleleSpecificEvidence = MetaNode('GetVariantSetAlleleSpecificEvidence')
     .meta({
-      label: `Get Variant Set Allele Specific Evidence`,
-      description: "Get Allele Specific Evidence form Variant Set."
+      label: `Identify Associated Allele Specific Epigenomic Signature`,
+      description: "Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data."
     })
     .inputs({ variantset: VariantSet})
     .output(AlleleSpecificEvidenceForVariantSet)
@@ -355,5 +412,5 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
   
       return variantSetAlleleSpecificEvdnc;
     }).story(props =>
-      `Get Allele Specific Evidence form Variant Set.`
+      `Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
     ).build()

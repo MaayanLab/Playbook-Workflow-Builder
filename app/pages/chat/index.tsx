@@ -37,9 +37,11 @@ export default function ChatThread() {
             <progress className={classNames('progress progress-primary', { 'hidden': !isMutating })} />
             {error ? <div className="alert alert-error">{error.toString()}</div> : null}
             <Message role="user" session={null}>
-              <div className="alert alert-warning shadow-lg block">
-                You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to use the chat.
-              </div>
+              {auth.status === 'unauthenticated' ? 
+                <div className="alert alert-warning shadow-lg block">
+                  You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to use the chat.
+                </div>
+                : null}
             </Message>
           </div>
         </div>

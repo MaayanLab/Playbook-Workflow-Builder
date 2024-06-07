@@ -138,11 +138,10 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                     className="w-32"
                     src={`${publicUrl}/PWB-logo.svg`}
                   />
-                  <div className="prose"><h1>How can I help you today?</h1></div>
+                  <div className="prose"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
                 </div>
                 <Message role="welcome" session={session}>
-                  I'm an AI-powered chat assistant interface designed to help you access the functionality of the playbook workflow builder.
-                  Please start by asking your question of interest, and I'll try my best to help you answer it through the construction of a playbook workflow.
+                  How can I help you today?
                 </Message>
                 <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center prose overflow-hidden">
                   {[

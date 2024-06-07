@@ -16,12 +16,13 @@ import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
-import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
+import { close_icon, extend_icon, fullscreen_icon, func_icon, maximize_icon, minimize_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
 import Link from 'next/link'
 
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
+const Icon = dynamic(() => import('@/app/components/icon'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
 export default function Page({ thread_id, session_id, embedded = false }: { thread_id: string, session_id?: string, embedded?: boolean }) {
@@ -124,15 +125,25 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
             </>
             : null}
           <div className={classNames('flex flex-col', {"absolute top-0 left-1/2 w-1/2 z-30 h-screen max-h-screen mb-5 mr-5 pr-10 bg-transparent justify-end overflow-hidden pointer-events-none": embedded})}>
-            <div className={classNames('flex flex-col bg-white p-2', { 'border rounded-xl border-black mt-48 pointer-events-auto overflow-hidden': embedded})}>
-              <div className={classNames('flex-grow flex flex-row my-1', {'hidden': !embedded})}>
-                <div className="prose">Text to Workflow</div>
+            <div className={classNames('flex flex-col p-2 bg-white', { 'border rounded-xl border-black mt-48 pointer-events-auto overflow-hidden': embedded})}>
+              <div className={classNames('flex-grow flex flex-row my-1 gap-2 bg-white px-2 mb-2', {'hidden': !embedded})}>
+                <div className="prose"><h3>Text to Workflow</h3></div>
                 <div className="flex-grow">&nbsp;</div>
-                <div className="btn btn-sm" onClick={() => {setCollapse(c => !c)}}>{collapse ? <>&#x2795;</> : <>&#x1F5D5;</>}</div>
-                <Link href={`/chat/${thread_id}`}><div className="btn btn-sm">&#128470;</div></Link>
-                <Link href={`/report/${fpl}`} shallow><div className="btn btn-sm bg-red-500">X</div></Link>
+                <button onClick={() => {setCollapse(c => !c)}}>
+                  <Icon icon={collapse ? maximize_icon : minimize_icon} className="fill-black dark:fill-white" />
+                </button>
+                <Link href={`/chat/${thread_id}`}>
+                  <button>
+                    <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
+                  </button>
+                </Link>
+                <Link href={`/report/${fpl}`} shallow>
+                  <button className="bg-red-500">
+                    <Icon icon={close_icon} className="fill-black dark:fill-white" />
+                  </button>
+                </Link>
               </div>
-              <div className={classNames('flex-grow flex flex-col overflow-hidden overflow-y-auto', {'hidden': collapse})}>
+              <div className={classNames('flex-grow flex flex-col overflow-hidden overflow-y-auto', {'hidden': collapse, 'bg-yellow-50': embedded})}>
                 <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
                   <img
                     className="w-32"
@@ -143,7 +154,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                 <Message role="welcome" session={session}>
                   How can I help you today?
                 </Message>
-                <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center prose overflow-hidden">
+                <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
                   {[
                     'Show me the expression of ACE2 in healthy human tissues from GTEx',
                     'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
@@ -151,7 +162,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                     return (
                       <button
                         key={i}
-                        className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm"
+                        className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
                         onClick={evt => {submit({ message: suggestion })}}
                       >{suggestion}</button>
                     )
@@ -189,7 +200,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                             return (
                               <div key={suggestion.id} className="tooltip" data-tip={suggestionNode.meta.description}>
                                 <button
-                                  className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm"
+                                  className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
                                   onClick={evt => {submit({ step: suggestion })}}
                                 >{suggestionNode.meta.label}</button>
                               </div>

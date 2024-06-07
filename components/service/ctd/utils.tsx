@@ -10,13 +10,12 @@ export const CTD_DataSetC = z.object({
     url: z.string(),
     filename: z.string(),
   }),
-  ctdMatrix: z.object({
+  expressions: z.object({
     url: z.string(),
     filename: z.string(),
   }),
   geneSet: z.array(z.string())
 });
-
 
 export const CTD_DataSet = MetaNode('CTD_DataSet')
 .meta({
@@ -28,7 +27,7 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
 .view(props => {
   return (
     <>
-      <p><b>CTD Permutations</b></p>
+      <p><b>CTD Permutations</b> (JSON)</p>
       <Table
       cellRendererDependencies={[1]}
       numRows={1}
@@ -46,18 +45,18 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
       />
       </Table>
 
-      <p><b>CTD Matrix</b> (You can dowload this file in the "CTD Adjacency Matrix" output card)</p>
+      <p><b>Gene Expressions</b> (CSV)</p>
       <Table
       cellRendererDependencies={[1]}
       numRows={1}
       >
       <Column
         name="Filename"
-        cellRenderer={row => <Cell key={row+''}>{props.ctdMatrix.filename}</Cell>}
+        cellRenderer={row => <Cell key={row+''}>{props.expressions.filename}</Cell>}
       />
       <Column
         name="URL"
-        cellRenderer={row => <Cell key={row+''}>{props.ctdMatrix.url}</Cell>}
+        cellRenderer={row => <Cell key={row+''}>{props.expressions.url}</Cell>}
       />
       </Table>
 
@@ -68,36 +67,60 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
 })
 .build()
 
-export const AdjacencyMatrix = MetaNode('AdjacencyMatrix')
+export const CTDAdjacencyAndExpressions = MetaNode('CTDAdjacencyAndExpressions')
 .meta({
-  label: 'CTD Adjacency Matrix',
-  description: 'An Adjacency matrix file',
+  label: 'CTD Adjacency and Expression file',
+  description: 'An Adjacency JSON file and Expression CSV file.',
   icon: [datafile_icon],
 })
 .codec(
   z.object({
-    url: z.string(),
-    filename: z.string(),
+    adjacency: z.object({
+      url: z.string(),
+      filename: z.string(),
+    }),
+    expressions: z.object({
+      url: z.string(),
+      filename: z.string(),
+    })
   })
 )
 .view(props => {
   return (
     <>
-      <p><b>Adjacency Matrix</b></p>
+      <p><b>Adjacency JSON file</b></p>
       <Table
       cellRendererDependencies={[1]}
       numRows={1}
       downloads={{
-        'URL': () => downloadUrl(props.url, props.filename)
+        'URL': () => downloadUrl(props.adjacency.url, props.adjacency.filename)
       }}
       >
       <Column
         name="Filename"
-        cellRenderer={row => <Cell key={row+''}>{props.filename}</Cell>}
+        cellRenderer={row => <Cell key={row+''}>{props.adjacency.filename}</Cell>}
       />
       <Column
         name="URL"
-        cellRenderer={row => <Cell key={row+''}>{props.url}</Cell>}
+        cellRenderer={row => <Cell key={row+''}>{props.adjacency.url}</Cell>}
+      />
+      </Table>
+
+      <p><b>Expressions CSV file</b></p>
+      <Table
+      cellRendererDependencies={[1]}
+      numRows={1}
+      downloads={{
+        'URL': () => downloadUrl(props.expressions.url, props.expressions.filename)
+      }}
+      >
+      <Column
+        name="Filename"
+        cellRenderer={row => <Cell key={row+''}>{props.expressions.filename}</Cell>}
+      />
+      <Column
+        name="URL"
+        cellRenderer={row => <Cell key={row+''}>{props.expressions.url}</Cell>}
       />
       </Table>
     </>

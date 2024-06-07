@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { FileURL } from '@/components/core/file'
-import {AdjacencyMatrix, CTD_DataSet} from './utils'
+import {CTDAdjacencyAndExpressions, CTD_DataSet} from './utils'
 import { GeneSet } from '@/components/core/set'
 import { z } from 'zod'
 import { file_transfer_icon, datafile_icon, ctd_icon } from '@/icons'
@@ -56,9 +56,19 @@ export async function getCTDFileResponse(formData: FormData): Promise<CTDRespons
   return res.data
 }
 
-export async function getCTDPrecalculationsResponse(formData: FormData): Promise<Readable> {
+export async function getCTDAdjacency(formData: FormData): Promise<Readable> {
   const { default: axios } = await import('axios')
-  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/getCtdCustomMatrix`, formData, {
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/createCustomMatrix`, formData, {
+    headers: { ...formData.getHeaders() },
+    responseType: 'stream'
+  });
+  if (res.status !== 200) throw new Error(await res.data.read())
+  return res.data
+}
+
+export async function getCTDPrecalculations(formData: FormData): Promise<Readable> {
+  const { default: axios } = await import('axios')
+  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/getCustomPermutations`, formData, {
     headers: { ...formData.getHeaders() },
     responseType: 'stream',
   });
@@ -66,7 +76,7 @@ export async function getCTDPrecalculationsResponse(formData: FormData): Promise
   return res.data
 }
 
-export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResponse> {
+export async function getCTDCustomResponse(formData: FormData): Promise<CTDResponse> {
   const { default: axios } = await import('axios')
   const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/useCustomMatrix`, formData, {
     headers: { ...formData.getHeaders() },
@@ -75,19 +85,10 @@ export async function getCTDUseCustomMatrix(formData: FormData): Promise<CTDResp
   return res.data
 }
 
-export async function getCustomMatrixFromExpressions(formData: FormData): Promise<Readable> {
-  const { default: axios } = await import('axios')
-  const res = await axios.post(`http://genboree.org/pb-ctd/rest/playbook_ctd/ctd/createCustomMatrix`, formData, {
-    headers: { ...formData.getHeaders() },
-    responseType: 'stream'
-  });
-  return res.data
-}
-
   export const CTD_CreateACustomMatrix = MetaNode('CTD_CreateACustomMatrix')
   .meta({
-    label: `CTD - Create a Custom Adjacency Matrix`,
-    description: "Create a Custom Adjacency Matrix Using a Gene Expressions File.",
+    label: `CTD - Create a Custom Adjacency File`,
+    description: "Create a Custom Adjacency JSON File Using a Gene Expressions File.",
     tags: {
       Type: {
         CTD: 1
@@ -96,7 +97,7 @@ export async function getCustomMatrixFromExpressions(formData: FormData): Promis
     icon: [ctd_icon]
   })
   .inputs({geneExpressions: GeneCountMatrix})
-  .output(AdjacencyMatrix)
+  .output(CTDAdjacencyAndExpressions)
   .resolve(async (props) => {
     const fileReader = pythonStream('components.service.ctd.csv_read_stream', {
       kargs: [props.inputs.geneExpressions],
@@ -106,11 +107,16 @@ export async function getCustomMatrixFromExpressions(formData: FormData): Promis
     const formData = new FormData();
     formData.append('csvExpressionsFile', fileReader, props.inputs.geneExpressions.filename);
 
-    const response = await getCustomMatrixFromExpressions(formData);
-    const file = await uploadFile(await fileFromStream(response, 'ctdCustomMatrix.csv')); //`derived.${"customMatrix.csv"}`
-    return file;
+    const response = await getCTDAdjacency(formData);
+    const adjacencyFile = await uploadFile(await fileFromStream(response, 'ctdCustomAdjacency.json'));
+    
+    let output = {
+      'adjacency':adjacencyFile,
+      'expressions': props.inputs.geneExpressions
+    }
+    return output;
   }).story(props =>   
-    "A custom CTD Adjacency Matrix is being created!"
+    "A custom CTD Adjacency JSON File is being created!"
   ).build()
 
 export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precalculations_Combined')
@@ -119,23 +125,27 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
     icon: [ctd_icon]
   })
-  .inputs({ geneSet: GeneSet, ajdMatrix: AdjacencyMatrix})
+  .inputs({ geneSet: GeneSet, ctdAdjacencyAndExpressions: CTDAdjacencyAndExpressions})
   .output(CTD_DataSet)
   .resolve(async (props) => {
     let geneNamesList = props.inputs.geneSet.set;
-    let adjMatrixFile = props.inputs.ajdMatrix;
-    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
+    let ctdAdjacencyFile = props.inputs.ctdAdjacencyAndExpressions.adjacency;
+    const ctdAdjacencyFileReader = await fileAsStream(ctdAdjacencyFile);
+
+
+    console.log("Adjacency file: "+ctdAdjacencyFile.filename);
+    console.log("Expressions file: "+props.inputs.ctdAdjacencyAndExpressions.expressions.filename);
 
     const formData = new FormData(); 
     formData.append('geneList', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' })
-    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
+    formData.append('customAdjacency', ctdAdjacencyFileReader, ctdAdjacencyFile.filename);
 
-    const response = await getCTDPrecalculationsResponse(formData);
-    const permutationsfile = await uploadFile(await fileFromStream(response, "ctdCustomPermutations.RData"));
+    const response = await getCTDPrecalculations(formData);
+    const permutationsfile = await uploadFile(await fileFromStream(response, "ctdPermutations.json"));
 
     let output = {
       'ctdPermutations':permutationsfile,
-      'ctdMatrix': adjMatrixFile,
+      'expressions': props.inputs.ctdAdjacencyAndExpressions.expressions,
       'geneSet': geneNamesList
     }
     return output;
@@ -191,17 +201,17 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
   .output(CTDResponseInfo)
   .resolve(async (props) => {
     let geneNamesList = props.inputs.ctdDataSet.geneSet;
-    let adjMatrixFile = props.inputs.ctdDataSet.ctdMatrix;
+    let expressionsFile = props.inputs.ctdDataSet.expressions;
     let permutationsFile = props.inputs.ctdDataSet.ctdPermutations;
 
-    const adjMatrixFileReader = await fileAsStream(adjMatrixFile);
+    const expressionsFileReader = await fileAsStream(expressionsFile);
     const permutationsFileReader = await fileAsStream(permutationsFile);
     const formData = new FormData();
     formData.append('csvGenesFile', geneNamesList.join('\n'), { filename: 'geneSetTempFile.csv', contentType: 'text/plain' });
-    formData.append('customMatrix', adjMatrixFileReader, adjMatrixFile.filename);
-    formData.append('customRData', permutationsFileReader, permutationsFile.filename);
+    formData.append('csvExpressionsFile', expressionsFileReader, expressionsFile.filename);
+    formData.append('jsonPermutationsFile', permutationsFileReader, permutationsFile.filename);
 
-    let response = await getCTDUseCustomMatrix(formData);
+    let response = await getCTDCustomResponse(formData);
     if(response != null && response.report != null && response.report.type == 'error'){
       throw new Error(response.report.message);
     }

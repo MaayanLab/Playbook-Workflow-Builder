@@ -32,6 +32,7 @@ export function useWaypoints() {
 
 export function Waypoints(props: React.PropsWithChildren<{ className?: string }>) {
   const ref = React.useRef<HTMLDivElement>(null)
+  const first = React.useRef(true)
   const [waypointRefs, setWaypointRefs] = React.useState(Map<string, HTMLDivElement>())
   const [waypoints, setWaypoints] = React.useState(Map<string, { scrollMarginTop: string, active: boolean }>())
   const set = React.useCallback((id: string, setRef: HTMLDivElement) => {
@@ -68,16 +69,17 @@ export function Waypoints(props: React.PropsWithChildren<{ className?: string }>
       const waypointRef = waypointRefs.get(hash)
       if (waypointRef) {
         setTimeout(() => {
+          first.current = false
           waypointRef.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
         }, 200)
       }
     }
     window.addEventListener('hashchange', listener)
-    listener()
+    if (first.current) listener()
     return () => {
       window.removeEventListener('hashchange', listener)
     }
-  }, [ref, waypointRefs])
+  }, [ref, first, waypointRefs])
   return (
     <div ref={ref} className={props.className}>
       <WaypointsContext.Provider value={{ refs: waypointRefs, waypoints, set, del }}>

@@ -157,16 +157,18 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                 <button onClick={() => {setCollapse(c => !c)}}>
                   <Icon icon={collapse ? maximize_icon : minimize_icon} className="fill-black dark:fill-white" />
                 </button>
-                <Link href={`/chat/${thread_id}`}>
-                  <button>
-                    <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
-                  </button>
-                </Link>
-                <Link href={`/report/${fpl}`} shallow>
-                  <button className="bg-red-500">
-                    <Icon icon={close_icon} className="fill-black dark:fill-white" />
-                  </button>
-                </Link>
+                {!collapse ? <>
+                  <Link href={`/chat/${thread_id}`}>
+                    <button>
+                      <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
+                    </button>
+                  </Link>
+                  <Link href={`/report/${fpl}`} shallow>
+                    <button className="bg-red-500">
+                      <Icon icon={close_icon} className="fill-black dark:fill-white" />
+                    </button>
+                  </Link>
+                </> : null}
               </div>
               <div className={classNames('flex-grow flex flex-col overflow-hidden overflow-y-auto', {'bg-yellow-50': embedded, 'hidden': collapse })}>
                 <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>

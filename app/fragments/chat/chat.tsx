@@ -150,8 +150,8 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
             </>
             : null}
           <div className={classNames('flex flex-col', {"absolute top-0 left-1/2 w-1/2 z-30 h-screen max-h-screen mb-5 mr-5 pr-10 bg-transparent justify-end overflow-hidden pointer-events-none": embedded})}>
-            <div className={classNames('flex flex-col p-2 bg-white', { 'border rounded-xl border-black mt-48 pointer-events-auto overflow-hidden': embedded})}>
-              <div className={classNames('flex-grow flex flex-row my-1 gap-2 bg-white px-2 mb-2', {'hidden': !embedded})}>
+            <div className={classNames('flex flex-col px-2 bg-white dark:bg-current', { 'border rounded-xl border-black mt-48 pointer-events-auto overflow-hidden': embedded})}>
+              <div className={classNames('flex-grow flex flex-row my-1 gap-2 bg-white dark:bg-current p-2', {'hidden': !embedded})}>
                 <div className="prose"><h3>Text to Workflow</h3></div>
                 <div className="flex-grow">&nbsp;</div>
                 <button onClick={() => {setCollapse(c => !c)}}>
@@ -168,7 +168,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                   </button>
                 </Link>
               </div>
-              <div className={classNames('flex-grow flex flex-col overflow-hidden overflow-y-auto', {'hidden': collapse, 'bg-yellow-50': embedded})}>
+              <div className={classNames('flex-grow flex flex-col overflow-hidden overflow-y-auto', {'bg-yellow-50': embedded, 'hidden': collapse })}>
                 <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
                   <img
                     className="w-32"

@@ -55,6 +55,7 @@ export default function SiteMap() {
             </div>
           </div>
         </div>
+        <h2 className="text-2xl font-bold mb-2 prose max-w-none">Contributors</h2>
         <Contributors />
       </main>
     </Layout>

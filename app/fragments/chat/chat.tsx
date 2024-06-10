@@ -36,12 +36,10 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
   // const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id })
   const playbookState = React.useMemo(() => messages ? AssembleState(messages, { with_value: true }) : undefined, [messages])
   const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
+    await mutate((current) => ({ messages: [...current?.messages ?? [], { id: '', role: 'user', ...body }], fpl: current?.fpl ?? null }), { revalidate: false })
     const res = await trigger({ body })
-    if (res?.fpl) {
-      router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.fpl}?thread=${thread_id}`)
-    } else {
-      await mutate((current) => ({ messages: [...current?.messages ?? [], ...res?.messages ?? []], fpl: null }))
-    }
+    await mutate((current) => ({ messages: [...(current?.messages ?? []).slice(0, -1), ...res?.messages ?? []], fpl: res?.fpl ?? null }), { revalidate: false })
+    if (res?.fpl) router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.fpl}?thread=${thread_id}`, undefined, { shallow: true, scroll: false })
   }, [trigger, session_id, thread_id])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
@@ -199,8 +197,45 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                     </div>
                     {messages?.map((message, i) => {
                       const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
+                      const chosenSuggestion = 'step' in message ? playbookState?.all_nodes[message.step.id] : undefined
+                      const chosenSuggestionNode = chosenSuggestion ? krg.getProcessNode(chosenSuggestion.name) : undefined
                       return (
                         <React.Fragment key={i}>
+                          {chosenSuggestionNode ?
+                            <Message
+                              thread_id={thread_id}
+                              message_id={message.id}
+                              role={message.role}
+                              session={session}
+                            >
+                              <div className="flex flex-col gap-2">
+                                <div className="flex flex-row items-center gap-2">
+                                  <Icon icon={chosenSuggestionNode.meta.icon || func_icon} title={chosenSuggestionNode.meta.label} className="fill-black dark:fill-white" />
+                                  {chosenSuggestionNode.meta.label}
+                                </div>
+                                {chosenSuggestion?.value ? <>Value: {chosenSuggestion.value}</> : null}
+                                <div className="ml-4">
+                                  {chosenSuggestion?.inputs ? dict.items(chosenSuggestion.inputs).map(({ key, value }) => {
+                                    const input = playbookState?.all_nodes[value.id]
+                                    if (!input) return null
+                                    const inputNode = krg.getProcessNode(input.name)
+                                    if (!inputNode) return null
+                                    return <div key={key} className="flex flex-row items-center gap-2">
+                                      <div className="flex flex-row items-center gap-2">
+                                        <Icon icon={inputNode.output.meta.icon || func_icon} title={inputNode.output.meta.label} className="fill-black dark:fill-white" />
+                                        {inputNode.output.meta.label}
+                                      </div>
+                                      From
+                                      <div className="flex flex-row items-center gap-2">
+                                        <Icon icon={inputNode.meta.icon || func_icon} title={inputNode.meta.label} className="fill-black dark:fill-white" />
+                                        {inputNode.meta.label}
+                                      </div>
+                                    </div>
+                                  }) : null}
+                                </div>
+                              </div>
+                            </Message>
+                            : null}
                           {head ?
                             <Cell
                               key={message.fpl}
@@ -252,8 +287,9 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                     className="flex flex-row items-center"
                     onSubmit={async (evt) => {
                       evt.preventDefault()
-                      await submit({ message })
+                      const currentMessage = message
                       setMessage(() => '')
+                      await submit({ message: currentMessage })
                     }}
                   >
                     <input

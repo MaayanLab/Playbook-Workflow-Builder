@@ -83,6 +83,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
         isOpen={showError}
         canEscapeKeyCancel
         canOutsideClickCancel
+        cancelButtonText="Cancel"
         onCancel={() => {setShowError(false)}}
         onConfirm={() => {setShowError(false)}}
       >{error ? (error as ResponseCodedError).message === 'ORCID Required' ? <>This feature requires your account to be linked with ORCID</>

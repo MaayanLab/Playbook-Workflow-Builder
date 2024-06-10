@@ -1,3 +1,5 @@
+import React from 'react'
+
 function matchAll(str: string, re: RegExp) {
   const matches = []
   let match
@@ -14,13 +16,13 @@ export default function Linkify({ children }: { children: string }) {
       i: m.index + m[0].length,
       el: [
         ...el,
-        children.slice(i, m.index),
-        m[1] === 'doi:' ? <a href={`https://doi.org/${m[2]}`}>{m[0]}</a>
-        : m[1] === 'http://' ? <a href={m[0]}>{m[0]}</a>
-        : m[1] === 'https://' ? <a href={m[0]}>{m[0]}</a>
-        : m[0],
+        <React.Fragment key={i}>{children.slice(i, m.index)}</React.Fragment>,
+        m[1] === 'doi:' ? <a key={i+m.index} href={`https://doi.org/${m[2]}`}>{m[0]}</a>
+        : m[1] === 'http://' ? <a key={i+m.index} href={m[0]}>{m[0]}</a>
+        : m[1] === 'https://' ? <a key={i+m.index} href={m[0]}>{m[0]}</a>
+        : <React.Fragment key={i+m.index}>{m[0]}</React.Fragment>,
       ]
     }) : { i, el }, { i: 0, el: [] as React.ReactNode[] })
-  el.push(children.slice(i))
+  el.push(<React.Fragment key={i}>{children.slice(i)}</React.Fragment>)
   return el
 }

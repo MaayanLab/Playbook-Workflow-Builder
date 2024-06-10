@@ -4,7 +4,9 @@ import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { z_maybe_array } from '@/utils/zod'
-import { VariantInfoFromVariantTermMyVarintInfo } from '../service/variantinfo'
+import { resolveVariantCaID, getMyVarintInfoLink, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from '@/components/service/variantinfo/variantUtils'
+import { getAlleleRegistryVariantInfo } from '@/components/service/variantinfo/variantInfoSources/alleleRegistryVariantInfo'
+import { getVariantInfoFromMyVariantInfo } from '@/components/service/variantinfo/variantInfoSources/myVariantInfo'
 
 export const MyVariantInfoC = z.object({
   _id: z.string(),
@@ -45,7 +47,7 @@ async function myvariantinfo(variantId: string): Promise<MyVariantInfo> {
 
 export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
   .meta({
-    label: 'Identify Closest Gene to Variant',
+    label: 'Identify Closest Gene to Variant (Legacy)',
     description: 'Identify the closest gene to this variant',
     icon: [mygeneinfo_icon],
     hidden: true,
@@ -78,14 +80,34 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   ))
   .build()
 
-export const MyVariantInfoFromVariantTerm = MetaNode('MyVariantInfoFromVariantTerm')
+  export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromVariantTermMyVarintInfo')
   .meta({
-    ...VariantInfoFromVariantTermMyVarintInfo.meta,
-    hidden: true,
+    label: 'Resolve Variant Info from Term (MyVarintInfo)',
+    description: 'Resolve variant info from variant term using the MyVarintInfo API.',
   })
-  .inputs(VariantInfoFromVariantTermMyVarintInfo.inputs)
-  .output(VariantInfoFromVariantTermMyVarintInfo.output)
-  .resolve(VariantInfoFromVariantTermMyVarintInfo.resolve)
-  .story(VariantInfoFromVariantTermMyVarintInfo.story)
+  .inputs({ variant: VariantTerm })
+  .output(MyVariantInfo)
+  .resolve(async (props) => {
+    var varCaId = await resolveVariantCaID(props.inputs.variant);
+    if(varCaId == null || varCaId == ''){
+      throw new Error(variantIdResolveErrorMessage);
+    }
+
+    const alleleRegResponse = await getAlleleRegistryVariantInfo(varCaId);
+    if(alleleRegResponse == null){
+      throw new Error(alleleRegRespErrorMessage);
+    }
+
+    let myVariantInfoURL = getMyVarintInfoLink(alleleRegResponse);
+
+    if(myVariantInfoURL != null){
+      return await getVariantInfoFromMyVariantInfo(myVariantInfoURL);
+    }else{
+      throw new Error("Unable to find requested data, missing MyVarintInfo API link in External resources!");
+    }
+  })
+  .story(props => ({}))
   .build()
+
+
 

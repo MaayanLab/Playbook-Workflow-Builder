@@ -113,7 +113,9 @@ export const TopKScoredT = [
       }
       return props.data
     })
-    .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
+    .story(props => ({
+      abstract: props.output ? `${props.output} was chosen for further investigation.` : undefined,
+    }))
     .build()
 ])
 
@@ -140,9 +142,9 @@ export const SelectScoredT = [
       scored.sort((a, b) => +b.zscore - +a.zscore)
       return scored
     })
-    .story(props =>
-      `Up ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`
-    )
+    .story(props => ({
+      abstract: `Up ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`,
+    }))
     .build(),
   MetaNode(`SelectFromScored[${ScoredT.spec}, down]`)
     .meta({
@@ -158,9 +160,9 @@ export const SelectScoredT = [
       scored.sort((a, b) => +b.zscore - +a.zscore)
       return scored
     })
-    .story(props =>
-      `Down ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`
-    )
+    .story(props => ({
+      abstract: `Down ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`,
+    }))
     .build(),
 ])
 
@@ -181,9 +183,9 @@ export const SetFromScoredT = [
     .inputs({ scored: ScoredT })
     .output(SetT)
     .resolve(async (props) => ({ set: props.inputs.scored.map(({ term }) => term) }))
-    .story(props =>
-      `A set was constructed using the ${ScoredT.meta.label.toLocaleLowerCase()}.`
-    )
+    .story(props => ({
+      abstract: `A set was constructed using the ${ScoredT.meta.label.toLocaleLowerCase()}.`,
+    }))
     .build(),
   MetaNode(`OneSetT[${SetT.spec}]`)
     .meta({
@@ -232,7 +234,9 @@ export const SetFromScoredT = [
       }
       return props.data
     })
-    .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
+    .story(props => ({
+      abstract: props.output ? `${props.output} was chosen for further investigation.` : undefined,
+    }))
     .build(),
   MetaNode(`SomeSetT[${SetT.spec}]`)
     .meta({
@@ -297,7 +301,9 @@ export const SetFromScoredT = [
         set: props.inputs.set.set.filter((item) => !props.data[item]),
       }
     })
-    .story(props => props.output ? `Some genes were selected for further investigation.` : '')
+    .story(props =>  ({
+      abstract: props.output ? `Some genes were selected for further investigation.` : undefined,
+    }))
     .build(),
 ])
 
@@ -455,6 +461,8 @@ export const TopKRankedT = [
       }
       return props.data
     })
-    .story(props => props.output ? `${props.output} was chosen for further investigation.` : '')
+    .story(props => ({
+      abstract: props.output ? `${props.output} was chosen for further investigation.` : undefined,
+    }))
     .build()
 ])

@@ -232,6 +232,6 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     }
 
     return getExternalRecordsFromAlleleRegistry(variantSetInfo);
-  }).story(props =>
-    `Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
-  ).build()
+  }).story(props => ({
+    abstract: `Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
+  })).build()

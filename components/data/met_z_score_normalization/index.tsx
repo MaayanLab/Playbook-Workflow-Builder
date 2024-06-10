@@ -18,7 +18,7 @@ export const ZScoreNormalizeMetaboliteCountMatrix = MetaNode('ZScoreNormalizeMet
     { kargs: [props.inputs.matrix]  },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The metabolite count matrix was then Z-score normalized.`
-  )
+  .story(props => ({
+    abstract: `The metabolite count matrix was then Z-score normalized.`,
+  }))
   .build()

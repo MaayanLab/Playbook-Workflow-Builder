@@ -43,9 +43,9 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
           "contents": data}
     return retobj;
   })
-  .story(props =>
-    `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
-  )
+  .story(props => ({
+    abstract: `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
+  }))
   .build()
 
 export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
@@ -92,9 +92,9 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
           "contents": data}
     return retobj;
   })
-  .story(props =>
-    `The gene set was then searched in the Metabolomics Workbench [Metabolomics Workbench, \\ref{https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
-  )
+  .story(props => ({
+    abstract: `The gene set was then searched in the Metabolomics Workbench [Metabolomics Workbench, \\ref{https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
+  }))
   .build()
 
 // Mano: Added 2023/06/28
@@ -130,9 +130,9 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     MetArr = array.unique(MetArr);
     return {"description": "", "set": MetArr} ; // Added 2023/01/25
   })
-  .story(props =>
-    `Then, MetaboliteSet (REFMET names) is extracted from the table of MetGENE Metabolites for various genes.`
-  )
+  .story(props => ({
+    abstract: `Then, MetaboliteSet (REFMET names) is extracted from the table of MetGENE Metabolites for various genes.`
+  }))
   .build()
 
 // Mano: 2023/08/01: While keeping the original, writing a generalized/overloaded one
@@ -177,9 +177,9 @@ export const MGMetTable2MetSet_T = [
   // keep only unique metabolites
   return {"description": `Metabolites (${id})`, "set": array.unique(MetArr)} ; // Added 2023/01/25
 })
-.story(props =>
-  `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`
-)
+.story(props => ({
+  abstract: `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`
+}))
 .build()
 ) // matches map
 // The two resolver names will be: MGMetTable2MetSet_REFMET_NAME & MGMetTable2MetSet_KEGG_COMPOUND_ID

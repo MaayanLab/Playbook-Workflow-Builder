@@ -212,7 +212,7 @@ export const FileInput = MetaNode('FileInput')
   .inputs()
   .output(FileURL)
   .prompt(FilePrompt)
-  .story(props =>
-    `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`
-  )
+  .story(props => ({
+    abstract: `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`,
+  }))
   .build()

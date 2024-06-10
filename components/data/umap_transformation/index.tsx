@@ -17,7 +17,7 @@ export const UMAPBokehPlotFromGeneCountMatrix = MetaNode('UMAPBokehPlotFromGeneC
     { kargs: [props.inputs.matrix]  },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The gene count matrix was then visualized as a UMAP plot${''/* [FIGURE]*/} [\\ref{doi:10.48550/arXiv.1802.03426}].`
-  )
+  .story(props => ({
+    abstract: `The gene count matrix was then visualized as a UMAP plot${''/* [FIGURE]*/} [\\ref{doi:10.48550/arXiv.1802.03426}].`,
+  }))
   .build()

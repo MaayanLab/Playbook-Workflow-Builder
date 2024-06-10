@@ -115,9 +115,9 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
       'expressions': props.inputs.geneExpressions
     }
     return output;
-  }).story(props =>   
-    "A custom CTD Adjacency JSON File is being created!"
-  ).build()
+  }).story(props => ({
+    abstract: "A custom CTD Adjacency JSON File is being created!"
+  })).build()
 
 export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precalculations_Combined')
   .meta({
@@ -149,9 +149,9 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
       'geneSet': geneNamesList
     }
     return output;
-  }).story(props =>
-    "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
-  ).build()
+  }).story(props => ({
+    abstract: "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations."
+  })).build()
 
   export const CTDResponseInfo = MetaNode('CTDResponseInfo')
   .meta({
@@ -217,9 +217,9 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     }
    
     return response;
-  }).story(props =>   
-    "The three files where send to the CTD API for precalculations."
-  ).build()
+  }).story(props => ({
+    abstract: "The three files where send to the CTD API for precalculations."
+  })).build()
 
   export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
   .meta({
@@ -240,9 +240,9 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
       set:  highlyConnectedGenes
     };
     return geneSet;
-  }).story(props =>
-    `A list of Highly Connected Genes was obtained from the CTD output.`
-  ).build()
+  }).story(props => ({
+    abstract: `A list of Highly Connected Genes was obtained from the CTD output.`
+  })).build()
 
 export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
   .meta({
@@ -263,9 +263,9 @@ export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes
       set:  guiltyByAssociationGenes
     };
     return geneSet;
-  }).story(props =>
-    `A list of Guilty By Association Genes was obtained from the CTD output.`
-  ).build()
+  }).story(props => ({
+    abstract: `A list of Guilty By Association Genes was obtained from the CTD output.`
+  })).build()
 
 export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .meta({
@@ -331,9 +331,9 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
       edges: jsonGraph.interactions || [],
       nodes: graphNodes.map(({ name, ...rest }) => ({ ...rest, id: name || '(no name)' })),
     }
-  }).story(props =>
-    `Graph Nodes were extracted from the CTD output.`
-  ).build()
+  }).story(props => ({
+    abstract: `Graph Nodes were extracted from the CTD output.`
+  })).build()
 
   export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
   .meta({
@@ -356,9 +356,9 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     }
 
     return response;
-  }).story(props =>
-    `CTD is applied which diffuses through all nodes in STRING [\\ref{doi:10.1093/nar/gku1003}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
-  ).build()
+  }).story(props => ({
+    abstract: `CTD is applied which diffuses through all nodes in STRING [\\ref{doi:10.1093/nar/gku1003}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
+  })).build()
 
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
@@ -380,9 +380,9 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
       throw new Error(response.report.message);
     }
     return response;
-  }).story(props =>
-    `CTD is applied which diffuses through all nodes in WikiPathways [\\ref{doi:10.1093/nar/gkad960}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
-  ).build()
+  }).story(props => ({
+    abstract: `CTD is applied which diffuses through all nodes in WikiPathways [\\ref{doi:10.1093/nar/gkad960}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
+  })).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({

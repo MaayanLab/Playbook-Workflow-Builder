@@ -293,10 +293,9 @@ export const GlyGenProtein = MetaNode("GGP")
     );
     return protein_response;
   })
-  .story(
-    (props) =>
-      `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`,
-  )
+  .story((props) => ({
+    abstract: `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`,
+  }))
   .build();
 
 // Protein set protein process metanode
@@ -319,10 +318,9 @@ export const GlyGenProteinSet = MetaNode("GGPS")
     );
     return protein_response;
   })
-  .story(
-    (props) =>
-      `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`,
-  )
+  .story((props) => ({
+    abstract: `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`,
+  }))
   .build();
 
 // Glycosylation table process metanode from the protein product
@@ -345,10 +343,9 @@ export const GlycosylationInformation = MetaNode("GlycosylationInformation")
     }
     return data;
   })
-  .story(
-    (props) =>
-      "The glycosylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
-  )
+  .story((props) => ({
+    abstract: "The glycosylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
+  }))
   .build();
 
 // Phosphoprotein table process metanode from the protein product
@@ -371,8 +368,7 @@ export const PhosphorylationInformation = MetaNode("PhosphorylationInformation")
     }
     return data;
   })
-  .story(
-    (props) =>
-      "The phosphorylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
-  )
+  .story((props) => ({
+    abstract: "The phosphorylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
+  }))
   .build();

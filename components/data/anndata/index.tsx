@@ -57,9 +57,9 @@ export const AnnDataFromFile = MetaNode('AnnDataFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`
-  )
+  .story(props => ({
+    abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`,
+  }))
   .build()
 
 export const AnnDataFileUpload = MetaNode('AnnDataFileUpload')
@@ -86,9 +86,9 @@ export const AnnDataFileUpload = MetaNode('AnnDataFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `An anndata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
-  )
+  .story(props => ({
+    abstract: `An anndata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+  }))
   .build()
 
 export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFromGeneCountMatrixAndMetadataMatrix')
@@ -104,7 +104,7 @@ export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFrom
     { kargs: [props.inputs.gene_count_matrix, props.inputs.metadata_matrix] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `An AnnData file was prepared from the input data${props.inputs && props.inputs.gene_count_matrix.description ? ` containing ${props.inputs.gene_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`
-  )
+  .story(props => ({
+    abstract: `An AnnData file was prepared from the input data${props.inputs && props.inputs.gene_count_matrix.description ? ` containing ${props.inputs.gene_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`,
+  }))
   .build()

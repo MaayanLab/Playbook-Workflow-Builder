@@ -106,9 +106,9 @@ export const GMTUnion = MetaNode('GMTUnion')
   .resolve(async (props) => {
     return { set: array.unique(dict.values(props.inputs.gmt).flatMap(({ set: geneset }) => geneset)) }
   })
-  .story(props =>
-    `All the identified gene sets were combined using the union set operation.`
-  )
+  .story(props => ({
+    abstract: `All the identified gene sets were combined using the union set operation.`,
+  }))
   .build()
 
 export const GMTIntersection = MetaNode('GMTIntersection')
@@ -121,9 +121,9 @@ export const GMTIntersection = MetaNode('GMTIntersection')
   .resolve(async (props) => {
     return dict.values(props.inputs.gmt).reduce(({ set: A }, { set: B }) => ({ set: array.intersection(A, B) }))
   })
-  .story(props =>
-    `A consensus gene set was created using the set intersection operation.`
-  )
+  .story(props => ({
+    abstract: `A consensus gene set was created using the set intersection operation.`,
+  }))
   .build()
 
 export const GMTConsensus = MetaNode('GMTConsensus')
@@ -147,9 +147,9 @@ export const GMTConsensus = MetaNode('GMTConsensus')
         .map(({ key }) => key as string)
     }
   })
-  .story(props =>
-    `A consensus gene set was created by only retaining genes that appear in at least two sets.`
-  )
+  .story(props => ({
+    abstract: `A consensus gene set was created by only retaining genes that appear in at least two sets.`,
+  }))
   .build()
 
 export const GenesetsToGMT = MetaNode('GenesetsToGMT')
@@ -228,9 +228,9 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
         }))
     )
   })
-  .story(props =>
-    `The gene sets collected were combined into one gene set library.`
-  )
+  .story(props => ({
+    abstract: `The gene sets collected were combined into one gene set library.`,
+  }))
   .build()
 
 export const GMTConcatenate = MetaNode('GMTConcatenate')
@@ -243,7 +243,7 @@ export const GMTConcatenate = MetaNode('GMTConcatenate')
   .resolve(async (props) => {
     return dict.init(props.inputs.gmts.flatMap(dict.items))
   })
-  .story(props =>
-    `The identified gene sets were combined into one gene set library.`
-  )
+  .story(props => ({
+    abstract: `The identified gene sets were combined into one gene set library.`,
+  }))
   .build()

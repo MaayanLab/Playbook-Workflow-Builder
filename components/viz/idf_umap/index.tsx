@@ -19,8 +19,8 @@ export const UMAPFromXMT = [GMT, DMT].map(XMT =>
       { kargs: [props.inputs.matrix] },
       message => props.notify({ type: 'info', message }),
     ))
-    .story(props =>
-      `UMAP was applied to the inverse document frequency of the ${XMT.meta.label.toLocaleLowerCase()}.`
-    )
+    .story(props => ({
+      abstract: `UMAP was applied to the inverse document frequency of the ${XMT.meta.label.toLocaleLowerCase()}.`
+    }))
     .build()
 )

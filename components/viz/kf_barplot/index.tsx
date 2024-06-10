@@ -54,7 +54,7 @@ export const BarplotFromKfExpression =
 
         return {data, layout};
     })
-    .story(props =>
-      `To visualize the level of expression across ${TumorGeneExpression.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
-    )
+    .story(props => ({
+      abstract: `To visualize the level of expression across ${TumorGeneExpression.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
+    }))
     .build()

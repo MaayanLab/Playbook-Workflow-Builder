@@ -105,9 +105,9 @@ export const DMTUnion = MetaNode('DMTUnion')
   .resolve(async (props) => {
     return { set: array.unique(dict.values(props.inputs.dmt).flatMap(({ set: drugset }) => drugset)) }
   })
-  .story(props =>
-    `All the identified drug sets were combined using the union set operation.`
-  )
+  .story(props => ({
+    abstract: `All the identified drug sets were combined using the union set operation.`,
+  }))
   .build()
 
 export const DMTIntersection = MetaNode('DMTIntersection')
@@ -120,9 +120,9 @@ export const DMTIntersection = MetaNode('DMTIntersection')
   .resolve(async (props) => {
     return dict.values(props.inputs.dmt).reduce(({ set: A }, { set: B }) => ({ set: array.intersection(A, B) }))
   })
-  .story(props =>
-    `A consensus drug set was created using the set intersection operation.`
-  )
+  .story(props => ({
+    abstract: `A consensus drug set was created using the set intersection operation.`,
+  }))
   .build()
 
 export const DMTConsensus = MetaNode('DMTConsensus')
@@ -146,9 +146,9 @@ export const DMTConsensus = MetaNode('DMTConsensus')
         .map(({ key }) => key as string)
     }
   })
-  .story(props =>
-    `A consensus drug set was created by only retaining drugs that appear in at least two sets.`
-  )
+  .story(props => ({
+    abstract: `A consensus drug set was created by only retaining drugs that appear in at least two sets.`,
+  }))
   .build()
 
 export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
@@ -227,9 +227,9 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
         }))
     )
   })
-  .story(props =>
-    `The drug sets collected were combined into one drug set library.`
-  )
+  .story(props => ({
+    abstract: `The drug sets collected were combined into one drug set library.`,
+  }))
   .build()
 
 export const DMTConcatenate = MetaNode('DMTConcatenate')
@@ -242,7 +242,7 @@ export const DMTConcatenate = MetaNode('DMTConcatenate')
   .resolve(async (props) => {
     return dict.init(props.inputs.dmts.flatMap(dict.items))
   })
-  .story(props =>
-    `The identified drug sets were combined into one drug set library.`
-  )
+  .story(props => ({
+    abstract: `The identified drug sets were combined into one drug set library.`,
+  }))
   .build()

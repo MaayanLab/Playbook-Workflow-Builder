@@ -30,8 +30,8 @@ export const UpSetFromXMT = [GMT, DMT].map(XMT =>
     .inputs({ matrix: XMT })
     .output(UpSetPlot)
     .resolve(async (props) => props.inputs.matrix)
-    .story(props =>
-      `A UpSet plot was constructed with the ${XMT.meta.label.toLocaleLowerCase()}.`
-    )
+    .story(props => ({
+      abstract: `A UpSet plot was constructed with the ${XMT.meta.label.toLocaleLowerCase()}.`
+    }))
     .build()
 )

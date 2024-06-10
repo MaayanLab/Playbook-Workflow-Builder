@@ -18,8 +18,8 @@ export const BarChartsFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, S
       { kargs: [props.inputs.terms], kwargs: { terms: ScoredT.meta.label } },
       message => props.notify({ type: 'info', message }),
     ))
-    .story(props =>
-      `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a horizontal bar plot was created${''/* [FIGURE]*/}.`
-    )
+    .story(props => ({
+      abstract: `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a horizontal bar plot was created${''/* [FIGURE]*/}.`,
+    }))
     .build()
 )

@@ -113,8 +113,8 @@ export const Call_MetENP_on_MetSet = MetaNode('Call_MetENP_on_MetSet')
   return MetENPobj;
 //  return res;
 })
-.story(props =>
-  `For the given list of metabolites, MetENP analysis is carried out and the result (a list of output files) is displayed as a table for further exploration.`
-)
+.story(props => ({
+  abstract: `For the given list of metabolites, MetENP analysis is carried out and the result (a list of output files) is displayed as a table for further exploration.`
+}))
 .build()
 

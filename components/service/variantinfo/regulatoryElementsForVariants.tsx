@@ -120,6 +120,6 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
     }
 
     return varAndRegulatoryElem;
-  }).story(props =>
-    `Description change: Identify regulatory elements in the region of the variant.`
-  ).build()
+  }).story(props => ({
+    abstract: `Description change: Identify regulatory elements in the region of the variant.`
+  })).build()

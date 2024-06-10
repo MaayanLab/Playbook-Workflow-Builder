@@ -206,9 +206,9 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     }
     return await response.json()
   })
-  .story(props =>
-    `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr [\\ref{doi:10.1002/cpz1.90}].`
-  )
+  .story(props => ({
+    abstract: `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+  }))
   .build()
 
 const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: { shortId: string, userListId: number }) => {
@@ -258,9 +258,9 @@ backgrounds.map(bg => ({ bg, output, T }))
     .resolve(async (props) => {
       return 'empty' in props.inputs.searchResults ? [] : await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
-    .story(props =>
-      `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
-    )
+    .story(props => ({
+      abstract: `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
+    }))
     .build()
 )
 
@@ -292,9 +292,9 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .inputs({ gene: GeneTerm })
   .output(EnrichrGeneSearchResults)
   .resolve(async (props) => props.inputs.gene)
-  .story(props =>
-    `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
-  )
+  .story(props => ({
+    abstract: `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+  }))
   .build()
 
 const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
@@ -343,9 +343,9 @@ backgrounds.map(bg => ({ bg, output, T }))
     .resolve(async (props) => {
       return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
     })
-    .story(props =>
-      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
-    )
+    .story(props => ({
+      abstract: `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+    }))
     .build()
 )
 
@@ -387,9 +387,9 @@ export const EnrichrTermTSearch = [
     .inputs({ term: TermT })
     .output(EnrichrTermSearchResults)
     .resolve(async (props) => props.inputs.term)
-    .story(props =>
-      `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
-    )
+    .story(props => ({
+      abstract: `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+    }))
     .build()
 )
 
@@ -440,8 +440,8 @@ export const EnrichrTermSearchT = [
     .resolve(async (props) => {
       return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
     })
-    .story(props =>
-      `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
-    )
+    .story(props => ({
+      abstract: `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+    }))
     .build()
 )

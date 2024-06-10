@@ -229,9 +229,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     }
 
     return processHG38ExternalRecordsResponse(response);
-  }).story(props =>
-    `Get Associated Gene info for a given Variant.`
-  ).build()
+  }).story(props => ({
+    abstract: `Get Associated Gene info for a given Variant.`
+  })).build()
 
   export const GeneAssociationsSet_HG38 = MetaNode('GeneAssociationsSet_HG38')
   .meta({
@@ -416,9 +416,9 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     }
 
     return await getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo);
-  }).story(props =>
-    `Get Associated Gene info for a given set of Variant External records.`
-  ).build()
+  }).story(props => ({
+    abstract: `Get Associated Gene info for a given set of Variant External records.`
+  })).build()
 
 
   export const GetVariantSetExternalRecToGeneAssociation_HG38 = MetaNode('GetVariantSetExternalRecToGeneAssociation_HG38')
@@ -432,6 +432,6 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     let variantExternalRecordsSetInfo = props.inputs.variantSetExternalRecordsInfo;
 
     return await getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo);
-  }).story(props =>
-    `Get Associated Gene info for a given set of Variant External records.`
-  ).build()
+  }).story(props => ({
+    abstract: `Get Associated Gene info for a given set of Variant External records.`
+  })).build()

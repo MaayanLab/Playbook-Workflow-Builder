@@ -143,9 +143,9 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
       </div>
     )
   })
-  .story(props =>
-    `The workflow starts with a ${T.label.toLocaleLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`
-  )
+  .story(props => ({
+    abstract: `The workflow starts with a ${T.label.toLocaleLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`,
+  }))
   .build()
 
 export const InputGeneSet = Input_Set_T(Gene, GeneSet)
@@ -178,8 +178,8 @@ export const TermToSetT = [
     .resolve(async (props) => {
       return { set: props.inputs.terms }
     })
-    .story(props =>
-      `The specified genes were combined into a gene set.`
-    )
+    .story(props => ({
+      abstract: `The specified genes were combined into a gene set.`,
+    }))
     .build()
 )

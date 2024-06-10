@@ -264,6 +264,6 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     }
 
     return variantSetXQTLEvidnc;
-  }).story(props =>
-    "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
-  ).build()
+  }).story(props => ({
+    abstract: "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
+  })).build()

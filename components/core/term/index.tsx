@@ -138,10 +138,11 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
       </div>
     )
   })
-  .story(props =>
-    props.output ? `The workflow starts with selecting ${props.output} as the search term.`
-    : `The workflow starts with selecting a search term.`
-  )
+  .story(props => ({
+    abstract:
+      props.output ? `The workflow starts with selecting ${props.output} as the search term.`
+      : `The workflow starts with selecting a search term.`,
+  }))
   .build()
 
 export const InputDiseaseTerm = Input_Term_T(Disease, DiseaseTerm)

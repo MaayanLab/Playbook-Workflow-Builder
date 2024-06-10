@@ -55,9 +55,9 @@ export const GeneCountMatrix = MetaNode('GeneCountMatrix')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`
-  )
+  .story(props => ({
+    abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`,
+  }))
   .build()
 
 export const GeneCountMatrixFileUpload = MetaNode('GeneCountMatrixFileUpload')
@@ -84,9 +84,9 @@ export const GeneCountMatrixFileUpload = MetaNode('GeneCountMatrixFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The gene count matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
-  )
+  .story(props => ({
+    abstract: `The gene count matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+  }))
   .build()
 
 export const Transpose = MetaNode('Transpose')
@@ -102,7 +102,7 @@ export const Transpose = MetaNode('Transpose')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The gene count matrix was then transposed.`
-  )
+  .story(props => ({
+    abstract: `The gene count matrix was then transposed.`,
+  }))
   .build()

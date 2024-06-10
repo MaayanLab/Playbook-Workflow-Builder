@@ -73,7 +73,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
   .resolve(async (props) => {
     return await getGeneData(props.inputs.gene);
   })
-  .story(props =>
-    `More information about the gene was then obtained with the MyGene.info API [\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}].`
-  )
+  .story(props => ({
+    abstract: `More information about the gene was then obtained with the MyGene.info API [\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}].`
+  }))
   .build()

@@ -56,9 +56,9 @@ export const MetAnnDataFromFile = MetaNode('MetAnnDataFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an metanndata metabolite matrix.`
-  )
+  .story(props => ({
+    abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an metanndata metabolite matrix.`,
+  }))
   .build()
 
 export const MetAnnDataFileUpload = MetaNode('MetAnnDataFileUpload')
@@ -85,9 +85,9 @@ export const MetAnnDataFileUpload = MetaNode('MetAnnDataFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `A metanndata metabolite matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
-  )
+  .story(props => ({
+    abstract: `A metanndata metabolite matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+  }))
   .build()
 
 export const MetAnnDataFromMetaboliteCountMatrixAndMetadataMatrix = MetaNode('MetAnnDataFromMetaboliteCountMatrixAndMetadataMatrix')
@@ -103,7 +103,7 @@ export const MetAnnDataFromMetaboliteCountMatrixAndMetadataMatrix = MetaNode('Me
     { kargs: [props.inputs.metabolite_count_matrix, props.inputs.metadata_matrix] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `An MetAnnData file was prepared from the input data${props.inputs && props.inputs.metabolite_count_matrix.description ? ` containing ${props.inputs.metabolite_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`
-  )
+  .story(props => ({
+    abstract: `An MetAnnData file was prepared from the input data${props.inputs && props.inputs.metabolite_count_matrix.description ? ` containing ${props.inputs.metabolite_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`,
+  }))
   .build()

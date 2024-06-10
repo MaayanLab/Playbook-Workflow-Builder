@@ -129,7 +129,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
       data: props.data,
     })
   })
-  .story(props =>
-    'The samples were then labeled as either control or perturbation to allow for further analysis.'
-  )
+  .story(props => ({
+    abstract: 'The samples were then labeled as either control or perturbation to allow for further analysis.',
+  }))
   .build()

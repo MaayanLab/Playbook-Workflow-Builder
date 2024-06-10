@@ -34,9 +34,9 @@ export const GeneIDConv = MetaNode('GeneIDConv')
     //return props.inputs.gene
     return res
   })
-  .story(props =>
-    `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
-  )
+  .story(props => ({
+    abstract: `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
+  }))
   .build()
 
 // For GeneSet
@@ -68,9 +68,9 @@ export const GeneSetIDConv = MetaNode('GeneSetIDConv')
     //return props.inputs.gene
     return res
   })
-  .story(props =>
-    `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
-  )
+  .story(props => ({
+    abstract: `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
+  }))
   .build()
 
 // Process to convert ConvertedGeneID to GeneInfo
@@ -85,7 +85,7 @@ export const ConvertedGeneID2GeneInfo = MetaNode('ConvertedGeneID2GeneInfo')
   .resolve(async (props) => {
     return uniqJsonSubset(props.inputs.data)[0].SYMBOL;
   })
-  .story(props =>
-    `The official gene symbol${props.output ? ` ${props.output}` : ''} was resolved.`
-  )
+  .story(props => ({
+    abstract: `The official gene symbol${props.output ? ` ${props.output}` : ''} was resolved.`
+  }))
   .build()

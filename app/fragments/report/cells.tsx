@@ -4,36 +4,24 @@ import type KRG from '@/core/KRG'
 import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import { useAPIMutation } from '@/core/api/client'
-import { UserPlaybook, UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
+import { UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
-import { extend_icon, func_icon, start_icon, variable_icon, view_in_graph_icon } from '@/icons'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
-import Link from 'next/link'
 
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
-const Icon = dynamic(() => import('@/app/components/icon'))
 const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button'))
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
+const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
+const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
-function GraphButton({ session_id, graph_id }: { session_id?: string, graph_id: string }) {
-  const router = useRouter()
-  const disabled = router.asPath.endsWith('/graph') || router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
-  return (
-    <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${graph_id === 'start' ? `/` : `/${graph_id}`}/extend`}>
-      <button className='bp5-button bp5-minimal' disabled={disabled}>
-        <Icon icon={view_in_graph_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
-      </button>
-    </Link>
-  )
-}
-
-export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
+export default function Cells({ session_id, thread, krg, id }: { session_id?: string, thread?: string, krg: KRG, id: string }) {
   const router = useRouter()
   const { data: metapath } = useFPL(id)
   const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook: undefined }) : undefined, [metapath])
@@ -85,9 +73,10 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
   if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
+      {thread ? <Chat key={id} thread_id={thread} embedded /> : null}
       <SessionStatus session_id={session_id}>
         <StoryProvider krg={krg} metapath={data.metapath}>
-          <Waypoint id="head" className="sticky top-0 left-0 z-50 bg-white dark:bg-current w-full flex flex-row place-items-center">
+          <Waypoint id="head" className="sticky top-0 left-0 z-20 bg-white dark:bg-current w-full flex flex-row place-items-center">
             <Breadcrumbs>
               <DataBreadcrumb
                 key="start"
@@ -144,7 +133,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                 icon={extend_icon}
                 parents={[head ? `${head.id}:${head.process.id}` : `start`]}
                 onClick={() => {
-                  scrollTo(`bottom`)
+                  router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/extend`)
                 }}
               />
             </Breadcrumbs>

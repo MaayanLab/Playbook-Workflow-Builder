@@ -21,9 +21,9 @@ export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
     { kargs: [props.inputs.matrix] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The gene count matrix was then visualized as a bar plot representing library sizes.`
-  )
+  .story(props => ({
+    abstract: `The gene count matrix was then visualized as a bar plot representing library sizes.`,
+  }))
   .build()
 
 
@@ -42,9 +42,9 @@ export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
     { kargs: [props.inputs.anndata] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The AnnData file was then visualized as a bar plot representing library sizes.`
-  )
+  .story(props => ({
+    abstract: `The AnnData file was then visualized as a bar plot representing library sizes.`,
+  }))
   .build()
 
 

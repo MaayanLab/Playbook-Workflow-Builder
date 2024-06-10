@@ -20,9 +20,9 @@ export const VolcanoPlot = MetaNode('VolcanoPlot')
     { kargs: [props.inputs.sig]  },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The data in the differential expression table was then visualized as a volcano plot.`
-  )
+  .story(props => ({
+    abstract: `The data in the differential expression table was then visualized as a volcano plot.`,
+  }))
   .build()
 
 

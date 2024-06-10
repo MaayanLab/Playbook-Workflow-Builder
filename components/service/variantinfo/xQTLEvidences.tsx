@@ -8,7 +8,6 @@ import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage
 import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo, GitHubVariantInfoC } from './variantInfoSources/gitDataHubVariantInfo'
 import { xQTL_EvidenceArray } from './variantInfoSources/gitDataHubVariantInfo'
-import { title } from 'process'
 
 export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
@@ -265,6 +264,6 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     }
 
     return variantSetXQTLEvidnc;
-  }).story(props =>
-    "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
-  ).build()
+  }).story(props => ({
+    abstract: "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
+  })).build()

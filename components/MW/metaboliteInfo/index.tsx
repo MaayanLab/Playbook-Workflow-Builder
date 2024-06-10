@@ -34,9 +34,9 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
     return jsonArrayObject; // Added 2023/01/25
     //return props.inputs.input
   })
-  .story(props =>
-    `The metabolite was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extract more information about the metabolite.`
-  )
+  .story(props => ({
+    abstract: `The metabolite was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extract more information about the metabolite.`
+  }))
   .build()
 
 export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
@@ -82,7 +82,7 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     return jsonArrayObject
     //return props.inputs.input
   })
-  .story(props =>
-    `The metabolites were then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extarct more information about the metabolites.`
-  )
+  .story(props => ({
+    abstract: `The metabolites were then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extarct more information about the metabolites.`
+  }))
   .build()

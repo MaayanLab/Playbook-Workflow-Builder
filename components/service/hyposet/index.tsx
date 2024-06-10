@@ -50,9 +50,9 @@ export const SupervennFromGMT = MetaNode('SupervennFromGMT')
     })
     return await res.json()
   })
-  .story(props =>
-    `The collection of gene sets was then visualized with a Supervenn diagram${''/* [FIGURE]*/}.`
-  )
+  .story(props => ({
+    abstract: `The collection of gene sets was then visualized with a Supervenn diagram${''/* [FIGURE]*/}.`
+  }))
   .build()
 
 export const SupervennFromDMT = MetaNode('SupervennFromDMT')
@@ -80,7 +80,7 @@ export const SupervennFromDMT = MetaNode('SupervennFromDMT')
     })
     return await res.json()
   })
-  .story(props =>
-    `The collection of drug sets was then visualized with a Supervenn diagram${''/* [FIGURE]*/}.`
-  )
+  .story(props => ({
+    abstract: `The collection of drug sets was then visualized with a Supervenn diagram${''/* [FIGURE]*/}.`
+  }))
   .build()

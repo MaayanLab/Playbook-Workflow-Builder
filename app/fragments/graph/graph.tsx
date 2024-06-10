@@ -1,10 +1,9 @@
 import React from 'react'
-import { start_icon, func_icon, variable_icon, view_report_icon, Icon as IconT, extend_icon } from '@/icons'
+import { start_icon, func_icon, variable_icon, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
-import Link from 'next/link'
 import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
 
@@ -19,19 +18,8 @@ const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button'))
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
-const Icon = dynamic(() => import('@/app/components/icon'))
+const ReportButton = dynamic(() => import('@/app/fragments/graph/report-button'))
 
-function ReportButton({ session_id, graph_id }: { session_id?: string, graph_id: string }) {
-  const router = useRouter()
-  const disabled = router.asPath.endsWith('/graph') || router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
-  return (
-    <Link href={`${session_id ? `/session/${session_id}` : ''}/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}>
-      <button className='bp5-button bp5-minimal' disabled={disabled}>
-        <Icon icon={view_report_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
-      </button>
-    </Link>
-  )
-}
 
 /**
  * Find the metapath to the current head, excluding irrelevant steps

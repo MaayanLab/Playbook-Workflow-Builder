@@ -122,7 +122,7 @@ export const ChEA3TFEnrichmentAnalysis = MetaNode('ChEA3TFEnrichmentAnalysis')
     results.sort((a, b) => (+a.Rank) - (+b.Rank))
     return { ranked: results.map(({ TF }) => TF) }
   })
-  .story(props =>
-    `Transcription Factor Enrichment Analysis was performed on ${props.inputs ? props.inputs.gene_set.description : 'the gene set'} using ChEA3 [\\ref{doi:10.1093/nar/gkz446}].`
-  )
+  .story(props => ({
+    abstract: `Transcription Factor Enrichment Analysis was performed on ${props.inputs ? props.inputs.gene_set.description : 'the gene set'} using ChEA3 [\\ref{doi:10.1093/nar/gkz446}].`
+  }))
   .build()

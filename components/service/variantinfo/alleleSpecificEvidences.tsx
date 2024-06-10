@@ -379,6 +379,6 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
   
       return variantSetAlleleSpecificEvdnc;
-    }).story(props =>
-      `Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
-    ).build()
+    }).story(props => ({
+      abstract: `Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
+    })).build()

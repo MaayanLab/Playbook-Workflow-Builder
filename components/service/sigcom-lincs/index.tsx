@@ -186,9 +186,9 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })
-  .story(props =>
-    `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
-  )
+  .story(props => ({
+    abstract: `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
+  }))
   .build()
 
 export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSigComLINCSSignatureSearch[LINCS L1000 CRISPR KOs]`)
@@ -212,9 +212,9 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })
-  .story(props =>
-    `Resolved genes from the LINCS L1000 CRISPR KOs library.`
-  )
+  .story(props => ({
+    abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`
+  }))
   .build()
 
 export const SigComLINCSGeneSetResults = MetaNode(`SigComLINCSGeneSetResults`)
@@ -271,9 +271,9 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigCom
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })
-  .story(props =>
-    `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
-  )
+  .story(props => ({
+    abstract: `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
+  }))
   .build()
 
 export const ExtractSigComLINCSGeneSetSearchT_l1000_xpr = MetaNode(`ExtractSigComLINCSGeneSetSearch[LINCS L1000 CRISPR KOs]`)
@@ -296,7 +296,7 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_xpr = MetaNode(`ExtractSigCo
     signatures.sort((a, b) => b.zscore - a.zscore)
     return signatures
   })
-  .story(props =>
-    `Resolved genes from the LINCS L1000 CRISPR KOs library.`
-  )
+  .story(props => ({
+    abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`
+  }))
   .build()

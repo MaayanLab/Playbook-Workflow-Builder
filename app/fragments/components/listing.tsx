@@ -39,7 +39,7 @@ export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: 
         <tbody>
           {metanodes.map(({ metanode, type }) => {
             return (
-              <tr key={metanode.spec}>
+              <tr key={`${type}-${metanode.spec}`}>
                 <td><Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} /></td>
                 <td>{type ? type : metanodeType(metanode)}</td>
                 <th>

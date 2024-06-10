@@ -33,9 +33,9 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
     return  res
 
   })
-  .story(props =>
-    `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
-  )
+  .story(props => ({
+    abstract: `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+  }))
   .build()
 
 export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
@@ -65,7 +65,7 @@ export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
     return  res
 
   })
-  .story(props =>
-    `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
-  )
+  .story(props => ({
+    abstract: `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+  }))
   .build()

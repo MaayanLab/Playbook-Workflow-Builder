@@ -1,6 +1,6 @@
 import { PlotlyJson, PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
-import { barchart_icon } from '@/icons'
+import { barplot_icon } from '@/icons'
 import { TumorGeneExpression } from '@/components/service/kf'
 import { ScoredTissues } from '@/components/core/scored'
 
@@ -8,9 +8,9 @@ import { ScoredTissues } from '@/components/core/scored'
 export const BarplotFromKfExpression = 
   MetaNode(`BarplotFrom[${TumorGeneExpression.spec}]`)
     .meta({
-      label: `Bar plot from ${TumorGeneExpression.meta.label}`,
-      description: `Construct Bar plot with ${TumorGeneExpression.meta.label}`,
-      icon: [barchart_icon],
+      label: `Vertical bar plot from ${TumorGeneExpression.meta.label}`,
+      description: `Construct a vertical bar plot with ${TumorGeneExpression.meta.label}`,
+      icon: [barplot_icon],
     })
     .inputs({ terms: TumorGeneExpression, other_terms: ScoredTissues})
     .output(PlotlyPlot)
@@ -54,7 +54,7 @@ export const BarplotFromKfExpression =
 
         return {data, layout};
     })
-    .story(props =>
-      `To visualize the level of expression across ${TumorGeneExpression.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
-    )
+    .story(props => ({
+      abstract: `To visualize the level of expression across ${TumorGeneExpression.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
+    }))
     .build()

@@ -66,9 +66,9 @@ export function useMetapath() {
   return React.useContext(MetapathContext)
 }
 
-export function useFPL(id: string) {
+export function useFPL(id?: string) {
   const metapath = useMetapath()
-  const fpl = React.useMemo(() => metapath.fetchFPL(id), [id])
+  const fpl = React.useMemo(() => id ? metapath.fetchFPL(id) : Promise.resolve([]), [id])
   return usePromise(fpl)
 }
 

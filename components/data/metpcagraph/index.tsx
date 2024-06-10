@@ -20,9 +20,9 @@ export const MetPCAGraphWithNoMeta = MetaNode('MetPCAGraphWithoutMetadata')
     { kargs: [props.inputs.matrix] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The metabolite count matrix was then visualized as a PCA plot.`
-  )
+  .story(props => ({
+    abstract: `The metabolite count matrix was then visualized as a PCA plot.`,
+  }))
   .build()
 
 export const MetPCAGraphWithMetadata = MetaNode('MetPCAGraphWithMetadata')
@@ -38,7 +38,7 @@ export const MetPCAGraphWithMetadata = MetaNode('MetPCAGraphWithMetadata')
     { kargs: [props.inputs.anndata] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `The MetAnnData file for metabolites was then visualized as a PCA graph.`
-  )
+  .story(props => ({
+    abstract: `The MetAnnData file for metabolites was then visualized as a PCA graph.`,
+  }))
   .build()

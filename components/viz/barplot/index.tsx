@@ -2,14 +2,14 @@ import python from '@/utils/python'
 import { PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/scored'
-import { barchart_icon } from '@/icons'
+import { barplot_icon } from '@/icons'
 
 export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues].map(ScoredT =>
   MetaNode(`BarplotFrom[${ScoredT.spec}]`)
     .meta({
-      label: `Bar plot from ${ScoredT.meta.label}`,
-      description: `Construct Bar plot with ${ScoredT.meta.label}`,
-      icon: [barchart_icon],
+      label: `Vertical bar plot from ${ScoredT.meta.label}`,
+      description: `Construct a vertical bar plot with ${ScoredT.meta.label}`,
+      icon: [barplot_icon],
     })
     .inputs({ terms: ScoredT })
     .output(PlotlyPlot)
@@ -18,8 +18,8 @@ export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, Sco
       { kargs: [props.inputs.terms], kwargs: { terms: ScoredT.meta.label } },
       message => props.notify({ type: 'info', message }),
     ))
-    .story(props =>
-      `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a bar plot was created${''/* [FIGURE]*/}.`
-    )
+    .story(props => ({
+      abstract: `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a vertical bar plot was created${''/* [FIGURE]*/}.`
+    }))
     .build()
 )

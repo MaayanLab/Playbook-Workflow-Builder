@@ -108,6 +108,3 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   })
   .story(props => ({}))
   .build()
-
-
-

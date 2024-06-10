@@ -54,9 +54,9 @@ export const MetaboliteCountMatrixFromFile = MetaNode('MetaboliteCountMatrixFrom
    { kargs: [props.inputs.file] },
    message => props.notify({ type: 'info', message }),
 ))
-.story(props =>
-  `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`
-)
+.story(props => ({
+  abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`,
+}))
 .build()
 
 
@@ -84,7 +84,7 @@ export const MetaboliteCountMatrixFileUpload = MetaNode('MetaboliteCountMatrixFi
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props =>
-    `A metabolite count matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`
-  )
+  .story(props => ({
+    abstract: `A metabolite count matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+  }))
   .build()

@@ -234,9 +234,9 @@ export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
 
   return PPIobj
 })
-.story(props =>
-  `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API [\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}].`
-)
+.story(props => ({
+  abstract: `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API [\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}].`
+}))
 .build()
 
 // A unique name for your resolver is used here
@@ -258,9 +258,9 @@ export const StringDBPPI_to_GeneSet = MetaNode('StringDBPPI_to_GeneSet')
   const allnodes = GetAllNodes_from_StringDBedgeArray(props.inputs.data.edges);  
   return {"description": "", "set": allnodes} ;
 })
-.story(props =>
-  `For the Given StringDB PPI, the list of nodes (GeneSet) is generated.`
-)
+.story(props => ({
+  abstract: `For the Given StringDB PPI, the list of nodes (GeneSet) is generated.`
+}))
 .build()
 
 // A unique name for your resolver is used here
@@ -287,7 +287,7 @@ export const StringDBPPI_to_GraphPlot = MetaNode('StringDBPPI_to_GraphPlot')
 
   return GraphPlotObj;
 })
-.story(props =>
-  `For the Given StringDB PPI, the list of nodes (Gene Set) is generated.`
-)
+.story(props => ({
+  abstract: `For the Given StringDB PPI, the list of nodes (Gene Set) is generated.`
+}))
 .build()

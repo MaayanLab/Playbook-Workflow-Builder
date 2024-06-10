@@ -1,4 +1,3 @@
-import type OpenAI from 'openai'
 import { z } from 'zod'
 
 const AgentC = z.object({
@@ -57,27 +56,23 @@ function zodCodecTransform<Output = any, Def extends z.ZodTypeDef = z.ZodTypeDef
   }
 }
 
-export function GPTAssistantMessageParse(messages: OpenAI.Beta.Threads.Messages.Message[]) {
-  return messages.flatMap(msg =>
-    msg.content.flatMap(content => {
-      if (content.type === 'text') {
-        if (msg.role === 'assistant') {
-          const { data, error } = zJson.transform(zodCodecTransform(AgentC)).safeParse(content.text.value)
-          if (data) return [{ role: 'assistant' as const, ...data }]
-          else return [{ role: 'error' as const, error }]
-        } else if (msg.role === 'user') {
-          const { data, error } = zJson.transform(zodCodecTransform(UserC)).safeParse(content.text.value)
-          if (data) return [{ role: 'user' as const, ...data }]
-          else return [{ role: 'error' as const, error }]
-        }
-      }
-      return [] as Array<
-        ({ role: 'assistant' } & z.infer<typeof AgentC>)
-        | ({ role: 'user' } & z.infer<typeof UserC>)
-        | ({ role: 'error', error: any })
-      >
-    })
-  )
+export function GPTAssistantMessageParse(messages: { id: string, fpl?: string | null, role: string, content: string }[]) {
+  return messages.flatMap((msg) => {
+    if (msg.role === 'assistant') {
+      const { data, error } = zJson.transform(zodCodecTransform(AgentC)).safeParse(msg.content)
+      if (data) return [{ id: msg.id, role: 'assistant' as const, ...data }]
+      else return [{ id: msg.id, role: 'error' as const, message: error.toString() }]
+    } else if (msg.role === 'user') {
+      const { data, error } = zJson.transform(zodCodecTransform(UserC)).safeParse(msg.content)
+      if (data) return [{ id: msg.id, fpl: msg.fpl, role: 'user' as const, ...data }]
+      else return [{ id: msg.id, role: 'error' as const, message: error.toString() }]
+    }
+    return [] as Array<
+      ({ id: string, role: 'assistant' } & z.infer<typeof AgentC>)
+      | ({ id: string, fpl?: string | null, role: 'user' } & z.infer<typeof UserC>)
+      | ({ id: string, role: 'error', message: string })
+    >
+  })
 }
 
 export type AssistantParsedMessages = ReturnType<typeof GPTAssistantMessageParse>

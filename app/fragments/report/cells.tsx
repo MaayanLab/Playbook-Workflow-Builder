@@ -133,7 +133,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
                 icon={extend_icon}
                 parents={[head ? `${head.id}:${head.process.id}` : `start`]}
                 onClick={() => {
-                  scrollTo(`bottom`)
+                  router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${id}/extend`)
                 }}
               />
             </Breadcrumbs>

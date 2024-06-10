@@ -170,79 +170,83 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                   </Link>
                 </> : null}
               </div>
-              <div className={classNames('flex-grow flex flex-col overflow-hidden overflow-y-auto', {'bg-yellow-50': embedded, 'hidden': collapse })}>
-                <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
-                  <img
-                    className="w-32"
-                    src={`${publicUrl}/PWB-logo.svg`}
-                  />
-                  <div className="prose"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
-                </div>
-                <Message role="welcome" session={session}>
-                  How can I help you today?
-                </Message>
-                <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                  {[
-                    'Show me the expression of ACE2 in healthy human tissues from GTEx',
-                    'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
-                  ].map((suggestion, i) => {
-                    return (
-                      <button
-                        key={i}
-                        className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
-                        onClick={evt => {submit({ message: suggestion })}}
-                      >{suggestion}</button>
-                    )
-                  })}
-                </div>
-                {messages?.map((message, i) => {
-                  const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
-                  return (
-                    <React.Fragment key={i}>
-                      {head ?
-                        <Cell
-                          key={message.fpl}
-                          session_id={session_id}
-                          krg={krg}
-                          id={fpl ?? ''}
-                          head={head}
-                          cellMetadata={{ [head.id]: head.cell_metadata ?? { id: head.id, label: '', description: '', data_visible: true, process_visible: true } }}
-                          setCellMetadata={() => {}}
-                        />
+              <div className={classNames('flex-grow flex flex-col overflow-hidden', {'bg-yellow-50': embedded, 'hidden': collapse })}>
+                <div className='flex-grow flex flex-col-reverse overflow-y-auto overflow-x-hidden'>
+                  <div>
+                    <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
+                      <img
+                        className="w-32"
+                        src={`${publicUrl}/PWB-logo.svg`}
+                      />
+                      <div className="prose"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
+                    </div>
+                    <Message role="welcome" session={session}>
+                      How can I help you today?
+                    </Message>
+                    <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                      {[
+                        'Show me the expression of ACE2 in healthy human tissues from GTEx',
+                        'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
+                      ].map((suggestion, i) => {
+                        return (
+                          <button
+                            key={i}
+                            className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
+                            onClick={evt => {submit({ message: suggestion })}}
+                          >{suggestion}</button>
+                        )
+                      })}
+                    </div>
+                    {messages?.map((message, i) => {
+                      const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
+                      return (
+                        <React.Fragment key={i}>
+                          {head ?
+                            <Cell
+                              key={message.fpl}
+                              session_id={session_id}
+                              krg={krg}
+                              id={fpl ?? ''}
+                              head={head}
+                              cellMetadata={{ [head.id]: head.cell_metadata ?? { id: head.id, label: '', description: '', data_visible: true, process_visible: true } }}
+                              setCellMetadata={() => {}}
+                            />
+                          : null}
+                          {'message' in message ?
+                            <Message
+                              thread_id={thread_id}
+                              message_id={message.id}
+                              role={message.role}
+                              session={session}
+                            >{message.message}</Message>
+                            : null}
+                          {message.role === 'assistant' && message.suggestions.length > 1 ?
+                            <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                              {message.suggestions.map((suggestion: any) => {
+                                const suggestionProcess = playbookState?.all_nodes[suggestion.id]
+                                const suggestionNode = suggestionProcess ? krg.getProcessNode(suggestionProcess.name) : undefined
+                                if (!suggestionNode) return null
+                                return (
+                                  <div key={suggestion.id} className="tooltip" data-tip={suggestionNode.meta.description}>
+                                    <button
+                                      className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
+                                      onClick={evt => {submit({ step: suggestion })}}
+                                    >{suggestionNode.meta.label}</button>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            : null}
+                        </React.Fragment>
+                      )
+                    })}
+                    {isMutating ?
+                      <Message role="assistant" session={session}>
+                        <span className="loading loading-dots loading-lg mt-2"></span>
+                      </Message>
                       : null}
-                      {'message' in message ?
-                        <Message
-                          thread_id={thread_id}
-                          message_id={message.id}
-                          role={message.role}
-                          session={session}
-                        >{message.message}</Message>
-                        : null}
-                      {message.role === 'assistant' && message.suggestions.length > 1 ?
-                        <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                          {message.suggestions.map((suggestion: any) => {
-                            const suggestionProcess = playbookState?.all_nodes[suggestion.id]
-                            const suggestionNode = suggestionProcess ? krg.getProcessNode(suggestionProcess.name) : undefined
-                            if (!suggestionNode) return null
-                            return (
-                              <div key={suggestion.id} className="tooltip" data-tip={suggestionNode.meta.description}>
-                                <button
-                                  className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
-                                  onClick={evt => {submit({ step: suggestion })}}
-                                >{suggestionNode.meta.label}</button>
-                              </div>
-                            )
-                          })}
-                        </div>
-                        : null}
-                    </React.Fragment>
-                  )
-                })}
-                {isMutating ?
-                  <Message role="assistant" session={session}>
-                    <span className="loading loading-dots loading-lg mt-2"></span>
-                  </Message>
-                  : null}
+                  </div>
+                </div>
                 <Message role="user" session={session}>
                   <form
                     className="flex flex-row items-center"

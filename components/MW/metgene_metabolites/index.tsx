@@ -44,7 +44,7 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
     return retobj;
   })
   .story(props => ({
-    abstract: `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
+    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify associated metabolites.`
   }))
   .build()
 

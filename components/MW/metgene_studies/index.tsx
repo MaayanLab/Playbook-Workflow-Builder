@@ -35,7 +35,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     return  res
   })
   .story(props => ({
-    abstract: `${props.inputs ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant studies related to the gene.`
+    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant studies related to the gene.`
   }))
   .build()
 

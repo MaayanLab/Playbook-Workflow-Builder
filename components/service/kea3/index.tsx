@@ -123,6 +123,6 @@ export const KEA3KinaseEnrichmentAnalysis = MetaNode('KEA3KinaseEnrichmentAnalys
     return { ranked: results.map(({ TF }) => TF) }
   })
   .story(props => ({
-    abstract: `Kinase Enrichment Analysis was performed on ${props.inputs ? props.inputs.gene_set.description : 'the gene set'} using KEA3 [\\ref{doi:10.1093/nar/gkab359}].`
+    abstract: `Kinase Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using KEA3 [\\ref{doi:10.1093/nar/gkab359}].`
   }))
   .build()

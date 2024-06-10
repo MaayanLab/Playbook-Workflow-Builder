@@ -80,7 +80,7 @@ export const DrugShotTermSearchT = [
         return await drugshot_term_search({ rif: rc, term: props.inputs.term })
       })
       .story(props => ({
-        abstract: `${props.inputs ? props.inputs.term : `The ${T.label.toLowerCase()}`}-drug co-mentions on PubMed were queried with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
+        abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-drug co-mentions on PubMed were queried with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
       }))
       .build()
   ])
@@ -181,7 +181,7 @@ export const DrugShotDrugSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `${props.inputs ? props.inputs.drug : 'The drug'} was augmented with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
+      abstract: `${props.inputs?.drug ? props.inputs.drug : 'The drug'} was augmented with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
     }))
     .build(),
 ])

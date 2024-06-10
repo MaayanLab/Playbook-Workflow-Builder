@@ -36,7 +36,7 @@ export const ARCHS4TissueExpression = MetaNode('ARCHS4TissueExpression')
     return await archs4_tissue_expression({ search: props.inputs.gene })
   })
   .story(props => ({
-    abstract: `Median expression of ${props.inputs ? props.inputs.gene : 'the gene'} was obtained from ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`
+    abstract: `Median expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} was obtained from ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`
   }))
   .build()
 

@@ -120,7 +120,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
       .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
-      .story(props => ({ abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
+      .story(props => ({ abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
@@ -131,7 +131,7 @@ export const EnrichrSetTToSetT = [
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
       .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
-      .story(props => ({ abstract: `A GMT was extracted from the Enrichr results${props.inputs ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
+      .story(props => ({ abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
       .build(),
 
   ]
@@ -293,7 +293,7 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .output(EnrichrGeneSearchResults)
   .resolve(async (props) => props.inputs.gene)
   .story(props => ({
-    abstract: `Gene sets containing ${props.inputs ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+    abstract: `Gene sets containing ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
   }))
   .build()
 
@@ -388,7 +388,7 @@ export const EnrichrTermTSearch = [
     .output(EnrichrTermSearchResults)
     .resolve(async (props) => props.inputs.term)
     .story(props => ({
-      abstract: `Gene sets with set labels containing ${props.inputs ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
+      abstract: `Gene sets with set labels containing ${props.inputs?.term ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr [\\ref{doi:10.1002/cpz1.90}].`
     }))
     .build()
 )

@@ -5,9 +5,10 @@ export default function Contributors() {
 
   return (
     <div className="flex-grow flex flex-col justify-center">
-      <h2 className="text-2xl font-bold mb-2 prose max-w-none">Contributors</h2>
-      <br />
       <div className="max-w-4xl flex flex-row flex-wrap self-center justify-evenly align-middle gap-4">
+        <a href="https://cfde.cloud/" target="__blank">
+          <img className="h-20 p-2 rounded dark:bg-white" src={`${publicUrl}/logos/CFDE.png`} />
+        </a>
         <a href="https://exrna.org/" target="__blank">
           <img className="h-20 p-2 rounded dark:bg-white" src={`${publicUrl}/logos/exRNA.png`} />
         </a>

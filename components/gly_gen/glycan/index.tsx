@@ -186,7 +186,7 @@ export const GlycanInformation = MetaNode("GlycanInformation")
     return glycan_data;
   })
   .story((props) => ({
-    abstract: `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a information about ${props.inputs ? props.inputs.glycan : "the glycan"}.`,
+    abstract: `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a information about ${props.inputs?.glycan ? props.inputs.glycan : "the glycan"}.`,
   }))
   .build();
 

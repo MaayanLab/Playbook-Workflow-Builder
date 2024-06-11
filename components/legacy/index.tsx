@@ -45,7 +45,7 @@ async function myvariantinfo(variantId: string): Promise<MyVariantInfo> {
   return await req.json()
 }
 
-export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
+const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
   .meta({
     label: 'Identify Closest Gene to Variant (Legacy)',
     description: 'Identify the closest gene to this variant',
@@ -66,7 +66,7 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
   .story(props => ({ abstract: `The closest gene to the variant was found using MyVariant.info [\\ref{doi:10.1093/bioinformatics/btac017}].` }))
   .build()
 
-export const MyVariantInfo = MetaNode('MyVariantInfo')
+const MyVariantInfo = MetaNode('MyVariantInfo')
   .meta({
     label: 'Variant Information',
     description: 'A Variant resolved with MyVariantInfo',
@@ -80,7 +80,7 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   ))
   .build()
 
-  export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromVariantTermMyVarintInfo')
+  const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromVariantTermMyVarintInfo')
   .meta({
     label: 'Resolve Variant Info from Term (MyVarintInfo)',
     description: 'Resolve variant info from variant term using the MyVarintInfo API.',

@@ -67,7 +67,7 @@ export const LINCSL1000ReverseSearch = MetaNode('LINCSL1000ReverseSearch')
     return { gene: props.inputs.gene }
   })
   .story(props => ({
-    abstract: `RNA-seq-like LINCS L1000 Signatures [\\ref{doi:10.1093/nar/gkac328}] which mimick or reverse the the expression of ${props.inputs ? props.inputs.gene : 'the gene'} were visualized.`
+    abstract: `RNA-seq-like LINCS L1000 Signatures [\\ref{doi:10.1093/nar/gkac328}] which mimick or reverse the the expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were visualized.`
   }))
   .build()
 
@@ -88,7 +88,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
     return scores
   })
   .story(props => ({
-    abstract: `Drugs which up-regulate the expression of ${props.inputs ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
+    abstract: `Drugs which up-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
   }))
   .build()
 
@@ -109,7 +109,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
     return scores
   })
   .story(props => ({
-    abstract: `Drugs which down-regulate the expression of ${props.inputs ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
+    abstract: `Drugs which down-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 Chemical Perturbagens [\\ref{doi:10.1093/nar/gkac328}].`
   }))
   .build()
 
@@ -130,7 +130,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
     return scores
   })
   .story(props => ({
-    abstract: `Genes which up-regulate the expression of ${props.inputs ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
+    abstract: `Genes which up-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
   }))
   .build()
 
@@ -151,6 +151,6 @@ export const LINCSL1000ReverseSearchExtractGeneDown = MetaNode('LINCSL1000Revers
     return scores
   })
   .story(props => ({
-    abstract: `Genes which down-regulate the expression of ${props.inputs ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
+    abstract: `Genes which down-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 CRISPR Knockouts [\\ref{doi:10.1093/nar/gkac328}].`
   }))
   .build()

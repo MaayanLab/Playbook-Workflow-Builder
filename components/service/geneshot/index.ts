@@ -80,7 +80,7 @@ export const GeneshotTermSearchT = [
         return await geneshot_term_search({ rif: rc, term: props.inputs.term })
       })
       .story(props => ({
-        abstract: `${props.inputs ? props.inputs.term : `The ${T.label.toLowerCase()}`}-gene co-mentions on PubMed were queried with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
+        abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-gene co-mentions on PubMed were queried with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
       }))
       .build()
   ])
@@ -154,7 +154,7 @@ export const GeneshotGeneSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
+      abstract: `The gene set${props.inputs?.geneset?.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
     }))
     .build(),
   MetaNode(`GeneshotGeneAugmentation[${rc}]`)
@@ -189,7 +189,7 @@ export const GeneshotGeneSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `${props.inputs ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
+      abstract: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
     }))
     .build(),
 ])

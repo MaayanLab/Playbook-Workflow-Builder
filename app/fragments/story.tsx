@@ -23,10 +23,10 @@ function StoryNode({ krg, head, onChange }: { krg: KRG, head: Metapath, onChange
   const story = React.useMemo(() => {
     if (!processNode?.story) return ''
     try {
-      return processNode.story({
+      return (processNode.story({
         inputs: !inputsError ? inputs : undefined,
         output: !outputError && outputNode.spec !== 'Error' ? output : undefined,
-      }).abstract ?? '' + ' '
+      }).abstract ?? '') + ' '
     } catch (e) {
       return ''
     }

@@ -21,7 +21,7 @@ export const user_upload = Table.create('user_upload')
 
 export const user_upload_complete = View.create('user_upload_complete')
   .field('id', z_uuid(), { primaryKey: true })
-  .field('user', z_uuid())
+  .field('user', z_uuid().nullable())
   .field('url', z.string())
   .field('sha256', z.string())
   .field('size', z_bigint_codec())

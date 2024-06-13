@@ -33,7 +33,6 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
       return (
         <>
           <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
-          <p style={{margin:'15px 0px 15px 0px'}}>Allele specificity evidence found for x out of n variants queried.</p>
           <Table
             height={500}
             cellRendererDependencies={[alleleSpecificEvidence]}
@@ -206,17 +205,23 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       label: 'Allele Specific Evidence For Variant Set',
       description: ''
     })
-    .codec(
-      z.array(z.object({
-        caid: z.string(),
-        alleleSpecificEvidence: AlleleSpecificEvidenceInfoC
-      }))
+    .codec(z.object({
+        total: z.number(),
+        found: z.number(),
+        result: z.array(z.object({
+          caid: z.string(),
+          alleleSpecificEvidence: AlleleSpecificEvidenceInfoC
+        }))
+      })
     )
-    .view( alleleEvidncForVarSetArray => {
+    .view( alleleEvidncForVarSetObj => {
+
+      let alleleEvidncForVarSetArray = alleleEvidncForVarSetObj.result;
+
       return ( 
         <>  
           <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
-          <p style={{margin:'15px 0px 15px 0px'}}>Allele specificity evidence found for x out of n variants queried.</p>
+          <p style={{margin:'15px 0px 15px 0px'}}>Allele specificity evidence found for {alleleEvidncForVarSetObj.found} out of {alleleEvidncForVarSetObj.total} variants queried.</p>
           <Table
           height={500}
           cellRendererDependencies={[alleleEvidncForVarSetArray]}
@@ -353,6 +358,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
   
       let variantSetAlleleSpecificEvdnc = [];
+      let cFound: number = 0;
       for(let indx in variantSetInfo){
         let variantInfoObj = variantSetInfo[indx];
         const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
@@ -372,13 +378,19 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
         tempObj.alleleSpecificEvidence = evidenceReponse;
         
         variantSetAlleleSpecificEvdnc.push(tempObj);
+        cFound++
       }
   
       if(variantSetAlleleSpecificEvdnc.length == 0){
         throw new Error(gitDataHubErroMessage);
       }
   
-      return variantSetAlleleSpecificEvdnc;
+      let returnObj = {
+        total: variantSetInfo.length,
+        found: cFound,
+        result: variantSetAlleleSpecificEvdnc
+      }
+      return returnObj;
     }).story(props => ({
       abstract: `Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
     })).build()

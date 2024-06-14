@@ -1,5 +1,7 @@
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
+import Image from 'next/image'
+import qrcode from './qrcode.svg'
 
 const Contributors = dynamic(() => import('@/app/fragments/playbook/contributors'))
 
@@ -78,9 +80,8 @@ export default function WorkshopPage() {
                 REGISTRATION
               </div>
               <div className="card-body items-center">
-                TBA
-                {/* <Image className="m-0" src={qrcode} alt="https://mssm.zoom.us/meeting/register/tZMucuqsrTgrE9eTf_oNlz-trRd_MkEmRALJ" objectFit='cover' />
-                <a href="https://mssm.zoom.us/meeting/register/tZMucuqsrTgrE9eTf_oNlz-trRd_MkEmRALJ">Register Here</a> */}
+                <Image className="m-0" src={qrcode} alt="https://mssm.zoom.us/webinar/register/WN_nB40DQScS9y2klZ6frk8JQ" objectFit='cover' />
+                <a href="https://mssm.zoom.us/webinar/register/WN_nB40DQScS9y2klZ6frk8JQ">Register Here</a>
               </div>
             </div>
             <div className="card bg-secondary rounded-xl p-4 prose">

@@ -56,6 +56,14 @@ export default function Layout({ children }: React.PropsWithChildren) {
           </div>
         </div>
 
+        <div className="container mx-auto my-2">
+          <Link href="/events/2024-06-25">
+            <div className="alert alert-info">
+              Come join us for our Virtual Workshop on Thursday, June 25, 2024! Click here for more information.
+            </div>
+          </Link>
+        </div>
+
         {children}
 
         <div className="grid grid-flow-row md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 justify-items-center items-center text-center mb-2">

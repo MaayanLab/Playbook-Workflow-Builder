@@ -25,7 +25,7 @@ export default function WorkshopPage() {
           </div>
           <h1 className="prose text-4xl font-bold">VIRTUAL WORKSHOP 2024</h1>
           <h3 className="prose text-2xl">Learn how to build bioinformatics workflows with no technical expertise</h3>
-          <h5 className="prose"><a className="text-blue-700 no-underline" href="https://playbook-workflow-builder.cloud">playbook-workflow-builder.cloud</a></h5>
+          <h5 className="prose"><a className="text-blue-700 dark:text-blue-200 no-underline" href="https://playbook-workflow-builder.cloud">playbook-workflow-builder.cloud</a></h5>
         </div>
         <div className="flex flex-row flex-wrap justify-center mx-auto px-5 my-4 gap-4">
           <div className="flex flex-col">

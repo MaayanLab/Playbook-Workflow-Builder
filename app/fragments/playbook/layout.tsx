@@ -63,6 +63,11 @@ export default function Layout({ children }: React.PropsWithChildren) {
               Come join our 1st open virtual workshop on Thursday, June 25, 2024! Click here for more information.
             </Link>
           </DismissableAlert>
+          <DismissableAlert id="biorxv" style={{ backgroundColor: '#d4fb79' }}>
+            <Link href="https://doi.org/10.1101/2024.06.08.598037">
+              An article that describes the Playbook Workflow Builder project is now available at bioRxiv!
+            </Link>
+          </DismissableAlert>
         </div>
 
         {children}

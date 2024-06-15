@@ -7,6 +7,7 @@ import { Waypoint, Waypoints } from '@/app/components/waypoint'
 import dynamic from 'next/dynamic'
 
 const UserAvatar = dynamic(() => import('@/app/fragments/playbook/avatar'))
+const DismissableAlert = dynamic(() => import('@/app/fragments/DismissableAlert'))
 
 export default function Layout({ children }: React.PropsWithChildren) {
   const publicUrl = usePublicUrl()
@@ -56,12 +57,12 @@ export default function Layout({ children }: React.PropsWithChildren) {
           </div>
         </div>
 
-        <div className="container mx-auto my-2">
-          <Link href="/events/2024-06-25">
-            <div className="alert alert-info">
-              Come join us for our Virtual Workshop on Thursday, June 25, 2024! Click here for more information.
-            </div>
-          </Link>
+        <div className="container mx-auto my-2 flex flex-col gap-2">
+          <DismissableAlert id="workshop-2024-06-25" className="alert-info">
+            <Link href="/events/2024-06-25">
+              Come join our 1st open virtual workshop on Thursday, June 25, 2024! Click here for more information.
+            </Link>
+          </DismissableAlert>
         </div>
 
         {children}

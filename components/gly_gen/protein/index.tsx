@@ -11,6 +11,7 @@ import { ProteinSet } from "@/components/core/set";
 import {
   GlyGenProteinResponse,
   GlyGenProteinSetResponse,
+  GlyGenProteinResponseArray,
   GlycosylationData,
   PhosphorylationData,
 } from "./data_models";
@@ -23,7 +24,7 @@ import {
 } from "./sup_functions";
 import { GlycosylationTable, PhosphorylationTable } from "./sup_components";
 
-// --- Data Metanodes --- //
+// --- DATA METANODES --- //
 
 // Individual protein data metanode
 export const GlyGenProteinResponseNode = MetaNode("GlyGenProteinResponse")
@@ -275,7 +276,80 @@ export const PhosphorylationViewResponseNode = MetaNode(
   })
   .build();
 
-// --- Process Metanodes --- //
+export const SNVViewResponseNode = MetaNode("SNVViewResponseNode")
+  .meta({
+    label: "SNV Information",
+    description: "SNV Information",
+    icon: [glygen_icon],
+  })
+  .codec(GlyGenProteinResponseArray)
+  .view((data) => {
+    return (
+      <div className="prose max-w-none">
+        <table>
+          <thead>
+            <tr>
+              <th>UniProt Ac</th>
+              <th>Genomic Locus</th>
+              <th>Ref NT</th>
+              <th>Alt AT</th>
+              <th>Start Pos</th>
+              <th>End Pos</th>
+              <th>Sequence</th>
+              <th>Disease</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((protein, index) =>
+              protein.snv.map((snv, snvIndex) => (
+                <tr key={`${index}-${snvIndex}`}>
+                  <td>
+                    <a
+                      href={`https://www.glygen.org/protein/${protein.uniprot.uniprot_canonical_ac}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "blue" }}
+                    >
+                      <u style={{ color: "blue" }}>
+                        {protein.uniprot.uniprot_canonical_ac}
+                      </u>
+                    </a>
+                  </td>
+                  <td>{`Chr${snv.chr_id}:${snv.chr_pos}`}</td>
+                  <td>{snv.ref_nt}</td>
+                  <td>{snv.alt_nt}</td>
+                  <td>{snv.start_pos}</td>
+                  <td>{snv.end_pos}</td>
+                  <td>{`${snv.sequence_org} -> ${snv.sequence_mut}`}</td>
+                  <td>
+                    {snv.disease && snv.disease.length > 0
+                      ? snv.disease.map((disease, idx) => (
+                          <span key={idx}>
+                            {` ${disease.recommended_name.name}`} (
+                            <a
+                              href={`https://disease-ontology.org/term/${disease.disease_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: "blue" }}
+                            >
+                              {disease.disease_id}
+                            </a>
+                            )
+                          </span>
+                        ))
+                      : "NA"}
+                  </td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  })
+  .build();
+
+// --- PROCESS METANODES --- //
 
 // Individual protein process metanode
 export const GlyGenProtein = MetaNode("GGP")
@@ -375,4 +449,27 @@ export const PhosphorylationInformation = MetaNode("PhosphorylationInformation")
     (props) =>
       "The phosphorylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
   )
+  .build();
+
+// SNV table process metanode from the protein set
+export const SNVInformation = MetaNode("SNVInformation")
+  .meta({
+    label: "Get SNV Data for the Protein Set",
+    description: "SNV information",
+    icon: [glygen_icon],
+    pagerank: 2,
+  })
+  .inputs({ glyGenSetProteinResponse: GlyGenProteinSetResponseNode })
+  .output(SNVViewResponseNode)
+  .resolve(async (props) => {
+    const results = await Promise.all(
+      props.inputs.glyGenSetProteinResponse.map((protein) => {
+        const curr_accession = protein.uniprot.uniprot_canonical_ac;
+        return get_single_protein_data(curr_accession);
+      }),
+    );
+    console.log(results);
+    return results;
+  })
+  .story((props) => "TODO")
   .build();

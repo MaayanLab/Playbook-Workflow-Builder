@@ -25,7 +25,7 @@ export default function WorkshopPage() {
             <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
           </div>
           <h1 className="prose text-4xl font-bold">VIRTUAL WORKSHOP 2024</h1>
-          <h3 className="prose text-2xl">Learn how to build bioinformatics workflows with no technical expertise</h3>
+          <h3 className="prose text-2xl">Learn how to build bioinformatics workflows effortlessly, even if you have no technical expertise</h3>
           <h5 className="prose"><a className="text-blue-700 dark:text-blue-200 no-underline" href="https://playbook-workflow-builder.cloud">playbook-workflow-builder.cloud</a></h5>
         </div>
         <div className="flex flex-row flex-wrap justify-center mx-auto px-5 my-4 gap-4">
@@ -72,7 +72,7 @@ export default function WorkshopPage() {
               </div>
               <div className="card-body items-center text-xl">
                 Tuesday, June 25<br />
-                1:00 PM - 4:00 PM ET
+                1:00 PM - 2:00 PM ET
               </div>
             </div>
             <div className="card bg-secondary rounded-xl p-4 prose w-96">

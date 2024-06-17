@@ -58,7 +58,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
         </div>
 
         <div className="container mx-auto my-2 flex flex-col gap-2">
-          <DismissableAlert id="workshop-2024-06-25" className="alert-info">
+          <DismissableAlert id="workshop-2024-06-25-v2" className="alert-info">
             <Link href="/events/2024-06-25" className="dark:text-inherit dark:hover:text-inherit">
               Come join our 1st open virtual workshop on Thursday, June 25, 2024! Click here for more information.
             </Link>

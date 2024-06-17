@@ -102,12 +102,14 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
     const fileReader = pythonStream('components.service.ctd.csv_read_stream', {
       kargs: [props.inputs.geneExpressions],
     })
-    console.log("CTD-Matrix from gene expressions file: "+props.inputs.geneExpressions.filename.replace(/\.\w+$/g, '.csv'));
 
     const formData = new FormData();
     formData.append('csvExpressionsFile', fileReader, props.inputs.geneExpressions.filename);
 
     const response = await getCTDAdjacency(formData);
+    if(response == null){
+      throw new Error("Adjacency file is null or empty!");
+    }
     const adjacencyFile = await uploadFile(await fileFromStream(response, 'ctdCustomAdjacency.json'));
     
     let output = {
@@ -141,8 +143,11 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     formData.append('customAdjacency', ctdAdjacencyFileReader, ctdAdjacencyFile.filename);
 
     const response = await getCTDPrecalculations(formData);
+    if(response == null){
+      throw new Error("Permutations file is null or empty!");
+    }
     const permutationsfile = await uploadFile(await fileFromStream(response, "ctdPermutations.json"));
-
+    
     let output = {
       'ctdPermutations':permutationsfile,
       'expressions': props.inputs.ctdAdjacencyAndExpressions.expressions,

@@ -43,16 +43,16 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
             }}
           >
             <Column
-              name="LDH Id"
-              cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidence[row].ldhId}</Cell>}
-            />
-            <Column
               name="Tissue Site or Cell Type"
               cellRenderer={row => <Cell key={row+''}>{alleleSpecificEvidence[row].sourceDescription.replace(/_/g, " ")}</Cell>}
             />
             <Column
-              name="LDH Iri"
+              name="Evidence doc link"
               cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${alleleSpecificEvidence[row].ldhIri}`}>evidence link</a></Cell>}
+            />
+            <Column
+              name="Source Iri"
+              cellRenderer={row => <Cell key={row+''}><a target="_blank" href={`${alleleSpecificEvidence[row].kbIri}`}>Source Iri link</a></Cell>}
             />
             <Column
               name="Allele Specificity Type"
@@ -66,7 +66,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
                 </Cell>}
             />
             <Column
-              name="Allele Specificity Ref. Count"
+              name="Ref. allele level"
               cellRenderer={row =>
               <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -77,7 +77,7 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
               }</Cell>}
             />
             <Column
-              name="Allele Specificity Alt. Count"
+              name="Alt. allele level"
               cellRenderer={row => <Cell key={row+''}>{
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
                 {alleleSpecificEvidence[row].alleleSpecificityList.map(sources =>
@@ -101,39 +101,6 @@ export const AlleleSpecificEvidencesTable = MetaNode('AlleleSpecificEvidencesTab
       )
   })
   .build()
-
-/*
-{
-          "created": "2023-05-29T23:03:49.905Z",
-          "creator": "brl_clingen",
-          "entContent": {
-            "AlleleSpecificity": {
-              "DNAme": {
-                "altAlleleQuant": "7.33e-1",
-                "refAlleleQuant": "5.74e-1",
-                "sig": 1
-              }
-            },
-            "EvidenceNames": [
-              {
-                "evidenceName": "ASM_chr2_113993073_A_G_STL011_Adult_Liver",
-                "sourceName": "Milosavljevic_Lab_Roadmap_ASM_2018-08-08"
-              }
-            ],
-            "kbIri": "https://genboree.org/ae/api/fullSet/doc/CA123456",
-            "score": 1,
-            "sourceDescription": "Adult_Liver"
-          },
-          "entId": "6c8355d0dfe176b7050a6811b637a0fe3b45683b",
-          "entType": "AlleleSpecificEvidence",
-          "ldhId": "3050485741",
-          "ldhIri": "https://ldh.genome.network/cfde/ldh/AlleleSpecificEvidence/id/3050485741",
-          "modified": "2023-05-29T23:03:49.905Z",
-          "modifier": "brl_clingen",
-          "rev": "_hmUx-s6--m"
-}
-*/
-
 
 function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     var alleleSpecificEvidence: any = [];
@@ -208,8 +175,8 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
   
   export const GetAlleleSpecificEvidencesForThisVariant = MetaNode('GetAlleleSpecificEvidencesForThisVariant')
     .meta({
-      label: 'Get Allele Specific Evidences',
-      description: 'Get allele specific evidences for this variant',
+      label: 'Identify associated allele specific epigenomic signature',
+      description: 'Retrieve variant associated allele specific epigenomic signatures based on Roadmap and ENTEx data',
     })
     .inputs({ variant: VariantTerm })
     .output(AlleleSpecificEvidencesTable)
@@ -230,7 +197,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
     })
-    .story(props => ({ abstract: `Allele specific evidences for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
+    .story(props => ({ abstract: `Asociated allele specific epigenomic signatures for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
     .build()
 
     export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')
@@ -238,17 +205,23 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       label: 'Allele Specific Evidence For Variant Set',
       description: ''
     })
-    .codec(
-      z.array(z.object({
-        caid: z.string(),
-        alleleSpecificEvidence: AlleleSpecificEvidenceInfoC
-      }))
+    .codec(z.object({
+        total: z.number(),
+        found: z.number(),
+        result: z.array(z.object({
+          caid: z.string(),
+          alleleSpecificEvidence: AlleleSpecificEvidenceInfoC
+        }))
+      })
     )
-    .view( alleleEvidncForVarSetArray => {
+    .view( alleleEvidncForVarSetObj => {
+
+      let alleleEvidncForVarSetArray = alleleEvidncForVarSetObj.result;
+
       return ( 
         <>  
           <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
-          <p style={{margin:'15px 0px 15px 0px'}}>Allele specificity evidence found for x out of n variants queried.</p>
+          <p style={{margin:'15px 0px 15px 0px'}}>Allele specificity evidence found for {alleleEvidncForVarSetObj.found} out of {alleleEvidncForVarSetObj.total} variants queried.</p>
           <Table
           height={500}
           cellRendererDependencies={[alleleEvidncForVarSetArray]}
@@ -385,6 +358,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
   
       let variantSetAlleleSpecificEvdnc = [];
+      let cFound: number = 0;
       for(let indx in variantSetInfo){
         let variantInfoObj = variantSetInfo[indx];
         const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
@@ -404,13 +378,19 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
         tempObj.alleleSpecificEvidence = evidenceReponse;
         
         variantSetAlleleSpecificEvdnc.push(tempObj);
+        cFound++
       }
   
       if(variantSetAlleleSpecificEvdnc.length == 0){
         throw new Error(gitDataHubErroMessage);
       }
   
-      return variantSetAlleleSpecificEvdnc;
+      let returnObj = {
+        total: variantSetInfo.length,
+        found: cFound,
+        result: variantSetAlleleSpecificEvdnc
+      }
+      return returnObj;
     }).story(props => ({
       abstract: `Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
     })).build()

@@ -138,17 +138,22 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     label: 'xQTL Evidence For Variant Set',
     description: ''
   })
-  .codec(
-    z.array(z.object({
-      caid: z.string(),
-      xQTL_Evidence: xQTL_EvidenceArray
-    }))
+  .codec(z.object({
+      total: z.number(),
+      found: z.number(),
+      result: z.array(z.object({
+        caid: z.string(),
+        xQTL_Evidence: xQTL_EvidenceArray
+      }))
+    })
   )
-  .view( xQTLEvdVariantSet => {
+  .view( xQTLEvdVariantSetObj => {
+    let xQTLEvdVariantSet = xQTLEvdVariantSetObj.result;
+
     return (
       <>
         <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
-        <p style={{margin:'15px 0px 15px 0px'}}>xQTL evidence found for x out of n variants queried.</p>
+        <p style={{margin:'15px 0px 15px 0px'}}>xQTL evidence found for {xQTLEvdVariantSetObj.found} out of {xQTLEvdVariantSetObj.total} variants queried.</p>
         <Table
           height={500}
           cellRendererDependencies={[xQTLEvdVariantSet]}
@@ -238,6 +243,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     }
 
     let variantSetXQTLEvidnc = [];
+    let cFound: number = 0;
     for(let indx in variantSetInfo){
       let variantInfoObj = variantSetInfo[indx];
       const response = await getGitDataHubVariantInfo(variantInfoObj.entId);
@@ -257,13 +263,19 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
       tempObj.xQTL_Evidence = evidenceReponse;     
 
       variantSetXQTLEvidnc.push(tempObj);
+      cFound++;
     }
 
     if(variantSetXQTLEvidnc.length == 0){
       throw new Error(gitDataHubErroMessage);
     }
 
-    return variantSetXQTLEvidnc;
+    let returnObj = {
+      total: variantSetInfo.length,
+      found: cFound,
+      result: variantSetXQTLEvidnc
+    }
+    return returnObj;
   }).story(props => ({
     abstract: "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
   })).build()

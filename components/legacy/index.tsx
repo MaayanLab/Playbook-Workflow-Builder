@@ -84,6 +84,7 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   .meta({
     label: 'Resolve Variant Info from Term (MyVarintInfo)',
     description: 'Resolve variant info from variant term using the MyVarintInfo API.',
+    hidden: true
   })
   .inputs({ variant: VariantTerm })
   .output(MyVariantInfo)

@@ -9,6 +9,7 @@ export const CTD_DataSetC = z.object({
   ctdPermutations:z.object({
     url: z.string(),
     filename: z.string(),
+    size: z.number()
   }),
   expressions: z.object({
     url: z.string(),
@@ -42,6 +43,10 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
       <Column
         name="URL"
         cellRenderer={row => <Cell key={row+''}>{props.ctdPermutations.url}</Cell>}
+      />
+      <Column
+        name="Size"
+        cellRenderer={row => <Cell key={row+''}>{ formatBytes(props.ctdPermutations.size) }</Cell>}
       />
       </Table>
 
@@ -78,10 +83,11 @@ export const CTDAdjacencyAndExpressions = MetaNode('CTDAdjacencyAndExpressions')
     adjacency: z.object({
       url: z.string(),
       filename: z.string(),
+      size: z.number()
     }),
     expressions: z.object({
       url: z.string(),
-      filename: z.string(),
+      filename: z.string()
     })
   })
 )
@@ -103,6 +109,10 @@ export const CTDAdjacencyAndExpressions = MetaNode('CTDAdjacencyAndExpressions')
       <Column
         name="URL"
         cellRenderer={row => <Cell key={row+''}>{props.adjacency.url}</Cell>}
+      />
+      <Column
+        name="Size"
+        cellRenderer={row => <Cell key={row+''}>{ formatBytes(props.adjacency.size) }</Cell>}
       />
       </Table>
 
@@ -127,4 +137,16 @@ export const CTDAdjacencyAndExpressions = MetaNode('CTDAdjacencyAndExpressions')
   )
 })
 .build()
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return '0 Bytes';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
 

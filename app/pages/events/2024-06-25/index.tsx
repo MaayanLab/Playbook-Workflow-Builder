@@ -3,6 +3,9 @@ import Head from 'next/head'
 import Image from 'next/image'
 import qrcode from './qrcode.svg'
 import landingPageScreenShot from './LandingPageScreenshot.png'
+import githubLogo from './github_logo.png'
+import youtubeLogo from './youtube_logo.png'
+import biorxivLogo from './biorxiv_logo.png'
 
 const Contributors = dynamic(() => import('@/app/fragments/playbook/contributors'))
 
@@ -12,7 +15,7 @@ export default function WorkshopPage() {
       <Head>
         <title>Playbook Workshop: June 25, 2024</title>
       </Head>
-      <main className="flex flex-col justify-items-stretch">
+      <main className="flex flex-col justify-items-stretch" style={{ minWidth: '610px' }}>
         <div className="">
           <Contributors />
         </div>
@@ -25,8 +28,9 @@ export default function WorkshopPage() {
             <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
           </div>
           <h1 className="prose text-4xl font-bold">VIRTUAL WORKSHOP 2024</h1>
-          <h3 className="prose text-2xl">Learn how to build bioinformatics workflows effortlessly, even if you have no technical expertise</h3>
-          <h5 className="prose"><a className="text-blue-700 dark:text-blue-200 no-underline" href="https://playbook-workflow-builder.cloud">playbook-workflow-builder.cloud</a></h5>
+          <h3 className="prose max-w-none text-2xl text-center">
+            <span className="whitespace-nowrap">Learn how to build bioinformatics workflows effortlessly,</span> <span className="whitespace-nowrap">even if you have no technical expertise</span></h3>
+          <h5 className="prose"><a className="text-blue-700 dark:text-blue-200 text-4xl no-underline" href="https://playbook-workflow-builder.cloud">playbook-workflow-builder.cloud</a></h5>
         </div>
         <div className="flex flex-row flex-wrap justify-center mx-auto px-5 my-4 gap-4">
           <div className="flex flex-col items-center gap-2" style={{ flex: '2 0 40em' }}>
@@ -60,7 +64,7 @@ export default function WorkshopPage() {
             </div>
           </div>
           <div className="flex flex-col items-center gap-2" style={{ flex: '1 0 20em' }}>
-            <div className="card bg-secondary rounded-xl p-4 prose w-96">
+            <div className="card bg-secondary rounded-xl p-4 prose" style={{ width: '25rem' }}>
               <div className="card-title justify-center text-3xl">
                 WHERE
               </div>
@@ -75,7 +79,7 @@ export default function WorkshopPage() {
                 1:00 PM - 2:00 PM ET
               </div>
             </div>
-            <div className="card bg-secondary rounded-xl p-4 prose w-96">
+            <div className="card bg-secondary rounded-xl p-4 prose" style={{ width: '25rem' }}>
               <div className="card-title justify-center text-3xl">
                 REGISTRATION
               </div>
@@ -84,7 +88,7 @@ export default function WorkshopPage() {
                 <a href="https://mssm.zoom.us/webinar/register/WN_nB40DQScS9y2klZ6frk8JQ#/registration">mssm.zoom.us/webinar/register/WN_<br />nB40DQScS9y2klZ6frk8JQ#/registration</a>
               </div>
             </div>
-            <div className="card bg-secondary rounded-xl p-4 prose w-96">
+            <div className="card bg-secondary rounded-xl p-4 prose" style={{ width: '25rem' }}>
               <div className="card-title justify-center text-3xl">
                 FIND OUT MORE
               </div>
@@ -93,15 +97,24 @@ export default function WorkshopPage() {
                 <ul className="m-0 py-0"><li className="m-0 p-0"><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md">github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md</a></li></ul>
               </div>
               <div className="card-body break-words p-2">
-                <h3 className="underline my-0">Developer Guide</h3>
+                <div className="flex flex-row content-center justify-between">
+                  <h3 className="underline my-0">Developer Guide</h3>
+                  <Image className="rounded-md w-10 m-0" src={githubLogo} alt="Github Logo" />
+                </div>
                 <ul className="m-0 py-0"><li className="m-0 p-0"><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/index.md">github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/index.md</a></li></ul>
               </div>
               <div className="card-body break-words p-2">
-                <h3 className="underline my-0">Publication</h3>
+                <div className="flex flex-row content-center justify-between">
+                  <h3 className="underline my-0">Publication</h3>
+                  <Image className="rounded-md w-32 m-0" src={biorxivLogo} alt="BioRxiv Logo"/>
+                </div>
                 <ul className="m-0 py-0"><li className="m-0 p-0"><a href="https://www.biorxiv.org/content/10.1101/2024.06.08.598037v1">www.biorxiv.org/content/10.1101/2024.06.08.598037v1</a></li></ul>
               </div>
               <div className="card-body break-words p-2">
-                <h3 className="underline my-0">Use Cases</h3>
+                <div className="flex flex-row content-center justify-between">
+                  <h3 className="underline my-0">Use Cases</h3>
+                  <Image className="rounded-md w-10 m-0" src={youtubeLogo} alt="Youtube Logo" width={48} />
+                </div>
                 <ul className="m-0 py-0"><li className="m-0 p-0"><a href="https://www.youtube.com/playlist?list=PLfq4yYrYksVhoPn7xrPQrVYApU-rVLBv1">www.youtube.com/playlist?list=PLfq4yYrYksVhoPn7xrPQrVYApU-rVLBv1</a></li></ul>
               </div>
             </div>

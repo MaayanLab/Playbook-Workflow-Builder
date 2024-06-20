@@ -52,14 +52,15 @@ export async function filter_glygen_proteins(gene_symbol: String): Promise<GlyGe
   const protein_result = await protein_response.json();
 
   // filter list results 
+  console.log("Gene symbol: %s", gene_symbol)
   for (const item of protein_result["results"]) {
     if (item.hasOwnProperty("gene_name")) {
       const gene_name = item["gene_name"].toUpperCase();
       const species = item["organism"];
+      console.log("----------------------------")
       console.log("-> Prop name: %s", gene_name);
       console.log("-> Species: %s", species);
-      console.log("+> Species match?: %s", gene_name )
-      if (gene_name === gene_symbol.toUpperCase() && species === "Homo sapiens") {
+      if (gene_name === gene_symbol.toUpperCase() && species === "Human") {
         console.log("==========================")
         console.log(`Human result: ${item["gene_name"]}`)
         console.log(`Type of result: ${typeof(item)}`)

@@ -284,6 +284,14 @@ export const SNVViewResponseNode = MetaNode("SNVViewResponseNode")
   })
   .codec(GlyGenProteinResponseArray)
   .view((data) => {
+    const get_keywords = (keywords: Array<String>) => {
+      const valid_keywords = keywords.filter(
+        (kw) =>
+          kw.toLowerCase() === "somatic" || kw.toLowerCase() === "germline",
+      );
+      if (valid_keywords.length === 0) return "NA";
+      return valid_keywords.join("; ");
+    };
     return (
       <div className="prose max-w-none">
         <table>
@@ -297,6 +305,7 @@ export const SNVViewResponseNode = MetaNode("SNVViewResponseNode")
               <th>End Pos</th>
               <th>Sequence</th>
               <th>Disease</th>
+              <th>Keywords</th>
             </tr>
           </thead>
           <tbody>
@@ -339,6 +348,7 @@ export const SNVViewResponseNode = MetaNode("SNVViewResponseNode")
                         ))
                       : "NA"}
                   </td>
+                  <td>{get_keywords(snv.keywords)}</td>
                 </tr>
               )),
             )}

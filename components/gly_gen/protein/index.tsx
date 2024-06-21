@@ -6,7 +6,7 @@ import {
 } from "@/components/service/mygeneinfo";
 import { z } from "zod";
 import { glygen_icon } from "@/icons";
-import { ProteinTerm } from "@/components/core/term";
+import { ProteinTerm, GeneTerm } from "@/components/core/term";
 import { ProteinSet } from "@/components/core/set";
 import {
   GlyGenProteinResponse,
@@ -481,5 +481,21 @@ export const SNVInformation = MetaNode("SNVInformation")
     console.log(results);
     return results;
   })
-  .story((props) => "TODO")
+  .story((props) => "The SNV data is parsed from the GlyGen Protein data and prepared for presentation in the data view metanode.")
+  .build();
+
+// Links the Protein metanode chains to the Gene process metanodes
+export const ProteinLink = MetaNode("ProteinLinkMetanode")
+  .meta({
+    label: "Get Additional Gene Data",
+    description: "Protein link",
+    icon: [glygen_icon],
+  })
+  .inputs({ glyGenProteinResponse: GlyGenProteinResponseNode })
+  .output(GeneTerm)
+  .resolve(async (props) => {
+    const geneName = props.inputs.glyGenProteinResponse.gene.name;
+    return geneName;
+  })
+  .story((props) => "The gene name was extracted from the protein response data in order to further explore the gene data.")
   .build();

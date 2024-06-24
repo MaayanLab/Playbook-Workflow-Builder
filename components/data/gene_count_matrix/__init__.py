@@ -46,7 +46,10 @@ def anndata_from_file(file: File):
       return ad.read_text(fr, delimiter='\t').transpose()
   elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter=None).transpose()
+      try:
+        return ad.read_text(fr, delimiter=None).transpose()
+      except Exception as e:
+        raise Exception(f"Failed to read {file['filename']} as a matrix (please use .csv, or .tsv)") from e
   elif file['filename'].endswith('.xlsx'):
     with file_as_path(file, 'r') as fr:
       return ad.read_excel(fr).transpose()
@@ -56,7 +59,10 @@ def anndata_from_file(file: File):
     return anndata_from_gct(file)
   elif file['filename'].endswith('.h5'):
     with file_as_path(file, 'r') as fr:
-      return ad.read_hdf(fr).transpose()
+      try:
+        return ad.read_hdf(fr).transpose()
+      except Exception as e:
+        raise Exception(f"Failed to read {file['filename']} as a matrix (please use .gctx, or .h5ad)") from e
   else:
     raise NotImplementedError
 

@@ -39,13 +39,12 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
       </div>
       {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}
       <div className="collapse-content">
-        {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component
             session_id={session_id}
             data={data}
             inputs={inputs}
-            output={output}
+            output={outputNode?.spec === processNode.output.spec ? output : undefined}
             submit={async (data) => {
               const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
                 headers: {
@@ -67,6 +66,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           />
           : <div className="prose max-w-none">Waiting for input</div>}
       </div>
+      {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
     </div>
   )
 }

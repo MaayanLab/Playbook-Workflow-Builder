@@ -10,7 +10,6 @@ export default function FileInput(props: FileInputProps) {
   const props_ = {...props}
   if (!('draggable' in props)) props_.draggable = true
   props_.inputProps = 'inputProps' in props ? {...props.inputProps} : {}
-  if (!('multiple' in props_.inputProps)) props_.inputProps.multiple = true
   const onChange = props_.inputProps.onChange
   props_.inputProps.onChange = (evt) => {
     if (!evt.currentTarget || !evt.currentTarget.files || evt.currentTarget.files.length === 0) {

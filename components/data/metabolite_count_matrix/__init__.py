@@ -2,6 +2,7 @@ import typing
 import numpy as np
 import anndata as ad
 from components.core.file import File, file_as_path, file_as_stream, upsert_file
+from components.data.gene_count_matrix import np_jsonifyable
 
 class MetaboliteCountMatrix(File, typing.TypedDict):
   shape: typing.Tuple[int, int]
@@ -60,13 +61,6 @@ def metanndata_from_file(file: File):
       return ad.read_hdf(fr).transpose()
   else:
     raise NotImplementedError
-
-def np_jsonifyable(x):
-  x_ = x.astype('object')
-  x_[np.isnan(x)] = 'nan'
-  x_[np.isposinf(x)] = 'inf'
-  x_[np.isneginf(x)] = '-inf'
-  return x_.tolist()
 
 def metabolite_count_matrix(file: File) -> MetaboliteCountMatrix:
   ''' We'll preserve the file url but include various properties useful

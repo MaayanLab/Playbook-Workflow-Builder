@@ -2,6 +2,7 @@ import typing
 import numpy as np
 import pandas as pd
 from components.core.file import File, file_as_path, file_as_stream
+from components.data.gene_count_matrix import np_jsonifyable
 
 class Signature(File, typing.TypedDict):
   shape: typing.Tuple[int, int]
@@ -29,10 +30,6 @@ def signature_from_file(file: File):
     raise NotImplementedError
   assert set(df.columns.tolist()) & { 'Pval', 'AdjPval', 'LogFC' }
   return df
-
-def np_jsonifyable(x):
-  x_ = x.astype('object')
-  return x_.tolist()
 
 def gene_signature(file: File) -> Signature:
   d = signature_from_file(file)

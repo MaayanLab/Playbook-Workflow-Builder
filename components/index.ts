@@ -167,6 +167,10 @@ import * as data_tsne_transformation from "./data/tsne_transformation"
 import data_tsne_transformation_packageJson from "./data/tsne_transformation/package.json"
 metanodes.push(...MetaNodesFromExports(data_tsne_transformation, data_tsne_transformation_packageJson))
 components.push("data/tsne_transformation")
+import * as data_ttest from "./data/ttest"
+import data_ttest_packageJson from "./data/ttest/package.json"
+metanodes.push(...MetaNodesFromExports(data_ttest, data_ttest_packageJson))
+components.push("data/ttest")
 import * as data_umap_transformation from "./data/umap_transformation"
 import data_umap_transformation_packageJson from "./data/umap_transformation/package.json"
 metanodes.push(...MetaNodesFromExports(data_umap_transformation, data_umap_transformation_packageJson))

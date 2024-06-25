@@ -1,11 +1,11 @@
 from components.data.gene_count_matrix import anndata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
-from maayanlab_bioinformatics.dge import limma_voom_differential_expression
+from maayanlab_bioinformatics.dge import ttest_differential_expression
 import pandas as pd
 
 # Function for computing signatures with characteristic direction
-def limma_voom(anndata):
+def ttest(anndata):
   if 'Type: Control or Perturbation' in anndata.obs.columns:
     col = 'Type: Control or Perturbation'
     grp_ids = ['Control', 'Perturbation']
@@ -30,7 +30,7 @@ def limma_voom(anndata):
     columns = anndata.var_names
   ).T
 
-  signature = limma_voom_differential_expression(
+  signature = ttest_differential_expression(
     ctrl_df,
     case_df
   ).rename({
@@ -41,13 +41,13 @@ def limma_voom(anndata):
   }, axis=1)[['Statistic', 'Pval', 'AdjPval', 'LogFC']]
   return signature
 
-def limma_voom_from_matrix(file):
+def ttest_from_matrix(file):
   anndata = anndata_from_file(file)
 
   # cd
-  gene_sig = limma_voom(anndata)
+  gene_sig = ttest(anndata)
 
-  with upsert_file('.tsv', description=f"Gene signature computed by the Limma-Voom analysis from the {file.get('description') or 'file'}") as f:
+  with upsert_file('.tsv', description=f"Gene signature computed by the T-Test from the {file.get('description') or 'file'}") as f:
     gene_sig.to_csv(f.file, sep='\t')
 
   return gene_signature(f)

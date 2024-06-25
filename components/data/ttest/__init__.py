@@ -1,7 +1,7 @@
 from components.data.gene_count_matrix import anndata_from_file
 from components.data.gene_signature import gene_signature
 from components.core.file import upsert_file
-from maayanlab_bioinformatics.dge import ttest_differential_expression
+from maayanlab_bioinformatics.dge import ttest_differential_expression, logfc_differential_expression
 import pandas as pd
 
 # Function for computing signatures with characteristic direction
@@ -30,16 +30,11 @@ def ttest(anndata):
     columns = anndata.var_names
   ).T
 
-  signature = ttest_differential_expression(
-    ctrl_df,
-    case_df
-  ).rename({
-    't': 'Statistic',
-    'P.Value': 'Pval',
-    'adj.P.Val': 'AdjPval',
-    'logFC': 'LogFC',
-  }, axis=1)[['Statistic', 'Pval', 'AdjPval', 'LogFC']]
-  return signature
+  signature = pd.concat([
+    ttest_differential_expression(ctrl_df, case_df),
+    logfc_differential_expression(ctrl_df, case_df),
+  ], axis=1)
+  return signature[signature['AdjPval'] < 0.01].sort_values(['Statistic', 'LogFC'])
 
 def ttest_from_matrix(file):
   anndata = anndata_from_file(file)

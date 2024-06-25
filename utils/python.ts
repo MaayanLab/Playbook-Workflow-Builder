@@ -53,7 +53,8 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
         else if (code !== 0) reject(new ProcessError(`[${pathspec}]: ${`Process exited with unexpected code ${code}`}`, code))
         else resolve(stdout_parsed.data)
       } catch (e) {
-        reject(new ProcessError(`[${pathspec}]: Process output could not be parsed as json`, code))
+        console.debug(stdout)
+        reject(new ProcessError(`[${pathspec}]: Process output could not be parsed as json. ${e}`, code))
       }
     })
     proc.stdin.end(stdin)

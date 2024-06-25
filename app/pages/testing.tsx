@@ -27,6 +27,29 @@ export default function App() {
     nodes: { [0]: { id: 0, type: '', data: '' } }
   })
   const [loading, setLoading] = React.useState<boolean>(false)
+  /** Allow you to delete selected nodes with the delete key */
+  React.useEffect(() => {
+    const listener = (evt: KeyboardEvent) => {
+      if (evt.key === 'Delete') {
+        setData(data => {
+          const _data = {...data}
+          for (const id in data.selected) {
+            if (id === '0') {
+              _data.nodes[id].type = ''
+              _data.nodes[id].data = ''
+            } else {
+              delete _data.nodes[id]
+              delete _data.selected[id]
+            }
+          }
+          _data.current = 0
+          return _data
+        })
+      }
+    }
+    window.addEventListener('keypress', listener)
+    return () => {window.removeEventListener('keypress', listener)}
+  }, [])
   /**
    * This is a helper for adding a new node, if the current node doesn't have a type (empty)
    *  we'll just replace that one, otherwise we create a new node, add it, select it, and make it current.

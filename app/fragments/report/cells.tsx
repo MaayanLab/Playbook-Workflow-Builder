@@ -3,8 +3,8 @@ import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
 import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
-import { useAPIMutation } from '@/core/api/client'
-import { UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook } from '@/app/api/client'
+import { useAPIMutation, useAPIQuery } from '@/core/api/client'
+import { UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook, UserPlaybook } from '@/app/api/client'
 import * as dict from '@/utils/dict'
 import { useRouter } from 'next/router'
 import { Breadcrumbs } from '../breadcrumbs'
@@ -24,7 +24,8 @@ const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 export default function Cells({ session_id, thread, krg, id }: { session_id?: string, thread?: string, krg: KRG, id: string }) {
   const router = useRouter()
   const { data: metapath } = useFPL(id)
-  const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook: undefined }) : undefined, [metapath])
+  const { data: userPlaybook, mutate: mutateUserPlaybook } = useAPIQuery(UserPlaybook, { id })
+  const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook }) : undefined, [metapath, userPlaybook])
   const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
   const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
@@ -36,7 +37,6 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
     summary: 'auto',
     gpt_summary: '',
   } as Exclude<Metapath['playbook_metadata'], null>)
-  const [userPlaybook, setUserPlaybook] = React.useState(undefined as undefined | { public: boolean })
   const [updateRequired, setUpdateRequired] = React.useState(false)
   React.useEffect(() => {
     if (!data) return
@@ -65,7 +65,6 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
       } = element.cell_metadata ?? {}
       return { key: element.id, value: { id, label, description, process_visible, data_visible } }
     })))
-    setUserPlaybook(data.userPlaybook)
   }, [data])
   const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
   const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
@@ -168,7 +167,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
                       cell_metadata,
                     },
                   }).then(id => {
-                    setUserPlaybook({ public: userPlaybook?.public || false })
+                    mutateUserPlaybook({ public: userPlaybook?.public || false })
                     setPlaybookMetadata(metadata => ({ ...metadata, id: data.metapath[data.metapath.length-1].playbook_metadata?.id || '' }))
                     setUpdateRequired(false)
                     router.push(`${session_id ? `/session/${session_id}` : ''}/report/${id}`, undefined, { shallow: true, scroll: false })
@@ -178,7 +177,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
                     query: { id },
                     body: {},
                   }).then(id => {
-                    setUserPlaybook(undefined)
+                    mutateUserPlaybook(undefined)
                     setUpdateRequired(false)
                   })
                 }
@@ -190,7 +189,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
                     query: { id },
                     body: { public: publicPlaybook },
                   }).then(id => {
-                    setUserPlaybook({ public: publicPlaybook })
+                    mutateUserPlaybook({ public: publicPlaybook })
                     setUpdateRequired(false)
                   })
                 }

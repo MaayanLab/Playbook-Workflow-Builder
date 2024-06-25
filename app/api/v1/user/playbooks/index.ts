@@ -146,7 +146,6 @@ export const UserPlaybook = API.get('/api/v1/user/playbooks/[id]')
   .call(async (inputs, req, res) => {
     const fpl = await fpprg.getFPL(inputs.query.id)
     if (fpl === undefined) throw new NotFoundError()
-    const metapath = fpl.resolve().map(fpl => fpl.toJSON())
     // TODO: move this logic into a db trigger
     // TODO: address playbook republishing
     const [publicUserPlaybook, ..._] = await db.objects.user_playbook.findMany({
@@ -166,15 +165,15 @@ export const UserPlaybook = API.get('/api/v1/user/playbooks/[id]')
       })
     }
     const session = await getServerSessionWithId(req, res)
-    if (!session || !session.user) return { metapath }
+    if (!session || !session.user) return
     const userPlaybook = await db.objects.user_playbook.findUnique({
       where: {
         user: session.user.id,
         playbook: inputs.query.id,
       },
     })
-    if (!userPlaybook) return { metapath }
-    return { metapath, userPlaybook: { public: userPlaybook.public } }
+    if (!userPlaybook) return
+    return { public: userPlaybook.public }
   })
   .build()
 

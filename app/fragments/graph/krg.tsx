@@ -46,7 +46,7 @@ export default function useKRG({ session_id }: { session_id?: string }) {
           .prompt((props) => {
             return <div>
               <p>{suggestion.description}</p>
-              <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook partnership user</>}.</p>
+              <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook workflow builder user</>}.</p>
             </div>
           })
           .story(props => ({ abstract: `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.` }))

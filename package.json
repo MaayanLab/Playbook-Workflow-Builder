@@ -1,7 +1,7 @@
 {
-  "name": "playbook-partnership",
+  "name": "playbook-workflow-builder",
   "version": "0.61.3",
-  "description": "A repository for the playbook partnership collaboration.",
+  "description": "A repository for the playbook workflow builder collaboration.",
   "private": true,
   "workspaces": [
     "./app",

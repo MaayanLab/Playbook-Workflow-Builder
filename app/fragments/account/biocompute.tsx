@@ -21,7 +21,7 @@ export default function BioCompute() {
       <p>
         BioCompute is a standardized way of representing a computational workflow.
         The <a href="https://biocomputeobject.org/">BioCompute portal</a> lets users create, edit, and publish BioCompute Objects (BCOs).
-        To publish playbook partnership workflows on the BioCompute portal, you must have an account with the BioCompute portal.
+        To publish playbook workflows on the BioCompute portal, you must have an account with the BioCompute portal.
         Both your playbook workflow builder account AND your biocompute account should be associated with a common <a href="https://orcid.org/">ORCID</a>.
       </p>
       {biocomputeAuth ?

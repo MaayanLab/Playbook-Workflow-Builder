@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
 import { useStory } from '@/app/fragments/story'
+import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -28,7 +29,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
   }, [head])
   const Component = processNode.prompt
   return (
-    <div className="collapse collapse-arrow text-black dark:text-white">
+    <div className={classNames('collapse collapse-arrow text-black dark:text-white', { 'bg-yellow-300 dark:bg-yellow-600': output === null, 'bg-green-400 dark:bg-green-700': output !== null })}>
       <input type="checkbox" defaultChecked={true} />
       <div className="collapse-title flex flex-col gap-2">
         <div className="flex flex-row gap-2 z-10">

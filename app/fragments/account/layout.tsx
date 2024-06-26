@@ -34,20 +34,20 @@ export default function Layout({ session }: { session: SessionWithId }) {
       vertical
     >
       <span className='font-bold'>{session.user?.email ?? null}</span>
-      <Bp5Tab id="profile" title={<><Bp5Icon icon="person" /> Profile</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountProfile session={session}  />} />
-      <Bp5Tab id="settings" title={<><Bp5Icon icon="cog" /> Settings</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSettings session={session}  />} />
+      <Bp5Tab id="profile" title={<><Bp5Icon icon="person" />&nbsp;Profile</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountProfile session={session}  />} />
+      <Bp5Tab id="settings" title={<><Bp5Icon icon="cog" />&nbsp;Settings</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSettings session={session}  />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Data</span>
-      <Bp5Tab id="uploads" title={<><Bp5Icon icon="upload" /> Uploads</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountUploads />} />
-      <Bp5Tab id="playbooks" title={<><Bp5Icon icon="control" /> Playbooks</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountPlaybooks />} />
-      <Bp5Tab id="suggestions" title={<><Bp5Icon icon="lightbulb" /> Suggestions</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSuggestions />} />
+      <Bp5Tab id="uploads" title={<><Bp5Icon icon="upload" />&nbsp;Uploads</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountUploads />} />
+      <Bp5Tab id="playbooks" title={<><Bp5Icon icon="control" />&nbsp;Playbooks</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountPlaybooks />} />
+      <Bp5Tab id="suggestions" title={<><Bp5Icon icon="lightbulb" />&nbsp;Suggestions</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSuggestions />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Integrations</span>
-      <Bp5Tab id="biocompute" title={<><Bp5Icon icon="application" /> BioCompute</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountBioCompute />} />
-      <Bp5Tab id="cavatica" title={<><Bp5Icon icon="application" /> CAVATICA</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountCAVATICA />} />
+      <Bp5Tab id="biocompute" title={<><Bp5Icon icon="application" />&nbsp;BioCompute</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountBioCompute />} />
+      <Bp5Tab id="cavatica" title={<><Bp5Icon icon="application" />&nbsp;CAVATICA</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountCAVATICA />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Session</span>
-      <Bp5Tab id="signout" title={<><Bp5Icon icon="log-out" /> Sign Out</>} />
+      <Bp5Tab id="signout" title={<><Bp5Icon icon="log-out" />&nbsp;Sign Out</>} />
     </Bp5Tabs>
   )
 }

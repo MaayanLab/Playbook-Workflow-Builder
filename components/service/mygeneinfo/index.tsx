@@ -67,6 +67,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     label: 'Resolve Gene Info from Term',
     description: 'Resolve gene info from gene term with MyGeneInfo',
     icon: [mygeneinfo_icon],
+    hidden: true,
   })
   .inputs({ gene: GeneTerm })
   .output(GeneInfo)

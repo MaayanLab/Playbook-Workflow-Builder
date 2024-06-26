@@ -15,6 +15,7 @@ import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
+const ShareButton = dynamic(() => import('@/app/fragments/share-button'))
 const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button'))
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
@@ -136,6 +137,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
                 }}
               />
             </Breadcrumbs>
+            <ShareButton disabled={!!session_id} />
             <ImportButton session_id={session_id} />
             <CAVATICAButton session_id={session_id} />
             <RestartButton session_id={session_id} />

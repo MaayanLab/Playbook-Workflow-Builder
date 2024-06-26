@@ -38,34 +38,38 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
         disabled={disabled}
         content={
           <Bp5Menu>
+          <div className="tooltip block text-left" data-tip="Download the workflow's BCO JSON document compatible with IEEE 2791-2022">
             <Bp5MenuItem
               icon="document"
               text="Download BCO"
               href={`${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
               download={`${(metadata.title || id).replace(/ /g, '-')}-bco.json`}
             />
-            <Bp5MenuItem
-              icon="send-to"
-              text="Draft in BioCompute Portal"
-              onClick={async (evt) => {
-                trigger()
-                  .then((res) => {
-                    if (res) window.open(res.object_id, '_blank')
+            </div>
+            <div className="tooltip block text-left" data-tip="Draft BCO in the BioCompute Portal for review & publishing">
+              <Bp5MenuItem
+                icon="send-to"
+                text="Draft in BioCompute Portal"
+                onClick={async (evt) => {
+                  trigger()
+                    .then((res) => {
+                      if (res) window.open(res.object_id, '_blank')
+                    })
+                  .catch((error) => {
+                    console.error(error)
+                    setShowError(() => true)
+                    console.log(`err ${(error as ResponseCodedError).message}`)
+                    if ((error as ResponseCodedError).message === 'ORCID Expired') {
+                      signOut().then(() => signIn('orcid'))
+                    } else if ((error as ResponseCodedError).message === 'ORCID Required') {
+                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
+                    } else if((error as ResponseCodedError).message === 'BCO Unauthorization') {
+                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
+                    }
                   })
-                .catch((error) => {
-                  console.error(error)
-                  setShowError(() => true)
-                  console.log(`err ${(error as ResponseCodedError).message}`)
-                  if ((error as ResponseCodedError).message === 'ORCID Expired') {
-                    signOut().then(() => signIn('orcid'))
-                  } else if ((error as ResponseCodedError).message === 'ORCID Required') {
-                    router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
-                  } else if((error as ResponseCodedError).message === 'BCO Unauthorization') {
-                    router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
-                  }
-                })
-              }}
-            />
+                }}
+              />
+            </div>
           </Bp5Menu>
         }
         placement="bottom"
@@ -73,7 +77,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
         <Icon
           icon={biocompute_icon}
           className={publishedBCO ? 'fill-green-500' : disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
-          title={disabled ? 'Save to Create BioCompute Object' : 'Create BioCompute Object'}
+          title={disabled ? 'Save to Create BioCompute Object' : 'Create BioCompute Object, a standardized way of representing a computational workflow (click for options)'}
         />
       </Bp5Popover>}
       <Bp5Alert

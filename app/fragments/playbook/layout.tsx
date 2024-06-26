@@ -49,8 +49,13 @@ export default function Layout({ children }: React.PropsWithChildren) {
                   </div>
                 </label>
                 <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                  <li className="menu-title prose"><span>Data</span></li>
+                  <li><Link href="/account/uploads">Uploads</Link></li>
+                  <li><Link href="/account/playbooks">Playbooks</Link></li>
+                  <li><Link href="/account/suggestions">Suggestions</Link></li>
+                  <li className="menu-title prose"><span>Account</span></li>
                   <li><Link href="/account">Settings</Link></li>
-                  <li><button className="hover:underline" onClick={() => {Auth.signOut()}}>Sign Out</button></li>
+                  <li><Link href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</Link></li>
                 </ul>
               </div>
               : <button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white" onClick={() => {Auth.signIn()}}>Sign in</button>}
@@ -99,7 +104,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
       <div className="drawer-side">
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
         <ul className="menu p-4 w-80 bg-base-100">
-          <li className="menu-title">
+          <li className="menu-title prose">
             <span>Playbook</span>
           </li>
           <li><Link href="/playbooks">Published Playbooks</Link></li>
@@ -107,15 +112,27 @@ export default function Layout({ children }: React.PropsWithChildren) {
           <li><Link href="/components">Component Catalog</Link></li>
           <li><Link href="/explore">Component Graph</Link></li>
           <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
-          <li className="menu-title">
-            <span>Account</span>
-          </li>
           {session && session.user ?
               <>
-                <li><Link href="/account">Settings</Link></li>
-                <li><button className="hover:underline" onClick={() => {Auth.signOut()}}>Sign Out</button></li>
+                    <li className="menu-title prose">
+                      <span>Data</span>
+                    </li>
+                    <li><Link href="/account/uploads">Uploads</Link></li>
+                    <li><Link href="/account/playbooks">Playbooks</Link></li>
+                    <li><Link href="/account/suggestions">Suggestions</Link></li>
+                    <li className="menu-title prose">
+                      <span>Account</span>
+                    </li>
+                    <li><Link href="/account">Settings</Link></li>
+                    <li><Link href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</Link></li>
               </>
-              : <li><button className="hover:underline" onClick={() => {Auth.signIn()}}>Sign in</button></li>}
+              :
+              <>
+                <li className="menu-title prose">
+                  <span>Account</span>
+                </li>
+                <li><Link href="/api/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</Link></li>
+              </>}
         </ul>
       </div>
     </div>

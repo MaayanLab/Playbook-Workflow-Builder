@@ -119,13 +119,7 @@ export const GlycoSightFileUpload = MetaNode("GlycoSightUpload")
             /> : 
             null}</>
         )
-        .resolve(
-            async (props) => await python(
-                'components.gly_gen.glycosight.load_mzid_file',
-                { kargs: [props.data] },
-                message => props.notify({ type: 'info', message })
-            )
-        )
+        .resolve(async (props) => props.data)
         .story((props) => { return "Upload MZID glycosylation data for N-linked glycan analysis" })
         .build()
 

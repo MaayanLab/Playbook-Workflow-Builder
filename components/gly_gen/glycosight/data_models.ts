@@ -18,7 +18,7 @@ export const GlycoSightFileURLC = z.object({
     description: z.string().optional().nullable(),
     url: z.string(),
     filename: z.string(),
-    sha256: z.string(),
+    sha256: z.string().optional(),
     size: z.number().optional(),
 })
 

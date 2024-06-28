@@ -110,7 +110,8 @@ export const GlycoSightFileUpload = MetaNode("GlycoSightUpload")
     .inputs() 
     .output(GlycoSightFileURLNode)
     .prompt(props => <>
-        <FilePrompt {...props} example={clientLoadExample} />
+        <FilePrompt {...props} />
+        {/* TODO: <FilePrompt {...props} example={clientLoadExample} /> */}
         {props.output ? 
             <SafeRender 
                 component={FileURL.view} 

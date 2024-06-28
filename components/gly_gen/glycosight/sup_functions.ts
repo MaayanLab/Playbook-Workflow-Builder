@@ -2,7 +2,7 @@ import { GlycoSightOutputType, GlycoSightFileURLType } from "./data_models";
 import { GlycoSightOutputNode } from ".";
 import { z } from "zod";
 
-const devGSURL = "http://localhost:5000/api/"
+const devGSURL = process.env.NODE_ENV === "development" ? "http://localhost:5000/api/" : "https://aws.glygen.org/glycosight/api/"
 
 export async function TestGlycoSightAPI(url: string) : Promise<GlycoSightOutputType> {
     // const res = await fetch(`${devGSURL}/dummy-upload?q=${url}&n=${fileName}`, { method: "POST" })

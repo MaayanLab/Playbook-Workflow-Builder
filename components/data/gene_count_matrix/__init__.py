@@ -67,11 +67,13 @@ def anndata_from_file(file: File):
     raise NotImplementedError
 
 def np_jsonifyable(x):
-  x_ = x.astype('object')
-  x_[np.isnan(x)] = 'nan'
-  x_[np.isposinf(x)] = 'inf'
-  x_[np.isneginf(x)] = '-inf'
-  return x_.tolist()
+  if x.dtype != 'object':
+    x_ = x.astype('object')
+    x_[np.isnan(x)] = 'nan'
+    x_[np.isposinf(x)] = 'inf'
+    x_[np.isneginf(x)] = '-inf'
+    return x_.tolist()
+  return x.tolist()
 
 def gene_count_matrix(file: File) -> GeneCountMatrix:
   ''' We'll preserve the file url but include various properties useful

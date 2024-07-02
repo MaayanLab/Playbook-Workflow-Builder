@@ -76,10 +76,7 @@ export const GeneCountMatrixFileUpload = MetaNode('GeneCountMatrixFileUpload')
   .codec(FileC)
   .inputs()
   .output(GeneCountMatrix)
-  .prompt(props => {
-    console.log(props)
-    return <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}</>
-  })
+  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.gene_count_matrix.gene_count_matrix',
     { kargs: [props.data] },

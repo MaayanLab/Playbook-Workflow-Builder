@@ -119,7 +119,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
           </table>
         </div>
         <button className="bp5-button bp5-large" onClick={() => {
-          props.submit(tableData)
+          props.submit(tableData, true)
         }}>Submit</button>
       </div>
     );

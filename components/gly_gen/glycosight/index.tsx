@@ -10,6 +10,8 @@ import { FileC, FilePrompt, FileURL, FileInput } from "@/components/core/file";
 import python from "@/utils/python";
 import SafeRender from "@/utils/saferender";
 
+// import { GlycoSightFileURLNode } from "@/components/gly_gen/api/glycosight/client";
+
 import { GlycoSightOutputC, 
          GlycoSightFileURLC, 
          GlycoSightOutputType,
@@ -17,7 +19,7 @@ import { GlycoSightOutputC,
 import { TestGlycoSightAPI,
          UploadAndAnalyze
  } from "./sup_functions";
-import { clientLoadExample } from "./data/client";
+import { clientLoadExample } from "@/components/gly_gen/api/glycosight/client";
 import { notify_insertion_trigger } from "@/db";
 
 export const GlycoSightOutputNode = MetaNode("GlycoSightOutputNode")
@@ -110,8 +112,8 @@ export const GlycoSightFileUpload = MetaNode("GlycoSightUpload")
     .inputs() 
     .output(GlycoSightFileURLNode)
     .prompt(props => <>
-        <FilePrompt {...props} />
-        {/* TODO: <FilePrompt {...props} example={clientLoadExample} /> */}
+        {/* XXX: <FilePrompt {...props} /> */}
+        TODO: <FilePrompt {...props} example={clientLoadExample} />
         {props.output ? 
             <SafeRender 
                 component={FileURL.view} 

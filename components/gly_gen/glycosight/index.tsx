@@ -7,10 +7,8 @@ import { downloadBlob } from '@/utils/download'
 
 import { file_icon, file_transfer_icon, glygen_icon } from "@/icons";
 import { FileC, FilePrompt, FileURL, FileInput } from "@/components/core/file";
-import python from "@/utils/python";
+import { fileAsStream } from "@/components/core/file/api/download";
 import SafeRender from "@/utils/saferender";
-
-// import { GlycoSightFileURLNode } from "@/components/gly_gen/api/glycosight/client";
 
 import { GlycoSightOutputC, 
          GlycoSightFileURLC, 
@@ -95,9 +93,18 @@ export const GlycoSightProcessNode = MetaNode("GlycoSightProcessNode")
     })
     .inputs({ file: GlycoSightFileURLNode })
     .output(GlycoSightOutputNode)
-    .resolve(( props ) => {
-        const result = UploadAndAnalyze(props.inputs.file);
-        return result;
+    .resolve( async ( props ) => {
+        
+      const fileStream = await fileAsStream(props.inputs.file);
+      const chunks = [];
+      for await (const chunk of fileStream) {
+        chunks.push(Buffer.from(chunk));
+      }
+      const fileBuffer = Buffer.concat(chunks);
+
+      const result = UploadAndAnalyze(props.inputs.file, fileBuffer);
+      
+      return result;
     })
     .story((props) => {return "The N-Linked glycan sites analysis was launched through the GlycoSight servers"})
     .build()

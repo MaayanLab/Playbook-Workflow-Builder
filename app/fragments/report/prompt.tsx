@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
 import { useStory } from '@/app/fragments/story'
+import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -28,7 +29,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
   }, [head])
   const Component = processNode.prompt
   return (
-    <div className="collapse collapse-arrow text-black dark:text-white">
+    <div className={classNames('collapse collapse-arrow text-black dark:text-white', { 'bg-yellow-300 dark:bg-yellow-600': output === null, 'bg-green-400 dark:bg-green-700': output !== null })}>
       <input type="checkbox" defaultChecked={true} />
       <div className="collapse-title flex flex-col gap-2">
         <div className="flex flex-row gap-2 z-10">
@@ -39,13 +40,12 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
       </div>
       {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}
       <div className="collapse-content">
-        {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
         {inputs !== undefined && array.intersection(dict.keys(processNode.inputs), dict.keys(inputs)).length === dict.keys(processNode.inputs).length ?
           <Component
             session_id={session_id}
             data={data}
             inputs={inputs}
-            output={output}
+            output={outputNode?.spec === processNode.output.spec ? output : undefined}
             submit={async (data) => {
               const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
                 headers: {
@@ -67,6 +67,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           />
           : <div className="prose max-w-none">Waiting for input</div>}
       </div>
+      {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
     </div>
   )
 }

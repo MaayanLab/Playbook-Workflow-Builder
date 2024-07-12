@@ -5,6 +5,7 @@ import { AnnData } from '@/components/data/anndata'
 import { useClientMetadataFromFile } from './api/metadata/client'
 import { updateMetadataColumn } from './api/metadata/update'
 import classNames from 'classnames'
+import { GeneCountMatrix } from '../gene_count_matrix'
 
 export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .meta({
@@ -118,7 +119,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
           </table>
         </div>
         <button className="bp5-button bp5-large" onClick={() => {
-          props.submit(tableData)
+          props.submit(tableData, true)
         }}>Submit</button>
       </div>
     );
@@ -132,4 +133,14 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .story(props => ({
     abstract: 'The samples were then labeled as either control or perturbation to allow for further analysis.',
   }))
+  .build()
+
+export const LabelGeneCountMatrix = MetaNode('LabelGeneCountMatrix')
+  .meta(LabelAnnDataMetadata.meta)
+  .codec(LabelAnnDataMetadata.codec)
+  .inputs({ matrix: GeneCountMatrix })
+  .output(LabelAnnDataMetadata.output)
+  .prompt(LabelAnnDataMetadata.prompt)
+  .resolve(LabelAnnDataMetadata.resolve)
+  .story(LabelAnnDataMetadata.story)
   .build()

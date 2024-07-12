@@ -45,19 +45,17 @@ export default function Cell({ session_id, krg, id, head }: { session_id?: strin
               </div>
             ) : null}
             {!outputNode ? <div>Loading...</div>
-            : <>
-                {!outputNode?.view || output === undefined ? <div className="prose">Loading...</div>
-                : output === null ? <div className="prose max-w-none">Waiting for input</div>
-                : <SafeRender component={outputNode.view} props={output} />}
-              </>}
-              <button
-                className="btn btn-primary"
-                onClick={async (evt) => {
-                  const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.id}/output/delete`, { method: 'POST' })
-                  const res = await req.text()
-                  mutate()
-                }}
-              >Recompute</button>
+              : !outputNode?.view || output === undefined ? <div className="prose">Loading...</div>
+              : output === null ? <div className="prose max-w-none">Waiting for input</div>
+              : <SafeRender component={outputNode.view} props={output} />}
+            <button
+              className="btn btn-primary"
+              onClick={async (evt) => {
+                const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/process/${head.process.id}/output/delete`, { method: 'POST' })
+                const res = await req.text()
+                mutate()
+              }}
+            >Recompute</button>
           </div>
         </>}
       </div>

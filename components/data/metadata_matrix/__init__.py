@@ -2,6 +2,7 @@ import typing
 import numpy as np
 import pandas as pd
 from components.core.file import File, file_as_path, file_as_stream
+from components.data.gene_count_matrix import np_jsonifyable
 
 class MetadataMatrix(File, typing.TypedDict):
   shape: typing.Tuple[int, int]
@@ -27,10 +28,6 @@ def metadata_from_file(file: File):
       return pd.read_excel(fr, index_col=0)
   else:
     raise NotImplementedError
-
-def np_jsonifyable(x):
-  x_ = x.astype('object')
-  return x_.tolist()
 
 def metadata_matrix(file: File) -> MetadataMatrix:
   ''' Read the metadata file

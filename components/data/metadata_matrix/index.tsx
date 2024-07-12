@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { file_icon, file_transfer_icon, metadata_file_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
+import { clientLoadExample } from './api/meta.tsv/client'
 import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
@@ -25,18 +26,16 @@ export const MetadataMatrix = MetaNode('MetadataMatrix')
   })))
   .view(props => {
     return (
-      <div>
-        <Matrix
-          index={props.index}
-          columns={props.columns}
-          values={props.values}
-          ellipses={props.ellipses}
-          shape={props.shape}
-          downloads={{
-            'URL': () => downloadUrl(props.url, props.filename)
-          }}
-        />
-      </div>
+      <Matrix
+        index={props.index}
+        columns={props.columns}
+        values={props.values}
+        ellipses={props.ellipses}
+        shape={props.shape}
+        downloads={{
+          'URL': () => downloadUrl(props.url, props.filename)
+        }}
+      />
     )
   })
   .build()
@@ -74,7 +73,7 @@ export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
   .codec(FileC)
   .inputs()
   .output(MetadataMatrix)
-  .prompt(props => <><FilePrompt {...props} />{props.output ? <SafeRender component={MetadataMatrix.view} props={props.output} /> : null}</>)
+  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={MetadataMatrix.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.metadata_matrix.metadata_matrix',
     { kargs: [props.data] },

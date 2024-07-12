@@ -27,18 +27,16 @@ export const MetAnnData = MetaNode('MetAnnData')
   })))
   .view(props => {
     return (
-      <div>
-        <Matrix
-          index={props.index}
-          columns={props.columns}
-          values={props.values}
-          ellipses={props.ellipses}
-          shape={props.shape}
-          downloads={{
-            'URL': () => downloadUrl(props.url, props.filename)
-          }}
-        />
-      </div>
+      <Matrix
+        index={props.index}
+        columns={props.columns}
+        values={props.values}
+        ellipses={props.ellipses}
+        shape={props.shape}
+        downloads={{
+          'URL': () => downloadUrl(props.url, props.filename)
+        }}
+      />
     )
   })
   .build()

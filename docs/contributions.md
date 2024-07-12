@@ -1,4 +1,4 @@
-## Playbook Partnership Contribution Guide
+## Playbook Workflow Builder Contribution Guide
 Please review the [Background](./background.md) to better understand the concepts behind this repo.
 
 The [component templates directory](./component_templates/) may also be a simple way to get started making different types of Meta Nodes.
@@ -17,7 +17,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
 1. Clone this repository and checkout a branch for your work.
     ```bash
     git clone https://github.com/MaayanLab/Playbook-Workflow-Builder/
-    cd playbook-partnership
+    cd Playbook-Workflow-Builder
     git checkout -b my-new-component
     ```
 2. Open up the repository directory with your editor.

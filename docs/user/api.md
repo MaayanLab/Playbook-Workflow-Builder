@@ -34,7 +34,7 @@ This same format is used to submit to the API, but naturally we'll want to chang
 ```python
 import requests
 
-# The playbook partnership endpoint to query
+# The playbook workflow builder endpoint to query
 ENDPOINT = 'https://playbook-workflow-builder.cloud'
 
 # Construct a workflow Gene => GTEx Tissue => Barplot with the input: ACE2
@@ -90,7 +90,7 @@ In the case of a file, the "FileURL" takes an arbitrary http url or [DRS URI](ht
 ```python
 import requests
 
-# The playbook partnership endpoint to query
+# The playbook workflow builder endpoint to query
 ENDPOINT = 'https://playbook-workflow-builder.cloud'
 
 # Construct a workflow FileInput => AnnDataFromFile => Limma-Voom with the example.h5ad file

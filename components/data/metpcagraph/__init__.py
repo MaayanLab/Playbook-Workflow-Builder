@@ -73,8 +73,12 @@ def createmetametpcagraph(metanndata):
     dataset = metanndata_from_file(metanndata)
     
     # Extract the relevant columns from .obs
-    col = dataset.obs.columns[0]
-    grp_ids = dataset.obs[col].unique()
+    if 'Type: Control or Perturbation' in dataset.obs.columns:
+        col = 'Type: Control or Perturbation'
+        grp_ids = ['Control', 'Perturbation']
+    else:
+        col = dataset.obs.columns[0]
+        grp_ids = dataset.obs[col].unique()
 
     ctrl_ids = dataset.obs[dataset.obs[col] == grp_ids[0]].index.tolist()
     ctrl_mask = [x in ctrl_ids for x in dataset.obs_names]

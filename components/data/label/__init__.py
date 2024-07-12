@@ -11,6 +11,7 @@ def jsonifyable_float(x):
 
 def get_metadata_from_anndata(file: File):
   ad = anndata_from_file(file)
+  if not ad.obs.columns.shape[0]: ad.obs['index'] = ad.obs.index
   return {
     column: {
       row: jsonifyable_float(value)

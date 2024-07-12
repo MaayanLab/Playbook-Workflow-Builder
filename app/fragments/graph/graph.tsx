@@ -19,6 +19,7 @@ const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button')
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const ReportButton = dynamic(() => import('@/app/fragments/graph/report-button'))
+const ShareButton = dynamic(() => import('@/app/fragments/share-button'))
 
 
 /**
@@ -107,6 +108,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
               }}
             />
           </Breadcrumbs>
+          <ShareButton disabled={!!session_id} />
           <ImportButton session_id={session_id} />
           <CAVATICAButton session_id={session_id} />
           <RestartButton session_id={session_id} />

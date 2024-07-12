@@ -43,7 +43,7 @@ export default function ImportButton({ session_id }: { session_id?: string }) {
         <Icon
           icon={import_icon}
           className="fill-black dark:fill-white"
-          title="Import Workflow"
+          title="Import workflow from Playbook JSON"
         />
       </label>
     </>

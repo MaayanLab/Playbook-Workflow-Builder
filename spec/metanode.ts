@@ -17,6 +17,7 @@ import type { Codec } from '@/spec/codec'
 import type { MaybeArray, ExtractKey, Ensure } from '@/utils/types'
 import type { Icon } from '@/icons'
 import type { StaticImageData } from 'next/image'
+import Citable from '@/utils/citations'
 
 function identity<T>(value: T): T {
   return value
@@ -59,23 +60,23 @@ export type Story = {
   /**
    * A single sentence to add to the abstract about this step.
    */
-  abstract?: string,
+  abstract?: Citable | string,
   /**
    * A paragraph about this step to add to the introduction.
    */
-  introduction?: string,
+  introduction?: Citable | string,
   /**
    * A paragraph about this step to add to the methods.
    */
-  methods?: string,
+  methods?: Citable | string,
   /**
    * A paragraph about this step to add to the results.
    */
-  results?: string,
+  results?: Citable | string,
   /**
    * A figure legend describing this metanode's output figure.
    */
-  legend?: string,
+  legend?: Citable | string,
 }
 type FnArgs<T> = T extends (...args: infer A) => infer R ? A : never
 type FnCanReturnString<T> = T extends (...args: infer A) => infer R ? (...args: A) => R|string : never

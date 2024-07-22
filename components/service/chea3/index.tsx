@@ -3,6 +3,7 @@ import { chea3_icon } from '@/icons'
 import { z } from 'zod'
 import { GeneSet } from '@/components/core/set'
 import { GeneRanked } from '@/components/core/ranked'
+import Citable from '@/utils/citations'
 
 const chea3_url = 'https://maayanlab.cloud/chea3'
 
@@ -123,6 +124,6 @@ export const ChEA3TFEnrichmentAnalysis = MetaNode('ChEA3TFEnrichmentAnalysis')
     return { ranked: results.map(({ TF }) => TF) }
   })
   .story(props => ({
-    abstract: `Transcription Factor Enrichment Analysis was performed on ${props.inputs?.gene_set ? props.inputs.gene_set.description : 'the gene set'} using ChEA3 [\\ref{doi:10.1093/nar/gkz446}].`
+    abstract: Citable.text`Transcription Factor Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using ChEA3 [${Citable.doi('10.1093/nar/gkz446')}].`
   }))
   .build()

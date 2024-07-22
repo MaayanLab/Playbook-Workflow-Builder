@@ -2,6 +2,7 @@ import { ScoredGenes } from '@/components/core/scored'
 import { GeneSet } from '@/components/core/set'
 import { idg_icon } from '@/icons'
 import { MetaNode } from '@/spec/metanode'
+import Citable from '@/utils/citations'
 import * as dict from '@/utils/dict'
 
 async function idg_filter(kind: string) {
@@ -40,7 +41,7 @@ export const IDGFilterT = [
       const filterSet = await idg_filter(kind)
       return props.inputs.input.filter(({ term }) => filterSet.has(term.toLocaleLowerCase()))
     })
-    .story(props => ({ abstract: `Genes were filtered by IDG ${label} [\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}].` }))
+    .story(props => ({ abstract: Citable.text`Genes were filtered by IDG ${label} [${Citable.cite('IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList')}].` }))
     .build(),
   MetaNode(`IDGFilter[${GeneSet.spec}, ${kind}]`)
     .meta({
@@ -58,6 +59,6 @@ export const IDGFilterT = [
         set: props.inputs.input.set.filter((term) => filterSet.has(term.toLocaleLowerCase())),
       }
     })
-    .story(props => ({ abstract: `Genes were filtered by IDG ${label} [\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}].` }))
+    .story(props => ({ abstract: Citable.text`Genes were filtered by IDG ${label} [${Citable.cite('IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList')}].` }))
     .build(),
 ])

@@ -7,6 +7,7 @@ import * as math from '@/utils/math'
 import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
 import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
 import { DrugSet } from '@/components/core/set'
+import Citable from '@/utils/citations'
 
 export const drugshot_url = 'https://maayanlab.cloud/drugshot'
 
@@ -80,7 +81,7 @@ export const DrugShotTermSearchT = [
         return await drugshot_term_search({ rif: rc, term: props.inputs.term })
       })
       .story(props => ({
-        abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-drug co-mentions on PubMed were queried with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
+        abstract: Citable.text`${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-drug co-mentions on PubMed were queried with DrugShot based on ${label} [${Citable.doi('10.1186/s12859-022-04590-5')}].`
       }))
       .build()
   ])
@@ -146,7 +147,7 @@ export const DrugShotDrugSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `The drug set${props.inputs && props.inputs.drugset.description ? ` containing ${props.inputs.drugset.description}` : ''} was augmented with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
+      abstract: Citable.text`The drug set${props.inputs && props.inputs.drugset.description ? ` containing ${props.inputs.drugset.description}` : ''} was augmented with DrugShot based on ${label} [${Citable.doi('10.1186/s12859-022-04590-5')}].`
     }))
     .build(),
   MetaNode(`DrugShotDrugAugmentation[${rc}]`)
@@ -181,7 +182,7 @@ export const DrugShotDrugSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `${props.inputs?.drug ? props.inputs.drug : 'The drug'} was augmented with DrugShot based on ${label} [\\ref{doi:10.1186/s12859-022-04590-5}].`
+      abstract: Citable.text`${props.inputs?.drug ? props.inputs.drug : 'The drug'} was augmented with DrugShot based on ${label} [${Citable.doi('10.1186/s12859-022-04590-5')}].`
     }))
     .build(),
 ])

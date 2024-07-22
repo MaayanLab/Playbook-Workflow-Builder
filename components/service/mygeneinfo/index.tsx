@@ -2,6 +2,7 @@ import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/term'
 import { z } from 'zod'
 import { gene_icon, mygeneinfo_icon } from '@/icons'
+import Citable from '@/utils/citations'
 
 export const MyGeneInfoHitC = z.object({
   hits: z.array(
@@ -75,6 +76,6 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     return await getGeneData(props.inputs.gene);
   })
   .story(props => ({
-    abstract: `More information about the gene was then obtained with the MyGene.info API [\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}].`
+    abstract: Citable.text`More information about the gene was then obtained with the MyGene.info API [${Citable.doi('10.1186/s13059-016-0953-9')},${Citable.doi('10.1093/nar/gks1114')}].`
   }))
   .build()

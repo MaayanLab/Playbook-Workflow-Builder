@@ -8,6 +8,7 @@ import { resolveVariantCaID, variantIdResolveErrorMessage, getMyVarintInfoLink, 
 import { getAlleleRegistryVariantInfo, getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { AlleleRegistryExternalRecordsTable, VariantSetExternalRecordsInfo, getExternalRecordsFromAlleleRegistry } from './externalRecords'
 import { getVariantInfoFromMyVariantInfo } from './variantInfoSources/myVariantInfo'
+import Citable from '@/utils/citations'
 
 const HG38SingleGeneAssociationsC = z.object({
     distance_to_feature : z.string().optional(),
@@ -201,7 +202,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
     return processHG38ExternalRecordsResponse(response);
   })
-  .story(props => ({ abstract: `The closest gene to the variant was extract from the MyVariant.info API results [\\ref{doi:10.1093/bioinformatics/btac017}].` }))
+  .story(props => ({ abstract: Citable.text`The closest gene to the variant was extract from the MyVariant.info API results [${Citable.doi('10.1093/bioinformatics/btac017')}].` }))
   .build()
 
   export const GetVariantToGeneAssociation_HG38 = MetaNode('GetVariantToGeneAssociation_HG38')

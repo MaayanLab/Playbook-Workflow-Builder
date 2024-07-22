@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import python from '@/utils/python'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import { norm_icon } from '@/icons'
+import Citable from '@/utils/citations'
 
 
 export const QuantileNormalizeGeneCountMatrix = MetaNode('QuantileNormalizeGeneCountMatrix')
@@ -19,6 +20,6 @@ export const QuantileNormalizeGeneCountMatrix = MetaNode('QuantileNormalizeGeneC
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => ({
-    abstract: `The gene count matrix was then quantile normalized [\\ref{doi:10.1038/s41598-020-72664-6}].`,
+    abstract: Citable.text`The gene count matrix was then quantile normalized [${Citable.doi('10.1038/s41598-020-72664-6')}].`,
   }))
   .build()

@@ -4,6 +4,7 @@ import { GeneSet } from '@/components/core/set'
 import { ConvertedGeneID } from '@/components/MW/ConvertedGeneID'
 import { uniqJsonSubset } from '@/components/MW/ConvertedGeneID'
 import { metabolomicsworkbench_icon } from '@/icons'
+import Citable from '@/utils/citations'
 
 // A unique name for your resolver is used here
 export const GeneIDConv = MetaNode('GeneIDConv')
@@ -35,7 +36,7 @@ export const GeneIDConv = MetaNode('GeneIDConv')
     return res
   })
   .story(props => ({
-    abstract: `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
+    abstract: Citable.text`The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API [${Citable.cite('Gene ID Conversion Tool, https://bdcw.org/geneid/')}].`
   }))
   .build()
 
@@ -69,7 +70,7 @@ export const GeneSetIDConv = MetaNode('GeneSetIDConv')
     return res
   })
   .story(props => ({
-    abstract: `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}].`
+    abstract: Citable.text`The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API [${Citable.cite('Gene ID Conversion Tool, https://bdcw.org/geneid/')}].`
   }))
   .build()
 

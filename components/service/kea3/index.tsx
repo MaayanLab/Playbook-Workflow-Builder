@@ -3,6 +3,7 @@ import { kea3_icon } from '@/icons'
 import { z } from 'zod'
 import { GeneSet } from '@/components/core/set'
 import { GeneRanked } from '@/components/core/ranked'
+import Citable from '@/utils/citations'
 
 const kea3_url = 'https://maayanlab.cloud/kea3'
 
@@ -123,6 +124,6 @@ export const KEA3KinaseEnrichmentAnalysis = MetaNode('KEA3KinaseEnrichmentAnalys
     return { ranked: results.map(({ TF }) => TF) }
   })
   .story(props => ({
-    abstract: `Kinase Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using KEA3 [\\ref{doi:10.1093/nar/gkab359}].`
+    abstract: Citable.text`Kinase Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using KEA3 [${Citable.doi('10.1093/nar/gkab359')}].`
   }))
   .build()

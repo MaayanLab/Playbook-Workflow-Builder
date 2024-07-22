@@ -7,6 +7,7 @@ import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
 import { Disease, Drug, Gene, Pathway, Phenotype, Tissue } from '@/components/core/primitives'
 import { DiseaseTerm, DrugTerm, GeneTerm, PathwayTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
+import Citable from '@/utils/citations'
 
 export const geneshot_url = 'https://maayanlab.cloud/geneshot'
 
@@ -80,7 +81,7 @@ export const GeneshotTermSearchT = [
         return await geneshot_term_search({ rif: rc, term: props.inputs.term })
       })
       .story(props => ({
-        abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-gene co-mentions on PubMed were queried with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
+        abstract: Citable.text`${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-gene co-mentions on PubMed were queried with Geneshot based on ${label} [${Citable.doi('10.1093/nar/gkz393')}].`
       }))
       .build()
   ])
@@ -154,7 +155,7 @@ export const GeneshotGeneSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `The gene set${props.inputs?.geneset?.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
+      abstract: Citable.text`The gene set${props.inputs?.geneset?.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label} [${Citable.doi('10.1093/nar/gkz393')}].`
     }))
     .build(),
   MetaNode(`GeneshotGeneAugmentation[${rc}]`)
@@ -189,7 +190,7 @@ export const GeneshotGeneSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label} [\\ref{doi:10.1093/nar/gkz393}].`
+      abstract: Citable.text`${props.inputs?.gene ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label} [${Citable.doi('10.1093/nar/gkz393')}].`
     }))
     .build(),
 ])

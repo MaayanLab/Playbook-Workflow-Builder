@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { additional_info_icon, gene_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { GetGeneSetIDConv } from '@/components/MW/ConvertedGeneID'
+import Citable from '@/utils/citations'
 
 // How the schema validation works: https://codex.so/zod-validation-en
 
@@ -235,7 +236,7 @@ export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
   return PPIobj
 })
 .story(props => ({
-  abstract: `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API [\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}].`
+  abstract: Citable.text`For the given gene ID (SYMBOL), StringDB PPI was extracted using their API [${Citable.cite('STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set')}].`
 }))
 .build()
 

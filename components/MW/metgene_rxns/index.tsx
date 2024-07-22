@@ -3,6 +3,7 @@ import { GeneSet } from '@/components/core/set'
 import { MetGeneRxnTable } from '@/components/MW/metgene_rxn_table'
 import { metgene_icon } from '@/icons'
 import { MetGeneSummary } from '@/components/MW/metgene_summary'
+import Citable from '@/utils/citations'
 
 // A unique name for your resolver is used here
 export const MetGeneRxns = MetaNode('MetGeneRxns')
@@ -34,7 +35,7 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
 
   })
   .story(props => ({
-    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+    abstract: Citable.text`${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [${Citable.cite('The Metabolomics Workbench, https://www.metabolomicsworkbench.org/')}] to identify relevant reactions.`
   }))
   .build()
 
@@ -66,6 +67,6 @@ export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
 
   })
   .story(props => ({
-    abstract: `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant reactions.`
+    abstract: Citable.text`The gene set was then searched in the Metabolomics Workbench [${Citable.cite('The Metabolomics Workbench, https://www.metabolomicsworkbench.org/')}] to identify relevant reactions.`
   }))
   .build()

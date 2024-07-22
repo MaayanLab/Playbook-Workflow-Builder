@@ -1,6 +1,7 @@
 import { ScoredDrugs } from "@/components/core/scored"
 import { DrugSet } from "@/components/core/set"
 import { MetaNode } from "@/spec/metanode"
+import Citable from "@/utils/citations"
 import python from "@/utils/python"
 
 export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Drug]]`)
@@ -16,7 +17,7 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
       message => props.notify({ type: 'info', message }),
     )
   )
-  .story(props => ({ abstract: `The drug set was filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].` }))
+  .story(props => ({ abstract: Citable.text`The drug set was filtered by FDA Approved Drugs with the help of PubChem APIs [${Citable.doi('10.1093/nar/gkac956')}].` }))
   .build()
 
   export const FilterFDAApprovedScoredDrugs = MetaNode(`FilterFDAApprovedDrugs[Scored[Drug]]`)
@@ -32,5 +33,5 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
       message => props.notify({ type: 'info', message }),
     )
   )
-  .story(props => ({ abstract: `The drugs were filtered by FDA Approved Drugs with the help of PubChem APIs [\\ref{doi:10.1093/nar/gkac956}].` }))
+  .story(props => ({ abstract: Citable.text`The drugs were filtered by FDA Approved Drugs with the help of PubChem APIs [${Citable.doi('10.1093/nar/gkac956')}].` }))
   .build()

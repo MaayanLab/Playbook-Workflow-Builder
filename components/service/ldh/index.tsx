@@ -4,6 +4,7 @@ import { RegulatoryElementSet } from '@/components/core/set'
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { linkeddatahub_icon } from '@/icons'
 import { z } from 'zod'
+import Citable from '@/utils/citations'
 
 export const MyGeneInfoByTermC = z.object({
   data: z.object({
@@ -48,7 +49,7 @@ export const GetRegulatoryElementsForGeneInfo = MetaNode('GetRegulatoryElementsF
     return reSet;
   })
   .story(props => ({
-    abstract: `Regulatory elements were obtained from the CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
+    abstract: Citable.text`Regulatory elements were obtained from the CFDE Linked Data Hub [${Citable.cite('CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/')}].`
   }))
   .build()
 
@@ -61,6 +62,6 @@ export const GetRegulatoryElementsForGeneInfoFromGene = MetaNode('GetRegulatoryE
     return await GetRegulatoryElementsForGeneInfo.resolve({ ...props, inputs: { geneInfo } })
   })
   .story(props => ({
-    abstract: `Regulatory elements were obtained from the CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`
+    abstract: Citable.text`Regulatory elements were obtained from the CFDE Linked Data Hub [${Citable.cite('CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/')}].`
   }))
   .build()

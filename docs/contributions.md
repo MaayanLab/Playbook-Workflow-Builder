@@ -172,11 +172,11 @@ export const ResolverName = MetaNode('ResolverName')
   .story(props => ({
     // each of these are optional but recommended:
     // this is a sentence placed in the abstract
-    abstract: `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].`,
+    abstract: Citable.text`We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [${Citable.doi('somedoi')}].`,
     // this should be a paragraph for the introduction section
     introduction: `A common function used is the Identity function.`,
     // this should be a paragraph for the methods section
-    methods: `The identity function does absolutely nothing when applied to genes, as shown in [\\ref{doi:somedoi}].`,
+    methods: Citable.text`The identity function does absolutely nothing when applied to genes, as shown in [${Citable.doi('somedoi')}].`,
     // this will appear as the figure legend of the resulting figure
     legend: `This gene shows exactly what we started with.`,
   }))
@@ -211,7 +211,7 @@ export const ResolverName = MetaNode('ResolverName')
       message => props.notify({ type: 'info', message }),
     )
   })
-  .story(props => ({ abstract: `We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [\\ref{doi:somedoi}].` }))
+  .story(props => ({ abstract: Citable.text`We applied the identity function to ${props.input ? props.input.gene : 'the gene'} [${Citable.doi('somedoi')}].` }))
   .build()
 
 ```

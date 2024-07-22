@@ -3,6 +3,7 @@ import { MetaNode} from '@/spec/metanode';
 import python from '@/utils/python'
 import { GeneSignature } from '@/components/data/gene_signature'
 import { AnnData } from '@/components/data/anndata'
+import Citable from '@/utils/citations';
 
 export const LimmaVoom = MetaNode('Limma-Voom')
   .meta({
@@ -19,6 +20,6 @@ export const LimmaVoom = MetaNode('Limma-Voom')
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => ({
-    abstract: `The AnnData file was then analyzed using differential expression by Limma-Voom [\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}].`,
+    abstract: Citable.text`The AnnData file was then analyzed using differential expression by Limma-Voom [${Citable.doi('10.1186/gb-2014-15-2-r29')}, ${Citable.doi('10.1093/nar/gkv007')}].`,
   }))
   .build()

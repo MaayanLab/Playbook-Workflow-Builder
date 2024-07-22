@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { metgene_icon, plot_icon } from '@/icons'
 import { GeneTerm } from '@/components/core/term'
 import dynamic from 'next/dynamic'
+import Citable from '@/utils/citations'
 
 const IFrame = dynamic(() => import('@/app/components/IFrame'))
 
@@ -38,6 +39,6 @@ export const MetGeneSearch = MetaNode('MetGeneSearch')
     return { gene: props.inputs.gene }
   })
   .story(props => ({
-    abstract: `The gene was searched with the MetGENE tool providing pathways, reactions, metabolites, and studies from the Metabolomics Workbench [\\ref{MetGENE, https://sc-cfdewebdev.sdsc.edu/MetGENE/metGene.php}].`
+    abstract: Citable.text`The gene was searched with the MetGENE tool providing pathways, reactions, metabolites, and studies from the Metabolomics Workbench [${Citable.cite('MetGENE, https://sc-cfdewebdev.sdsc.edu/MetGENE/metGene.php')}].`
   }))
   .build()

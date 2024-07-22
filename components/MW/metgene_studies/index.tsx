@@ -3,6 +3,7 @@ import { GeneSet } from '@/components/core/set'
 import { MetGeneStudyTable } from '@/components/MW/metgene_study_table'
 import { metgene_icon, additional_info_icon, gene_icon, set_icon } from '@/icons'
 import { MetGeneSummary } from '@/components/MW/metgene_summary'
+import Citable from '@/utils/citations'
 
 // A unique name for your resolver is used here
 export const MetGeneStudies = MetaNode('MetGeneStudies')
@@ -35,7 +36,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     return  res
   })
   .story(props => ({
-    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant studies related to the gene.`
+    abstract: Citable.text`${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench [${Citable.cite('The Metabolomics Workbench, https://www.metabolomicsworkbench.org/')}] to identify relevant studies related to the gene.`
   }))
   .build()
 
@@ -69,6 +70,6 @@ export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
     return  res
   })
   .story(props => ({
-    abstract: `The gene set was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to identify relevant studies related to the genes.`
+    abstract: Citable.text`The gene set was then searched in the Metabolomics Workbench [${Citable.cite('The Metabolomics Workbench, https://www.metabolomicsworkbench.org/')}] to identify relevant studies related to the genes.`
   }))
   .build()

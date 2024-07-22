@@ -3,6 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import python from '@/utils/python'
 import { GeneSignature } from '@/components/data/gene_signature'
 import { AnnData } from '@/components/data/anndata'
+import Citable from '@/utils/citations'
 
 export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
   .meta({
@@ -19,5 +20,5 @@ export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
     { kargs: [props.inputs.anndata] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `Characteristic direction [\\ref{doi:10.1186/1471-2105-15-79}] is applied to the input anndata${props.inputs && props.inputs.anndata.description ? ` containing ${props.inputs.anndata.description}` : ''}.` }))
+  .story(props => ({ abstract: Citable.text`Characteristic direction [${Citable.doi('10.1186/1471-2105-15-79')}] is applied to the input anndata${props.inputs && props.inputs.anndata.description ? ` containing ${props.inputs.anndata.description}` : ''}.` }))
   .build()

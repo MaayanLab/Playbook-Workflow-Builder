@@ -5,6 +5,7 @@ import * as dict from '@/utils/dict'
 import { ScoredDrugs, ScoredGenes } from '@/components/core/scored'
 import { GeneSet } from '@/components/core/set'
 import { drug_icon, gene_icon, lincs_icon, set_icon, weighted_icon } from '@/icons'
+import Citable from '@/utils/citations'
 
 const sigcom_lincs_url = 'https://maayanlab.cloud/sigcom-lincs'
 
@@ -162,7 +163,7 @@ export const SigComLINCSSignatureSearch = MetaNode(`SigComLINCSSignatureSearch`)
     const results = await sigcom_meta_user_input_signature({ up_entities, down_entities })
     return { id: results.id, up_entities, down_entities }
   })
-  .story(props => ({ abstract: `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS [\\ref{doi:10.1093/nar/gkac328}].` }))
+  .story(props => ({ abstract: Citable.text`Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS [${Citable.doi('10.1093/nar/gkac328')}].` }))
   .build()
 
 export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigComLINCSSignatureSearch[LINCS L1000 Chemical Perturbagens]`)
@@ -248,7 +249,7 @@ export const SigComLINCSGeneSetSearch = MetaNode(`SigComLINCSGeneSetSearch`)
     const results = await sigcom_meta_user_input_signature({ entities })
     return { id: results.id, entities }
   })
-  .story(props => ({ abstract: `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS [\\ref{doi:10.1093/nar/gkac328}].` }))
+  .story(props => ({ abstract: Citable.text`Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS [${Citable.doi('10.1093/nar/gkac328')}].` }))
   .build()
 
 export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigComLINCSGeneSetSearch[LINCS L1000 Chemical Perturbagens]`)

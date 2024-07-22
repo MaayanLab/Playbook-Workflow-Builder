@@ -6,6 +6,7 @@ import read_csv from '@/utils/csv'
 import { z } from 'zod'
 import { Cell, Column, Table } from '@/app/components/Table'
 import { downloadBlob } from '@/utils/download'
+import Citable from '@/utils/citations'
 
 async function archs4_tissue_expression({ search, species = 'human', type = 'tissue' }: { search: string, species?: string, type?: string }) {
   const params = new URLSearchParams()
@@ -36,7 +37,7 @@ export const ARCHS4TissueExpression = MetaNode('ARCHS4TissueExpression')
     return await archs4_tissue_expression({ search: props.inputs.gene })
   })
   .story(props => ({
-    abstract: `Median expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} was obtained from ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`
+    abstract: Citable.text`Median expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} was obtained from ARCHS4 [${Citable.doi('10.1038/s41467-018-03751-6')}].`
   }))
   .build()
 
@@ -111,6 +112,6 @@ export const ARCHS4SignatureSearchT = [
       }).parse(await req.json()).samples.map(sample => `GSM${sample}`)
     }
   })
-  .story(props => ({ abstract: `Reversers and mimickers from GEO signatures were identified using ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].` }))
+  .story(props => ({ abstract: Citable.text`Reversers and mimickers from GEO signatures were identified using ARCHS4 [${Citable.doi('10.1038/s41467-018-03751-6')}].` }))
   .build()
 )

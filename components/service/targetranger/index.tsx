@@ -4,10 +4,11 @@ import { ScoredGenes } from '@/components/core/scored'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import python from '@/utils/python'
 import { archs4_icon, gtex_icon, targetranger_icon } from '@/icons'
+import Citable from '@/utils/citations'
 
 export const TargtRangerScreenTargetsT = [
-  { label: 'GTEx', bg: 'GTEx_transcriptomics', icon: gtex_icon, ref: '\\ref{doi:10.1038/ng.2653}', },
-  { label: 'ARCHS4', bg: 'ARCHS4', icon: archs4_icon, ref: '\\ref{doi:10.1038/s41467-018-03751-6}', },
+  { label: 'GTEx', bg: 'GTEx_transcriptomics', icon: gtex_icon, ref: Citable.doi('10.1038/ng.2653'), },
+  { label: 'ARCHS4', bg: 'ARCHS4', icon: archs4_icon, ref: Citable.doi('10.1038/s41467-018-03751-6'), },
   ].map(({ label, bg, ref, icon }) =>
   MetaNode(`TargetRangerScreenTargets[${bg}]`)
     .meta({
@@ -24,6 +25,6 @@ export const TargtRangerScreenTargetsT = [
         message => props.notify({ type: 'info', message }),
       )
     })
-    .story(props => ({ abstract: `Significantly over-expressed genes when compared to normal tissue in ${label} [${ref}] were identified.` }))
+    .story(props => ({ abstract: Citable.text`Significantly over-expressed genes when compared to normal tissue in ${label} [${ref}] were identified.` }))
     .build()
 )

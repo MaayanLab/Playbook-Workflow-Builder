@@ -6,6 +6,7 @@ import {
   idg_icon,
   lincs_icon,
 } from '@/icons'
+import Citable from '@/utils/citations'
 
 export const Disease_backgrounds = [
   {
@@ -15,7 +16,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1093/nar/gks1193}`,
+    ref: Citable.doi('10.1093/nar/gks1193'),
     icon: [],
     tags: {
       'Data Source': {
@@ -30,7 +31,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+) (?<gse>[^ ]+)$/,
     termLabel: 'GEO Disease Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1093/nar/gks1193}`,
+    ref: Citable.doi('10.1093/nar/gks1193'),
     icon: [],
     tags: {
       'Data Source': {
@@ -45,7 +46,7 @@ export const Disease_backgrounds = [
     termRe: /^GTEx (?<term>.+)$/,
     termLabel: 'GTEx Aging Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1038/ng.265}`,
+    ref: Citable.doi('10.1038/ng.265'),
     icon: [gtex_icon],
     tags: {
       'Data Source': {
@@ -60,7 +61,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
-    ref: `\\ref{GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif}`,
+    ref: Citable.cite('GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif'),
     icon: [],
   },
   {
@@ -70,7 +71,7 @@ export const Disease_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'GeneRIF Rare Diseases',
     termAssociation: 'Containing',
-    ref: `\\ref{GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif}`,
+    ref: Citable.cite('GeneRIF, https://www.ncbi.nlm.nih.gov/gene/about-generif'),
     icon: [],
   },
 ]
@@ -83,7 +84,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<term>.+) (?<direction>Up|Down)$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1093/nar/gkac328}`,
+    ref: Citable.doi('10.1093/nar/gkac328'),
     icon: [lincs_icon],
     tags: {
       'Data Source': {
@@ -98,7 +99,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<desc>.+?-(?<term>.+)-(?<concentration>.+?))$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
+    ref: Citable.doi('10.1016/j.cell.2017.10.049'),
     icon: [lincs_icon],
     tags: {
       'Data Source': {
@@ -113,7 +114,7 @@ export const Drug_backgrounds = [
     termRe: /^(?<desc>.+?-(?<term>.+)-(?<concentration>.+?))$/,
     termLabel: 'L1000 Chem Pert Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1016/j.cell.2017.10.049}`,
+    ref: Citable.doi('10.1016/j.cell.2017.10.049'),
     icon: [lincs_icon],
     tags: {
       'Data Source': {
@@ -146,7 +147,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)\((?<xref>.+?)\)$/,
     termLabel: 'GO Biological Processes',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1038/75556}`,
+    ref: Citable.doi('10.1038/75556'),
     icon: [],
   },
   {
@@ -156,7 +157,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)\((?<xref>.+?)\)$/,
     termLabel: 'GO Biological Processes',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1038/75556}`,
+    ref: Citable.doi('10.1038/75556'),
     icon: [],
     hidden: true,
   },
@@ -170,7 +171,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1002/pro.3715}`,
+    ref: Citable.doi('10.1002/pro.3715'),
     icon: [],
     hidden: true,
   },
@@ -184,7 +185,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: `\\ref{doi:10.1002/pro.3715}`,
+    ref: Citable.doi('10.1002/pro.3715'),
     icon: [],
   },
   {
@@ -197,7 +198,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1093/nar/gkac963}`,
+    ref: Citable.doi('10.1093/nar/gkac963'),
     icon: [],
   },
   {
@@ -207,7 +208,7 @@ export const Pathway_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'MSigDB Hallmark Gene Sets',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1073/pnas.0506580102}`,
+    ref: Citable.doi('10.1073/pnas.0506580102'),
     icon: [],
   },
   {
@@ -220,7 +221,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
+    ref: Citable.doi('10.1093/nar/gkaa1024'),
     icon: [],
   },
   {
@@ -233,7 +234,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
+    ref: Citable.doi('10.1093/nar/gkaa1024'),
     icon: [],
     hidden: true,
   },
@@ -247,7 +248,7 @@ export const Pathway_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: `\\ref{doi:10.1093/nar/gkaa1024}`,
+    ref: Citable.doi('10.1093/nar/gkaa1024'),
     icon: [],
     hidden: true,
   },
@@ -264,7 +265,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1093/nar/gkac1010}`,
+    ref: Citable.doi('10.1093/nar/gkac1010'),
     icon: [],
   },
   {
@@ -277,7 +278,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1371/journal.pmed.1001779}`,
+    ref: Citable.doi('10.1371/journal.pmed.1001779'),
     icon: [],
   },
   {
@@ -290,7 +291,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1093/nar/gkx1153}`,
+    ref: Citable.doi('10.1093/nar/gkx1153'),
     icon: [],
   },
   {
@@ -303,7 +304,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1093/nar/gkaa1043}`,
+    ref: Citable.doi('10.1093/nar/gkaa1043'),
     icon: [],
   },
   {
@@ -316,7 +317,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
+    ref: Citable.doi('10.1093/nar/gkaa1083'),
     icon: [],
   },
   {
@@ -329,7 +330,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: `\\ref{doi:10.1093/nar/gkaa1083}`,
+    ref: Citable.doi('10.1093/nar/gkaa1083'),
     icon: [],
     hidden: true,
   },
@@ -343,7 +344,7 @@ export const Phenotype_backgrounds = [
     extra: {
       organism: 'mouse',
     },
-    ref: `\\ref{doi:10.1093/nar/gkac972}`,
+    ref: Citable.doi('10.1093/nar/gkac972'),
     icon: [],
     tags: {
       'Data Source': {
@@ -364,7 +365,7 @@ export const Tissue_backgrounds = [
     extra: {
       organism: 'human',
     },
-    ref: `\\ref{doi:10.1038/ng.2653}`,
+    ref: Citable.doi('10.1038/ng.2653'),
     icon: [gtex_icon],
     tags: {
       'Data Source': {
@@ -379,7 +380,7 @@ export const Tissue_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'ARCHS4 Tissue Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
+    ref: Citable.doi('10.1038/s41467-018-03751-6'),
     icon: [archs4_icon],
     tags: {
       'Data Source': {
@@ -394,7 +395,7 @@ export const Tissue_backgrounds = [
     termRe: /^(?<cell_type>.+) - (?<term>.+?)$/,
     termLabel: 'HuBMAP ASCT+B Cell Type Biomarkers',
     termAssociation: 'Containing',
-    ref: `\\ref{HuBMAP ASCT+B Reporter, https://hubmapconsortium.github.io/ccf-asct-reporter/}`,
+    ref: Citable.cite('HuBMAP ASCT+B Reporter, https://hubmapconsortium.github.io/ccf-asct-reporter/'),
     icon: [],
     tags: {
       'Data Source': {
@@ -409,7 +410,7 @@ export const Tissue_backgrounds = [
     termRe: /^(\w+?)-(?<term>.+?) (Consensus|(?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down))$/,
     termLabel: 'MoTrPAC Exercise Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1016/j.cell.2020.06.004}`,
+    ref: Citable.doi('10.1016/j.cell.2020.06.004'),
     icon: [],
     tags: {
       'Data Source': {
@@ -427,7 +428,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+?) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ChEA Transcription Factors',
     termAssociation: 'Targeting',
-    ref: `\\ref{doi:10.1093/nar/gkz446}`,
+    ref: Citable.doi('10.1093/nar/gkz446'),
     icon: [],
   },
   {
@@ -437,7 +438,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<origin>.+) (?<organism>[^ ]+)$/,
     termLabel: 'ENCODE Transcription Factors',
     termAssociation: 'Targeting',
-    ref: `\\ref{doi:10.1038/nature11247}`,
+    ref: Citable.doi('10.1038/nature11247'),
     icon: [],
   },
   {
@@ -447,7 +448,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>[^ ]+) (?<organism>[^ ]+) (?<origin>.+)$/,
     termLabel: 'ARCHS4 Transcription Factors',
     termAssociation: 'Correlated with',
-    ref: `\\ref{doi:10.1038/s41467-018-03751-6}`,
+    ref: Citable.doi('10.1038/s41467-018-03751-6'),
     icon: [archs4_icon],
   },
   {
@@ -457,7 +458,7 @@ export const Gene_backgrounds = [
     termRe: /^(?<term>.+) (?<direction>.+)$/,
     termLabel: 'L1000 CRISPR KO Signatures',
     termAssociation: 'Containing',
-    ref: `\\ref{doi:10.1093/nar/gkac328}`,
+    ref: Citable.doi('10.1093/nar/gkac328'),
     icon: [lincs_icon],
     tags: {
       'Data Source': {
@@ -475,7 +476,7 @@ export const Glycan_backgrounds = [
     termRe: /^(?<term>.+)$/,
     termLabel: 'Glycans',
     termAssociation: 'Glycosylating',
-    ref: `\\ref{doi:10.1093/glycob/cwz080}`,
+    ref: Citable.doi('10.1093/glycob/cwz080'),
     icon: [glygen_icon],
     tags: {
       'Data Source': {
@@ -493,7 +494,7 @@ export const Metabolite_backgrounds = [
     termRe: /^(\w+?)-(?<tissue>.+?) (?<gender>Male|Female) (?<timepoint>\w+) (?<dir>Up|Down)$/,
     termLabel: 'Metabolites',
     termAssociation: 'Associated with',
-    ref: `\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}`,
+    ref: Citable.cite('The Metabolomics Workbench, https://www.metabolomicsworkbench.org/'),
     icon: [],
     tags: {
       'Data Source': {

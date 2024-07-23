@@ -51,6 +51,14 @@ export default function SiteMap() {
                     </div>
                   </div>
                 </Link>
+                <Link href="/compoonents">
+                  <div className="card card-compact card-bordered col-span-1 bg-base-100 shadow shadow-slate-300 hover:shadow-slate-600 hover:cursor-pointer">
+                    <div className="card-body prose max-w-none">
+                      <h4 className="card-title">Component Catalog</h4>
+                      <p>A listing of playbook components.</p>
+                    </div>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>

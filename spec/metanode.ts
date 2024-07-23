@@ -49,6 +49,7 @@ export type InternalIdentifiableMetaNode = {
     // a estimate for how long this usually takes in milliseconds
     durationEstimate?: number,
     // package.json
+    package?: string,
     version?: string,
     author?: string,
     license?: string,
@@ -356,7 +357,7 @@ MetaNode.createProcess = (spec: string) => {
   return MetaNode(spec)
 }
 
-export function MetaNodesFromExports(exports: Record<string, MetaNode[] | MetaNode | unknown>, packageJson: { version: string, license: string, author: string }) {
+export function MetaNodesFromExports(exports: Record<string, MetaNode[] | MetaNode | unknown>, packageJson: { name: string, version: string, license: string, author: string }) {
   const metanodes: MetaNode[] = []
   for (const key in exports) {
     const value = exports[key]
@@ -364,6 +365,7 @@ export function MetaNodesFromExports(exports: Record<string, MetaNode[] | MetaNo
     for (const value of valueArray) {
       if (typeof value === 'object' && value !== null && 'spec' in value) {
         const metanode = value as MetaNode
+        if (!metanode.meta.package) metanode.meta.package = packageJson.name
         if (!metanode.meta.version) metanode.meta.version = packageJson.version
         if (!metanode.meta.license) metanode.meta.license = packageJson.license
         if (!metanode.meta.author) metanode.meta.author = packageJson.author

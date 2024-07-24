@@ -11,6 +11,7 @@ import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
 import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
+import { References } from './story'
 
 const Introduction = dynamic(() => import('@/app/fragments/report/introduction'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -209,6 +210,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
               setCellMetadata={setCellMetadata}
             />
           ))}
+          <References />
         </StoryProvider>
       </SessionStatus>
     </div>

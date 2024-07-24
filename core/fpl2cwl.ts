@@ -74,6 +74,12 @@ export function cwl_cli_for_component(component: ProcessMetaNode) {
 
 export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }) {
   const { processLookup, story } = await fpl_expand(props)
+  let doc: string
+  if (props.metadata?.description) {
+    doc = props.metadata.description
+  } else {
+    doc = story.ast.flatMap(part => part.tags.includes('abstract') ? [part.type === 'bibitem' ? '\n' : '', part.text] : []).join('')
+  }
   return {
     ...dict.init(array.unique(dict.values(processLookup).map(({ metanode }) => metanode)).map(metanode => ({
       key: `${metanode.spec}.cwl`,
@@ -83,7 +89,7 @@ export async function cwl_for_playbook(props: { krg: KRG, fpl: FPL, metadata?: M
       cwlVersion: 'v1.2',
       class: 'Workflow',
       label: props.metadata?.title,
-      doc: props.metadata?.description ?? story,
+      doc,
       requirements: {},
       inputs: dict.init(dict.values(processLookup).filter(({ metanode }) => 'codec' in metanode).map(({ index, node, metanode }) => ({
         key: `step-${index+1}-data`,

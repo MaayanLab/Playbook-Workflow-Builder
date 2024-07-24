@@ -25,8 +25,14 @@ function parseMetaNodeAuthor(author: string) {
 
 export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<BCO> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
+  let usability_domain: [string]
+  if (props.metadata?.description) {
+    usability_domain = [props.metadata.description]
+  } else {
+    usability_domain = [story.ast.flatMap(part => part.tags.includes('abstract') ? [part.type === 'bibitem' ? '\n' : '', part.text] : []).join('')]
+  }
   const baseBCO: BaseBCO = {
-    usability_domain: [story],
+    usability_domain,
     provenance_domain: {
       embargo: {}, // ?
       name: props.metadata?.title || 'Playbook',

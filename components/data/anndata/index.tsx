@@ -3,7 +3,7 @@ import { MetaNode } from '@/spec/metanode'
 import { FileURL, FileC, FilePrompt } from '@/components/core/file'
 import python from '@/utils/python'
 import { z } from 'zod'
-import { datafile_icon, file_icon, file_transfer_icon, transpose_icon } from '@/icons'
+import { datafile_icon, file_icon, file_transfer_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { GeneCountMatrix } from '../gene_count_matrix'
@@ -57,6 +57,9 @@ export const AnnDataFromFile = MetaNode('AnnDataFromFile')
   ))
   .story(props => ({
     abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`,
+    introduction: 'The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.',
+    methods: 'Gene expression count matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.',
+    legend: 'A table showing the basic structure and shape of the uploaded annotated gene count matrix.',
   }))
   .build()
 
@@ -86,6 +89,9 @@ export const AnnDataFileUpload = MetaNode('AnnDataFileUpload')
   ))
   .story(props => ({
     abstract: `An anndata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+    introduction: 'The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.',
+    methods: 'Gene expression count matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.',
+    legend: 'A table showing the basic structure and shape of the uploaded annotated gene count matrix.',
   }))
   .build()
 
@@ -104,5 +110,8 @@ export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFrom
   ))
   .story(props => ({
     abstract: `An AnnData file was prepared from the input data${props.inputs && props.inputs.gene_count_matrix.description ? ` containing ${props.inputs.gene_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`,
+    introduction: 'The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.',
+    methods: 'Gene expression count matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.',
+    legend: 'A table showing the basic structure and shape of the uploaded annotated gene count matrix.',
   }))
   .build()

@@ -362,7 +362,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 
     return response;
   }).story(props => ({
-    abstract: `CTD is applied which diffuses through all nodes in STRING [\\ref{doi:10.1093/nar/gku1003}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
+    abstract: `CTD is applied which diffuses through all nodes in STRING\\ref{doi:10.1093/nar/gku1003} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}.`
   })).build()
 
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
@@ -386,7 +386,7 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
     }
     return response;
   }).story(props => ({
-    abstract: `CTD is applied which diffuses through all nodes in WikiPathways [\\ref{doi:10.1093/nar/gkad960}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}].`
+    abstract: `CTD is applied which diffuses through all nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}.`
   })).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')

@@ -235,7 +235,7 @@ export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
   return PPIobj
 })
 .story(props => ({
-  abstract: `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API [\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}].`
+  abstract: `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}.`
 }))
 .build()
 

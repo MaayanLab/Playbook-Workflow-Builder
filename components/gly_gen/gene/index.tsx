@@ -31,7 +31,7 @@ export const GlyGenProteinProduct = MetaNode("GGPP")
     return filter_glygen_proteins(props.inputs.gene.symbol);
   })
   .story((props) => ({
-    abstract: `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from ${props.inputs?.gene?.symbol ? props.inputs.gene.symbol : "the gene"}.`,
+    abstract: `Next, the GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of proteins that originate from ${props.inputs?.gene?.symbol ? props.inputs.gene.symbol : "the gene"}.`,
   }))
   .build();
 
@@ -50,6 +50,6 @@ export const GlyGenProteinInformation = MetaNode("GlyGenProteinInformation")
     return await GlyGenProteinProduct.resolve({ ...props, inputs: { gene } });
   })
   .story((props) => ({
-    abstract: `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of protein products that originate from ${props.inputs?.gene ? props.inputs.gene : "the gene"}.`,
+    abstract: `The GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of protein products that originate from ${props.inputs?.gene ? props.inputs.gene : "the gene"}.`,
   }))
   .build();

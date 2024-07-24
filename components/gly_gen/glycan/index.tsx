@@ -186,7 +186,7 @@ export const GlycanInformation = MetaNode("GlycanInformation")
     return glycan_data;
   })
   .story((props) => ({
-    abstract: `The GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a information about ${props.inputs?.glycan ? props.inputs.glycan : "the glycan"}.`,
+    abstract: `The GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a information about ${props.inputs?.glycan ? props.inputs.glycan : "the glycan"}.`,
   }))
   .build();
 
@@ -212,7 +212,7 @@ export const GlyGenGlycanSet = MetaNode("GGGS")
   })
   .story((props) => ({
     // TODO: re-write story sentence to make sense with protein term input (previous gene value removed to prevent `npm run build` error)
-    abstract: `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of glycans that originate from.`,
+    abstract: `Next, the GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of glycans that originate from.`,
   }))
   .build();
 

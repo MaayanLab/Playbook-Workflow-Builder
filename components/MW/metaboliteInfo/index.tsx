@@ -35,7 +35,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
     //return props.inputs.input
   })
   .story(props => ({
-    abstract: `The metabolite was then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extract more information about the metabolite.`
+    abstract: `The metabolite was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to extract more information about the metabolite.`
   }))
   .build()
 
@@ -83,6 +83,6 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     //return props.inputs.input
   })
   .story(props => ({
-    abstract: `The metabolites were then searched in the Metabolomics Workbench [\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/}] to extarct more information about the metabolites.`
+    abstract: `The metabolites were then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to extarct more information about the metabolites.`
   }))
   .build()

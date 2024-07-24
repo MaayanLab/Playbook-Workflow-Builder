@@ -22,7 +22,10 @@ export const GTExTissueExpression = MetaNode('GTExTissueExpression')
     )
   })
   .story(props => ({
-    abstract: `Median expression of ${props.inputs?.gene_info?.symbol ? props.inputs.gene_info.symbol : 'the gene'} was obtained from the GTEx Portal\\ref{doi:10.1038/ng.2653} using the portal's API.`
+    abstract: `Median expression of ${props.inputs?.gene_info?.symbol ? props.inputs.gene_info.symbol : 'the gene'} was obtained from the GTEx Portal\\ref{doi:10.1038/ng.2653} using the portal's API.`,
+    introduction: `The Genotype-Tissue Expression (GTEx) project is an ongoing effort to build a comprehensive public resource to study tissue-specific gene expression and regulation. Samples were collected from 54 non-diseased tissue sites across nearly 1000 individuals, primarily for molecular assays including WGS, WES, and RNA-Seq\\ref{doi:10.1038/ng.2653}. The GTEx Portal provides open access to data including gene expression, QTLs, and histology images.`,
+    methods: `The GTEx Portal\\ref{doi:10.1038/ng.2653} API was first used to convert the gene term into a versioned ENSEMBL gene id. The ENSEMBL gene id was then used to query GTEx v8 for median gene expression across the GTEx cohort. The z-score of the returned median values are used.`,
+    legend: `A table showing the median expression of the gene in various tissues from GTEx\\ref{doi:10.1038/ng.2653}.`,
   }))
   .build()
 
@@ -35,6 +38,9 @@ export const GTExTissueExpressionFromGene = MetaNode('GTExTissueExpressionFromGe
     return await GTExTissueExpression.resolve({ ...props, inputs: { gene_info } })
   })
   .story(props => ({
-    abstract: `Median expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} was obtained from the GTEx Portal\\ref{doi:10.1038/ng.2653} using the portal's API.`
+    abstract: `Median expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} was obtained from the GTEx Portal\\ref{doi:10.1038/ng.2653} using the portal's API.`,
+    introduction: `The Genotype-Tissue Expression (GTEx) project is an ongoing effort to build a comprehensive public resource to study tissue-specific gene expression and regulation. Samples were collected from 54 non-diseased tissue sites across nearly 1000 individuals, primarily for molecular assays including WGS, WES, and RNA-Seq\\ref{doi:10.1038/ng.2653}. The GTEx Portal provides open access to data including gene expression, QTLs, and histology images.`,
+    methods: `The GTEx Portal\\ref{doi:10.1038/ng.2653} API was first used to convert the gene term into a versioned ENSEMBL gene id. The ENSEMBL gene id was then used to query GTEx v8 for median gene expression across the GTEx cohort. The z-score of the returned median values are used.`,
+    legend: `A table showing the median expression of the gene in various tissues from GTEx\\ref{doi:10.1038/ng.2653}.`,
   }))
   .build()

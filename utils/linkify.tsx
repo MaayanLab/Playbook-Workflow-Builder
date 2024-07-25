@@ -9,7 +9,7 @@ function matchAll(str: string, re: RegExp) {
   return matches
 }
 
-export default function Linkify({ children }: { children: string }) {
+export default function Linkify({ children }: { children?: string | null }) {
   if (!children) return children
   const { i, el } = matchAll(children, /(doi:|https:\/\/)([^\s]+)/g)
     .reduce(({ i, el }, m) => m.index ? ({

@@ -19,6 +19,6 @@ export const LimmaVoom = MetaNode('Limma-Voom')
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => ({
-    abstract: `The AnnData file was then analyzed using differential expression by Limma-Voom [\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}].`,
+    abstract: `The AnnData file was then analyzed using differential expression by Limma-Voom\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}.`,
   }))
   .build()

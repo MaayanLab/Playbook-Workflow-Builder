@@ -5,15 +5,15 @@ import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import Head from 'next/head'
 import { useStory } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
+import { Abstract, FigureCaption, Methods, References } from './story'
 
-const Linkify = dynamic(() => import('@/utils/linkify'))
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
-export default function Cell({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
+export default function Cell({ session_id, krg, id, head, metapath }: { session_id?: string, krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { output, outputNode }, status, error: outputError, mutate } = useMetapathOutput({ krg, head })
-  const { story } = useStory()
-  const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
+  const story = useStory()
+  const astFiltered = React.useMemo(() => story.ast.filter(part => part.tags.some(tag => metapath.some(p => tag === p.id))), [story])
   return (
     <>
       <Head>
@@ -29,12 +29,13 @@ export default function Cell({ session_id, krg, id, head }: { session_id?: strin
             processNode={processNode}
             outputNode={outputNode}
             output={output}
+            metapath={metapath}
           />
           : <>
           <div className="mb-4">
             <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
-            <p className="prose max-w-none text-justify"><Linkify>{storyText}</Linkify></p>
-            <p className="prose max-w-none text-sm text-justify whitespace-pre-line"><Linkify>{storyCitations}</Linkify></p>
+            <Abstract story={{ ...story, ast: astFiltered }} />
+            <Methods id={head.id} story={{ ...story, ast: astFiltered }} />
           </div>
           <div className="flex-grow flex flex-col py-4">
             {outputError ? <div className="alert alert-error prose max-w-none">{outputError.toString()}</div> : null}
@@ -48,6 +49,8 @@ export default function Cell({ session_id, krg, id, head }: { session_id?: strin
               : !outputNode?.view || output === undefined ? <div className="prose">Loading...</div>
               : output === null ? <div className="prose max-w-none">Waiting for input</div>
               : <SafeRender component={outputNode.view} props={output} />}
+            <FigureCaption id={head.id} story={{ ...story, ast: astFiltered }} />
+            <References story={{ ...story, ast: astFiltered }} />
             <button
               className="btn btn-primary"
               onClick={async (evt) => {

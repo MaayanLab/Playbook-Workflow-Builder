@@ -8,6 +8,7 @@ import { useChatGPT } from '@/app/fragments/report/chatgpt'
 import classNames from 'classnames'
 import { Metapath } from '../metapath'
 import KRG from '@/core/KRG'
+import { Abstract, abstractText } from './story'
 
 const SaveButton = dynamic(() => import('@/app/fragments/report/save-button'))
 const LinkButton = dynamic(() => import('@/app/fragments/report/link-button'))
@@ -40,8 +41,7 @@ export default function Introduction({
   error: any
 }) {
   const { chatGPTAvailable, augmentWithChatGPT, isAugmentingWithChatGPT, errorAugmentingWithChatGPT } = useChatGPT({ session_id })
-  const { story } = useStory()
-  const [storyText, storyCitations] = React.useMemo(() => story.split('\n\n'), [story])
+  const story = useStory()
   return (
     <>
       <Head>
@@ -73,7 +73,7 @@ export default function Introduction({
                 onClick={async (evt) => {
                   setPlaybookMetadata(({ summary, ...playbookMetadata }) => ({ ...playbookMetadata, summary: 'gpt', id: '' }))
                   if (!playbookMetadata.gpt_summary) {
-                    const gpt_summary = await augmentWithChatGPT(story)
+                    const gpt_summary = await augmentWithChatGPT(abstractText(story))
                     if (gpt_summary) setPlaybookMetadata(playbookMetadata => ({ ...playbookMetadata, gpt_summary, id: '' }))
                   }
                 }}
@@ -86,12 +86,7 @@ export default function Introduction({
           </div>
           <div className="prose max-w-none">
             {playbookMetadata.summary === 'auto' ?
-              <>
-                <p className="prose-lg text-justify mt-1"><Linkify>{storyText}</Linkify></p>
-                <div className="prose-sm text-justify whitespace-pre-line">
-                  <Linkify>{storyCitations}</Linkify>
-                </div>
-              </>
+              <Abstract story={story} />
             : playbookMetadata.summary === 'manual' ?
               <p className="prose-lg text-justify mt-1 whitespace-pre-line">
                 <EditableText
@@ -139,7 +134,7 @@ export default function Introduction({
             metadata={{
               title: playbookMetadata.title ?? 'Playbook',
               description: (
-                playbookMetadata.summary === 'auto' ? story
+                playbookMetadata.summary === 'auto' ? abstractText(story)
                 : playbookMetadata.summary === 'gpt' ? playbookMetadata.gpt_summary
                 : playbookMetadata.summary === 'manual' ? playbookMetadata.description
                 : undefined
@@ -156,7 +151,7 @@ export default function Introduction({
             metadata={{
               title: playbookMetadata.title ?? 'Playbook',
               description: (
-                playbookMetadata.summary === 'auto' ? story
+                playbookMetadata.summary === 'auto' ? abstractText(story)
                 : playbookMetadata.summary === 'gpt' ? playbookMetadata.gpt_summary
                 : playbookMetadata.summary === 'manual' ? playbookMetadata.description
                 : undefined

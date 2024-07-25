@@ -19,6 +19,6 @@ export const QuantileNormalizeGeneCountMatrix = MetaNode('QuantileNormalizeGeneC
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => ({
-    abstract: `The gene count matrix was then quantile normalized [\\ref{doi:10.1038/s41598-020-72664-6}].`,
+    abstract: `The gene count matrix was then quantile normalized\\ref{doi:10.1038/s41598-020-72664-6}.`,
   }))
   .build()

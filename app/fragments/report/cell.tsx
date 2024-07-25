@@ -8,6 +8,7 @@ import classNames from 'classnames'
 import { useStory } from '@/app/fragments/story'
 import { Waypoint } from '@/app/components/waypoint'
 import SafeRender from '@/utils/saferender'
+import { AbstractPart, FigureCaption, Methods } from './story'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
@@ -15,7 +16,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
   const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput({ krg, head })
-  const { nodeStories } = useStory()
+  const story = useStory()
   const processNode = krg.getProcessNode(head.process.type)
   const currentCellMetadata = cellMetadata[head.id] ?? {}
   if (!processNode) return <div className="alert alert-error">Error: {head.process.type} does not exist</div>
@@ -34,13 +35,12 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
                     : processNode.spec}
                 </h2>
               </div>
-              <p className="max-w-none">{nodeStories[head.id]}</p>
+              <AbstractPart id={head.id} story={story} />
             </div>
             <div className="collapse-content">
               <p className="bp5-ui-text">
-                <Markdown>
-                  {currentCellMetadata.description ?? processNode.meta.description ?? ''}
-                </Markdown>
+                {currentCellMetadata.description ? <Markdown>{currentCellMetadata.description}</Markdown> : null}
+                <Methods id={head.id} story={story} />
               </p>
             </div>
           </div>
@@ -82,7 +82,10 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               </div>
             </div>
             <div className="collapse-content flex flex-col">
-              {outputNode?.view && output ? <SafeRender component={outputNode.view} props={output} /> : isLoading ? 'Waiting for results' : 'Waiting for input'}
+              {outputNode?.view && output ? <>
+                <SafeRender component={outputNode.view} props={output} />
+                <FigureCaption id={head.id} story={story} />
+              </> : isLoading ? 'Waiting for results' : 'Waiting for input'}
             </div>
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !currentCellMetadata.data_visible })}>

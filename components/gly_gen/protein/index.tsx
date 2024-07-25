@@ -378,7 +378,7 @@ export const GlyGenProtein = MetaNode("GGP")
     return protein_response;
   })
   .story((props) => ({
-    abstract: `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`,
+    abstract: `Next, the GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of proteins that originate from.`,
   }))
   .build();
 
@@ -403,7 +403,7 @@ export const GlyGenProteinSet = MetaNode("GGPS")
     return protein_response;
   })
   .story((props) => ({
-    abstract: `Next, the GlyGen database [\\ref{doi:10.1093/glycob/cwz080}] was searched to identify a relevant set of proteins that originate from.`,
+    abstract: `Next, the GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of proteins that originate from.`,
   }))
   .build();
 

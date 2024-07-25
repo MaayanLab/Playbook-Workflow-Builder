@@ -76,3 +76,5 @@ export const fullscreen_icon = { path: IconSvgPaths20.Fullscreen.join(' '), titl
 // import Bp5Fullscreen from '@blueprintjs/icons/src/generated/20px/paths/fullscreen'; export const fullscreen_icon = { path: Bp5Fullscreen.join(' '), title: 'Fullscreen', size: 20 }
 export const close_icon = { path: IconSvgPaths20.Cross.join(' '), title: 'Close', size: 20 }
 // import Bp5Close from '@blueprintjs/icons/src/generated/20px/paths/close'; export const close_icon = { path: Bp5Close.join(' '), title: 'Close', size: 20 }
+export const references_icon = { path: IconSvgPaths20.Book.join(' '), title: 'References', size: 20 }
+// import Bp5Book from '@blueprintjs/icons/src/generated/20px/paths/book'; export const references_icon = { path: Bp5Book.join(' '), title: 'References', size: 20 }

@@ -10,13 +10,14 @@ import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
 import { useStory } from '@/app/fragments/story'
 import classNames from 'classnames'
+import { AbstractPart } from './story'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath }) {
   const router = useRouter()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
-  const { nodeStories } = useStory()
+  const story = useStory()
   const data = React.useMemo(() => {
     // invalidate data if it no longer matches the codec
     //  which could happen if an older verison of the metanode
@@ -36,7 +37,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           <Icon icon={processNode.meta.icon || func_icon} title={processNode.meta.label} className="fill-black dark:fill-white" />
           <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
         </div>
-        <p className="prose max-w-none">{nodeStories[head.id]}</p>
+        <AbstractPart id={head.id} story={story} />
       </div>
       {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}
       <div className="collapse-content">

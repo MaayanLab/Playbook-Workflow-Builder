@@ -38,6 +38,6 @@ export const MetGeneSearch = MetaNode('MetGeneSearch')
     return { gene: props.inputs.gene }
   })
   .story(props => ({
-    abstract: `The gene was searched with the MetGENE tool providing pathways, reactions, metabolites, and studies from the Metabolomics Workbench [\\ref{MetGENE, https://sc-cfdewebdev.sdsc.edu/MetGENE/metGene.php}].`
+    abstract: `The gene was searched with the MetGENE tool providing pathways, reactions, metabolites, and studies from the Metabolomics Workbench\\ref{MetGENE, https://sc-cfdewebdev.sdsc.edu/MetGENE/metGene.php}.`
   }))
   .build()

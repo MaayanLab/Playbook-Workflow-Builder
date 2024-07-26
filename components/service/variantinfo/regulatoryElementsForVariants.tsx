@@ -6,7 +6,7 @@ import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { getRegElemPositionData } from '@/components/service/regulatoryElementInfo'
 import { downloadBlob } from '@/utils/download'
-import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, linkedDataHubErroMessage } from './variantUtils'
 import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
 
 
@@ -25,7 +25,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
 
     const response = await getGitDataHubVariantInfo(varCaId);
     if(response == null || response.data == null){
-      throw new Error(gitDataHubErroMessage);
+      throw new Error(linkedDataHubErroMessage);
     }
 
     if(response.data.ldFor.RegulatoryElement != null && response.data.ldFor.RegulatoryElement.length == 1){
@@ -116,7 +116,7 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
     }
 
     if(varAndRegulatoryElem.length == 0){
-      throw new Error(gitDataHubErroMessage);
+      throw new Error(linkedDataHubErroMessage);
     }
 
     return varAndRegulatoryElem;

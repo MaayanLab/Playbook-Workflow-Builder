@@ -1,6 +1,6 @@
-export let variantIdResolveErrorMessage = "Unable to resolve the suplied Variant ID to a CAID!";
+export let variantIdResolveErrorMessage = "Unable to resolve the inputted Variant ID to a CAID!";
 export let alleleRegRespErrorMessage = "Unable to get data from the Allele Registry API, please try again or wait a few minutes before the next attempt!";
-export let gitDataHubErroMessage = "Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next attempt!";
+export let linkedDataHubErroMessage = "Unable to get data from Linked Data Hub API or the variant might not be in CFDE LDH, please check the inputted identifier and try again or wait a few minutes before the next attempt!";
 
 let variantIdentifierBaseURL = "https://reg.test.genome.network/";
 

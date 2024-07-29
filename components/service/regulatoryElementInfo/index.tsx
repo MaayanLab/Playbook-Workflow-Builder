@@ -97,7 +97,7 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     
     const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
     if(response == null || response.data == null){
-      throw new Error("Unable to get data from Git Data Hub API, please try again or wait a few minutes before the next atempt!");
+      throw new Error("Unable to get data from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
     }
 
     if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){

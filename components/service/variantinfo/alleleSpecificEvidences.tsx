@@ -4,7 +4,7 @@ import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, linkedDataHubErroMessage } from './variantUtils'
 import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
 
@@ -188,7 +188,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
   
       const response = await getGitDataHubVariantInfo(varCaId);
       if(response == null || response.data == null){
-        throw new Error(gitDataHubErroMessage);
+        throw new Error(linkedDataHubErroMessage);
       }
   
       let alleleSpecificEvidencesList = null;
@@ -382,7 +382,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
   
       if(variantSetAlleleSpecificEvdnc.length == 0){
-        throw new Error(gitDataHubErroMessage);
+        throw new Error(linkedDataHubErroMessage);
       }
   
       let returnObj = {

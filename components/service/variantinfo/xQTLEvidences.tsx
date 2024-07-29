@@ -4,7 +4,7 @@ import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
-import { resolveVariantCaID, variantIdResolveErrorMessage, gitDataHubErroMessage } from './variantUtils'
+import { resolveVariantCaID, variantIdResolveErrorMessage, linkedDataHubErroMessage } from './variantUtils'
 import { getVariantSetInfo } from './variantInfoSources/alleleRegistryVariantInfo'
 import { getGitDataHubVariantInfo, GitHubVariantInfoC } from './variantInfoSources/gitDataHubVariantInfo'
 import { xQTL_EvidenceArray } from './variantInfoSources/gitDataHubVariantInfo'
@@ -118,7 +118,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
 
     let response = await getGitDataHubVariantInfo(varCaId);
     if(response == null  || response.data == null){
-      throw new Error(gitDataHubErroMessage);
+      throw new Error(linkedDataHubErroMessage);
     }
 
     if(response.data.ld != null &&  response.data.ld.xqtlEvidence != null){
@@ -267,7 +267,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     }
 
     if(variantSetXQTLEvidnc.length == 0){
-      throw new Error(gitDataHubErroMessage);
+      throw new Error(linkedDataHubErroMessage);
     }
 
     let returnObj = {

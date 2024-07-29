@@ -19,5 +19,10 @@ export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
     { kargs: [props.inputs.anndata] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `Characteristic direction\\ref{doi:10.1186/1471-2105-15-79} is applied to the input anndata${props.inputs && props.inputs.anndata.description ? ` containing ${props.inputs.anndata.description}` : ''}.` }))
+  .story(props => ({
+    abstract: `Characteristic direction\\ref{doi:10.1186/1471-2105-15-79} is applied to the input anndata${props.inputs && props.inputs.anndata.description ? ` containing ${props.inputs.anndata.description}` : ''}.`,
+    introduction: `The AnnData Python package handles annotated data matrices in memory and on disk [\ref{doi:10.1101/2021.12.16.473007}].`,
+    methods: `Characteristic direction [\\ref{doi:10.1186/1471-2105-15-79}] is applied to the input anndata.`,
+    legend: `A table of significantly deferentially expressed genes and characteristic direction coefficients.`,
+  }))
   .build()

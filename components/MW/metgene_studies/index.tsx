@@ -35,7 +35,9 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     return  res
   })
   .story(props => ({
-    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to identify relevant studies related to the gene.`
+    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to identify relevant studies related to the gene.`,
+    introduction: `MetGENE is a information retrieval tool that connects a gene or a set of genes to metabolomic studies in the Metabolomic Workbench. It uses a knowledge based approach where the gene is connected to pathways it regulates, followed by reactions within the pathways and metabolites particicpating in the reactions. The metabolites are connected to studies in Metabolomics Workbench.`,
+    methods: `Given a gene, MetGENE provides REST API to extract information regarding all the studies in the MW by obtaining first the pathways where the gene participates and the reactions within the pathways, followed by the metabolites participating in the reaction and the corresponding metbolomics studies in which the metabolite is measured. e.g.  for human species (hsa), with anatomy blood and disease diabetes, [\\ref https://bdcw.org/MetGENE/rest/studies/species/hsa/GeneIDType/SYMBOL/GeneInfoStr/HK1/anatomy/blood/disease/diabetes/phenotype/NA/viewType/json], returns the KEGG Compound IDS, KEGG Reaction names as well as KEGG Reaction equations for the corresponding gene in the form of a JSON output. `,
   }))
   .build()
 

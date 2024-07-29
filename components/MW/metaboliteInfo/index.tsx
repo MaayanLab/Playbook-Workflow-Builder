@@ -35,7 +35,10 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
     //return props.inputs.input
   })
   .story(props => ({
-    abstract: `The metabolite was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to extract more information about the metabolite.`
+    abstract: `The metabolite was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to extract more information about the metabolite.`,
+    introduction: `The Metabolomics Workbench Metabolite Database contains structures and annotations of biologically relevant metabolites. MW supports REST APIs that provides information regarding the metabolite given the metabolite name.  `,
+    methods: `Given a metabolite name, say, metName, the REST API in MW,https://www.metabolomicsworkbench.org/rest/refmet/match/${props.inputs?.metabolite ? props.inputs.metabolite : '{metName}'}/all, provides the metabolite information in JSON format that is displayed in HTML.`,
+    legend: `The metabolite information summarizes the refmet name, formula, exact mass, super, main and sub classes of the metabolite.`,
   }))
   .build()
 
@@ -83,6 +86,9 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
     //return props.inputs.input
   })
   .story(props => ({
-    abstract: `The metabolites were then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to extarct more information about the metabolites.`
+    abstract: `The metabolites were then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to extarct more information about the metabolites.`,
+    introduction: `The Metabolomics Workbench Metabolite Database contains structures and annotations of biologically relevant metabolites. MW supports REST APIs that provides information regarding the metabolite given the metabolite name.`,
+   methods: `For each metabolite in the meatbolite set, the metabolite information is obtained from the MW REST API and the resultant JSON is displayed in a tabular format.`,
+   legend: `For each metabolite in the set of metabolites, the metabolite information metanode, summarizes the refmet name, formula, exact mass, and the names of super , main and subclasses , the metabolite belongs.`,
   }))
   .build()

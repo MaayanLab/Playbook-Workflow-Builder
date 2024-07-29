@@ -20,6 +20,7 @@ export const BarChartsFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, S
     ))
     .story(props => ({
       abstract: `To visualize the level of expression across ${ScoredT.meta.label.toLocaleLowerCase()}, a horizontal bar plot was created${''/* [FIGURE]*/}.`,
+      legend: `A horizontal bar chart showing the gene expression levels across ${ScoredT.meta.label.toLowerCase()}.`,
     }))
     .build()
 )

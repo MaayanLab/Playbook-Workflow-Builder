@@ -35,7 +35,10 @@ export const GeneIDConv = MetaNode('GeneIDConv')
     return res
   })
   .story(props => ({
-    abstract: `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}.`
+    abstract: `The gene ID was then convert to various other alternative gene IDs using the Metabolomics Gene Conversion API\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}.`,
+    introduction: `Genomic and gene expression data is integral to biomolecular data analysis. The types of identifiers used for genes differ across different resources providing such data sets. The ability to use a single type of gene identifier is imperative for integrating data from two or more resources. This gene ID conversion tool facilitates the interconversion of different types of gene IDs and thus the use of a common gene identifier.`,
+    methods: `Given a gene ID of certain type for a gene, using R Bioconductor packages named like org_Xy_eg_db (depending upon the organism), AnnotationDbi and jsonlite, the gene ID is searched in the appropriate column and then it finds the other types of IDs. The API returns the results in json format, which is then rendered in a tabular format in Typescript.`,
+    legend: `List of various types of gene IDs for a single gene, obtained using the gene ID conversion tool.`,
   }))
   .build()
 
@@ -69,7 +72,10 @@ export const GeneSetIDConv = MetaNode('GeneSetIDConv')
     return res
   })
   .story(props => ({
-    abstract: `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}.`
+    abstract: `The gene IDs were converted to various other alternative gene IDs using the Metabolomics Gene Conversion API\\ref{Gene ID Conversion Tool, https://bdcw.org/geneid/}.`,
+    introduction: `Genomic and gene expression data is integral to biomolecular data analysis. The types of identifiers used for genes differ across different resources providing such data sets. The ability to use a single type of gene identifier is imperative for integrating data from two or more resources. This gene ID conversion tool facilitates the interconversion of different types of gene IDs and thus the use of a common gene identifier.`,
+    methods: `Given the gene IDs of certain type for a set of genes, using R Bioconductor packages named like org_Xy_eg_db (depending upon the organism), AnnotationDbi and jsonlite, the gene ID is searched in the appropriate column and then it finds the other types of IDs. The API returns the results in json format, which is then rendered in a tabular format in Typescript.`,
+    legend: `List of various types of gene IDs for a set of genes, obtained using the gene ID conversion tool.`,
   }))
   .build()
 
@@ -86,6 +92,9 @@ export const ConvertedGeneID2GeneInfo = MetaNode('ConvertedGeneID2GeneInfo')
     return uniqJsonSubset(props.inputs.data)[0].SYMBOL;
   })
   .story(props => ({
-    abstract: `The official gene symbol${props.output ? ` ${props.output}` : ''} was resolved.`
+    abstract: `The official gene symbol${props.output ? ` ${props.output}` : ''} was resolved.`,
+    introduction: `Genomic and gene expression data is integral to biomolecular data analysis. The types of identifiers used for genes differ across different resources providing such data sets. The ability to use a single type of gene identifier is imperative for integrating data from two or more resources. This gene ID conversion tool facilitates the interconversion of different types of gene IDs and thus the use of a common gene identifier.`,
+    methods: `The output from the gene ID conversion tool is reformatted into the gene_info format.`,
+    legend: `Gene term in gene info format obtained by reformmating the output of the gene ID conversion tool.`,
   }))
   .build()

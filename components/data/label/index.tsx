@@ -132,7 +132,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   })
   .story(props => ({
     abstract: 'The samples were then labeled as either control or perturbation to allow for further analysis.',
-    introduction: `The AnnData Python package handles annotated data matrices in memory and on disk [\ref{doi:10.1101/2021.12.16.473007}].`,
+    introduction: `The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.`,
     methods: `The samples are labeled within the annotated data matrices as either control or perturbation to allow for further analysis.`,
     legend: `A gene count matrix paired with sample annotations`,
   }))

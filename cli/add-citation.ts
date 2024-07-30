@@ -12,7 +12,7 @@ async function fetchCitation(doi: string) {
     },
   })
   const res = await req.text()
-  return res.replace(/^1\./, '').replace(/\n*$/g, '')
+  return res.replace(/^1\.\s*/, '').replace(/\s*$/g, '')
 }
 
 const [_process, _script, doi] = process.argv

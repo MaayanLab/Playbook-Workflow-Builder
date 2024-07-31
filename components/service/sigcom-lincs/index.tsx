@@ -223,7 +223,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
   .story(props => ({
     abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`,
     introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
-    methods: `From the SigCom LINCS\\ref{doi:10.1093/nar/gkac328} results in {props.input_ref}, drugs from the LINCS L1000 CRISPR KOs library are extracted along with their significance.`,
+    methods: `From the SigCom LINCS\\ref{doi:10.1093/nar/gkac328} results in ${''/*{props.input_ref}*/}, drugs from the LINCS L1000 CRISPR KOs library are extracted along with their significance.`,
     legend: `A table of significant mimicker or reverser CRISPR KOs identified with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()

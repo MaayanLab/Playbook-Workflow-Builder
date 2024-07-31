@@ -139,7 +139,7 @@ export const EnrichrSetTToSetT = [
       .story(props => ({
         abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
         introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in {props.input_ref} are extracted from the original gene set library to produce${''/* {props.output_ref}*/}.`,
+        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${''/*{props.input_ref}*/} are extracted from the original gene set library to produce${''/* {props.output_ref}*/}.`,
         legend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
       }))
       .build(),
@@ -219,7 +219,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .story(props => ({
     abstract: `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-    methods: `The gene set in {props.input_ref} is submitted to Enrichr\\ref{doi:10.1002/cpz1.90} for enrichment analysis.`,
+    methods: `The gene set in ${''/*{props.input_ref}*/} is submitted to Enrichr\\ref{doi:10.1002/cpz1.90} for enrichment analysis.`,
     legend: `An interactive page with the results of the Enrichr\\ref{doi:10.1002/cpz1.90} enrichment analysis. Bar charts show the significantly enriched terms from different gene set libraries spanning several categories.`,
   }))
   .build()
@@ -311,8 +311,8 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .story(props => ({
     abstract: `Gene sets containing ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-    methods: `The gene in {props.input_ref} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets containing the gene.`,
-    legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain the gene in {props.input_ref}.`,
+    methods: `The gene in ${''/*{props.input_ref}*/} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets containing the gene.`,
+    legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain the gene in ${''/*{props.input_ref}*/}.`,
   }))
   .build()
 

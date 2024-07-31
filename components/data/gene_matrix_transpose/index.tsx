@@ -164,8 +164,8 @@ export const GMTConsensus = MetaNode('GMTConsensus')
   .story(props => ({
     abstract: `A consensus gene set was created by only retaining genes that appear in at least two sets.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `Genes that appear in at least 2 of the gene sets in {props.input_ref} were collected into a set.`,
-    legend: `The genes that appear in at least 2 of the gene sets in {props.input_ref}.`,
+    methods: `Genes that appear in at least 2 of the gene sets in ${''/*{props.input_ref}*/} were collected into a set.`,
+    legend: `The genes that appear in at least 2 of the gene sets in ${''/*{props.input_ref}*/}.`,
   }))
   .build()
 

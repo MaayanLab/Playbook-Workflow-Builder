@@ -119,8 +119,8 @@ export const TopKScoredT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      methods: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} was taken from {props.input_ref}.`,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from {props.input_ref}.`,
+      methods: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} was taken from ${''/*{props.input_ref}*/}.`,
+      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${''/*{props.input_ref}*/}.`,
     }))
     .build()
 ])
@@ -245,7 +245,7 @@ export const SetFromScoredT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from {props.input_ref}.`,
+      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${''/*{props.input_ref}*/}.`,
     }))
     .build(),
   MetaNode(`SomeSetT[${SetT.spec}]`)
@@ -313,7 +313,7 @@ export const SetFromScoredT = [
     })
     .story(props =>  ({
       abstract: `Some ${pluralize(T.label.toLowerCase())} were selected for further investigation.`,
-      legend: `Some ${pluralize(T.label.toLowerCase())} taken from {props.input_ref}.`,
+      legend: `Some ${pluralize(T.label.toLowerCase())} taken from ${''/*{props.input_ref}*/}.`,
     }))
     .build(),
 ])
@@ -429,7 +429,7 @@ export const TopKRankedT = [
     })
     .story(props => ({
       abstract: `The top ${props.data?.k || 'K'} ${RankedT.meta.label} were selected.`,
-      legend: `The top ${props.data?.k || 'K'} drugs from {props.input_ref}.`,
+      legend: `The top ${props.data?.k || 'K'} drugs from ${''/*{props.input_ref}*/}.`,
     }))
     .build(),
   MetaNode(`OneRankedT[${RankedT.spec}]`)
@@ -483,7 +483,7 @@ export const TopKRankedT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from {props.input_ref}.`,
+      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${''/*{props.input_ref}*/}.`,
     }))
     .build()
 ])

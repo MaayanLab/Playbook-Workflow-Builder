@@ -21,7 +21,7 @@ export const BarChartsFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, S
     .story(props => ({
       abstract: `To visualize the ${ScoredT.meta.label.toLocaleLowerCase()}, a horizontal bar plot was created ${''/*({props.output_ref})*/}.`,
       introduction: `Plotly.js is a browser-based graphing library for Python which facilitates the construction of interactive vector graphic charts \\ref{Plotly Technologies Inc. Collaborative data science. Montréal, QC, 2015. https://plot.ly}  `,
-      methods: `The table in {props.input_ref} are visualized with a horizontal bar graph using Plotly.js\\ref{Plotly Technologies Inc. Collaborative data science. Montréal, QC, 2015. https://plot.ly}.`,
+      methods: `The table in ${''/*{props.input_ref}*/} are visualized with a horizontal bar graph using Plotly.js\\ref{Plotly Technologies Inc. Collaborative data science. Montréal, QC, 2015. https://plot.ly}.`,
       legend: `A horizontal bar plot visualizing the values from${''/* {props.input_ref.terms}*/}.`,
     }))
     .build()

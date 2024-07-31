@@ -127,7 +127,7 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
 export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precalculations_Combined')
   .meta({
     label: `Connect the Dots in Precalculated Graph`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.',
+    description: `Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.`,
     icon: [ctd_icon]
   })
   .inputs({ geneSet: GeneSet, ctdAdjacencyAndExpressions: CTDAdjacencyAndExpressions})
@@ -160,7 +160,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
   }).story(props => ({
     abstract: "Input Gene Set and Adj. Matrix to send to the CTD API for precalculations.",
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
-    methods: `Highly connected sets of proteins are identified using the CTD algorithm and a precalculated graph including a gene set and adjacency matrix\\ref{doi:10.1371/journal.pcbi.1009551}. `,
+    methods: `Highly connected sets of proteins are identified using the CTD algorithm and a precalculated graph including a gene set and adjacency matrix\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     legend: `A table displaying highly connected sets of proteins from the input graph.`,
   })).build()
 
@@ -206,7 +206,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
   export const CTD_UseCustomMatrixCombined = MetaNode('CTD_UseCustomMatrixCombined')
   .meta({
     label: `CTD Custom Response - Final`,
-    description: "Get a Final CTD Reponse using a custom Gene list, Ajd. matrix file and Permutations (RData) file."
+    description: `This card sends the gene expression matrix, the gene set and the adjacency matrix to the CTD API for processing. The following card shows the outputs for CTD.`,
   })
   .inputs({ ctdDataSet: CTD_DataSet})
   .output(CTDResponseInfo)
@@ -258,13 +258,13 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     abstract: `A list of Highly Connected Genes was obtained from the CTD output.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Nodes within the initial node set are extracted if they are determined to be highly connected by CTD. `,
-    legend: `A table of the extracted highly connected genes as determined by CTD`,
+    legend: `A table of the extracted highly connected genes as determined by CTD.`,
   })).build()
 
 export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
   .meta({
     label: `Extract Guilty By Association Genes`,
-    description: 'Extract nodes that are "guilty by association" and connect your initial genes of interest within the graph.'
+    description: `Extract nodes that are "guilty by association" and connect your initial genes of interest within the graph.`
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GeneSet)
@@ -290,7 +290,7 @@ export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes
 export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   .meta({
     label: 'CTD Graph',
-    description: 'This is a visual display of the nodes that are found to be highly connected with CTD. Nodes that connect these nodes and are "guilty by association" will also be displayed.',
+    description: `This is a visual display of the nodes that are found to be highly connected with CTD. Nodes that connect these nodes and are "guilty by association" will also be displayed.`,
   })
   .inputs({ ctdResponseInfo: CTDResponseInfo })
   .output(GraphPlot)
@@ -380,7 +380,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 
     return response;
   }).story(props => ({
-    abstract: `CTD is applied which diffuses through all nodes in STRING\\ref{doi:10.1093/nar/gku1003} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}.`,
+    abstract: `CTD is applied which diffuses through all nodes in STRING\\ref{doi:10.1093/nar/gku1003} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}. STRING is an online database that stores graphical protein-protein interaction networks\\ref{doi:10.1093/nar/gku1003}. `,
     methods: `CTD is used to identify the highly connected and Guilty By Association sets of proteins in the STRING protein interaction graph [ref{doi:10.1093/nar/gku1003}]. `,
   })).build()
@@ -388,7 +388,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
   .meta({
     label: `CTD - Connect the Dots in Wikipathways`,
-    description: 'Use CTD to "Connect the Dots" and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD',
+    description: `Use CTD to "Connect the Dots" and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD`,
     icon: [ctd_icon],
   })
   .inputs({ geneset: GeneSet })
@@ -406,9 +406,9 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
     }
     return response;
   }).story(props => ({
-    abstract: `CTD is applied which diffuses through all nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}, \\ref{doi:10.1016/j.isci.2022.105799}.`,
-    introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}. WikiPathways is a web-based software application that stores biological pathways contributed by the research community [\\ref{doi:10.1093/nar/gkad960}]. `,
-    methods: `CTD is used to identify the highly connected and Guilty By Association nodes in WikiPathways [\\ref{doi:10.1093/nar/gkad960}, \\ref{doi:10.1371/journal.pcbi.1009551}].`,
+    abstract: `CTD is applied which diffuses through all nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
+    introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}. WikiPathways is a web-based software application that stores biological pathways contributed by the research community\\ref{doi:10.1093/nar/gkad960}. `,
+    methods: `CTD is used to identify the highly connected and Guilty By Association nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960}\\ref{doi:10.1371/journal.pcbi.1009551}.`,
   })).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
@@ -440,7 +440,7 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   export const GenesFile_CTD_Wikipathways = MetaNode('GenesFile_CTD_Wikipathways')
   .meta({
     label: `CTD Wikipathways For Genes Set File`,
-    description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
+    description: `Ensure a file contains a gene set, values separated by a \\n character and with the extension .csv`,
     icon: [file_transfer_icon]
   })
   .inputs({ file: FileURL })

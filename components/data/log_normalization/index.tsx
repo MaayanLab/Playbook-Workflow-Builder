@@ -20,5 +20,8 @@ export const LogNormalizeGeneCountMatrix = MetaNode('LogNormalizeGeneCountMatrix
   ))
   .story(props => ({
     abstract: `The gene count matrix was then log2 transformed.`,
+    introduction: `Gene counts are normalized to control for different levels of variance depending on the gene expression levels.`,
+    methods: `The the gene count matrix ${''/*({props.input_ref.matrix})*/} was normalized using a log2+1 transformation.`,
+    legend: `A log2+1 normalized gene count matrix.`,
   }))
   .build()

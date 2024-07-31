@@ -80,7 +80,10 @@ export const GeneshotTermSearchT = [
         return await geneshot_term_search({ rif: rc, term: props.inputs.term })
       })
       .story(props => ({
-        abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-gene co-mentions on PubMed were queried with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`
+        abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-gene co-mentions on PubMed were queried with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`,
+        introduction: `PubMed contains millions of abstracts containing genes and other biomedical terms such as drugs or diseases. Geneshot is a web server that facilitates arbitrary term searches against PubMed to find gene co-mentions & gene set augmentation with a variety of gene-gene similarity resources\\ref{doi:10.1093/nar/gkz393}.`,
+        methods: `The term was queried against PubMed, and genes co-mentioned in the resulting abstracts were found and ranked by occurrence based on ${label} using Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
+        legend: `A table of the normalized genes co-occurring with the term from PubMed abstracts identified using ${label} with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
       }))
       .build()
   ])
@@ -154,7 +157,9 @@ export const GeneshotGeneSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `The gene set${props.inputs?.geneset?.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`
+      abstract: `The gene set${props.inputs?.geneset?.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`,
+      methods: `The gene in${''/* {props.input_ref.geneset}*/} is augmented using a similarity matrix based on ${label} using Geneshot's REST API\\ref{doi:10.1093/nar/gkz393}.`,
+      legend: `A table of similar genes to${''/* {props.input_ref.geneset}*/} produced by using a ${label} similarity matrix with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
     }))
     .build(),
   MetaNode(`GeneshotGeneAugmentation[${rc}]`)
@@ -189,7 +194,9 @@ export const GeneshotGeneSetAugmentation = ([
       })
     })
     .story(props => ({
-      abstract: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`
+      abstract: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`,
+      methods: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} is augmented using a similarity matrix based on ${label} using Geneshot's REST API\\ref{doi:10.1093/nar/gkz393}.`,
+      legend: `A table of similar genes to ${props.inputs?.gene ? props.inputs.gene : '{props.input_ref.gene}'} produced by using a ${label} similarity matrix with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
     }))
     .build(),
 ])

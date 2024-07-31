@@ -116,9 +116,9 @@ export const ARCHS4SignatureSearchT = [
   })
   .story(props => ({
     abstract: `Reversers and mimickers from GEO signatures were identified using ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
-    introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4) [\\ref{doi:10.1038/s41467-018-03751-6}] is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
-    methods: `Reverser and mimicker signatures from GEO were identified using the ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}] website's REST API.`,
-    legend: `A table of GEO sample ids for matching signatures identified by ARCHS4 [\\ref{doi:10.1038/s41467-018-03751-6}].`,
+    introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
+    methods: `Reverser and mimicker signatures from GEO were identified using the ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} website's REST API.`,
+    legend: `A table of GEO sample ids for matching signatures identified by ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
   }))
   .build()
 )

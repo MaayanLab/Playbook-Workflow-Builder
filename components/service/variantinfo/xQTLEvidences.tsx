@@ -129,7 +129,9 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     
     return response;
   })
-  .story(props => ({ abstract: `xQTL evidence data for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} was resolved.` }))
+  .story(props => ({
+    abstract: `xQTL evidence data for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} was resolved.`,
+  }))
   .build()
 
   

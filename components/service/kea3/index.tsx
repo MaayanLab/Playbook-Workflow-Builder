@@ -123,6 +123,9 @@ export const KEA3KinaseEnrichmentAnalysis = MetaNode('KEA3KinaseEnrichmentAnalys
     return { ranked: results.map(({ TF }) => TF) }
   })
   .story(props => ({
-    abstract: `Kinase Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using KEA3\\ref{doi:10.1093/nar/gkab359}.`
+    abstract: `Kinase Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using KEA3\\ref{doi:10.1093/nar/gkab359}.`,
+    introduction: `Phosphoproteomics and proteomics experiments capture a global snapshot of cellular signaling but can not measure kinases state directly. Kinase Enrichment Analaysis 3 (KEA3) is a webserver for inferring overrepresenation of upstream kinases whose putative substrates are in a list of proteins\\ref{10.1093/nar/gkab359}.`,
+    methods: `Kinase Enrichment Analysis was performed on ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} using the KEA3\\ref{doi:10.1093/nar/gkab359} web API and using Mean Rank across all available Kinase Libraries.`,
+    legend: `A table of significantly enriched kinases identified with KEA3\\ref{doi:10.1093/nar/gkab359}.`,
   }))
   .build()

@@ -51,9 +51,9 @@ export const SupervennFromGMT = MetaNode('SupervennFromGMT')
     return await res.json()
   })
   .story(props => ({
-    abstract: `The collection of gene sets was then visualized with a Supervenn diagram${''/* [FIGURE]*/}.`,
-    introduction: `Supervenn is a matplotlib-based tool for visualization of any number of intersecting sets [\\ref{doi:10.5281/zenodo.4016732}]. An interactive web application and React component were created for displaying and selecting subsets of elements of the supervenn layout [\\ref{HypoSet, https://github.com/MaayanLab/hyposet}].`,
-    methods: `Overlap between gene sets is visualized by the Supervenn layout algorithm [\\ref{doi:10.5281/zenodo.4016732}] computed with the HypoSet [\\ref{HypoSet, https://github.com/MaayanLab/hyposet}] API.`,
+    abstract: `The collection of gene sets was then visualized with a Supervenn diagram ${''/*({props.output_ref})*/}.`,
+    introduction: `Supervenn is a matplotlib-based tool for visualization of any number of intersecting sets\\ref{doi:10.5281/zenodo.4016732}. An interactive web application and React component were created for displaying and selecting subsets of elements of the supervenn layout\\ref{HypoSet, https://github.com/MaayanLab/hyposet}.`,
+    methods: `Overlap between gene sets is visualized by the Supervenn layout algorithm\\ref{doi:10.5281/zenodo.4016732} computed with the HypoSet\\ref{HypoSet, https://github.com/MaayanLab/hyposet} API.`,
     legend: `An interactive Supervenn figure showing regions of overlapping genes between gene sets.`,
   }))
   .build()
@@ -84,9 +84,9 @@ export const SupervennFromDMT = MetaNode('SupervennFromDMT')
     return await res.json()
   })
   .story(props => ({
-    abstract: `The collection of drug sets was then visualized with a Supervenn diagram${''/* [FIGURE]*/}.`,
-    introduction: `Supervenn is a matplotlib-based tool for visualization of any number of intersecting sets [\\ref{doi:10.5281/zenodo.4016732}]. An interactive web application and React component were created for displaying and selecting subsets of elements of the supervenn layout [\\ref{HypoSet, https://github.com/MaayanLab/hyposet}].`,
-    methods: `Overlap between drug sets is visualized by the Supervenn layout algorithm [\\ref{doi:10.5281/zenodo.4016732}] computed with the HypoSet [\\ref{HypoSet, https://github.com/MaayanLab/hyposet}] API.`,
+    abstract: `The collection of drug sets was then visualized with a Supervenn diagram ${''/*({props.output_ref})*/}.`,
+    introduction: `Supervenn is a matplotlib-based tool for visualization of any number of intersecting sets\\ref{doi:10.5281/zenodo.4016732}. An interactive web application and React component were created for displaying and selecting subsets of elements of the supervenn layout\\ref{HypoSet, https://github.com/MaayanLab/hyposet}.`,
+    methods: `Overlap between drug sets is visualized by the Supervenn layout algorithm\\ref{doi:10.5281/zenodo.4016732} computed with the HypoSet\\ref{HypoSet, https://github.com/MaayanLab/hyposet} API.`,
     legend: `An interactive Supervenn figure showing regions of overlapping drugs between drug sets.`,
   }))
   .build()

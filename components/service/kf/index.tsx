@@ -104,7 +104,7 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
   })
   .story(props => ({
     abstract: `Gene expression in tumors for ${props.inputs?.gene_info?.symbol ? props.inputs.gene_info.symbol : 'the gene'} were queried from the Open Pediatric Cancer Atlas API\\ref{doi:10.1016/j.xgen.2023.100340}.`,
-    legend: `A table showing the median expression of the gene in various tumors from the Open Pediatric Cancer Atlas API [\\ref{doi:10.1016/j.xgen.2023.100340}].`,
+    legend: `A table showing the median expression of the gene in various tumors from the Open Pediatric Cancer Atlas API\\ref{doi:10.1016/j.xgen.2023.100340}.`,
   }))
   .build()
 
@@ -118,6 +118,6 @@ export const KFTumorExpressionFromGene = MetaNode('KFTumorExpressionFromGene')
   })
   .story(props => ({
     abstract: `Gene expression in tumors for ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were queried from the Open Pediatric Cancer Atlas API\\ref{doi:10.1016/j.xgen.2023.100340}.`,
-    legend: `A table showing the median expression of the gene in various tumors from the Open Pediatric Cancer Atlas API [\\ref{doi:10.1016/j.xgen.2023.100340}].`,
+    legend: `A table showing the median expression of the gene in various tumors from the Open Pediatric Cancer Atlas API\\ref{doi:10.1016/j.xgen.2023.100340}.`,
   }))
   .build()

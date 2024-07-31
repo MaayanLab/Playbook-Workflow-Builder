@@ -162,7 +162,12 @@ export const SigComLINCSSignatureSearch = MetaNode(`SigComLINCSSignatureSearch`)
     const results = await sigcom_meta_user_input_signature({ up_entities, down_entities })
     return { id: results.id, up_entities, down_entities }
   })
-  .story(props => ({ abstract: `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.` }))
+  .story(props => ({
+    abstract: `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
+    introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
+    methods: `The gene expression signature in${''/* {props.input_ref.genes}*/} is converted to up and down gene sets using the positive z scores as up and negative z scores as down. The gene sets are then queried with the SigCom LINCS REST API \\ref{doi:10.1093/nar/gkac328}.`,
+    legend: `An interactive page of significant reversers and mimickers across several signature libraries with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}. Bar plots represent significance of the signature's overlap with${''/* {props.input_ref.genes}*/}.`,
+  }))
   .build()
 
 export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigComLINCSSignatureSearch[LINCS L1000 Chemical Perturbagens]`)
@@ -187,7 +192,10 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
     return signatures
   })
   .story(props => ({
-    abstract: `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
+    abstract: `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`,
+    introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
+    methods: `From the SigCom LINCS\\ref{doi:10.1093/nar/gkac328} results in${''/* {props.input_ref.searchResults}*/}, drugs from the LINCS L1000 Chemical Perturbagens library are extracted along with their significance.`,
+    legend: `A table of significant mimicker or reverser drugs identified with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()
 
@@ -213,7 +221,10 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
     return signatures
   })
   .story(props => ({
-    abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`
+    abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`,
+    introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
+    methods: `From the SigCom LINCS\\ref{doi:10.1093/nar/gkac328} results in {props.input_ref}, drugs from the LINCS L1000 CRISPR KOs library are extracted along with their significance.`,
+    legend: `A table of significant mimicker or reverser CRISPR KOs identified with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()
 
@@ -248,7 +259,12 @@ export const SigComLINCSGeneSetSearch = MetaNode(`SigComLINCSGeneSetSearch`)
     const results = await sigcom_meta_user_input_signature({ entities })
     return { id: results.id, entities }
   })
-  .story(props => ({ abstract: `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.` }))
+  .story(props => ({
+    abstract: `Reversers and mimickers from over 1 million signatures were identified using SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
+    introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
+    methods: `The gene set in${''/* {props.input_ref.genes}*/} is queried with the SigCom LINCS REST API \\ref{doi:10.1093/nar/gkac328}.`,
+    legend: `An interactive page of significant reversers and mimickers across several signature libraries with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}. Bar plots represent significance of the signature's overlap with${''/* {props.input_ref.genes}*/}.`,
+  }))
   .build()
 
 export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigComLINCSGeneSetSearch[LINCS L1000 Chemical Perturbagens]`)
@@ -272,7 +288,10 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigCom
     return signatures
   })
   .story(props => ({
-    abstract: `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`
+    abstract: `Resolved drugs from the LINCS L1000 Chemical Perturbagens library.`,
+    introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
+    methods: `From the SigCom LINCS\\ref{doi:10.1093/nar/gkac328} results in${''/* {props.input_ref.searchResults}*/}, drugs from the LINCS L1000 Chemical Perturbagens library are extracted along with their significance.`,
+    legend: `A table of significant mimicker or reverser drugs identified with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()
 
@@ -297,6 +316,9 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_xpr = MetaNode(`ExtractSigCo
     return signatures
   })
   .story(props => ({
-    abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`
+    abstract: `Resolved genes from the LINCS L1000 CRISPR KOs library.`,
+    introduction: `The LINCS L1000 data\\ref{10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. SigCom LINCS is a data and metadata search engine facilitating similarity search and signature subsetting\\ref{doi:10.1093/nar/gkac328}.`,
+    methods: `From the SigCom LINCS\\ref{doi:10.1093/nar/gkac328} results in${''/* {props.input_ref.searchResults}*/}, CRISPR KOs from the LINCS L1000 CRISPR KOs library are extracted along with their significance.`,
+    legend: `A table of significant mimicker or reverser CRISPR KOs identified with SigCom LINCS\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()

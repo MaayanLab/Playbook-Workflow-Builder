@@ -18,6 +18,9 @@ export const TSNEBokehPlotFromGeneCountMatrix = MetaNode('TSNEBokehPlotFromGeneC
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => ({
-    abstract: `The gene count matrix was then visualized as a t-SNE plot${''/* [FIGURE]*/}.`,
+    abstract: `The gene count matrix was then visualized as a t-SNE plot\\ref{van der Maaten, L., & Hinton, G. (2008). Visualizing Data using t-SNE. Journal of Machine Learning Research, 9(86), 2579-2605. Retrieved from http://jmlr.org/papers/v9/vandermaaten08a.html} ${''/*({props.output_ref})*/}.`,
+    introduction: `t-Distributed Stochastic Neighbor Embedding (t-SNE) is a technique that improves on Stochastic Neighbor Embedding to produce optimized visualizations of high-dimensional data.`,
+    methods: `Data in the gene count matrix are visualized using t-SNE and plotted using the Bokeh toolkit\\ref{bokeh.org}.`,
+    legend: `A Bokeh plot displaying the t-SNE visualization of the gene count matrix.`,
   }))
   .build()

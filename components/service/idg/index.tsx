@@ -30,7 +30,7 @@ export const IDGFilterT = [
   MetaNode(`IDGFilter[${ScoredGenes.spec}, ${kind}]`)
     .meta({
       label: `Filter genes by ${label}`,
-      description: `Based on IDG understudied proteins list`,
+      description: `Based on IDG proteins list`,
       icon: [idg_icon],
       pagerank: -1,
     })
@@ -40,7 +40,12 @@ export const IDGFilterT = [
       const filterSet = await idg_filter(kind)
       return props.inputs.input.filter(({ term }) => filterSet.has(term.toLocaleLowerCase()))
     })
-    .story(props => ({ abstract: `Genes were filtered by IDG ${label}\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}.` }))
+    .story(props => ({
+      abstract: `Genes were filtered by IDG ${label}\\ref{IDG Protein List, https://druggablegenome.net/IDGProteinList}.`,
+      introduction: `The Illuminating the Druggable Genome (IDG) Program seeks to improve our understanding of the properties and functions of proteins not currently well studied within commonly drug-targeted protein families. IDG maintains a list of understudied proteins from three key druggable protein families (GPCR, Ion Channels and Kinases).`,
+      methods: `Genes in${''/* {props.input_ref.input}*/} are filtered by the list of IDG ${label}.`,
+      legend: `A table of IDG ${label} filtered from${''/* {props.input_ref.input}*/}.`,
+    }))
     .build(),
   MetaNode(`IDGFilter[${GeneSet.spec}, ${kind}]`)
     .meta({
@@ -58,6 +63,11 @@ export const IDGFilterT = [
         set: props.inputs.input.set.filter((term) => filterSet.has(term.toLocaleLowerCase())),
       }
     })
-    .story(props => ({ abstract: `Genes were filtered by IDG ${label}\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}.` }))
+    .story(props => ({
+      abstract: `Genes were filtered by IDG ${label}\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}.`,
+      introduction: `The Illuminating the Druggable Genome (IDG) Program seeks to improve our understanding of the properties and functions of proteins not currently well studied within commonly drug-targeted protein families. IDG maintains a list of understudied proteins from three key druggable protein families (GPCR, Ion Channels and Kinases).`,
+      methods: `Genes in${''/* {props.input_ref.input}*/} are filtered by the list of IDG ${label}.`,
+      legend: `A table of IDG ${label} filtered from${''/* {props.input_ref.input}*/}.`,
+    }))
     .build(),
 ])

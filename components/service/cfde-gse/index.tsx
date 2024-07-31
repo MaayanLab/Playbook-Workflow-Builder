@@ -55,5 +55,9 @@ export const EnrichrUserListToCFDEGSEKG = MetaNode('EnrichrUserListToCFDEGSEKG')
   .inputs({ enrichr: EnrichrEnrichmentAnalysis })
   .output(CFDEGSEKG)
   .resolve(async (props) => props.inputs.enrichr)
-  .story(props => ({}))
+  .story(props => ({
+    introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+    methods: `The enrichment results from Enrichr\\ref{doi:10.1002/cpz1.90} are used to subset a Knowledge Graph of inter-connected CFDE Gene Set Libraries using CFDE GSE\\ref{CFDE GSE, https://gse.cfde.cloud/}.`,
+    legend: `An interactive page containing a knowledge graph highlighting the enriched terms in the CFDE Gene Set Libraries provided by CFDE GSE\\ref{CFDE GSE, https://gse.cfde.cloud/}.`,
+  }))
   .build()

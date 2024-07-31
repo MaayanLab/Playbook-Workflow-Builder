@@ -7,8 +7,7 @@ import { AnnData } from '@/components/data/anndata'
 export const CDSignatureFromCounts = MetaNode('CDSignatureFromCounts')
   .meta({
     label: 'Compute a Characteristic Direction Signature from a Gene Count Matrix',
-    description: `From a given counts matrix and metadata, return a Charateristic
-                  Direction differential gene expression signature`
+    description: `From a given counts matrix and metadata, return a Charateristic Direction differential gene expression signature`,
   })
   .inputs({
     anndata: AnnData,

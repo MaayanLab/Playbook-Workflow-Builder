@@ -13,19 +13,19 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
     part.type === 'text' ? [part.text]
     : part.type === 'cite' ? [`\\cite{${part.ref}}`]
-    : part.type === 'ref' ? [`\\ref{${part.ref}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${part.ref}}`]
     : []
   ).join('')
   const introduction = story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
     part.type === 'text' ? [part.text]
     : part.type === 'cite' ? [`\\cite{${part.ref}}`]
-    : part.type === 'ref' ? [`\\ref{${part.ref}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${part.ref}}`]
     : []
   ).join('')
   const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
     part.type === 'text' ? [part.text]
     : part.type === 'cite' ? [`\\cite{${part.ref}}`]
-    : part.type === 'ref' ? [`\\ref{${part.ref}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${part.ref}}`]
     : []
   ).join('')
   const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${part.ref}}\n${part.text.slice(part.text.indexOf('.')+2)}`] : []).join('\n\n')
@@ -77,14 +77,14 @@ ${
       const legend = story.ast.filter(part => part.tags.includes('legend') && part.tags.includes(head.process.id)).map(part =>
         part.type === 'text' ? part.text
         : part.type === 'cite' ? `\\cite{${part.ref}}`
-        : part.type === 'ref' ? `\\ref{${part.ref}}`
+        : part.type === 'figref' ? `\\ref{fig:${part.ref}}`
         : ''
       ).join('')
       return `
 \\begin{figure}[h]
 \\centering
 \\includegraphics[width=0.9\\textwidth]{${screenshotOf(metanode.output.view(output))}}
-\\caption{${legend}}\\label{${figure.ref}}
+\\caption{${legend}}\\label{fig:${figure.ref}}
 \\end{figure}
 `
   }).join('')

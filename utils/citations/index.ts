@@ -26,13 +26,16 @@ function convertDOI(text: string) {
  * 1. Some Citation
  * 2. Some Other Citation
  * ```
+ * 
+ * TODO: make the logic behind the way figrefs are getting determined easier to follow
+ *  part of the issue is that figrefs can appear in different order as the figures
+ *  so we can't provide a figref number till after the figures are inserted.
  */
 export default function extractCitations(texts: { text?: string, tags: string[] }[]) {
   const ast: (
     { type: 'text', text: string, tags: string[] }
     | { type: 'cite', text: string, ref: string, tags: string[] }
     | { type: 'bibitem', text: string, ref: string, tags: string[] }
-    | { type: 'ref', text: string, ref: string, tags: string[] }
     | { type: 'figref', text: string, ref: string, tags: string[] }
     | { type: 'figure', text: string, ref: string, tags: string[] }
   )[] = []
@@ -43,13 +46,16 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
   for (const { text, tags } of texts) {
     if (!text) continue
     if (tags.includes('legend')) {
-      const ref = tags.join('-')
-      if (!figures.has(ref)) {
+      const ref = tags.filter(tag => tag !== 'legend').join('-')
+      if (!(ref in figure_asts)) {
         figure_asts[ref] = { type: 'figure', text: `Figure ${figures.size+1}`, ref, tags }
-        ast.push(figure_asts[ref])
-        figures.set(ref, `${figures.size+1}`)
       } else {
         figure_asts[ref].tags = array.unique([...figure_asts[ref].tags, ...tags])
+      }
+      if (!figures.has(ref)) {
+        figure_asts[ref].text = `Figure ${figures.size+1}`
+        figures.set(ref, `${figures.size+1}`)
+        ast.push(figure_asts[ref])
       }
     }
     const expr = /\\(figref|ref)\{(.+?)\}/g
@@ -57,26 +63,25 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
     let m
     while ((m = expr.exec(text)) !== null) {
       const reftype = m[1]
-      const currentCitation = m[2]
+      const ref = m[2]
       if (reftype === 'ref') {
-        if (!bibitems.has(currentCitation)) {
-          bibitem_asts[currentCitation] = { type: 'bibitem', text: `${bibitems.size+1}. ${convertDOI(currentCitation)}`, ref: currentCitation, tags }
-          bibitems.set(currentCitation, `${bibitems.size+1}`)
+        if (!bibitems.has(ref)) {
+          bibitem_asts[ref] = { type: 'bibitem', text: `${bibitems.size+1}. ${convertDOI(ref)}`, ref, tags }
+          bibitems.set(ref, `${bibitems.size+1}`)
         } else {
-          bibitem_asts[currentCitation].tags = array.unique([...bibitem_asts[currentCitation].tags, ...tags])
+          bibitem_asts[ref].tags = array.unique([...bibitem_asts[ref].tags, ...tags])
         }
         ast.push({ type: 'text', text: text.substring(i, m.index), tags })
-        ast.push({ type: 'cite', text: `[${bibitems.get(currentCitation) as string}]`, ref: currentCitation, tags })
+        ast.push({ type: 'cite', text: `[${bibitems.get(ref) as string}]`, ref, tags })
         i = m.index + m[0].length
       } else if (reftype === 'figref') {
-        if (!bibitems.has(currentCitation)) {
-          figure_asts[currentCitation] = { type: 'figure', text: `${figures.size+1}. ${convertDOI(currentCitation)}`, ref: currentCitation, tags }
-          figures.set(currentCitation, `${figures.size+1}`)
+        if (!(ref in figure_asts)) {
+          figure_asts[ref] = { type: 'figure', text: '', ref, tags }
         } else {
-          figure_asts[currentCitation].tags = array.unique([...figure_asts[currentCitation].tags, ...tags])
+          figure_asts[ref].tags = array.unique([...figure_asts[ref].tags, ...tags])
         }
         ast.push({ type: 'text', text: text.substring(i, m.index), tags })
-        ast.push({ type: 'figref', text: `Fig. ${figures.get(currentCitation) as string}`, ref: currentCitation, tags })
+        ast.push({ type: 'figref', text: `Fig.`, ref, tags })
         i = m.index + m[0].length
       }
     }
@@ -85,6 +90,9 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
     else if (tags.includes('introduction')) ast.push({ type: 'text', text: `\n\n`, tags })
     else if (tags.includes('methods')) ast.push({ type: 'text', text: `\n\n`, tags })
   }
+
+  ast.push(...dict.values(figure_asts))
   ast.push(...dict.values(bibitem_asts))
+
   return { ast, bibitems, figures }
 }

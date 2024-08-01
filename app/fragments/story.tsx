@@ -24,8 +24,17 @@ function StoryNode({ krg, head, onChange, processMetapathLookup }: { krg: KRG, h
   const story = React.useMemo(() => {
     if (!processNode?.story) return {}
     try {
-      const input_refs = dict.init(dict.items(head.process.inputs).map(({ key, value }) => ({ key, value: `\\figref{${processMetapathLookup[value.id]}}` })))
-      // TODO: multiinputs
+      const input_refs = {} as Record<string, string | string[]>
+      for (const key in head.process.inputs) {
+        const [k, ...rest] = key.toString().split(':')
+        const value = `\\figref{${processMetapathLookup[head.process.inputs[key].id]}}`
+        if (rest.length > 0) {
+          if (!(k in input_refs)) input_refs[k] = [] as string[]
+          (input_refs[k] as string[]).push(value)
+        } else {
+          input_refs[k] = value
+        }
+      }
       return processNode.story({
         inputs: !inputsError ? inputs : undefined,
         output: !outputError && outputNode.spec !== 'Error' ? output : undefined,

@@ -19,7 +19,7 @@ export function Abstract({ story }: { story: ReturnType<typeof extractCitations>
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>
         : part.type === 'cite' ? <span key={i}> [<a key={i} href={`#${part.ref}`}>{story.bibitems.get(part.ref)}</a>]</span>
-        : part.type === 'figref' ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
+        : part.type === 'figref' && story.figures.get(part.ref) ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
         : null
       )}
     </p>
@@ -34,7 +34,7 @@ export function AbstractPart({ id, story }: { id: string, story: ReturnType<type
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>
         : part.type === 'cite' ? <span key={i}> [<a key={i} href={`#${part.ref}`}>{story.bibitems.get(part.ref)}</a>]</span>
-        : part.type === 'figref' ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
+        : part.type === 'figref' && story.figures.get(part.ref) ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
         : null
       )}
     </p>
@@ -50,7 +50,7 @@ export function Methods({ id, story }: { id: string, story: ReturnType<typeof ex
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>
         : part.type === 'cite' ? <span key={i}> [<a key={i} href={`#${part.ref}`}>{story.bibitems.get(part.ref)}</a>]</span>
-        : part.type === 'figref' ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
+        : part.type === 'figref' && story.figures.get(part.ref) ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
         : null
       )}
     </p>
@@ -66,7 +66,7 @@ export function FigureCaption({ id, story }: { id: string, story: ReturnType<typ
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>
         : part.type === 'cite' ? <span key={i}> [<a key={i} href={`#${part.ref}`}>{story.bibitems.get(part.ref)}</a>]</span>
-        : part.type === 'figref' ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
+        : part.type === 'figref' && story.figures.get(part.ref) ? <span key={i}> <a key={i} href={`#${part.ref}:data`}>Fig. {story.figures.get(part.ref)}</a></span>
         : null
       )}
     </div>

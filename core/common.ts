@@ -1,4 +1,4 @@
-import { decode_complete_process_inputs, decode_complete_process_output } from "./engine";
+import { decode_complete_process_input_refs, decode_complete_process_inputs, decode_complete_process_output, decode_complete_process_output_ref } from "./engine";
 import extractCitations from "@/utils/citations";
 import * as dict from '@/utils/dict'
 import type { FPL } from "@/core/FPPRG"
@@ -25,9 +25,12 @@ export async function fpl_expand(props: { krg: KRG, fpl: FPL, metadata?: Metadat
       let story: Story
       let inputs: Record<string, unknown> | undefined
       try { inputs = await decode_complete_process_inputs(props.krg, step.process) } catch (e) {}
+      let input_refs: Record<string, string | string[]> | undefined
+      try { input_refs = decode_complete_process_input_refs(props.krg, step) } catch (e) {}
       let output: unknown | undefined
       try { output = await decode_complete_process_output(props.krg, step.process) } catch (e) {}
-      story = metanode.story ? metanode.story({ inputs, output }) : {}
+      let output_ref = `\\figref{${step.id}}`
+      story = metanode.story ? metanode.story({ inputs, output, input_refs, output_ref }) : {}
       return {
         key: step.process.id,
         value: {

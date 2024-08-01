@@ -1,4 +1,4 @@
-import FPPRG, { Data, Process, Resolved } from '@/core/FPPRG'
+import FPPRG, { Data, FPL, Process, Resolved } from '@/core/FPPRG'
 import KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
@@ -7,6 +7,26 @@ import { UnboundError, TimeoutError } from '@/spec/error'
 import { StatusUpdate } from '@/spec/metanode'
 
 const JobC = z.object({ data: z.object({ id: z.string() }) })
+
+export function decode_complete_process_input_refs(krg: KRG, step: FPL) {
+  const lookup = dict.init(step.resolve().map(head => ({ key: head.process.id, value: head.id })))
+  const metaProcess = krg.getProcessNode(step.process.type)
+  if (metaProcess === undefined) throw new Error('Unrecognized process')
+  return dict.items(step.process.inputs).reduce((inputs, { key, value }) => {
+    const [arg, ...i] = (key as string).split(':')
+    if (i.length > 0 && !Array.isArray(metaProcess.inputs[arg])) {
+      throw new Error('Received multiple args, but not an array')
+    } else if (i.length === 0 && Array.isArray(metaProcess.inputs[arg])) {
+      throw new Error('Expected multiple args')
+    }
+    const figref = `\\figref{${lookup[value.id]}}`
+    if (i.length > 0) {
+      return {...inputs, [arg]: [...(inputs[arg]||[]) as string[], figref] }
+    } else {
+      return {...inputs, [arg]: figref }
+    }
+  }, {} as Record<string, string | string[]>)
+}
 
 export async function decode_complete_process_inputs(krg: KRG, instanceProcess: Process) {
   const metaProcess = krg.getProcessNode(instanceProcess.type)
@@ -39,6 +59,10 @@ export async function decode_complete_process_output(krg: KRG, instanceProcess: 
   if (!output) throw new Error('No output')
   const metaDataNode = krg.getDataNode(output.type)
   return metaDataNode.codec.decode(output.value)
+}
+
+export function decode_complete_process_output_ref(krg: KRG, instanceProcess: Process) {
+  return `\\figref{${instanceProcess.id}}`
 }
 
 /**

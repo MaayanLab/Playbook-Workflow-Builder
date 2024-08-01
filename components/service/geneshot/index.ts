@@ -158,8 +158,8 @@ export const GeneshotGeneSetAugmentation = ([
     })
     .story(props => ({
       abstract: `The gene set${props.inputs?.geneset?.description ? ` containing ${props.inputs.geneset.description}` : ''} was augmented with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`,
-      methods: `The gene in${''/* {props.input_ref.geneset}*/} is augmented using a similarity matrix based on ${label} using Geneshot's REST API\\ref{doi:10.1093/nar/gkz393}.`,
-      legend: `A table of similar genes to${''/* {props.input_ref.geneset}*/} produced by using a ${label} similarity matrix with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
+      methods: `The gene in ${props.input_refs?.geneset} is augmented using a similarity matrix based on ${label} using Geneshot's REST API\\ref{doi:10.1093/nar/gkz393}.`,
+      legend: `A table of similar genes to ${props.input_refs?.geneset} produced by using a ${label} similarity matrix with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
     }))
     .build(),
   MetaNode(`GeneshotGeneAugmentation[${rc}]`)

@@ -10,7 +10,7 @@ import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import type KRG from '@/core/KRG'
 import { useStory } from '@/app/fragments/story'
 import classNames from 'classnames'
-import { AbstractPart } from './story'
+import { AbstractPart, FigureCaption } from './story'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -67,6 +67,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
             }}
           />
           : <div className="prose max-w-none">Waiting for input</div>}
+        {/* <FigureCaption id={head.id} story={story} /> */}
       </div>
       {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
     </div>

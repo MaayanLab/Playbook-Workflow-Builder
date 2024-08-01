@@ -27,8 +27,8 @@ export const TargtRangerScreenTargetsT = [
     .story(props => ({
       abstract: `Significantly over-expressed genes when compared to tissue expression in ${label}${ref} were identified.`,
       introduction: `Several atlasing efforts profile human gene expression across tissues in both normal and diseased states. TargetRanger is a web server that compares uploaded RNA-seq expression data and identifies genes that are highly expressed when compared to various atlases\\ref{doi:10.1093/nar/gkad399}.`,
-      methods: `The RNA-seq expression in${''/* {props.input_ref.input}*/} is queried with TargetRanger\\ref{doi:10.1093/nar/gkad399} to identify highly expressed genes when compared with tissue expression in ${label}${ref}.`,
-      legend: `A table showing how significantly genes are highly expressed in ${''/*{props.input_ref}*/} when compared to tissue expression in ${label}${ref}.`,
+      methods: `The RNA-seq expression in ${props.input_refs?.input} is queried with TargetRanger\\ref{doi:10.1093/nar/gkad399} to identify highly expressed genes when compared with tissue expression in ${label}${ref}.`,
+      legend: `A table showing how significantly genes are highly expressed in ${props.input_refs?.input} when compared to tissue expression in ${label}${ref}.`,
     }))
     .build()
 )

@@ -151,8 +151,8 @@ export const DrugShotDrugSetAugmentation = ([
     .story(props => ({
       abstract: `The drug set${props.inputs && props.inputs.drugset.description ? ` containing ${props.inputs.drugset.description}` : ''} was augmented with DrugShot based on ${label}\\ref{doi:10.1186/s12859-022-04590-5}.`,
       introduction: `PubMed contains millions of abstracts containing drugs and other biomedical terms such as genes or diseases. DrugShot is a web server that facilitates arbitrary term searches against PubMed to find drug co-mentions & drug set augmentation with a variety of drug-drug similarity resources\\ref{doi:10.1186/s12859-022-04590-5}.`,
-      methods: `The drug set in ${''/*{props.input_ref}*/} is augmented using a similarity matrix based on ${label} using DrugShot's REST API\\ref{doi:10.1186/s12859-022-04590-5}.`,
-      legend: `A table of similar drugs to ${''/*{props.input_ref}*/} produced by using a ${label} similarity matrix with DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
+      methods: `The drug set in ${props.input_refs?.drugset} is augmented using a similarity matrix based on ${label} using DrugShot's REST API\\ref{doi:10.1186/s12859-022-04590-5}.`,
+      legend: `A table of similar drugs to ${props.input_refs?.drugset} produced by using a ${label} similarity matrix with DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
     }))
     .build(),
   MetaNode(`DrugShotDrugAugmentation[${rc}]`)

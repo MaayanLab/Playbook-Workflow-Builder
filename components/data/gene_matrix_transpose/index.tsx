@@ -117,8 +117,8 @@ export const GMTUnion = MetaNode('GMTUnion')
   .story(props => ({
     abstract: `All the identified gene sets were combined using the union set operation.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `All genes present in all gene sets from${''/* {props.input_ref.gmt}*/} were aggregated into a single gene set.`,
-    legend: `The union of all genes across all gene sets in${''/* {props.input_ref.gmt}*/}.`,
+    methods: `All genes present in all gene sets from ${props.input_refs?.gmt} were aggregated into a single gene set.`,
+    legend: `The union of all genes across all gene sets in ${props.input_refs?.gmt}.`,
   }))
   .build()
 
@@ -135,8 +135,8 @@ export const GMTIntersection = MetaNode('GMTIntersection')
   .story(props => ({
     abstract: `A consensus gene set was created using the set intersection operation.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `Genes that appear in all gene sets in${''/* {props.input_ref.gmt}*/} were aggregated into a single gene set.`,
-    legend: `The genes that appear in all gene sets in${''/* {props.input_ref.gmt}*/}.`,
+    methods: `Genes that appear in all gene sets in ${props.input_refs?.gmt} were aggregated into a single gene set.`,
+    legend: `The genes that appear in all gene sets in ${props.input_refs?.gmt}.`,
   }))
   .build()
 
@@ -164,8 +164,8 @@ export const GMTConsensus = MetaNode('GMTConsensus')
   .story(props => ({
     abstract: `A consensus gene set was created by only retaining genes that appear in at least two sets.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `Genes that appear in at least 2 of the gene sets in ${''/*{props.input_ref}*/} were collected into a set.`,
-    legend: `The genes that appear in at least 2 of the gene sets in ${''/*{props.input_ref}*/}.`,
+    methods: `Genes that appear in at least 2 of the gene sets in ${props.input_refs?.gmt} were collected into a set.`,
+    legend: `The genes that appear in at least 2 of the gene sets in ${props.input_refs?.gmt}.`,
   }))
   .build()
 
@@ -248,8 +248,8 @@ export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .story(props => ({
     abstract: `The gene sets collected were combined into one gene set library.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `Labels were created for each of the gene sets ${''/*({props.input_ref.genesets})*/} to construct a GMT.`,
-    legend: `The gene sets from${''/* {props.input_ref.genesets}*/} collected into a GMT.`,
+    methods: `Labels were created for each of the gene sets ${props.input_refs?.genesets} to construct a GMT.`,
+    legend: `The gene sets from ${props.input_refs?.genesets} collected into a GMT.`,
   }))
   .build()
 
@@ -266,8 +266,8 @@ export const GMTConcatenate = MetaNode('GMTConcatenate')
   .story(props => ({
     abstract: `Multiple GMTs were combined into one GMT.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `A joint GMT was constructed by stacking GMTs from${''/* {props.input_ref.gmts.join(', ')}*/}.`,
-    legend: `The GMTs from${''/* {props.input_ref.gmts.join(', ')}*/} collected into a joint GMT.`,
+    methods: `A joint GMT was constructed by stacking GMTs from ${(props.input_refs?.gmts as string[]).join(', ')}.`,
+    legend: `The GMTs from ${(props.input_refs?.gmts as string[]).join(', ')} collected into a joint GMT.`,
      
   }))
   .build()

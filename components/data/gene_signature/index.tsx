@@ -110,7 +110,7 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
   .story(props => ({
     abstract: `The ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'} was reformatted into gene matrix transpose format.`,
     introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
-    methods: `The gene signature in${''/* {props.input_ref.sig}*/} was reformatted to a gene matrix transpose (GMT) format, which a standard method of storing gene set information.`,
+    methods: `The gene signature in ${props.input_refs?.sig} was reformatted to a gene matrix transpose (GMT) format, which a standard method of storing gene set information.`,
     legend: `A GMT-formatted table of gene sets.`,
   }))
   .build()

@@ -1,6 +1,6 @@
 {
   "name": "playbook-workflow-builder",
-  "version": "0.62.4",
+  "version": "0.63.0",
   "description": "A repository for the playbook workflow builder collaboration.",
   "private": true,
   "workspaces": [

@@ -311,8 +311,8 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .story(props => ({
     abstract: `Gene sets containing ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-    methods: `The gene in ${props.input_refs?.gene} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets containing the gene.`,
-    legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain the gene in ${props.input_refs?.gene}.`,
+    methods: `${props.inputs?.gene ? props.inputs.gene : 'the gene'} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets containing the gene.`,
+    legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain the ${props.inputs?.gene ? props.inputs.gene : 'the gene'}.`,
   }))
   .build()
 
@@ -412,8 +412,8 @@ export const EnrichrTermTSearch = [
     .story(props => ({
       abstract: `Gene sets with set labels containing ${props.inputs?.term ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-      methods: `The term in ${props.input_refs?.term} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets with set labels containing the term.`,
-      legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain the term in ${props.input_refs?.term}.`,
+      methods: `${props.inputs?.term ? props.inputs.term : `The ${TermT.meta.label}`} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets with set labels containing the term.`,
+      legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain ${props.inputs?.term ? props.inputs.term : 'the term'}.`,
     }))
     .build()
 )

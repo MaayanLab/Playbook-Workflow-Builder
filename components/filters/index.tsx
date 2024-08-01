@@ -62,8 +62,8 @@ export const TopKScoredT = [
     })
     .story(props => ({
       abstract: `The top ${props.data?.k || 'K'} ${ScoredT.meta.label} were selected.`,
-      methods: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} were selected from${''/* {props.input_ref.scored}*/}.`,
-      legend: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} from${''/* {props.input_ref.scored}*/}.`,
+      methods: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} were selected from ${props.input_refs?.scored}.`,
+      legend: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} from ${props.input_refs?.scored}.`,
     }))
     .build(),
   MetaNode(`OneScoredT[${ScoredT.spec}]`)
@@ -119,8 +119,8 @@ export const TopKScoredT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      methods: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} was taken from ${''/*{props.input_ref}*/}.`,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${''/*{props.input_ref}*/}.`,
+      methods: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} was taken from ${props.input_refs?.scored}.`,
+      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.scored}.`,
     }))
     .build()
 ])
@@ -193,7 +193,7 @@ export const SetFromScoredT = [
     .resolve(async (props) => ({ set: props.inputs.scored.map(({ term }) => term) }))
     .story(props => ({
       abstract: `A set was constructed using the ${ScoredT.meta.label.toLowerCase()}.`,
-      legend: `The set of drugs from${''/* {props.input_ref.scored}*/}.`,
+      legend: `The set of drugs from ${props.input_refs?.scored}.`,
     }))
     .build(),
   MetaNode(`OneSetT[${SetT.spec}]`)
@@ -245,7 +245,7 @@ export const SetFromScoredT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${''/*{props.input_ref}*/}.`,
+      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.set}.`,
     }))
     .build(),
   MetaNode(`SomeSetT[${SetT.spec}]`)
@@ -313,7 +313,7 @@ export const SetFromScoredT = [
     })
     .story(props =>  ({
       abstract: `Some ${pluralize(T.label.toLowerCase())} were selected for further investigation.`,
-      legend: `Some ${pluralize(T.label.toLowerCase())} taken from ${''/*{props.input_ref}*/}.`,
+      legend: `Some ${pluralize(T.label.toLowerCase())} taken from ${props.input_refs?.set}.`,
     }))
     .build(),
 ])
@@ -351,7 +351,7 @@ export const ReduceMultiScoredT = [
       })
       .story(props => ({
         abstract: `The mean across multiple ${ScoredT.meta.label} is computed.`,
-        legend: `The mean across${''/* {props.input_ref.scored.join(', ')}*/}.`,
+        legend: `The mean across${(props.input_refs?.scored as string[]).join(', ')}.`,
       }))
       .build(),
     MetaNode(`AbsMaxScoredT[${T.label}]`)
@@ -376,7 +376,7 @@ export const ReduceMultiScoredT = [
       })
       .story(props => ({
         abstract: `The absolute maximum across multiple ${ScoredT.meta.label} is computed.`,
-        legend: `The absolute maximum across${''/* {props.input_ref.scored.join(', ')}*/}.`,
+        legend: `The absolute maximum across ${(props.input_refs?.scored as string[]).join(', ')}.`,
       }))
       .build(),
 ])
@@ -429,7 +429,7 @@ export const TopKRankedT = [
     })
     .story(props => ({
       abstract: `The top ${props.data?.k || 'K'} ${RankedT.meta.label} were selected.`,
-      legend: `The top ${props.data?.k || 'K'} drugs from ${''/*{props.input_ref}*/}.`,
+      legend: `The top ${props.data?.k || 'K'} drugs from ${props.input_refs?.ranked}.`,
     }))
     .build(),
   MetaNode(`OneRankedT[${RankedT.spec}]`)
@@ -483,7 +483,7 @@ export const TopKRankedT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${''/*{props.input_ref}*/}.`,
+      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.ranked}.`,
     }))
     .build()
 ])

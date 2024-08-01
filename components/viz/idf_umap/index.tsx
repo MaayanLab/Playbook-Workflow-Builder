@@ -22,8 +22,8 @@ export const UMAPFromXMT = [GMT, DMT].map(XMT =>
     .story(props => ({
       abstract: `UMAP was applied to the inverse document frequency of the ${XMT.meta.label.toLocaleLowerCase()}.`,
       introduction: `The Inverse Document Fequency (IDF) is an adjustment for the fact that some genes appear more frequently then others, and is used commonly in TF-IDF for information retrieval of words\\ref{doi:10.1017/CBO9781139058452.002}.  Uniform Manifold Approximation and Projection (UMAP) is a dimensionality reducation technique widely used for visualization of high dimensional data\\ref{doi:10.48550/arXiv.1802.03426}.`,
-      methods: `The ${XMT.meta.label.toLocaleLowerCase()} in ${''/*{props.input_ref}*/} is visualized by first computing IDF\\ref{doi:10.1017/CBO9781139058452.002} followed by UMAP\\ref{doi:10.48550/arXiv.1802.03426}.`,
-      legend: `A scatter plot of the ${XMT.meta.label.toLocaleLowerCase()} in ${''/*{props.input_ref}*/} visualized by IDF\\ref{doi:10.1017/CBO9781139058452.002} followed by UMAP\\ref{doi:10.48550/arXiv.1802.03426}.`,
+      methods: `The ${XMT.meta.label.toLocaleLowerCase()} in ${props.input_refs?.matrix} is visualized by first computing IDF\\ref{doi:10.1017/CBO9781139058452.002} followed by UMAP\\ref{doi:10.48550/arXiv.1802.03426}.`,
+      legend: `A scatter plot of the ${XMT.meta.label.toLocaleLowerCase()} in ${props.input_refs?.matrix} visualized by IDF\\ref{doi:10.1017/CBO9781139058452.002} followed by UMAP\\ref{doi:10.48550/arXiv.1802.03426}.`,
     }))
     .build()
 )

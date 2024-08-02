@@ -12,23 +12,23 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   const { fullFPL, processLookup, story } = await fpl_expand(props)
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
     part.type === 'text' ? [part.text]
-    : part.type === 'cite' ? [`\\cite{${part.ref}}`]
-    : part.type === 'figref' ? [`\\ref{fig:${part.ref}}`]
+    : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   ).join('')
   const introduction = story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
     part.type === 'text' ? [part.text]
-    : part.type === 'cite' ? [`\\cite{${part.ref}}`]
-    : part.type === 'figref' ? [`\\ref{fig:${part.ref}}`]
+    : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   ).join('')
   const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
     part.type === 'text' ? [part.text]
-    : part.type === 'cite' ? [`\\cite{${part.ref}}`]
-    : part.type === 'figref' ? [`\\ref{fig:${part.ref}}`]
+    : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   ).join('')
-  const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${part.ref}}\n${part.text.slice(part.text.indexOf('.')+2)}`] : []).join('\n\n')
+  const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${part.text.slice(part.text.indexOf('.')+2)}`] : []).join('\n\n')
   return `
 \\documentclass{article}
 \\providecommand{\\keywords}[1]
@@ -72,19 +72,19 @@ ${
   fullFPL
     .map((head) => {
       const { metanode, output } = processLookup[head.process.id]
-      const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags.includes(head.process.id))
+      const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
       if (figure?.type !== 'figure') return ''
-      const legend = story.ast.filter(part => part.tags.includes('legend') && part.tags.includes(head.process.id)).map(part =>
+      const legend = story.ast.filter(part => part.tags.includes('legend') && part.tags.includes(head.id)).map(part =>
         part.type === 'text' ? part.text
-        : part.type === 'cite' ? `\\cite{${part.ref}}`
-        : part.type === 'figref' ? `\\ref{fig:${part.ref}}`
+        : part.type === 'cite' ? `\\cite{${story.bibitems.get(part.ref)}}`
+        : part.type === 'figref' ? `\\ref{fig:${story.figures.get(part.ref)}}`
         : ''
       ).join('')
       return `
 \\begin{figure}[h]
 \\centering
 \\includegraphics[width=0.9\\textwidth]{${screenshotOf(metanode.output.view(output))}}
-\\caption{${legend}}\\label{fig:${figure.ref}}
+\\caption{${legend}}\\label{fig:${story.figures.get(figure.ref)}}
 \\end{figure}
 `
   }).join('')

@@ -23,11 +23,14 @@ export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
   ))
   .story(props => ({
     abstract: `The gene count matrix was then visualized as a bar plot representing library sizes.`,
+    introduction: `The first step in determining gene expression levels is to align reads to the sample genome. Tracking the number of reads mapped to each sample and the genes they represent is a method of quantifying gene expression.`,
+    methods: `Expression data was quantified as gene-level counts by mapping transcript sequences to genes using the ARCHS4 pipeline\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    legend: `A Plotly bar plot representing library sizes.`,
   }))
   .build()
 
 
-  export const VisualizeLibrarySizesfromAnnData = MetaNode('VisualizeLibrarySizesFromAnnData')
+export const VisualizeLibrarySizesfromAnnData = MetaNode('VisualizeLibrarySizesFromAnnData')
   .meta({
     label: 'Library Size Bar Plot from AnnData File',
     description: 'Construct a bar plot which displays the total number of reads mapped to each RNA-seq sample in the dataset from an AnnData file.',
@@ -44,6 +47,9 @@ export const VisualizeLibrarySizes = MetaNode('VisualizeLibrarySizes')
   ))
   .story(props => ({
     abstract: `The AnnData file was then visualized as a bar plot representing library sizes.`,
+    introduction: `The first step in determining gene expression levels is to align reads to the sample genome. Tracking the number of reads mapped to each sample and the genes they represent is a method of quantifying gene expression.  The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007} and can be used to store gene count information.`,
+    methods: `Expression data was quantified as gene-level counts by mapping transcript sequences to genes using the ARCHS4 pipeline\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    legend: `A Plotly bar plot representing library sizes.`,
   }))
   .build()
 

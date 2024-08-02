@@ -53,7 +53,11 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.` }))
+  .story(props => ({
+    abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`,
+    introduction: `Metadata for gene count matrices provide more information about the cells from which the samples originated, providing context to signatures. Possible metadata categories include sample title, stage of disease, and cell type.`,
+    legend: `A table of metadata uploaded by the user.`,
+  }))
   .build()
 
 export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
@@ -79,5 +83,9 @@ export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `A metadata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.` }))
+  .story(props => ({
+    abstract: `A metadata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+    introduction: `Metadata for gene count matrices provide more information about the cells from which the samples originated, providing context to signatures. Possible metadata categories include sample title, stage of disease, and cell type.`,
+    legend: `A table of metadata uploaded by the user.`,
+  }))
   .build()

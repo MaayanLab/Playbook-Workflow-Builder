@@ -75,6 +75,9 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     return await getGeneData(props.inputs.gene);
   })
   .story(props => ({
-    abstract: `More information about the gene was then obtained with the MyGene.info API\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}.`
+    abstract: `More information about the gene was then obtained with the MyGene.info API\\ref{doi:10.1186/s13059-016-0953-9},\\ref{doi:10.1093/nar/gks1114}.`,
+    introduction: `MyGene.info is a REST web service for querying and retrieving common gene annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/nar/gks1114}.`,
+    methods: `${props.inputs?.gene ? props.inputs.gene : `The gene`} is queried with the MyGene.info REST web API to resolve up to date annotations\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/nar/gks1114}.`,
+    legend: `A report showing various information about ${props.inputs?.gene ? props.inputs.gene : `the gene`} resolved from MyGene.info\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/nar/gks1114}.`,
   }))
   .build()

@@ -186,6 +186,10 @@ export type ResolveMetaNode<T = InternalProcessMetaNode> = BaseProcessMetaNode<T
     inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     /* The output of this process */
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+    /* The refs to the inputs' figures */
+    input_refs?: {[K in keyof ExtractKey<T, 'inputs'>]: string | string[]}
+    /* The refs to the output figure */
+    output_ref?: string
   }): Story
 }
 
@@ -217,6 +221,10 @@ export type PromptMetaNode<T = InternalDataMetaNode & InternalProcessMetaNode> =
     inputs?: {[K in keyof ExtractKey<T, 'inputs'>]: DataMetaNodeData<ExtractKey<T, 'inputs'>[K]>}
     /* The output of this process */
     output?: DataMetaNodeData<ExtractKey<T, 'output'>>,
+    /* The refs to the inputs' figures */
+    input_refs?: {[K in keyof ExtractKey<T, 'inputs'>]: string | string[]}
+    /* The refs to the output figure */
+    output_ref?: string
   }): Story
 }
 

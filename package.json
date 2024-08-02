@@ -1,6 +1,6 @@
 {
   "name": "playbook-workflow-builder",
-  "version": "0.62.1",
+  "version": "0.63.1",
   "description": "A repository for the playbook workflow builder collaboration.",
   "private": true,
   "workspaces": [
@@ -13,8 +13,9 @@
   "scripts": {
     "build": "npm --workspace=app run build",
     "codegen:apis": "ts-node cli/sync-api-import.ts",
-    "codegen:components": "ts-node cli/sync-component-import.ts",
+    "codegen:citations": "ts-node cli/build-citations.ts",
     "codegen:cite": "ts-node cli/add-citation.ts",
+    "codegen:components": "ts-node cli/sync-component-import.ts",
     "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
     "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
     "codegen:sql": "mkdir -p db/migrations && ts-node cli/build-sql.ts > db/migrations/00_init.sql",

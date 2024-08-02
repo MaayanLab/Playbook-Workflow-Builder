@@ -58,11 +58,11 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
               router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
             }}
           />
-          <FigureCaption id={head.id} story={{ ...story, ast: astFiltered }} />
+          {/* <FigureCaption id={head.id} story={{ ...story, ast: astFiltered }} /> */}
         </>
         : <div className="prose max-w-none">Waiting for input</div>}
       {outputNode && outputNode.spec === 'Error' && output ? <>{outputNode.view(output)}</> : null}
-      <References  story={{ ...story, ast: astFiltered }} />
+      <References story={{ ...story, ast: astFiltered }} />
     </div>
   )
 }

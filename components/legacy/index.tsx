@@ -63,7 +63,12 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
     if (gene === undefined) throw new Error('Gene not identified in MyVariantInfo')
     return gene
   })
-  .story(props => ({ abstract: `The closest gene to the variant was found using MyVariant.info\\ref{doi:10.1093/bioinformatics/btac017}.` }))
+  .story(props => ({
+    abstract: `The closest gene to the variant was found using MyVariant.info\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
+    legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+  }))
   .build()
 
 export const MyVariantInfo = MetaNode('MyVariantInfo')
@@ -80,7 +85,7 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
   ))
   .build()
 
-  export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromVariantTermMyVarintInfo')
+export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromVariantTermMyVarintInfo')
   .meta({
     label: 'Resolve Variant Info from Term (MyVarintInfo)',
     description: 'Resolve variant info from variant term using the MyVarintInfo API.',
@@ -104,8 +109,13 @@ export const MyVariantInfo = MetaNode('MyVariantInfo')
     if(myVariantInfoURL != null){
       return await getVariantInfoFromMyVariantInfo(myVariantInfoURL);
     }else{
-      throw new Error("Unable to find requested data, missing MyVarintInfo API link in External resources!");
+      throw new Error("Unable to find requested data, missing MyVariantInfo API link in External resources!");
     }
   })
-  .story(props => ({}))
+  .story(props => ({
+    abstract: `The closest gene to the variant was found using MyVariant.info\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
+    legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+  }))
   .build()

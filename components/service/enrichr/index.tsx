@@ -115,23 +115,33 @@ export const EnrichrSetTToSetT = [
       .meta({
         label: `${EnrichrSetT.meta.label} as Set`,
         icon: [enrichr_icon],
-        description: `Treat Enrichr set as standard set`,
+        description: `Load Enrichr set as standard set`,
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(SetT)
       .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
-      .story(props => ({ abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
+      .story(props => ({
+        abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
+        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+        methods: `The disease terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted to produce ${props.output_ref}.`,
+        legend: `A set of disease terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset}.`,
+      }))
       .build(),
     MetaNode(`EnrichrSetTToGMT[${T.name}]`)
       .meta({
         label: `${EnrichrSetT.meta.label} as GMT`,
         icon: [enrichr_icon],
-        description: `Treat Enrichr set as GMT`,
+        description: `Load Enrichr set as GMT`,
       })
       .inputs({ enrichrset: EnrichrSetT })
       .output(GMT)
       .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
-      .story(props => ({ abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.` }))
+      .story(props => ({
+        abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
+        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted from the original gene set library to produce ${props.output_ref}.`,
+        legend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
+      }))
       .build(),
 
   ]
@@ -207,7 +217,10 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     return await response.json()
   })
   .story(props => ({
-    abstract: `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr\\ref{doi:10.1002/cpz1.90}.`
+    abstract: `The gene set${props.inputs && props.inputs.geneset.description ? ` containing ${props.inputs.geneset.description}` : ''} was submitted to Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+    introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+    methods: `The gene set in ${props.input_refs?.geneset} is submitted to Enrichr\\ref{doi:10.1002/cpz1.90} for enrichment analysis.`,
+    legend: `An interactive page with the results of the Enrichr\\ref{doi:10.1002/cpz1.90} enrichment analysis. Bar charts show the significantly enriched terms from different gene set libraries spanning several categories.`,
   }))
   .build()
 
@@ -259,7 +272,10 @@ backgrounds.map(bg => ({ bg, output, T }))
       return 'empty' in props.inputs.searchResults ? [] : await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
     })
     .story(props => ({
-      abstract: `The gene set was enriched against the ${bg.label} [${bg.ref}] library to identify statistically significant ${bg.termLabel}.`
+      abstract: `The gene set was enriched against the ${bg.label}${bg.ref} library to identify statistically significant ${bg.termLabel}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `The enrichment analysis results against the ${bg.label}${bg.ref} library are resolved via the Enrichr API\\ref{doi:10.1002/cpz1.90}.`,
+      legend: `A table of significantly enriched ${bg.termLabel} from the ${bg.label}${bg.ref} library paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build()
 )
@@ -293,7 +309,10 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .output(EnrichrGeneSearchResults)
   .resolve(async (props) => props.inputs.gene)
   .story(props => ({
-    abstract: `Gene sets containing ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`
+    abstract: `Gene sets containing ${props.inputs?.gene ? props.inputs.gene : 'the gene'} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+    introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+    methods: `${props.inputs?.gene ? props.inputs.gene : 'the gene'} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets containing the gene.`,
+    legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain the ${props.inputs?.gene ? props.inputs.gene : 'the gene'}.`,
   }))
   .build()
 
@@ -344,7 +363,10 @@ backgrounds.map(bg => ({ bg, output, T }))
       return await resolveEnrichrGeneSearchResults(bg, props.inputs.searchResults)
     })
     .story(props => ({
-      abstract: `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+      abstract: `Identified matching terms from the ${bg.label}${bg.ref} library were assembled into a collection of gene sets.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `Gene sets in the ${bg.label}${bg.ref} library containing the provided gene were resolved via the Enrichr API\\ref{doi:10.1002/cpz1.90}.`,
+      legend: `A table of disease signatures from the ${bg.label}${bg.ref} library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build()
 )
@@ -388,7 +410,10 @@ export const EnrichrTermTSearch = [
     .output(EnrichrTermSearchResults)
     .resolve(async (props) => props.inputs.term)
     .story(props => ({
-      abstract: `Gene sets with set labels containing ${props.inputs?.term ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`
+      abstract: `Gene sets with set labels containing ${props.inputs?.term ? props.inputs.term : `the ${TermT.meta.label}`} were queried from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `${props.inputs?.term ? props.inputs.term : `The ${TermT.meta.label}`} is submitted to the Enrichr API\\ref{doi:10.1002/cpz1.90} to identify gene sets with set labels containing the term.`,
+      legend: `An interactive page provided by Enrichr\\ref{doi:10.1002/cpz1.90} showing the gene set libraries categorized by type and the gene set labels which contain ${props.inputs?.term ? props.inputs.term : 'the term'}.`,
     }))
     .build()
 )
@@ -441,7 +466,10 @@ export const EnrichrTermSearchT = [
       return await resolveEnrichrTermSearchResults(bg, props.inputs.searchResults)
     })
     .story(props => ({
-      abstract: `Identified matching terms from the ${bg.label} [${bg.ref}] library were assembled into a collection of gene sets.`
+      abstract: `Identified matching terms from the ${bg.label}${bg.ref} library were assembled into a collection of gene sets.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `Gene sets in the ${bg.label}${bg.ref} library containing the provided term in the gene set label were resolved via the Enrichr API\\ref{doi:10.1002/cpz1.90}.`,
+      legend: `A table of disease signatures from the ${bg.label}${bg.ref} library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build()
 )

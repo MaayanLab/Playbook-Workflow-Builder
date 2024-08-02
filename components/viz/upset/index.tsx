@@ -31,7 +31,10 @@ export const UpSetFromXMT = [GMT, DMT].map(XMT =>
     .output(UpSetPlot)
     .resolve(async (props) => props.inputs.matrix)
     .story(props => ({
-      abstract: `A UpSet plot was constructed with the ${XMT.meta.label.toLocaleLowerCase()}.`
+      abstract: `A UpSet plot was constructed with the ${XMT.meta.label.toLocaleLowerCase()}.`,
+      introduction: `UpSet is a visualization technique for the quantitative analysis of sets, their intersections, and aggregates of intersections\\ref{doi:10.1109/TVCG.2014.2346248}.`,
+      methods: `The sets in the gene matrix transpose are visualized using a D3-based interactive UpSet plot\\ref{doi:10.1109/TVCG.2014.2346248}\\ref{d3 UpSet Plot, https://github.com/chuntul/d3-upset}.`,
+      legend: `An interactive UpSet\\ref{doi:10.1109/TVCG.2014.2346248} plot visualizing the ${XMT.meta.label.toLocaleLowerCase()} in ${props.input_refs?.matrix}.`,
     }))
     .build()
 )

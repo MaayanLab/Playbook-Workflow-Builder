@@ -235,7 +235,10 @@ export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
   return PPIobj
 })
 .story(props => ({
-  abstract: `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API\\ref{STRING api, https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set}.`
+  abstract: `For the given gene ID (SYMBOL), StringDB PPI was extracted using their API\\ref{doi:10.1093/nar/gkac1000}.`,
+  introduction: `StringDB is a database of protein-protein interactions. Given a list of genes in terms of Gene Symbols, their API provides an easy way to fetch the list of protein-protein interactions\\ref{doi:10.1093/nar/gkac1000}.`,
+  methods: `For ${props.inputs?.gene ? props.inputs.gene : 'the gene'}, StringDB\\ref{doi:10.1093/nar/gkac1000} PPI was extracted using their API.`,
+  legend: `A StringDB\\ref{doi:10.1093/nar/gkac1000} PPI Network for ${props.inputs?.gene ? props.inputs.gene : 'the gene'}.`,
 }))
 .build()
 
@@ -259,7 +262,10 @@ export const StringDBPPI_to_GeneSet = MetaNode('StringDBPPI_to_GeneSet')
   return {"description": "", "set": allnodes} ;
 })
 .story(props => ({
-  abstract: `For the Given StringDB PPI, the list of nodes (GeneSet) is generated.`
+  abstract: `For the Given StringDB PPI, the list of nodes (GeneSet) is generated.`,
+  introduction: `StringDB is a database of protein-protein interactions. Given a list of genes in terms of Gene Symbols, their API provides an easy way to fetch the list of protein-protein interactions\\ref{doi:10.1093/nar/gkac1000}.`,
+  methods: `For the given StringDB\\ref{doi:10.1093/nar/gkac1000} PPI ${props.input_refs?.data}, the gene set is produced with the union of all nodes in the PPI network.`,
+  legend: `A gene set corresponding to all unique genes in the StringDB\\ref{doi:10.1093/nar/gkac1000} PPI network from ${props.input_refs?.data}.`,
 }))
 .build()
 
@@ -288,6 +294,9 @@ export const StringDBPPI_to_GraphPlot = MetaNode('StringDBPPI_to_GraphPlot')
   return GraphPlotObj;
 })
 .story(props => ({
-  abstract: `For the Given StringDB PPI, the list of nodes (Gene Set) is generated.`
+  abstract: `For the Given StringDB PPI, the list of nodes (Gene Set) is generated.`,
+  introduction: `StringDB is a database of protein-protein interactions. Given a list of genes in terms of Gene Symbols, their API provides an easy way to fetch the list of protein-protein interactions.`,
+  methods: `For the Given StringDB PPI, an object is generated to be used with plotting the PPI network.`,
+  legend: `PPI network for the list of genes submitted.`,
 }))
 .build()

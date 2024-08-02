@@ -57,7 +57,11 @@ export const GeneSigFromFile = MetaNode('GeneSigFromFile')
     { kargs: [props.inputs.file] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature.` }))
+  .story(props => ({
+    abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a gene signature.`,
+    introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
+    legend: `A table of gene expression signatures.`,
+  }))
   .build()
 
 export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
@@ -84,7 +88,11 @@ export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
     { kargs: [props.data] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `A gene signature${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.` }))
+  .story(props => ({
+    abstract: `A gene signature${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+    introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
+    legend: `A table of gene expression signatures.`,
+  }))
   .build()
 
 export const GMTFromSignature = MetaNode('GMTFromSignature')
@@ -99,7 +107,12 @@ export const GMTFromSignature = MetaNode('GMTFromSignature')
     { kargs: [props.inputs.sig] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `The ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'} was reformatted into gene matrix transpose format.` }))
+  .story(props => ({
+    abstract: `The ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'} was reformatted into gene matrix transpose format.`,
+    introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
+    methods: `The gene signature in ${props.input_refs?.sig} was reformatted to a gene matrix transpose (GMT) format, which a standard method of storing gene set information.`,
+    legend: `A GMT-formatted table of gene sets.`,
+  }))
   .build()
 
 export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
@@ -114,7 +127,12 @@ export const UpGeneSetFromSignature = MetaNode('UpGeneSetFromSignature')
     'components.data.gene_signature.geneset_from_sig',
     { kargs: [props.inputs.sig, 'up'] }
   ))
-  .story(props => ({ abstract: `The up-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.` }))
+  .story(props => ({
+    abstract: `The up-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`,
+    introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
+    methods: `Up-regulated genes were extracted from the gene signature by identifying the genes with the most significant positive z-score.`,
+    legend: `A table showing significant up-regulated genes and their significance levels.`,
+  }))
   .build()
 
 export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
@@ -129,7 +147,12 @@ export const DownGeneSetFromSignature = MetaNode('DownGeneSetFromSignature')
     'components.data.gene_signature.geneset_from_sig',
     { kargs: [props.inputs.sig, 'down'] }
   ))
-  .story(props => ({ abstract: `The down-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.` }))
+  .story(props => ({
+    abstract: `The down-regulated genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`,
+    introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
+    methods: `Down-regulated genes were extracted from the gene signature by identifying the genes with the most significant negative z-score.`,
+    legend: `A table showing significant down-regulated genes and their signifiance levels.`,
+  }))
   .build()
 
 export const ScoredGenesFromSignature = MetaNode('ScoredGenesFromSignature')
@@ -144,5 +167,9 @@ export const ScoredGenesFromSignature = MetaNode('ScoredGenesFromSignature')
     { kargs: [props.inputs.sig] },
     message => props.notify({ type: 'info', message }),
   ))
-  .story(props => ({ abstract: `Significant genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.` }))
+  .story(props => ({
+    abstract: `Significant genes were extracted from the ${props.inputs && props.inputs.sig.description ? props.inputs.sig.description : 'gene signature'}.`,
+    introduction: `Differentially expressed genes (DEGs) are useful in identifying the genetic cause for differences in cell type or cell behavior under different experimental conditions. DEGs are identified by comparing the gene signatures between samples and extracting the genes with the most significant change in expression.`,
+    legend: `A table showing significant genes extracted from the gene signature.`,
+  }))
   .build()

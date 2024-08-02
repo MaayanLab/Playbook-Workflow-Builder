@@ -56,6 +56,9 @@ export const MetAnnDataFromFile = MetaNode('MetAnnDataFromFile')
   ))
   .story(props => ({
     abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an metanndata metabolite matrix.`,
+    introduction: `The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.`,
+    methods: `Metabolite matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.`,
+    legend: `A table showing the basic structure and shape of the uploaded annotated metabolite matrix.`,
   }))
   .build()
 
@@ -85,6 +88,9 @@ export const MetAnnDataFileUpload = MetaNode('MetAnnDataFileUpload')
   ))
   .story(props => ({
     abstract: `A metanndata metabolite matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
+    introduction: `The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.`,
+    methods: `Metabolite matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.`,
+    legend: `A table showing the basic structure and shape of the uploaded annotated metabolite matrix.`,
   }))
   .build()
 
@@ -103,5 +109,8 @@ export const MetAnnDataFromMetaboliteCountMatrixAndMetadataMatrix = MetaNode('Me
   ))
   .story(props => ({
     abstract: `An MetAnnData file was prepared from the input data${props.inputs && props.inputs.metabolite_count_matrix.description ? ` containing ${props.inputs.metabolite_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`,
+    introduction: `The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.`,
+    methods: `The metabolite count matrix and metadata matrix were combined into a joint H5 formatted file using AnnData\\ref{doi:10.1101/2021.12.16.473007}.`,
+    legend: `A table showing the basic structure and shape of the uploaded annotated metabolite matrix.`,
   }))
   .build()

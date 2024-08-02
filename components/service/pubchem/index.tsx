@@ -16,7 +16,12 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
       message => props.notify({ type: 'info', message }),
     )
   )
-  .story(props => ({ abstract: `The drug set was filtered by FDA Approved Drugs with the help of PubChem APIs\\ref{doi:10.1093/nar/gkac956}.` }))
+  .story(props => ({
+    abstract: `The drug set was filtered by FDA Approved Drugs with the help of PubChem APIs\\ref{doi:10.1093/nar/gkac956}.`,
+    introduction: `PubChem is an online database of chemical information which can be queried via REST API\\ref{doi:10.1093/nar/gkac956}.`,
+    methods: `Drugs in ${props.input_refs?.drugs} were queried against PubChem's API\\ref{doi:10.1093/nar/gkac956} and filtered by those which could be located and determined to be FDA approved to produce ${props.output_ref}.`,
+    legend: `A table showing the set of drugs from ${props.input_refs?.drugs} which are FDA approved.`,
+  }))
   .build()
 
   export const FilterFDAApprovedScoredDrugs = MetaNode(`FilterFDAApprovedDrugs[Scored[Drug]]`)
@@ -32,5 +37,10 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
       message => props.notify({ type: 'info', message }),
     )
   )
-  .story(props => ({ abstract: `The drugs were filtered by FDA Approved Drugs with the help of PubChem APIs\\ref{doi:10.1093/nar/gkac956}.` }))
+  .story(props => ({
+    abstract: `The drugs were filtered by FDA Approved Drugs with the help of PubChem APIs\\ref{doi:10.1093/nar/gkac956}.`,
+    introduction: `PubChem is an online database of chemical information which can be queried via REST API\\ref{doi:10.1093/nar/gkac956}.`,
+    methods: `Drugs in ${props.input_refs?.drugs} were queried against PubChem's API\\ref{doi:10.1093/nar/gkac956} and filtered by those which could be located and determined to be FDA approved to produce ${props.output_ref}.`,
+    legend: `A table showing the set of drugs from ${props.input_refs?.drugs} which are FDA approved.`,
+  }))
   .build()

@@ -20,5 +20,8 @@ export const QuantileNormalizeGeneCountMatrix = MetaNode('QuantileNormalizeGeneC
   ))
   .story(props => ({
     abstract: `The gene count matrix was then quantile normalized\\ref{doi:10.1038/s41598-020-72664-6}.`,
+    introduction: `Quantile normalization (QN) is technique often used with high-dimensional -omics data including RNA-sequencing and proteomics. It assumes that sample data follow similar distributions regardless of the sample class. Class-specific QN has been demonstrated to optimize performance compared to whole-data QN\\ref{doi:10.1038/s41598-020-72664-6}.`,
+    methods: `The gene count matrix is then normalized using class-specific quantile normalization\\ref{doi:10.1038/s41598-020-72664-6}.`,
+    legend: `A table displaying the quantile-normalized gene count matrix.`,
   }))
   .build()

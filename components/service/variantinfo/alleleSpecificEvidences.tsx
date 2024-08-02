@@ -197,7 +197,9 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
     })
-    .story(props => ({ abstract: `Asociated allele specific epigenomic signatures for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
+    .story(props => ({
+      abstract: `Asociated allele specific epigenomic signatures for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.`,
+    }))
     .build()
 
     export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')

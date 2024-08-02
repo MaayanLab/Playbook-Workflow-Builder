@@ -44,7 +44,10 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
     return retobj;
   })
   .story(props => ({
-    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to identify associated metabolites.`
+    abstract: `${props.inputs?.summary?.gene ? props.inputs.summary.gene : 'The gene'} was then searched in the Metabolomics Workbench\\ref{The Metabolomics Workbench, https://www.metabolomicsworkbench.org/} to identify associated metabolites.`,
+    introduction: `MetGENE is a information retrieval tool that connects a gene or a set of genes to metabolomic studies in the Metabolomic Workbench. It uses a knowledge based approach where the gene is connected to pathways it regulates, followed by reactions within the pathways and metabolites particicpating in the reactions. The metabolites are connected to studies in Metabolomics Workbench.`,
+    methods: `Given a list of genes, MetGENE provides REST APIs to obtain a list of metabolites  given a species id, gene id type whether it is a SYMBOL, ENTREZID etc, the actual ID such as HK1 or 3098, anatomy such as blood, disease such as diabetes - e.g\\ref{https://bdcw.org/MetGENE/rest/metabolites/species/hsa/GeneIDType/SYMBOL/GeneInfoStr/HK1,RPE/anatomy/blood/disease/diabetes/phenotype/NA/viewType/json}. The result is a JSON file providing ikey, value pairs with information regarding the KEGG compound IDs, MW RefMet name, KEGG reactions pertaining to metabolite and the MetStat link that provides information regarding metabolomic studies statistics (such as mean value across all studies) for the given metabolite.`,
+    legend: `The list of results are displayed as a table comprising of KEGG Compund IDs linked to corresponding compound descriptions, RefMet name which is linked to the corresponding RefMet description in Metabolomics Workbench, KEGG reaction IDs corresponding to the reactions which the metabolite participates in and METSTAT link which provides access to the statistics about the metabolite measured across various studies in the MW database.`,
   }))
   .build()
 
@@ -93,7 +96,10 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     return retobj;
   })
   .story(props => ({
-    abstract: `The gene set was then searched in the Metabolomics Workbench [Metabolomics Workbench, \\ref{https://www.metabolomicsworkbench.org/} to identify associated metabolites.`
+    abstract: `The gene set was then searched in the Metabolomics Workbench [Metabolomics Workbench, \\ref{https://www.metabolomicsworkbench.org/} to identify associated metabolites.`,
+    introduction: `MetGENE is a information retrieval tool that connects a gene or a set of genes to metabolomic studies in the Metabolomic Workbench. It uses a knowledge based approach where the gene is connected to pathways it regulates, followed by reactions within the pathways and metabolites particicpating in the reactions. The metabolites are connected to studies in Metabolomics Workbench.`,
+    methods: `Given a list of genes, MetGENE provides REST APIs to obtain a list of metabolites  given a species id, gene id type whether it is a SYMBOL, ENTREZID etc, the actual ID such as HK1 or 3098, anatomy such as blood, disease such as diabetes - e.g\\ref{https://bdcw.org/MetGENE/rest/metabolites/species/hsa/GeneIDType/SYMBOL/GeneInfoStr/HK1,RPE/anatomy/blood/disease/diabetes/phenotype/NA/viewType/json}. The result is a JSON file providing ikey, value pairs with information regarding the KEGG compound IDs, MW RefMet name, KEGG reactions pertaining to metabolite and the MetStat link that provides information regarding metabolomic studies statistics (such as mean value across all studies) for the given metabolite.`,
+    legend: `The list of results are displayed as a table comprising of KEGG Compund IDs linked to corresponding compound descriptions, RefMet name which is linked to the corresponding RefMet description in Metabolomics Workbench, KEGG reaction IDs corresponding to the reactions which the metabolite participates in and METSTAT link  which provides access to the statistics about the metabolite measured across various studies in the MW database.`,
   }))
   .build()
 
@@ -131,7 +137,8 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     return {"description": "", "set": MetArr} ; // Added 2023/01/25
   })
   .story(props => ({
-    abstract: `Then, MetaboliteSet (REFMET names) is extracted from the table of MetGENE Metabolites for various genes.`
+    abstract: `Then, MetaboliteSet (REFMET names) is extracted from the table of MetGENE Metabolites for various genes.`,
+    legend: `List of metabolites (REFMET names; MetaboliteSet).`,
   }))
   .build()
 
@@ -178,7 +185,8 @@ export const MGMetTable2MetSet_T = [
   return {"description": `Metabolites (${id})`, "set": array.unique(MetArr)} ; // Added 2023/01/25
 })
 .story(props => ({
-  abstract: `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`
+  abstract: `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`,
+  legend: `List of metabolites (REFMET names; MetaboliteSet).`,
 }))
 .build()
 ) // matches map

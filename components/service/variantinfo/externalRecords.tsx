@@ -106,6 +106,16 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
         alleleInfoExternalResources.push(externalResourcesTemp);
       }
     }
+
+    let arExternalR = {
+      name: 'Allele Registry',
+      sources: [{
+        '@id': variantInfoObj['@id'], 
+        id: variantInfoObj.communityStandardTitle[0]
+      }]
+    }
+    alleleInfoExternalResources.push(arExternalR);
+
     return alleleInfoExternalResources;
   }
 

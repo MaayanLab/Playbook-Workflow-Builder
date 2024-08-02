@@ -20,6 +20,8 @@ import type { CWLForPlaybook as CWLForPlaybook_ } from './v1/cwl'
 export const CWLForPlaybook = APIInterface<typeof CWLForPlaybook_>("/api/v1/cwl/[fpl_id]", "GET")
 import type { CWLForPlaybookFile as CWLForPlaybookFile_ } from './v1/cwl'
 export const CWLForPlaybookFile = APIInterface<typeof CWLForPlaybookFile_>("/api/v1/cwl/[fpl_id]/[filename]", "GET")
+import type { TeXForPlaybook as TeXForPlaybook_ } from './v1/tex'
+export const TeXForPlaybook = APIInterface<typeof TeXForPlaybook_>("/api/v1/tex/[fpl_id]", "GET")
 import type { UserIntegrationsBioComputeAuth as UserIntegrationsBioComputeAuth_ } from './v1/user/integrations/biocompute'
 export const UserIntegrationsBioComputeAuth = APIInterface<typeof UserIntegrationsBioComputeAuth_>("/api/v1/user/integrations/biocompute/auth", "GET")
 import type { UserIntegrationsBioComputePublishedBCO as UserIntegrationsBioComputePublishedBCO_ } from './v1/user/integrations/biocompute'

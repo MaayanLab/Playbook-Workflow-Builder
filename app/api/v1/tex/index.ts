@@ -13,16 +13,14 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
   .query(z.object({
     fpl_id: z.string(),
     format: z.enum(['zip']).default('zip'),
-    metadata: z.string().optional(),
+    metadata: z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+    }).optional(),
   }))
   .call(async (inputs, req, res) => {
     const fpl_id = inputs.query.fpl_id
-    const metadata = z.string().optional().transform(param =>
-      param ? z.object({
-        title: z.string().optional(),
-        description: z.string().optional(),
-      }).parse(JSON.parse(param)) : undefined
-    ).parse(inputs.query.metadata)
+    const metadata = inputs.query.metadata
     
     const fpl = await fpprg.getFPL(fpl_id)
     if (fpl === undefined) throw new NotFoundError()

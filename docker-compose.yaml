@@ -30,11 +30,14 @@ services:
     logging: *default-logging
   # app serves the UI & API, it registers user interactions into the database (pg)
   pwb-app:
-    image: maayanlab/playbook-partnership:0.63.1-ui
+    image: maayanlab/playbook-partnership:0.64.3-ui
     build:
       context: .
       dockerfile: Dockerfile
       target: app_minimal
+    init: true
+    cap_add:
+    - SYS_ADMIN
     platform: linux/amd64
     deploy:
       # this can be safely replicated if necessary but an ingress will be required
@@ -76,7 +79,7 @@ services:
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   pwb-worker:
-    image: maayanlab/playbook-partnership:0.63.1
+    image: maayanlab/playbook-partnership:0.64.3
     build:
       context: .
       dockerfile: Dockerfile
@@ -109,11 +112,14 @@ services:
     logging: *default-logging
   # app-dev serves a dev version of the app
   app-dev:
-    image: maayanlab/playbook-partnership:0.63.1
+    image: maayanlab/playbook-partnership:0.64.3
     build:
       context: .
       dockerfile: Dockerfile
       target: app
+    init: true
+    cap_add:
+    - SYS_ADMIN
     platform: linux/amd64
     deploy:
       # this can be safely replicated if necessary but an ingress will be required
@@ -144,7 +150,7 @@ services:
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
-    image: maayanlab/playbook-partnership:0.63.1-dev
+    image: maayanlab/playbook-partnership:0.64.3-dev
     build:
       context: .
       dockerfile: Dockerfile

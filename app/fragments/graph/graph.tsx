@@ -44,7 +44,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
   const router = useRouter()
   const krg = useKRG({ session_id })
   const { data: metapath = [] } = useFPL(graph_id)
-  const head = metapath.filter(({ id }) => id === node_id)[0]
+  const head = React.useMemo(() => metapath.filter(({ id }) => id === node_id)[0], [metapath, node_id])
   const process_to_step = React.useMemo(() => dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))), [metapath])
   return (
     <>

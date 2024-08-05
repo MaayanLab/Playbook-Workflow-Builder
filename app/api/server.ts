@@ -6,6 +6,7 @@
 export * from "./v1/admin/jobs"
 export * from "./v1/chat"
 export * from "./v1/cwl"
+export * from "./v1/tex"
 export * from "./v1/user/integrations/biocompute"
 export * from "./v1/user/integrations/cavatica"
 export * from "./v1/user/playbooks"

@@ -3,6 +3,7 @@ import { alleleRegRespErrorMessage } from '../variantUtils'
 
 const AlleleRegistryVariantInfoC = z.object({
     '@id': z.string(),
+    communityStandardTitle: z.array(z.string()),
     entId: z.string(),
     externalRecords: z.any({}).optional()
   })

@@ -36,7 +36,7 @@ let gnomADRegexObj = new RegExp(gnomADRegex);
 let myVariantInfoHG38Regex = "chr[0-9]*:[a-z]\.[0-9]*[A-Za-z]*";
 let myVariantInfoHG38RegexObj = new RegExp(myVariantInfoHG38Regex);
 
-function getCaIdFromAlleleRegistryLink(jsonObj: any){
+  function getCaIdFromAlleleRegistryLink(jsonObj: any){
     let alleleRegistrylink = null;
     if(Array.isArray(jsonObj)){
       alleleRegistrylink = (jsonObj[0])['@id'];

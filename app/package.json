@@ -26,7 +26,6 @@
     "prismjs": "^1.29.0",
     "puppeteer": "^22.15.0",
     "raw-body": "^2.5.2",
-    "react-dom": "^18.3.1",
     "react-markdown": "^8.0.6",
     "react-masonry-css": "^1.0.16",
     "react-simple-code-editor": "^0.13.1",

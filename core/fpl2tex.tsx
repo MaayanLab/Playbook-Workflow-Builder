@@ -3,23 +3,14 @@ import type { FPL } from "@/core/FPPRG"
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { fpl_expand, Metadata, Author } from "./common"
-import ReactDOMServer from 'react-dom/server'
-import { v4 as uuid4 } from 'uuid'
-import fs from 'fs'
 import puppeteer from 'puppeteer';
 
-async function screenshotOf(node: React.ReactNode) {
-  const html = ReactDOMServer.renderToString(<>{node}</>)
-  const tmpdir = `/tmp/${uuid4()}`
-  await new Promise<void>((resolve, reject) => fs.mkdir(tmpdir, (err) => {if (err) { reject(err) } else { resolve() }}))
-  await fs.writeFileSync(`${tmpdir}/index.html`, html)
+async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
-  await page.goto(`file://${tmpdir}/index.html`, { waitUntil: 'networkidle0' })
+  await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`, { waitUntil: 'networkidle0' })
   const pdf = await page.pdf({ format: 'LETTER' })
   await browser.close()
-  await new Promise<void>((resolve, reject) => fs.unlink(`${tmpdir}/index.html`, (err) => {if (err) { reject(err) } else { resolve() }}))
-  await new Promise<void>((resolve, reject) => fs.rmdir(`${tmpdir}`, (err) => {if (err) { reject(err) } else { resolve() }}))
   return pdf
 }
 
@@ -46,7 +37,6 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   // TODO: bibtex for references
   const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${part.text.slice(part.text.indexOf('.')+2)}`] : []).join('\n\n')
   const figures = await Promise.all(fullFPL.map(async (head) => {
-    const { metanode, output } = processLookup[head.process.id]
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
     if (figure?.type !== 'figure') return
     const figure_num = story.figures.get(figure.ref)
@@ -58,7 +48,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     ).join('')
     return {
       files: {
-        [`fig${figure_num}.pdf`]: await screenshotOf(metanode.output.view(output)),
+        [`fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
       tex: `
 \\begin{figure}[h]

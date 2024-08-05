@@ -67,6 +67,8 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     ...dict.init(figures.flatMap((fig) => fig ? dict.items(fig.files) : [])),
     'index.tex': `
 \\documentclass{article}
+\\usepackage{authblk}
+\\usepackage{graphicx}
 \\providecommand{\\keywords}[1]
 {
   \\small	

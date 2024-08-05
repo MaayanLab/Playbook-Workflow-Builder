@@ -1,5 +1,15 @@
 FROM node:21.3.0 as base
 RUN echo "Installing git..." && apt-get -y update && apt-get -y install git && rm -rf /var/lib/apt/lists/*
+
+# Setup for puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+RUN apt-get update && apt-get install curl gnupg -y \
+  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+  && apt-get update \
+  && apt-get install google-chrome-stable -y --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 FROM base as prepare_system
@@ -75,7 +85,6 @@ CMD ["/bin/bash"]
 # TARGET: app_minimal -- production server with dependencies to run just the webserver
 FROM base as app_minimal
 COPY --from=prepare_build /app /app
-RUN npx puppeteer browsers install chrome
 ENV PORT 3000
 CMD ["npm", "run", "start"]
 
@@ -84,7 +93,6 @@ FROM prepare_system as app
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_build /app /app
-RUN npx puppeteer browsers install chrome
 RUN set -x \
   && chmod +x /app/cli/wes-worker.sh /app/cli/pwb.sh \
   && npm i -g ts-node

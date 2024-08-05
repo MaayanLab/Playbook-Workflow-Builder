@@ -14,34 +14,38 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
   return pdf
 }
 
+function latexEscape(s: string) {
+  return s.replaceAll('\\', '\\\\').replaceAll('_', '\\_').replaceAll('{', '\\{').replaceAll('}', '\\}').replaceAll('$', '\\$')
+}
+
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
-    part.type === 'text' ? [part.text]
+    part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   ).join('')
   const introduction = story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
-    part.type === 'text' ? [part.text]
+    part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   ).join('')
   const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
-    part.type === 'text' ? [part.text]
+    part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   ).join('')
   // TODO: bibtex for references
-  const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${part.text.slice(part.text.indexOf('.')+2)}`] : []).join('\n\n')
+  const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${latexEscape(part.text.slice(part.text.indexOf('.')+2))}`] : []).join('\n\n')
   const figures = await Promise.all(fullFPL.map(async (head) => {
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
     if (figure?.type !== 'figure') return
     const figure_num = story.figures.get(figure.ref)
     const legend = story.ast.filter(part => part.tags.includes('legend') && part.tags.includes(head.id)).map(part =>
-      part.type === 'text' ? part.text
+      part.type === 'text' ? latexEscape(part.text)
       : part.type === 'cite' ? `\\cite{${story.bibitems.get(part.ref)}}`
       : part.type === 'figref' ? `\\ref{fig:${story.figures.get(part.ref)}}`
       : ''
@@ -71,18 +75,18 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
 
 \\begin{document}
 
-${props.metadata?.title ? `\\title{${props.metadata.title}}` : '\\title{Playbook}'}
+${props.metadata?.title ? `\\title{${latexEscape(props.metadata.title)}}` : '\\title{Playbook}'}
 
-${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${props.author.name}}` : ''}${props.author?.email ? `\\email{${props.author.email}}` : ''}
-${props.author?.affiliation ? `\\affil*[1]{${props.author.affiliation}}` : ''}
+${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${latexEscape(props.author.name)}}` : ''}${props.author?.email ? `\\email{${latexEscape(props.author.email)}}` : ''}
+${props.author?.affiliation ? `\\affil[1]{${latexEscape(props.author.affiliation)}}` : ''}
 
-\\abstract{${abstract}
+\\abstract{${abstract}}
 \\keywords{${[
   'Playbook Workflow Builder',
   ...array.unique(
     dict.values(processLookup)
       .flatMap(({ metanode }) =>
-        metanode.meta.tags ? dict.items(metanode.meta.tags).flatMap(({ key: _, value }) => dict.keys(value)).join(' ') : []
+        metanode.meta.tags ? dict.items(metanode.meta.tags).flatMap(({ key: _, value }) => dict.keys(value)).map(tag => latexEscape(tag)).join(' ') : []
       )
   )
 ].join(', ')}}

@@ -117,6 +117,9 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
+    init: true
+    cap_add:
+    - SYS_ADMIN
     platform: linux/amd64
     deploy:
       # this can be safely replicated if necessary but an ingress will be required

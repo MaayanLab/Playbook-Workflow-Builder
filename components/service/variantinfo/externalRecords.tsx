@@ -79,7 +79,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   })
   .build()
 
-  function processExternalRecords(variantInfoObj: AlleleRegistryVariantInfo){
+  function processExternalRecords(variantInfoObj: AlleleRegistryVariantInfo, caid: string){
     let alleleInfoExternalResources: AlleleRegistryExternalSourcesInfo= [];
     let externalSources = variantInfoObj['externalRecords'];
     for(let er in externalSources){
@@ -111,7 +111,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
       name: 'Allele Registry',
       sources: [{
         '@id': variantInfoObj['@id'], 
-        id: variantInfoObj.communityStandardTitle[0]
+        id: caid+"("+variantInfoObj.communityStandardTitle[0]+")"
       }]
     }
     alleleInfoExternalResources.push(arExternalR);
@@ -139,7 +139,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
     let reponse = null;
     if(variantInfoObj['externalRecords'] != null){
-      reponse = processExternalRecords(variantInfoObj);
+      reponse = processExternalRecords(variantInfoObj, varCaId);
     }
     return reponse;
   })
@@ -214,7 +214,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     for(let indx in variantSetInfo){
       let variantInfoObj = variantSetInfo[indx];
       if(variantInfoObj['externalRecords'] != null){
-        let exteralRecordsData = processExternalRecords(variantInfoObj);
+        let exteralRecordsData = processExternalRecords(variantInfoObj, variantInfoObj.entId);
         let variantExternalRecords = {
           "variantCaId" : variantInfoObj.entId,
           "externalRecords" : exteralRecordsData

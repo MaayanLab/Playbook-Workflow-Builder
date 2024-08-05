@@ -50,8 +50,8 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
             <Bp5MenuItem
               icon="document"
               text="LaTeX Paper (ALPHA)"
-              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/tex/${id}?metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
-              download={`${id}.tex`}
+              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
+              download={`${id}.zip`}
             />
           </div>
           </Bp5Menu>

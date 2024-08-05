@@ -44,10 +44,10 @@ export async function fpl_expand(props: { krg: KRG, fpl: FPL, metadata?: Metadat
     }))
   )
   const story = extractCitations(
-    dict.items(processLookup).flatMap((proc) =>
-      dict.items(proc.value.story).map((st) => ({
-        text: st.value as string,
-        tags: [proc.key as string, st.key as string],
+    fullFPL.flatMap((step) =>
+      dict.items(processLookup[step.process.id].story).map(({ key: section, value: text }) => ({
+        text,
+        tags: [step.id, section as string],
       }))
     )
   )

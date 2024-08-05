@@ -20,24 +20,24 @@ function latexEscape(s: string) {
 
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
-  const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
+  const abstract = array.unique(story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
-  ).join('')
-  const introduction = story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
+  )).join('')
+  const introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
-  ).join('')
-  const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
+  )).join('')
+  const methods = array.unique(story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
-  ).join('')
+  )).join('')
   // TODO: bibtex for references
   const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${latexEscape(part.text.slice(part.text.indexOf('.')+2))}`] : []).join('\n\n')
   const figures = await Promise.all(fullFPL.map(async (head) => {

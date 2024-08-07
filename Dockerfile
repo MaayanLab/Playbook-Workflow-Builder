@@ -11,6 +11,7 @@ RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get update \
   && apt-get install google-chrome-stable -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
+ENV PUPPETEER_EXECUTABLE_PATH "/usr/bin/google-chrome"
 RUN npm i -g ts-node
 USER node
 WORKDIR /app

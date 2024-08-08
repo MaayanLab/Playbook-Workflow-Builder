@@ -20,6 +20,7 @@ function latexEscape(s: string) {
 
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
+  const title = props.metadata?.title ? latexEscape(props.metadata.title) : 'Playbook'
   const abstract = array.unique(story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
@@ -38,6 +39,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   )).join('')
+  const contributors = array.unique(fullFPL.map(head => props.krg.getProcessNode(head.process.type).meta.author).filter((author): author is string => !!author)).map(contributor => latexEscape(contributor))
   // TODO: bibtex for references
   const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${latexEscape(part.text.slice(part.text.indexOf('.')+2))}`] : []).join('\n\n')
   const figures = await Promise.all(fullFPL.map(async (head) => {
@@ -51,6 +53,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
       : ''
     ).join('')
     return {
+      id: head.id,
       files: {
         [`fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
@@ -63,9 +66,19 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
 `,
     }
   }))
+  const keywords = [
+    'Playbook Workflow Builder',
+    ...array.unique(
+      dict.values(processLookup)
+        .flatMap(({ metanode }) =>
+          metanode.meta.tags ? dict.items(metanode.meta.tags).flatMap(({ key: _, value }) => dict.keys(value)).map(tag => latexEscape(tag)).join(' ') : []
+        )
+    )
+  ].join(', ')
+  
   return {
     ...dict.init(figures.flatMap((fig) => fig ? dict.items(fig.files) : [])),
-    'index.tex': `
+    'paper.tex': `
 \\documentclass{article}
 \\usepackage{authblk}
 \\usepackage{graphicx}
@@ -77,21 +90,13 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
 
 \\begin{document}
 
-${props.metadata?.title ? `\\title{${latexEscape(props.metadata.title)}}` : '\\title{Playbook}'}
+\\title{${title}}
 
-${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${latexEscape(props.author.name)}}` : ''}${props.author?.email ? `\\email{${latexEscape(props.author.email)}}` : ''}
+${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${latexEscape(props.author.name)}}` : ''}${props.author?.email ? ` \\\\ ${latexEscape(props.author.email)}` : ''}
 ${props.author?.affiliation ? `\\affil[1]{${latexEscape(props.author.affiliation)}}` : ''}
 
 \\abstract{${abstract}}
-\\keywords{${[
-  'Playbook Workflow Builder',
-  ...array.unique(
-    dict.values(processLookup)
-      .flatMap(({ metanode }) =>
-        metanode.meta.tags ? dict.items(metanode.meta.tags).flatMap(({ key: _, value }) => dict.keys(value)).map(tag => latexEscape(tag)).join(' ') : []
-      )
-  )
-].join(', ')}}
+\\keywords{${keywords}}
 
 \\maketitle
 
@@ -113,6 +118,111 @@ ${figures.flatMap((fig) => fig ? [fig.tex] : []).join('')}
 \\begin{thebibliography}{9}
 ${references}
 \\end{thebibliography}
+
+\\end{document}
+`,
+    'presentation.tex': `
+\\documentclass[11pt]{beamer}
+\\usepackage{booktabs}
+
+% see beamer for available themes
+\\usetheme{default}
+\\usecolortheme{default}
+\\usefonttheme{default}
+\\useinnertheme{default}
+\\useoutertheme{default}
+
+\\title{${title}}
+
+${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${latexEscape(props.author.name)}}` : ''}${props.author?.email ? ` \\\\ ${latexEscape(props.author.email)}` : ''}
+
+${props.author?.affiliation ? `\\institute{${latexEscape(props.author.affiliation)}}` : ''}
+
+\\date{\\today}
+
+\\begin{document}
+
+\\begin{frame}
+  \\titlepage
+\\end{frame}
+
+\\begin{frame}
+  \\frametitle{Presentation Overview}
+  \\tableofcontents
+\\end{frame}
+
+\\section{Introduction}
+${fullFPL.flatMap(head => {
+  const process = props.krg.getProcessNode(head.process.type)
+  const step_title = latexEscape(process.meta.label)
+  const step_introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') || !part.tags.includes(head.id) ? [] :
+    part.type === 'text' ? [latexEscape(part.text)]
+    : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
+    : [])).join('')
+  if (!step_introduction) return []
+  else return [
+    `
+\\subsection{${step_title}}
+
+\\begin{frame}
+	\\frametitle{${step_title}}
+	
+	${step_introduction}
+\\end{frame}
+`
+  ]
+}).join('')}
+
+\\section{Workflow}
+
+${fullFPL.flatMap(head => {
+  const process = props.krg.getProcessNode(head.process.type)
+  const step_title = latexEscape(process.meta.label)
+  const step_methods = array.unique(story.ast.flatMap(part => !part.tags.includes('methods') || !part.tags.includes(head.id) ? [] :
+    part.type === 'text' ? [latexEscape(part.text)]
+    : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
+    : part.type === 'figref' ? [`\\ref{fig:${story.figures.get(part.ref)}}`]
+    : [])).join('')
+  const step_figure = figures.flatMap(fig => fig?.id === head.id ? [fig.tex] : []).join('')
+  return [
+    (step_methods && `
+\\subsection{${step_title}}
+
+\\begin{frame}
+	\\frametitle{${step_title}}
+	
+	${step_methods}
+\\end{frame}
+`) || '',
+    (step_figure && `
+\\subsubsection{Results}
+
+\\begin{frame}
+	\\frametitle{${step_title}: Results}
+	
+	${step_figure}
+\\end{frame}
+`) || '',
+  ]
+}).join('')}
+
+\\begin{frame}
+	\\frametitle{References}
+	
+	\\begin{thebibliography}{99}
+    \\footnotesize
+
+    ${references}
+  \\end{thebibliography}
+\\end{frame}
+
+\\begin{frame}
+	\\frametitle{Acknowledgements}
+  \\begin{itemize}
+    ${contributors.map(contributor => `\\item{${contributor}}`).join('\n')}
+  \\end{itemize}
+\\end{frame}
 
 \\end{document}
 `

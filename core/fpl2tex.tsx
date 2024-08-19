@@ -225,6 +225,106 @@ ${fullFPL.flatMap(head => {
 \\end{frame}
 
 \\end{document}
+`,
+    'poster.tex': `
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% a0poster Portrait Poster
+% LaTeX Template
+% Version 1.0 (22/06/13)
+%
+% The a0poster class was created by:
+% Gerlinde Kettl and Matthias Weiser (tex@kettl.de)
+% 
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\\documentclass[a0,portrait]{a0poster}
+
+\\usepackage{multicol} % This is so we can have multiple columns of text side-by-side
+\\columnsep=100pt % This is the amount of white space between the columns in the poster
+\\columnseprule=3pt % This is the thickness of the black line between the columns in the poster
+
+\\usepackage[svgnames]{xcolor} % Specify colors by their 'svgnames', for a full list of all colors available see here: http://www.latextemplates.com/svgnames-colors
+
+\\usepackage{times} % Use the times font
+%\\usepackage{palatino} % Uncomment to use the Palatino font
+
+\\usepackage{graphicx} % Required for including images
+\\graphicspath{{figures/}} % Location of the graphics files
+\\usepackage{booktabs} % Top and bottom rules for table
+\\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
+\\usepackage{amsfonts, amsmath, amsthm, amssymb} % For math fonts, symbols and environments
+\\usepackage{wrapfig} % Allows wrapping text around tables and figures
+
+\\begin{document}
+
+\\begin{minipage}[b]{0.75\\linewidth}
+\\veryHuge \\color{NavyBlue} \\textbf{${title}} \\color{Black}\\\\ % Title
+\\Huge\\textit{A Playbook Workflow}\\\\[2cm] % Subtitle
+${props.author ? `\\huge \\textbf{${latexEscape(props.author.name)}}\\\\[0.5cm] % Author(s)` : ''}
+${props.author?.affiliation ? `\\huge {${latexEscape(props.author.affiliation)}}\\\\[0.4cm] % University/organization` : ''}
+${props.author?.email ? `\\Large \\texttt{${latexEscape(props.author.email)}}` : ''}\\\\
+\\end{minipage}
+
+%\\begin{minipage}[b]{0.25\\linewidth}
+%\\includegraphics[width=20cm]{logo.png}\\\\
+%\\end{minipage}
+
+\\vspace{1cm} % A bit of extra whitespace between the header and poster content
+
+\\begin{multicols}{2} % This is how many columns your poster will be broken into, a portrait poster is generally split into 2 columns
+
+\\color{Navy} % Navy color for the abstract
+
+\\begin{abstract}
+
+${abstract}
+
+\\end{abstract}
+
+\\color{SaddleBrown} % SaddleBrown color for the introduction
+
+\\section*{Introduction}
+
+${introduction}
+
+\\color{DarkSlateGray} % DarkSlateGray color for the rest of the content
+
+\\section*{Methods}
+
+${methods}
+
+\\section*{Results}
+
+${figures.flatMap((fig) => fig ? [fig.tex] : []).join('')}
+
+\\color{SaddleBrown} % SaddleBrown color for the conclusions to make them stand out
+
+\\section*{Conclusions}
+
+% TODO
+
+\\color{DarkSlateGray} % Set the color back to DarkSlateGray for the rest of the content
+
+\\section*{Future Directions}
+
+% TODO
+
+\\bibliographystyle{plain}
+\\bibliography{references}
+
+\\section*{Acknowledgements}
+
+% TODO
+
+\\end{multicols}
+\\end{document}
+`,
     'references.bib': `
 ${story.ast.flatMap(part => part.type === 'bibitem' ? part.bibtex ? [`@${part.bibtex.type}{${story.bibitems.get(part.ref)},${part.bibtex.record}}`] : [`@misc{${story.bibitems.get(part.ref)},title={${latexEscape(part.text.slice(part.text.indexOf('.')+2))}}}`] : []).join('\n\n')}
 `,

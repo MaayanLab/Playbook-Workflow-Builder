@@ -21,28 +21,28 @@ function latexEscape(s: string) {
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
   const title = props.metadata?.title ? latexEscape(props.metadata.title) : 'Playbook'
-  const abstract = array.unique(story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
+  const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
     : []
-  )).join('')
+  ).join('')
   const introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
     : []
   )).join('')
-  const methods = array.unique(story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
+  const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
     : []
-  )).join('')
+  ).join('')
   const contributors = array.unique(fullFPL.map(head => props.krg.getProcessNode(head.process.type).meta.author).filter((author): author is string => !!author)).map(contributor => latexEscape(contributor))
-  const figures = await Promise.all(fullFPL.map(async (head) => {
+  const figures = (await Promise.all(fullFPL.map(async (head) => {
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
-    if (figure?.type !== 'figure') return
+    if (figure?.type !== 'figure') return []
     const figure_num = story.figures.get(figure.ref)
     const legend = story.ast.filter(part => part.tags.includes('legend') && part.tags.includes(head.id)).map(part =>
       part.type === 'text' ? latexEscape(part.text)
@@ -50,20 +50,16 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
       : part.type === 'figref' ? `Fig. \\ref{fig:${story.figures.get(part.ref)}}`
       : ''
     ).join('')
-    return {
+    return [{
       id: head.id,
       files: {
         [`fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
-      tex: `
-\\begin{figure}[h]
-\\centering
-\\includegraphics[width=0.9\\textwidth]{fig${figure_num}.pdf}
-\\caption{${legend}}\\label{fig:${figure_num}}
-\\end{figure}
-`,
-    }
-  }))
+      label: `fig:${figure_num}`,
+      filename: `fig${figure_num}.pdf`,
+      legend,
+    }]
+  }))).flatMap(fig => fig)
   const keywords = [
     'Playbook Workflow Builder',
     ...array.unique(
@@ -75,7 +71,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   ].join(', ')
   
   return {
-    ...dict.init(figures.flatMap((fig) => fig ? dict.items(fig.files) : [])),
+    ...dict.init(figures.flatMap((fig) => dict.items(fig.files))),
     'paper.tex': `
 \\documentclass{article}
 \\usepackage[T1]{fontenc}
@@ -114,7 +110,15 @@ ${methods}
 \\section{Conclusion}\\label{conclusion}
 
 \\section{Figures}\\label{figures}
-${figures.flatMap((fig) => fig ? [fig.tex] : []).join('')}
+${figures.flatMap((fig) => fig ? [
+  `
+\\begin{figure}[h]
+\\centering
+\\includegraphics[width=0.9\\textwidth]{${fig.filename}}
+\\caption{${fig.legend}}\\label{${fig.label}}
+\\end{figure}
+`
+] : []).join('')}
 
 \\clearpage
 
@@ -189,7 +193,7 @@ ${fullFPL.flatMap(head => {
     : part.type === 'cite' ? [`\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
     : [])).join('')
-  const step_figure = figures.flatMap(fig => fig?.id === head.id ? [fig.tex] : []).join('')
+  const step_figure = figures.filter(fig => fig?.id === head.id)
   return [
     (step_methods && `
 \\subsection{${step_title}}
@@ -200,16 +204,23 @@ ${fullFPL.flatMap(head => {
 	${step_methods}
 \\end{frame}
 `) || '',
-    (step_figure && `
+  (step_figure.length > 0 && `
 \\subsubsection{Results}
 
 \\begin{frame}
 	\\frametitle{${step_title}: Results}
 	
-	${step_figure}
+
+  ${step_figure.map(fig => `
+  \\begin{figure}[h]
+  \\centering
+  \\includegraphics[width=0.5\\textwidth]{${fig.filename}}
+  \\caption{${fig.legend}}\\label{${fig.label}}
+  \\end{figure}
+`).join('')}
 \\end{frame}
 `) || '',
-  ]
+]
 }).join('')}
 
 \\begin{frame}
@@ -255,7 +266,6 @@ ${fullFPL.flatMap(head => {
 %\\usepackage{palatino} % Uncomment to use the Palatino font
 
 \\usepackage{graphicx} % Required for including images
-\\graphicspath{{figures/}} % Location of the graphics files
 \\usepackage{booktabs} % Top and bottom rules for table
 \\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
 \\usepackage{amsfonts, amsmath, amsthm, amssymb} % For math fonts, symbols and environments
@@ -268,7 +278,7 @@ ${fullFPL.flatMap(head => {
 \\Huge\\textit{A Playbook Workflow}\\\\[2cm] % Subtitle
 ${props.author ? `\\huge \\textbf{${latexEscape(props.author.name)}}\\\\[0.5cm] % Author(s)` : ''}
 ${props.author?.affiliation ? `\\huge {${latexEscape(props.author.affiliation)}}\\\\[0.4cm] % University/organization` : ''}
-${props.author?.email ? `\\Large \\texttt{${latexEscape(props.author.email)}}` : ''}\\\\
+${props.author?.email ? `\\Large \\texttt{${latexEscape(props.author.email)}}\\\\` : ''}
 \\end{minipage}
 
 %\\begin{minipage}[b]{0.25\\linewidth}
@@ -301,7 +311,12 @@ ${methods}
 
 \\section*{Results}
 
-${figures.flatMap((fig) => fig ? [fig.tex] : []).join('')}
+${figures.map(fig => `
+\\begin{center}\\vspace{1cm}
+\\includegraphics[width=0.8\\linewidth]{${fig.filename}}
+\\captionof{figure}{${fig.legend}}
+\\end{center}\\vspace{1cm}
+`).join('\n\n')}
 
 \\color{SaddleBrown} % SaddleBrown color for the conclusions to make them stand out
 

@@ -80,6 +80,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     ...dict.init(figures.flatMap((fig) => fig ? dict.items(fig.files) : [])),
     'paper.tex': `
 \\documentclass{article}
+\\usepackage[T1]{fontenc}
 \\usepackage{authblk}
 \\usepackage{graphicx}
 \\providecommand{\\keywords}[1]
@@ -123,6 +124,7 @@ ${references}
 `,
     'presentation.tex': `
 \\documentclass[11pt]{beamer}
+\\usepackage[T1]{fontenc}
 \\usepackage{booktabs}
 
 % see beamer for available themes

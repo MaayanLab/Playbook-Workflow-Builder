@@ -40,8 +40,6 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     : []
   )).join('')
   const contributors = array.unique(fullFPL.map(head => props.krg.getProcessNode(head.process.type).meta.author).filter((author): author is string => !!author)).map(contributor => latexEscape(contributor))
-  // TODO: bibtex for references
-  const references = story.ast.flatMap(part => part.type === 'bibitem' ? [`\\bibitem{${story.bibitems.get(part.ref)}}\n${latexEscape(part.text.slice(part.text.indexOf('.')+2))}`] : []).join('\n\n')
   const figures = await Promise.all(fullFPL.map(async (head) => {
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
     if (figure?.type !== 'figure') return
@@ -83,6 +81,10 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
 \\usepackage[T1]{fontenc}
 \\usepackage{authblk}
 \\usepackage{graphicx}
+
+\\usepackage[backend=biber,style=numeric,citestyle=nature]{biblatex}
+\\addbibresource{references.bib}
+
 \\providecommand{\\keywords}[1]
 {
   \\small	
@@ -116,9 +118,7 @@ ${figures.flatMap((fig) => fig ? [fig.tex] : []).join('')}
 
 \\clearpage
 
-\\begin{thebibliography}{9}
-${references}
-\\end{thebibliography}
+\\printbibliography
 
 \\end{document}
 `,
@@ -126,6 +126,9 @@ ${references}
 \\documentclass[11pt]{beamer}
 \\usepackage[T1]{fontenc}
 \\usepackage{booktabs}
+
+\\usepackage[backend=biber,style=numeric,citestyle=nature]{biblatex}
+\\addbibresource{references.bib}
 
 % see beamer for available themes
 \\usetheme{default}
@@ -211,12 +214,7 @@ ${fullFPL.flatMap(head => {
 
 \\begin{frame}
 	\\frametitle{References}
-	
-	\\begin{thebibliography}{99}
-    \\footnotesize
-
-    ${references}
-  \\end{thebibliography}
+	\\printbibliography[heading=none]
 \\end{frame}
 
 \\begin{frame}
@@ -227,6 +225,8 @@ ${fullFPL.flatMap(head => {
 \\end{frame}
 
 \\end{document}
-`
+    'references.bib': `
+${story.ast.flatMap(part => part.type === 'bibitem' ? part.bibtex ? [`@${part.bibtex.type}{${story.bibitems.get(part.ref)},${part.bibtex.record}}`] : [`@misc{${story.bibitems.get(part.ref)},title={${latexEscape(part.text.slice(part.text.indexOf('.')+2))}}}`] : []).join('\n\n')}
+`,
   }
 }

@@ -55,10 +55,10 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     return [{
       id: head.id,
       files: {
-        [`fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
+        [`figures/fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
       label: `fig:${figure_num}`,
-      filename: `fig${figure_num}.pdf`,
+      filename: `figures/fig${figure_num}.pdf`,
       legend,
     }]
   }))).flatMap(fig => fig)

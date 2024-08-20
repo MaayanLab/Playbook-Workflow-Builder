@@ -115,7 +115,7 @@ function Main({ session_id, graph_id, node_id }: { session_id?: string, graph_id
   const { data: metapath = [] } = useFPL(graph_id)
   const head = React.useMemo(() => metapath.filter(({ id }) => id === node_id)[0], [metapath, node_id])
   return (
-    <main className="flex-grow flex flex-col p-2">
+    <main className="flex-grow flex flex-col">
       <StoryProvider krg={krg} metapath={metapath}>
         {head ? <Cell krg={krg} head={head} /> : null}
       </StoryProvider>

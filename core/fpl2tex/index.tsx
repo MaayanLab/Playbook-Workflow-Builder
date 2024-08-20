@@ -3,7 +3,9 @@ import type { FPL } from "@/core/FPPRG"
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { fpl_expand, Metadata, Author } from "@/core/common"
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer'
+import path from 'path'
+import fs from 'fs'
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
   const browser = await puppeteer.launch()
@@ -18,6 +20,27 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
 
 function latexEscape(s: string) {
   return s.replaceAll('\\', '\\\\').replaceAll('_', '\\_').replaceAll('{', '\\{').replaceAll('}', '\\}').replaceAll('$', '\\$')
+}
+
+async function extras() {
+  const extrasRootPath = path.resolve(
+    process.env.APP_ROOT as string,
+    'core',
+    'fpl2tex',
+    'extras',
+  )
+  return {
+    'extras/a0poster.cls': await new Promise<Buffer>((resolve, reject) =>
+      fs.readFile(path.resolve(extrasRootPath, 'a0poster.cls'), (err, data) => {
+        if (err) { reject(err) } else { resolve(data) }
+      })
+    ),
+    'extras/a0size.sty': await new Promise<Buffer>((resolve, reject) =>
+      fs.readFile(path.resolve(extrasRootPath, 'a0size.sty'), (err, data) => {
+        if (err) { reject(err) } else { resolve(data) }
+      })
+    ),
+  }
 }
 
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>> {
@@ -73,6 +96,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   ].join(', ')
   
   return {
+    ...(await extras()),
     ...dict.init(figures.flatMap((fig) => dict.items(fig.files))),
     'paper.tex': `
 \\documentclass{article}
@@ -256,7 +280,7 @@ ${fullFPL.flatMap(head => {
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\\documentclass[a0,portrait]{a0poster}
+\\documentclass[a0,portrait]{extras/a0poster}
 
 \\usepackage{multicol} % This is so we can have multiple columns of text side-by-side
 \\columnsep=100pt % This is the amount of white space between the columns in the poster

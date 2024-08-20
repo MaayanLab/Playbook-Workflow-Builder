@@ -1,6 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import { export_icon } from '@/icons'
+import usePublicUrl from '@/utils/next-public-url'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -9,6 +10,7 @@ const Bp5Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Men
 const Bp5MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 
 export default function ExportButton({ session_id, id, metadata }: { session_id?: string, id: string, metadata: { title: string, description: string | undefined } }) {
+  const publicUrl = usePublicUrl({ absolute: true })
   return (
     <Bp5Popover
       className={'cursor-pointer'}
@@ -54,11 +56,11 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               download={`${id}.zip`}
             />
           </div>
-          {process.env.PUBLIC_URL ? <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
+          {publicUrl ? <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
             <Bp5MenuItem
               icon="document"
               text="LaTeX Bundle in Overleaf (BETA)"
-              href={`https://www.overleaf.com/docs?snip_uri=${encodeURIComponent(`${process.env.PUBLIC_URL}/${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`)}`}
+              href={`https://www.overleaf.com/docs?snip_uri=${encodeURIComponent(`${publicUrl}/${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`)}`}
               target='_blank'
             />
           </div> : null}

@@ -19,7 +19,7 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
 }
 
 function latexEscape(s: string) {
-  return s.replaceAll('\\', '\\\\').replaceAll('_', '\\_').replaceAll('{', '\\{').replaceAll('}', '\\}').replaceAll('$', '\\$')
+  return s.replaceAll(/(\\|_|\{|\}|\$|&)/g, '\\$1')
 }
 
 async function extras() {

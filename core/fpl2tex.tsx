@@ -9,7 +9,9 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
   await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`, { waitUntil: 'networkidle0' })
-  const pdf = await page.pdf({ format: 'LETTER' })
+  const body = await page.$('body')
+  const boundingBox = await body?.boundingBox()
+  const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height } : { format: 'letter' })
   await browser.close()
   return pdf
 }
@@ -313,8 +315,8 @@ ${methods}
 
 ${figures.map(fig => `
 \\begin{center}\\vspace{1cm}
-\\includegraphics[width=0.8\\linewidth]{${fig.filename}}
-\\captionof{figure}{${fig.legend}}
+\\includegraphics[width=0.5\\linewidth]{${fig.filename}}
+\\captionof{figure}{${fig.legend}}\\label{${fig.label}}
 \\end{center}\\vspace{1cm}
 `).join('\n\n')}
 
@@ -330,7 +332,7 @@ ${figures.map(fig => `
 
 % TODO
 
-\\bibliographystyle{plain}
+\\bibliographystyle{naturemag}
 \\bibliography{references}
 
 \\section*{Acknowledgements}

@@ -2,7 +2,7 @@ import type KRG from "@/core/KRG"
 import type { FPL } from "@/core/FPPRG"
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
-import { fpl_expand, Metadata, Author } from "./common"
+import { fpl_expand, Metadata, Author } from "@/core/common"
 import puppeteer from 'puppeteer';
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {

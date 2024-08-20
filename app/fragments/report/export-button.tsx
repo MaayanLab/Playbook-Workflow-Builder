@@ -54,14 +54,14 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               download={`${id}.zip`}
             />
           </div>
-          <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
+          {process.env.PUBLIC_URL ? <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
             <Bp5MenuItem
               icon="document"
               text="LaTeX Bundle in Overleaf (BETA)"
-              href={`https://www.overleaf.com/docs?snip_uri=${encodeURIComponent(`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`)}`}
+              href={`https://www.overleaf.com/docs?snip_uri=${encodeURIComponent(`${process.env.PUBLIC_URL}/${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`)}`}
               target='_blank'
             />
-          </div>
+          </div> : null}
           </Bp5Menu>
       }
       placement="bottom"

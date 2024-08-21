@@ -11,7 +11,7 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
   await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`, { waitUntil: 'networkidle0' })
-  const body = await page.$('body')
+  const body = await page.$('main')
   const boundingBox = await body?.boundingBox()
   const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height } : { format: 'letter' })
   await browser.close()

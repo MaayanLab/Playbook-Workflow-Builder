@@ -348,7 +348,7 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
     export const GetVariantSetAlleleSpecificEvidence = MetaNode('GetVariantSetAlleleSpecificEvidence')
     .meta({
       label: `Identify Associated Allele Specific Epigenomic Signature`,
-      description: "Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data."
+      description: "Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data."
     })
     .inputs({ variantset: VariantSet})
     .output(AlleleSpecificEvidenceForVariantSet)
@@ -394,5 +394,5 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return returnObj;
     }).story(props => ({
-      abstract: `Description change: Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
+      abstract: `Retrieve variant/variant set associated allele specific epigenomic signatures based on Roadmap and ENTEx data.`
     })).build()

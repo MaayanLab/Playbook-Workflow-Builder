@@ -12,8 +12,8 @@ import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariant
 
 export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElementForThisVariant')
   .meta({
-    label: 'Identify Variant And Regulatory Element Association',
-    description: 'Get Regulatory Elements For This Variant ID',
+    label: 'Identify regulatory elements associated with variant',
+    description: 'Retrieve regulatory elements the overlaps with the given variant(s) from CFDE LDH.',
   })
   .inputs({ variant: VariantTerm })
   .output(RegulatoryElementTerm)
@@ -82,8 +82,8 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
 
   export const GetRegulatoryElementsForVariantSet = MetaNode('GetRegulatoryElementsForVariantSet')
   .meta({
-    label: `Identify regulatory elements associated with variant`,
-    description: "Description change: Identify regulatory elements in the region of the variant."
+    label: `Identify regulatory elements associated with variant(s)`,
+    description: "Retrieve regulatory element(s) that overlap with each given variant(s) from CFDE LDH."
   })
   .inputs({ variantset: VariantSet })
   .output(REforVariantSetInfo)
@@ -121,5 +121,5 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
 
     return varAndRegulatoryElem;
   }).story(props => ({
-    abstract: `Description change: Identify regulatory elements in the region of the variant.`
+    abstract: `Identify regulatory elements in the region of the variant.`
   })).build()

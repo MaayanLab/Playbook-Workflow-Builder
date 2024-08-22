@@ -229,8 +229,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
   export const GetVariantSetExternalRecords = MetaNode('GetVariantSetExternalRecords')
   .meta({
-    label: `Retrieve Alternative Identifiers For Variants`,
-    description: "Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry."
+    label: `Retrieve alternative identifiers for variant(s)`,
+    description: "Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry."
   })
   .inputs({ variantset: VariantSet })
   .output(VariantSetExternalRecordsInfo)
@@ -238,10 +238,10 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
     let variantSet = props.inputs.variantset.set;
     let variantSetInfo = await getVariantSetInfo(variantSet);
     if(variantSetInfo == null){
-        throw new Error("No data available!");
+        throw new Error("No data available for the inputed variant set! "+variantIdResolveErrorMessage);
     }
 
     return getExternalRecordsFromAlleleRegistry(variantSetInfo);
   }).story(props => ({
-    abstract: `Description change: Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
+    abstract: `Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
   })).build()

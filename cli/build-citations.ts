@@ -24,19 +24,31 @@ function locateCitations() {
   ).map(m => m[1])
 }
 
-async function fetchCitation(doi: string) {
-  console.info(`Fetching ${doi}...`)
-  const req = await fetch(`https://citation.crosscite.org/format?style=nature&lang=en-US&doi=${encodeURIComponent(doi)}`, {
+async function fetchIndividualCitation(doi: string, style = 'nature') {
+  console.info(`Fetching ${doi} using ${style} style...`)
+  const req = await fetch(`https://citation.crosscite.org/format?style=${encodeURIComponent(style)}&lang=en-US&doi=${encodeURIComponent(doi)}`, {
     method: 'GET',
     headers: {
       Accept: 'text/plain',
     },
   })
-  const res = await req.text()
-  return res.replace(/^1\.\s*/, '').replace(/\s*$/g, '')
+  return await req.text()
 }
 
-async function writeCitations(citations: { [id: string]: string }) {
+async function fetchCitation(doi: string) {
+  const [nature, bibtex] = await Promise.all([
+    fetchIndividualCitation(doi, 'nature').then(text => text.replace(/^1\.\s*/, '').replace(/\s*$/g, '')),
+    fetchIndividualCitation(doi, 'bibtex').then(text => {
+      console.log(text)
+      const m = /^\s*@(\w+)\{(.+?),((.|\n)+)\}\s*$/.exec(text)
+      if (m === null) return
+      return { type: m[1], record: m[3] }
+    }),
+  ])
+  return { nature, bibtex }
+}
+
+async function writeCitations(citations: { [id: string]: { nature: string, bibtex?: { type: string, record: string } } }) {
   if (dict.isEmpty(citations)) {
     console.info(`Nothing to do.`)
     return

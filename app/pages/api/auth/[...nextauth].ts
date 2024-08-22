@@ -4,6 +4,7 @@ import db from '@/app/db'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import EmailProvider from 'next-auth/providers/email'
 import GoogleProvider from "next-auth/providers/google"
+import KeycloakProvider from "next-auth/providers/keycloak"
 import ORMAdapter from '@/app/extensions/next-auth/orm-adapter'
 import ORCIDProvider from '@/app/extensions/next-auth/orcid-provider'
 
@@ -33,6 +34,7 @@ export const authOptions: NextAuthOptions = {
         })
       }
     }) : undefined,
+    process.env.NEXTAUTH_KEYCLOAK ? KeycloakProvider(JSON.parse(process.env.NEXTAUTH_KEYCLOAK)) : undefined,
     process.env.NEXTAUTH_GOOGLE ? GoogleProvider(JSON.parse(process.env.NEXTAUTH_GOOGLE)) : undefined,
     process.env.NEXTAUTH_ORCID ? ORCIDProvider(JSON.parse(process.env.NEXTAUTH_ORCID), db) : undefined,
     process.env.EMAIL_SERVER && process.env.EMAIL_FROM ? EmailProvider({

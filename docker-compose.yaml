@@ -30,7 +30,7 @@ services:
     logging: *default-logging
   # app serves the UI & API, it registers user interactions into the database (pg)
   pwb-app:
-    image: maayanlab/playbook-partnership:0.64.3-ui
+    image: maayanlab/playbook-partnership:0.65.8-ui
     build:
       context: .
       dockerfile: Dockerfile
@@ -48,6 +48,7 @@ services:
     - NEXTAUTH_SECRET
     - NEXTAUTH_GOOGLE
     - NEXTAUTH_ORCID
+    - NEXTAUTH_KEYCLOAK
     - EMAIL_SERVER
     - EMAIL_FROM
     - DATABASE_URL
@@ -79,7 +80,7 @@ services:
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   pwb-worker:
-    image: maayanlab/playbook-partnership:0.64.3
+    image: maayanlab/playbook-partnership:0.65.8
     build:
       context: .
       dockerfile: Dockerfile
@@ -112,7 +113,7 @@ services:
     logging: *default-logging
   # app-dev serves a dev version of the app
   app-dev:
-    image: maayanlab/playbook-partnership:0.64.3
+    image: maayanlab/playbook-partnership:0.65.8
     build:
       context: .
       dockerfile: Dockerfile
@@ -130,6 +131,7 @@ services:
     - NEXTAUTH_SECRET
     - NEXTAUTH_GOOGLE
     - NEXTAUTH_ORCID
+    - NEXTAUTH_KEYCLOAK
     - EMAIL_SERVER
     - EMAIL_FROM
     - DATABASE_URL
@@ -150,7 +152,7 @@ services:
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
-    image: maayanlab/playbook-partnership:0.64.3-dev
+    image: maayanlab/playbook-partnership:0.65.8-dev
     build:
       context: .
       dockerfile: Dockerfile

@@ -13,7 +13,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
   - [Visual Studio Code](https://code.visualstudio.com/)
   - [NodeJS](https://nodejs.org/)
   - [Git](https://git-scm.com/)
-  - [Python 3](https://www.python.org/) (optional)
+  - [Python 3](https://www.python.org/)
 1. Clone this repository and checkout a branch for your work.
     ```bash
     git clone https://github.com/MaayanLab/Playbook-Workflow-Builder/
@@ -24,19 +24,18 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
     ![Typescript autocomplete screenshot](./figures/typescript-autocomplete.png)
 3. Install dependencies and start the development webui, this provides tools testing and debugging metanodes, the webserver will "hot-reload" when files are modified.
     ```bash
-    # install dependencies
+    # install NodeJS dependencies
     npm i
+    # only necessary for LaTeX export feature
+    npx puppeteer browsers install chrome
+    # collect requirements.txt from components into one
+    npm run codegen:requirements
+    # install Python dependencies
+    pip install -r requirements.txt
     # start dev server
     npm run dev
     ```
     ![Prototype UI screenshot](./figures/prototype-ui.png)
-4. (OPTIONAL) Install existing python dependencies to execute some of the existing components.
-    ```bash
-    # collect requirements.txt from components into one
-    npm run codegen:requirements
-    # install them
-    pip install -r requirements.txt
-    ```
 5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run codegen:components` which adds it to the full graph. **Avoid adding your components to existing files created by someone else, opt instead for a new directory**.
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.

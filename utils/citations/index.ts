@@ -5,11 +5,12 @@ import doiMappings from './citations'
 function convertDOI(text: string) {
   const m = /^doi:(.+)$/.exec(text)
   if (m !== null && m[1] in doiMappings) {
-    return `${doiMappings[m[1] as keyof typeof doiMappings]} ${text}`
+    const citation = doiMappings[m[1] as keyof typeof doiMappings]
+    return { text: citation.nature, bibtex: citation.bibtex, doi: text }
   } else if (m !== null) {
-    console.warn(`${m[1]} not registered, call 'npm run codegen:cite -- ${m[1]}'`)
+    console.warn(`${m[1]} not registered, call 'npm run codegen:citations'`)
   }
-  return text
+  return { text }
 }
 
 /**
@@ -35,25 +36,25 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
   const ast: (
     { type: 'text', text: string, tags: string[] }
     | { type: 'cite', text: string, ref: string, tags: string[] }
-    | { type: 'bibitem', text: string, ref: string, tags: string[] }
+    | { type: 'bibitem', text: string, ref: string, bibtex?: { type: string, record: string }, tags: string[] }
     | { type: 'figref', text: string, ref: string, tags: string[] }
     | { type: 'figure', text: string, ref: string, tags: string[] }
   )[] = []
   const figures = new Map<string, string>()
   const figure_asts: Record<string, { type: 'figure', ref: string, text: string, tags: string[] }> = {}
   const bibitems = new Map<string, string>()
-  const bibitem_asts: Record<string, { type: 'bibitem', ref: string, text: string, tags: string[] }> = {}
+  const bibitem_asts: Record<string, { type: 'bibitem', ref: string, text: string, bibtex?: { type: string, record: string }, tags: string[] }> = {}
   for (const { text, tags } of texts) {
     if (!text) continue
     if (tags.includes('legend')) {
       const ref = tags.filter(tag => tag !== 'legend').join('-')
       if (!(ref in figure_asts)) {
-        figure_asts[ref] = { type: 'figure', text: `Figure ${figures.size+1}`, ref, tags }
+        figure_asts[ref] = { type: 'figure', text: '', ref, tags }
       } else {
         figure_asts[ref].tags = array.unique([...figure_asts[ref].tags, ...tags])
       }
       if (!figures.has(ref)) {
-        figure_asts[ref].text = `Figure ${figures.size+1}`
+        figure_asts[ref].text = ''
         figures.set(ref, `${figures.size+1}`)
         ast.push(figure_asts[ref])
       }
@@ -66,7 +67,8 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
       const ref = m[2]
       if (reftype === 'ref') {
         if (!bibitems.has(ref)) {
-          bibitem_asts[ref] = { type: 'bibitem', text: `${bibitems.size+1}. ${convertDOI(ref)}`, ref, tags }
+          const bibitem = convertDOI(ref)
+          bibitem_asts[ref] = { type: 'bibitem', text: [`${bibitems.size+1}.`, bibitem.text, bibitem.doi].filter((text): text is string => !!text).join(' '), bibtex: bibitem.bibtex, ref, tags }
           bibitems.set(ref, `${bibitems.size+1}`)
         } else {
           bibitem_asts[ref].tags = array.unique([...bibitem_asts[ref].tags, ...tags])
@@ -86,9 +88,9 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
       }
     }
     ast.push({ type: 'text', text: `${text.substring(i)}`, tags })
-    if (tags.includes('abstract')) ast.push({ type: 'text', text: ` `, tags })
-    else if (tags.includes('introduction')) ast.push({ type: 'text', text: `\n\n`, tags })
-    else if (tags.includes('methods')) ast.push({ type: 'text', text: `\n\n`, tags })
+    if (tags.includes('abstract')) ast[ast.length-1].text += ' '
+    else if (tags.includes('introduction')) ast[ast.length-1].text += `\n\n`
+    else if (tags.includes('methods')) ast[ast.length-1].text += `\n\n`
   }
 
   ast.push(...dict.values(figure_asts))

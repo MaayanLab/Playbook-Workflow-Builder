@@ -106,7 +106,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
             cellRenderer={row => <Cell key={row+''}>{geneSetForEachRE[row].reId}</Cell>}
           />
           <Column
-            name="Chromosome"
+            name="Genes"
             cellRenderer={row => <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {geneSetForEachRE[row].genes.map(genes =>
@@ -147,7 +147,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
         }
         geneSetForEachRE.push(temp);
     }
-    if(){
+    if(geneSetForEachRE.length == 0){
       throw new Error("Unable to get any data for the inputed set. Please check that the provided regulatory element id's and try again.");
     }
     return geneSetForEachRE;

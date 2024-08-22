@@ -177,7 +177,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetGeneForVariantFromMyVariantInfo = MetaNode('GetGeneForVariantFromMyVariantInfo')
   .meta({
-    label: 'Identify genes in the vicinity of given variant(s)',
+    label: 'Identify genes in the vicinity of given variant',
     description: 'Retrieve gene(s) in the vicinity of given variant from MyVariant.info.'
   })
   .inputs({ variant: VariantTerm })
@@ -254,11 +254,11 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
         }}
         >
           <Column
-            name="Variant CAID"
+            name="Variant CAid"
             cellRenderer={row => <Cell key={row+''}>{ geneAssociationsSet[row].variantCaId }</Cell>}
           />
           <Column
-            name="Gene ID"
+            name="Gene id"
             cellRenderer={row =>
               <Cell key={row+''}>
                 <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -398,8 +398,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
   export const GetVariantSetToGeneAssociation_HG38 = MetaNode('GetVariantSetToGeneAssociation_HG38')
   .meta({
-    label: `Identify Variant (Set) And Gene Associations (HG38)`,
-    description: "Get Associated Gene info for a given Variant Set."
+    label: `Identify genes in the vicinity of given variant(s)`,
+    description: "Retrieve gene(s) in the vicinity of given variant(s) from MyVariant.info."
   })
   .inputs({ variantset: VariantSet })
   .output(GeneAssociationsSet_HG38)
@@ -417,7 +417,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
 
     return await getGeneAssociationsHG38FromExternalRecords(variantExternalRecordsSetInfo);
   }).story(props => ({
-    abstract: `Get Associated Gene info for a given set of Variant External records.`
+    abstract: `Get Associated Gene info for a given set of Variants.`
   })).build()
 
 

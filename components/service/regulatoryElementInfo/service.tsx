@@ -62,7 +62,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   .resolve(async (props) => {
     const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
     if(response == null || response.data == null){
-      throw new Error("Unable to get data from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
+      throw new Error("The provided regulatory element is not found in CFDE Linked Data Hub. Please try another regulatory element.");
     }
 
     let geneNames =  response.data.ldFor.Gene.map(({ entId }) => entId);
@@ -125,7 +125,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   export const GetGenesForRegulatoryElementSet = MetaNode('GetGenesForRegulatoryElementSet')
   .meta({
     label: 'Identify Genes In Vicinity',
-    description: 'Identify genes in 10kbps distance of regulatory elements.',
+    description: 'Identify genes in 10kbps distance of regulatory element(s).',
   })
   .inputs({  regulatoryElementSet: RegulatoryElementSet  })
   .output(REGeneSet)
@@ -146,6 +146,9 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
           genes: geneNames
         }
         geneSetForEachRE.push(temp);
+    }
+    if(){
+      throw new Error("Unable to get any data for the inputed set. Please check that the provided regulatory element id's and try again.");
     }
     return geneSetForEachRE;
   })
@@ -416,7 +419,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     let positionString = rePositionData.data.cCREQuery[0].coordinates.chromosome+":"+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
     let response = await getUniqueGenomicRegions(positionString);
     if(response == null){
-      throw new Error("Unable to find any data for the queried position!");
+      throw new Error('The genomic region provided is not yet registered on Genomic Location Registry. Please contact keyang.yu@bcm.edu to register the region(s) for globally unique and persistant id(s) or check the input format ("GRCh38 (chr1:825620-825820)") and try again.');
     }
     return response;
   })

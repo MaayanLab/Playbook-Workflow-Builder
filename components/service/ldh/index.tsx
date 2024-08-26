@@ -61,7 +61,7 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
 
   export const GetRegulatoryElementsInfoForGeneInfoSet = MetaNode('GetRegulatoryElementsInfoForGeneInfoSet')
   .meta({
-    label: 'Identify regulatory elements in the vicinity of given genes',
+    label: 'Identify regulatory elements in the vicinity of given gene(s)',
     description: 'Regulatory elements in 10kbps region upstream or downstream of gene body.',
     icon: [linkeddatahub_icon],
     pagerank: 1,

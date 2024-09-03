@@ -32,9 +32,12 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
       return response.data.ldFor.RegulatoryElement[0].entId;
     }
     return "N/A";
-  })
-  .story(props => ({}))
-  .build()
+  }).story(props => ({
+    abstract: `Regulatory element(s) that overlap with the given variant(s) were retrieved from the CFDE Llinked Data Hub API results [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}]`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    methods: `Input variant(s) were queried through CFDE LDH API endpoints. Regulatory elements from SCREEN, eCLIP, and other databases that are linked to the variant(s) in LDH were retrieved from the JSON response.`,
+    legend: `A list of regulatory elements from CFDE LDH that overlap with the given variant(s)`,
+  })).build()
 
   export const REforVariantSetInfo = MetaNode('REforVariantSetInfo')
   .meta({
@@ -121,5 +124,8 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
 
     return varAndRegulatoryElem;
   }).story(props => ({
-    abstract: `Identify regulatory elements in the region of the variant.`
+    abstract: `Regulatory element(s) that overlap with the given variant(s) were retrieved from the CFDE LDH API results [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}]`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    methods: `Input variant(s) were queried through CFDE LDH API endpoints. Regulatory elements from SCREEN, eCLIP, and other databases that are linked to the variant(s) in LDH were retrieved from the JSON response.`,
+    legend: `A list of regulatory elements from CFDE LDH that overlap with the given variant(s)`,
   })).build()

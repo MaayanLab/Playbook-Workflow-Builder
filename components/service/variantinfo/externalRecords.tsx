@@ -142,9 +142,12 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
       reponse = processExternalRecords(variantInfoObj, varCaId);
     }
     return reponse;
-  })
-  .story(props => ({ abstract: `External records for the variant${props.inputs ? ` ${props.inputs.variant}` : ''} were resolved.` }))
-  .build()
+  }).story(props => ({
+    abstract: `MyVariant.info, dbSNP, gnomAD, and other common identifiers for the given variant(s) were retrieved from ClinGen Allele Registry [\\ref{doi:10.1002/humu.23637}].`,
+    introduction: `ClinGen Allele Registry is a variant naming and registration service that provide stable and unique identifiers for any possible alleles in the human genome. [\\ref{doi:10.1002/humu.23637}]`,
+    methods: `Input variant id(s) were queried through ClinGen Allele Registry API endpoints corresponding to the id type and alternative ids and aliases were retreived from the JSON response.`,
+    legend: `A table displaying all the commonly used identifiers for the given variant(s)/allele(s)`,
+  })).build()
 
   export const VariantSetExternalRecordsInfo = MetaNode('VariantSetExternalRecordsInfo')
   .meta({
@@ -243,5 +246,8 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
 
     return getExternalRecordsFromAlleleRegistry(variantSetInfo);
   }).story(props => ({
-    abstract: `Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant(s) from ClinGen Allele Registry.`
+    abstract: `MyVariant.info, dbSNP, gnomAD, and other common identifiers for the given variant(s) were retrieved from ClinGen Allele Registry [\\ref{doi:10.1002/humu.23637}].`,
+    introduction: `ClinGen Allele Registry is a variant naming and registration service that provide stable and unique identifiers for any possible alleles in the human genome. [\\ref{doi:10.1002/humu.23637}]`,
+    methods: `Input variant id(s) were queried through ClinGen Allele Registry API endpoints corresponding to the id type and alternative ids and aliases were retreived from the JSON response.`,
+    legend: `A table displaying all the commonly used identifiers for the given variant(s)/allele(s)`,
   })).build()

@@ -49,8 +49,8 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     }
     return response;
   }).story(props => ({
-    abstract: `Genomic position of provided unique regulatory element identifier was retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
-    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    abstract: `Genomic position of provided unique regulatory element identifier was retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its genoimc position is retrieved from the JSON response.`,
     legend: `Genomic location`,
   })).build()
@@ -75,8 +75,8 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     };
     return geneSet;
   }).story(props => ({
-    abstract: `A list of genes in the 10kbps region of the given regulatory element was retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
-    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    abstract: `A list of genes in the 10kbps region of the given regulatory element was retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked genes were retieved from the JSON response.`,
     legend: `A list of genes in the vicinity of given regulatory element`,
   })).build()
@@ -182,7 +182,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     };
     return variantSet;
   }).story(props => ({
-    abstract: `A list of variants in the region of the regulatory element was retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
+    abstract: `A list of variants in the region of the regulatory element was retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx.`,
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked variants were retrieved from the JSON response.`,
     legend: `A list of variants in the region of given regulatory element`,
@@ -364,8 +364,8 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
     return await setGenomicPositionsForRegulatoryElementSet(regElemeIdsSet);
   }).story(props => ({
-    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
-    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifiers were queried through CFDE LDH API endpoints and their GRCh38 genomic positions, including chr, start, and end, were retrieved from the JSON response.`,
     legend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
   })).build()
@@ -429,8 +429,8 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     }
     return response;
   }).story(props => ({
-    abstract: `Get unique name for genomic region(s) from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
-    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifier for the registered locations and regions.`,
+    abstract: `Get unique name for genomic region(s) from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
+    introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifier for the registered locations and regions.`,
     methods: `Input genomic region expression(s) were queried through GL Registry API endpoints. Unique identifiers were retrieved from those that have been registered on GL Registry`,
     legend: `A table displaying the unique identifier(s) of given genomic region(s)`,
   })).build()
@@ -535,8 +535,8 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     }
     return referenceArray;
   }).story(props => ({
-    abstract: `Get unique name for genomic region(s) from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
-    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions.`,
+    abstract: `Get unique name for genomic region(s) from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
+    introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions.`,
     methods: `Input genomic region expression(s) were queried through GL Registry API endpoints. Unique identifiers were retrieved from those that have been registered on GL Registry`,
     legend: `A table displaying the unique identifier(s) of given genomic region(s)`,
   })).build()
@@ -603,8 +603,8 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     }
     return temp;
   }).story(props => ({
-    abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
-    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in differnt reference assembly.`,
+    abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
+    introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in different reference assembly.`,
     methods: `Input regulatory element identifier(s) or genomic region(s) were queried through GL Registry coordinate transform API endpoints and their genomic location in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved.`,
     legend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
   })).build()
@@ -697,8 +697,8 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     }
     return referenceArray;
   }).story(props => ({
-    abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
-    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in differnt reference assembly.`,
+    abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
+    introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in different reference assembly.`,
     methods: `Input regulatory element identifier(s) or genomic region(s) were queried through GL Registry coordinate transform API endpoints and their genomic location in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved.`,
     legend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
   })).build()

@@ -48,9 +48,12 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
       };
     }
     return response;
-  })
-  .story(props => ({ abstract: `Regulatory element genomic position.` }))
-  .build()
+  }).story(props => ({
+    abstract: `Genomic position of provided unique regulatory element identifier was retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its genoimc position is retrieved from the JSON response.`,
+    legend: `Genomic location`,
+  })).build()
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
   .meta({
@@ -71,9 +74,12 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
       set: geneNames
     };
     return geneSet;
-  })
-  .story(props => ({ abstract: `Genes linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.` }))
-  .build()
+  }).story(props => ({
+    abstract: `A list of genes in the 10kbps region of the given regulatory element was retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked genes were retieved from the JSON response.`,
+    legend: `A list of genes in the vicinity of given regulatory element`,
+  })).build()
 
 
   export const REGeneSet = MetaNode('REGeneSet')
@@ -175,9 +181,12 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
       set: variantNames
     };
     return variantSet;
-  })
-  .story(props => ({ abstract: `Variants linked to the regulatory element${props.inputs ? ` ${props.inputs.regulatoryElement}` : ''} were resolved.` }))
-  .build()
+  }).story(props => ({
+    abstract: `A list of variants in the region of the regulatory element was retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx.`,
+    methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked variants were retrieved from the JSON response.`,
+    legend: `A list of variants in the region of given regulatory element`,
+  })).build()
 
 const MyRegulatoryElementC = z.object({
   entId: z.string(),
@@ -270,7 +279,7 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
             cellRenderer={row => <Cell key={row+''}>{reSetForEachGene[row].gene}</Cell>}
           />
           <Column
-            name="Chromosome"
+            name="Regulatory elements"
             cellRenderer={row => <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {reSetForEachGene[row].regulatoryElements.map(regulatoryElements =>
@@ -280,7 +289,7 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
             </Cell>}
           />
           <Column
-            name="Start Pos."
+            name="Chromosome"
             cellRenderer={row => <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {reSetForEachGene[row].regulatoryElements.map(regulatoryElements =>
@@ -290,7 +299,7 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
             </Cell>}
           />
           <Column
-            name="End Pos."
+            name="Start Pos."
             cellRenderer={row => <Cell key={row+''}>
                   <table style={{borderCollapse: 'collapse', width:'100%'}}>
                     {reSetForEachGene[row].regulatoryElements.map(regulatoryElements =>
@@ -354,9 +363,12 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   .resolve(async (props) => {
     let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
     return await setGenomicPositionsForRegulatoryElementSet(regElemeIdsSet);
-  })
-  .story(props => ({ abstract: `Find regulatory element postions (GRCh38).` }))
-  .build()
+  }).story(props => ({
+    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    methods: `Input regulatory element identifiers were queried through CFDE LDH API endpoints and their GRCh38 genomic positions, including chr, start, and end, were retrieved from the JSON response.`,
+    legend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
+  })).build()
 
   export const UniqueGenomicRegion = MetaNode('UniqueGenomicRegion')
   .meta({
@@ -366,11 +378,6 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   })
   .codec(RE_UniqueRegionC)
   .view(uniqueRegions => {
-    if(uniqueRegions == null || uniqueRegions.length == 0){
-      return (
-        <p>Nothing found on the queried position!</p>
-      )
-    }else{
       return( 
         <>
           <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
@@ -402,7 +409,6 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
           </Table>
         </>
       )
-    }
   })
   .build()
 
@@ -418,13 +424,16 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
     let positionString = rePositionData.data.cCREQuery[0].coordinates.chromosome+":"+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
     let response = await getUniqueGenomicRegions(positionString);
-    if(response == null){
-      throw new Error('The genomic region provided is not yet registered on Genomic Location Registry. Please contact keyang.yu@bcm.edu to register the region(s) for globally unique and persistant id(s) or check the input format ("GRCh38 (chr1:825620-825820)") and try again.');
+    if(response == null || (response != null && !Array.isArray(response))){
+      throw new Error('The genomic region provided is not yet registered on Genomic Location Registry. Please contact keyang.yu@bcm.edu to register the region(s) for globally unique and persistant id(s) or check the input format (example: "GRCh38 (chr1:825620-825820)") and try again.');
     }
     return response;
-  })
-  .story(props => ({ abstract: `Get unique name for genomic region(s).` }))
-  .build()
+  }).story(props => ({
+    abstract: `Get unique name for genomic region(s) from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
+    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifier for the registered locations and regions.`,
+    methods: `Input genomic region expression(s) were queried through GL Registry API endpoints. Unique identifiers were retrieved from those that have been registered on GL Registry`,
+    legend: `A table displaying the unique identifier(s) of given genomic region(s)`,
+  })).build()
 
   export const UniqueGenomicRegionRESet = MetaNode('UniqueGenomicRegionRESet')
   .meta({
@@ -434,11 +443,6 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   })
   .codec(RE_UniqueRegionSetC)
   .view(uniqueRegions => {
-    if(uniqueRegions == null || uniqueRegions.length == 0){
-      return (
-        <p>Nothing found on the queried position!</p>
-      )
-    }else{
       return( 
         <>
           <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
@@ -488,7 +492,6 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
           </Table>
         </>
       )
-    }
   })
   .build()
 
@@ -526,10 +529,24 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
         }
       }
     }
+
+    if(referenceArray.length == 0){
+      throw new Error('The genomic region provided is not yet registered on Genomic Location Registry. Please contact keyang.yu@bcm.edu to register the region(s) for globally unique and persistant id(s) or check the input format (example: "GRCh38 (chr1:825620-825820)") and try again.');
+    }
     return referenceArray;
+  }).story(props => ({
+    abstract: `Get unique name for genomic region(s) from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
+    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions.`,
+    methods: `Input genomic region expression(s) were queried through GL Registry API endpoints. Unique identifiers were retrieved from those that have been registered on GL Registry`,
+    legend: `A table displaying the unique identifier(s) of given genomic region(s)`,
+  })).build()
+
+  export const CrossReferenceGenomicRegionC = z.object({
+    regElementId: z.string().optional(),
+    rePosition: z.string(),
+    references: z.array(z.string())
   })
-  .story(props => ({ abstract: `Get unique name for genomic region(s)` }))
-  .build()
+  export type CrossReferenceGenomicRegion = z.infer<typeof CrossReferenceGenomicRegionC>
 
   export const UniqueGenomicRegionCrossReference = MetaNode('UniqueGenomicRegionCrossReference')
   .meta({
@@ -537,12 +554,31 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     description: '',
     icon: [datafile_icon]
   })
-  .codec(z.string())
+  .codec(CrossReferenceGenomicRegionC)
   .view(uniqueRegionsCrossReference => { 
-      if(uniqueRegionsCrossReference == null || uniqueRegionsCrossReference == ''){
+      if(uniqueRegionsCrossReference == null || uniqueRegionsCrossReference.references == null || uniqueRegionsCrossReference.references.length == 0){
         return(<p>Unable to find any unique region(s) for the queried position!</p>)
       }else{
-        return(<p>{uniqueRegionsCrossReference}</p>)
+        let references = uniqueRegionsCrossReference.references;
+        return(
+          <>
+            <p>{uniqueRegionsCrossReference.regElementId} ({uniqueRegionsCrossReference.rePosition})</p>
+            <Table
+              height={500}
+              cellRendererDependencies={[references]}
+              numRows={references.length}
+              enableGhostCells
+              enableFocusedCell
+              downloads={{
+                JSON: () => downloadBlob(new Blob([JSON.stringify(references)], { type: 'application/json;charset=utf-8' }), 'data.json')
+              }}>
+              <Column
+                name="References"
+                cellRenderer={row => <Cell key={row+''}>{references[row]}</Cell>}
+              />
+            </Table>
+          </>
+        )
       }
   })
   .build()
@@ -560,11 +596,18 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     let positionString = rePositionData.data.cCREQuery[0].coordinates.chromosome+":"+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
     let response = await getUniqueGenomicRegionsCrossReference(positionString);
     let references = reformatUniqueGenomicRegions(response);
-    return props.inputs.regulatoryElement+" ("+positionString+"):  "+references.toLocaleString();
-  })
-  .story(props => ({ abstract: `Get unique name for genomic region(s) cross refenrce: GRCh38, GRCh37 and NCBI36.` }))
-  .build()
-
+    let temp = {
+      regElementId: props.inputs.regulatoryElement,
+      rePosition: positionString,
+      references: references
+    }
+    return temp;
+  }).story(props => ({
+    abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
+    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in differnt reference assembly.`,
+    methods: `Input regulatory element identifier(s) or genomic region(s) were queried through GL Registry coordinate transform API endpoints and their genomic location in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved.`,
+    legend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
+  })).build()
 
   export const UniqueGenomicRegionCrossReferenceRESet = MetaNode('UniqueGenomicRegionCrossReferenceRESet')
   .meta({
@@ -572,12 +615,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     description: '',
     icon: [datafile_icon]
   })
-  .codec(z.array(
-    z.object({
-      reId: z.string().optional(),
-      rePosition: z.string(),
-      reference: z.array(z.string())
-    }).optional()
+  .codec(z.array(CrossReferenceGenomicRegionC.optional()
   ).nullable().optional())
   .view(uniqueRegionsCrossReferenceList => { 
       if(uniqueRegionsCrossReferenceList == null || uniqueRegionsCrossReferenceList.length == 0){
@@ -597,7 +635,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
               }}>
               <Column
                 name="Regulatory Element id"
-                cellRenderer={row => <Cell key={row+''}>{uniqueRegionsCrossReferenceList[row]?.reId}</Cell>}
+                cellRenderer={row => <Cell key={row+''}>{uniqueRegionsCrossReferenceList[row]?.regElementId}</Cell>}
               />
               <Column
                 name="Position"
@@ -607,8 +645,8 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
                 name="Cross Reference(s)"
                 cellRenderer={row => <Cell key={row+''}>{
                     <table style={{borderCollapse: 'collapse', width:'100%'}}>
-                      {uniqueRegionsCrossReferenceList[row]?.reference.map(reference =>
-                          <tr><td>{ reference }</td></tr>
+                      {uniqueRegionsCrossReferenceList[row]?.references.map(references =>
+                          <tr><td>{ references }</td></tr>
                       )}
                     </table>
                   }</Cell>}
@@ -650,14 +688,17 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
         }
         let reformatedReferences = reformatUniqueGenomicRegions(references);
         let tempObj = {
-          reId: rgId,
+          regElementId: rgId,
           rePosition: positionString,
-          reference: reformatedReferences
-        }    
+          references: reformatedReferences
+        }  
         referenceArray.push(tempObj);  
       }
     }
     return referenceArray;
-  })
-  .story(props => ({ abstract: `Get unique name for genomic region(s) cross refenrce: GRCh38, GRCh37 and NCBI36.` }))
-  .build()
+  }).story(props => ({
+    abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}]`,
+    introduction: `Genomic location registry (GL Registry) [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in differnt reference assembly.`,
+    methods: `Input regulatory element identifier(s) or genomic region(s) were queried through GL Registry coordinate transform API endpoints and their genomic location in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved.`,
+    legend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
+  })).build()

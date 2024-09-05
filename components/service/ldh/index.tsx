@@ -1,7 +1,7 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/term'
 import { GeneSet } from '@/components/core/set'
-import { RegulatoryElementSetInfo, RegulatoryElementSetForGeneSetInfo, setGenomicPositionsForRegulatoryElementSet, MyGeneToRegulatoryElementSetInfo } from '@/components/service/regulatoryElementInfo'
+import { RegulatoryElementSetInfo, RegulatoryElementSetForGeneSetInfo, setGenomicPositionsForRegulatoryElementSet, MyGeneToRegulatoryElementSetInfo, MyRegulatoryElementSetInfo } from '@/components/service/regulatoryElementInfo'
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { linkeddatahub_icon } from '@/icons'
 import { z } from 'zod'
@@ -24,6 +24,34 @@ export async function myGeneInfoFromLinkDataHub(geneTerm: string): Promise<MyGen
   return await res.json()
 }
 
+
+function getREPositionDataFromLinkDataHub(reObjSet: any){
+  let response: MyRegulatoryElementSetInfo = [];
+  for(let i in reObjSet){
+    let rgObj: any = reObjSet[i];
+
+    let coordinates = null;
+    if(rgObj.entContent != null && rgObj.entContent.coordinates != null){
+      coordinates = rgObj.entContent.coordinates;
+    }else{
+      coordinates = {
+          chromosome: "",
+          start: 0,
+          end: 0
+      };
+    }
+    let tempObj = {
+      entId: rgObj.entId,
+      ldhId: rgObj.ldhId,
+      entContent: {
+        coordinates: coordinates
+      }
+    }
+    response.push(tempObj);
+  }
+  return response;
+}
+
 export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryElementsInfoForGeneInfo')
   .meta({
     label: 'Identify regulatory element in the vicinity of given gene',
@@ -38,8 +66,17 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
     if(response.data == null || response.data.ld == null){
       throw new Error("Unable to get data from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
     }
-    let reNamesSet: string[] = response.data.ld.RegulatoryElement.map(({ entId }) => entId );
-    return await setGenomicPositionsForRegulatoryElementSet(reNamesSet);
+
+    let reObjSet: any = response.data.ld.RegulatoryElement;
+    if(reObjSet == null || reObjSet.length == 0){
+      throw new Error("Unable to get Regulatory Element data for gene "+props.inputs.geneInfo.symbol+" from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+    let reInfoSet = getREPositionDataFromLinkDataHub(reObjSet);
+    if(reInfoSet == null || reInfoSet.length == 0){
+      throw new Error("Unable to get Regulatory Element(s) coordinates for gene "+props.inputs.geneInfo.symbol+" from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+    
+    return reInfoSet;
   })
   .story(props => ({
     abstract: `Regulatory elements in 10kbps region upstream or downstream of gene ${props.inputs ? ` ${props.inputs.geneInfo.symbol}` : ''}.`
@@ -81,9 +118,14 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
         continue;
       }
 
-      let reNamesSet: string[] = response.data.ld.RegulatoryElement.map(({ entId }) => entId );
-      let reInfoSet = await setGenomicPositionsForRegulatoryElementSet(reNamesSet);
-
+      let reObjSet: any = response.data.ld.RegulatoryElement;
+      if(reObjSet == null || reObjSet.length == 0){
+        continue;
+      }
+      let reInfoSet = getREPositionDataFromLinkDataHub(reObjSet);
+      if(reInfoSet == null || reInfoSet.length == 0){
+        continue;
+      }
       let temp = {
         gene: g,
         regulatoryElements: reInfoSet

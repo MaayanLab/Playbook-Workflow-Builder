@@ -107,11 +107,12 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
       }
     }
 
+    //id: caid+"("+variantInfoObj.communityStandardTitle[0]+")"
     let arExternalR = {
       name: 'Allele Registry',
       sources: [{
         '@id': variantInfoObj['@id'], 
-        id: caid+"("+variantInfoObj.communityStandardTitle[0]+")"
+        id: caid
       }]
     }
     alleleInfoExternalResources.push(arExternalR);

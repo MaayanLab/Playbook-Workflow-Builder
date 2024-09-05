@@ -81,7 +81,6 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     legend: `A list of genes in the vicinity of given regulatory element`,
   })).build()
 
-
   export const REGeneSet = MetaNode('REGeneSet')
   .meta({
     label: 'Genes Set For Each Regulatory Element In Set',
@@ -160,7 +159,6 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   })
   .story(props => ({ abstract: `Genes linked to the regulatory element set.` }))
   .build()
-
 
 export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRegulatoryElementInfo')
   .meta({
@@ -586,7 +584,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   export const GenomicRegionCoordinateTransformationAcrossReferences = MetaNode('GenomicRegionCoordinateTransformationAcrossReferences')
   .meta({
     label: 'Genomic region coordinate transformation across references',
-    description: 'Get unique name for genomic region(s) cross refenrce: GRCh38, GRCh37 and NCBI36.',
+    description: 'Get coordinates for genomic region(s) cross references: GRCh38, GRCh37 and NCBI36.',
     icon: [linkeddatahub_icon],
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
@@ -638,10 +636,6 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
                 cellRenderer={row => <Cell key={row+''}>{uniqueRegionsCrossReferenceList[row]?.regElementId}</Cell>}
               />
               <Column
-                name="Position"
-                cellRenderer={row => <Cell key={row+''}>{uniqueRegionsCrossReferenceList[row]?.rePosition}</Cell>}
-              />
-              <Column
                 name="Cross Reference(s)"
                 cellRenderer={row => <Cell key={row+''}>{
                     <table style={{borderCollapse: 'collapse', width:'100%'}}>
@@ -661,7 +655,7 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   export const GenomicRegionCoordinateTransformationAcrossReferencesRE_Set = MetaNode('GenomicRegionCoordinateTransformationAcrossReferencesRE_Set')
   .meta({
     label: 'Genomic region coordinate transformation across references',
-    description: 'Get unique name for genomic region(s) cross refenrce: GRCh38, GRCh37 and NCBI36.',
+    description: 'Get coordinates for genomic region(s) cross references: GRCh38, GRCh37 and NCBI36.',
     icon: [linkeddatahub_icon],
   })
   .inputs({ regulatoryElementSet: RegulatoryElementSet })

@@ -4,6 +4,7 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import { v4 as uuid4 } from 'uuid'
 import python from '@/utils/python'
+import SafeRender from '@/utils/saferender'
 
 export const FASTQAlignment = MetaNode(`FASTQAlignment`)
   .meta({
@@ -31,19 +32,22 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
           charonSearchParams.append('uid', uid)
           const charonReq = await fetch(`/api/v1/components/service/elysium/charon?${charonSearchParams.toString()}`)
           const charonRes = await charonReq.json()
+          const charonFormData = new FormData()
           for (const k in charonRes.formData) {
-            formData.append(k, charonRes.formData[k])
+            charonFormData.append(k, charonRes.formData[k])
           }
+          charonFormData.append('file', file)
           // TODO: progress bar (?) https://github.com/MaayanLab/biojupies/blob/6d087aebbd2ff5bc0e8eace5cb67c1f5e19d85e3/website/app/templates/upload/upload_reads.html#L139
-          const s3Req = await fetch(charonRes.url, { method: 'POST', body: formData })
+          const s3Req = await fetch(charonRes.url, { method: 'POST', body: charonFormData })
           if (!s3Req.ok) throw new Error(`Failed to upload ${file.name}`)
           return file.name
-        })).then(filenames => {props.submit({ uid, filenames, organism }, true)})
+        })).then(filenames => {props.submit({ uid, filenames, organism }, false)})
         .catch(err => setError(err))
       }}>
         <input type="file" name="file" multiple />
         <input type="submit" />
       </form>
+      {props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}
     </>
   })
   // NOTE: this could also be done in prompt with an API call potentially..

@@ -23,5 +23,8 @@ export const GET = handler(async (req, res) => {
   formData['policy'] = charonRes['policy']
   formData['signature'] = charonRes['signature']
   formData['Content-Type'] = 'application/octet-stream'
-  res.json(formData)
+  res.json({
+    url: `https://${charonRes["bucket"]}.s3.amazonaws.com/`,
+    formData,
+  })
 })

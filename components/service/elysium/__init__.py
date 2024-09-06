@@ -25,7 +25,7 @@ def process_single_end(upload_uid, filenames, organism='human', polling_interval
     cloudalignmentCreatejobRes = cloudalignmentCreatejobReq.json()
     jobs.append(cloudalignmentCreatejobRes)
   # wait for alignment to complete
-  status = None
+  status = -2
   while True:
     time.sleep(polling_interval)
     cloudalignmentProgressReq = requests.get('https://maayanlab.cloud/cloudalignment/progress', params=dict(
@@ -34,29 +34,29 @@ def process_single_end(upload_uid, filenames, organism='human', polling_interval
       prefix=alignment_uid,
     ))
     cloudalignmentProgressRes = cloudalignmentProgressReq.json()
-    # failed, submitted, waiting
-    # TODO: log status
     status_count = Counter([alignment['status'] for alignment in cloudalignmentProgressRes.values()])
     if 'failed' in status_count:
       print(f"\nJob failed", file=sys.stderr, flush=True)
       break
     elif 'submitted' in status_count:
-      if status != 'submitted':
-        status = 'submitted'
+      if status < 0:
+        status = 0
         print(f"\nSubmitted", end='', file=sys.stderr, flush=True)
       else:
+        while status < status_count.get('completed', 0):
+          print('!', end='', file=sys.stderr)
+          status += 1
         print('.', end='', file=sys.stderr, flush=True)
       continue
     elif 'waiting' in status_count:
-      if status != 'waiting':
-        status = 'waiting'
+      if status != -1:
+        status = -1
         print(f"\nWaiting", end='', file=sys.stderr, flush=True)
       else:
         print('.', end='', file=sys.stderr, flush=True)
       continue
     else:
       print('\nDone.', file=sys.stderr, flush=True)
-      datalinks = [alignment['datalink'] for alignment in cloudalignmentProgressRes.values()]
       break
   print('Assembling gene count matrix...', file=sys.stderr)
   # identify aligned files

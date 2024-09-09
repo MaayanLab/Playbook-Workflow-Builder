@@ -21,7 +21,14 @@ const BodyType = z.object({
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const session = await getServerSessionWithId(req, res)
-    if (!session?.user?.id) throw new UnauthorizedError()
+    if (!session?.user?.id) {
+      // return empty set for suggestions to prevent 500 errors
+      if (req.method === 'GET')  {
+        res.status(200).json([])
+        return
+      }
+      throw new UnauthorizedError()
+    }
     if (req.method === 'GET')  {
       res.status(200).json(
         await db.objects.suggestion.findMany({

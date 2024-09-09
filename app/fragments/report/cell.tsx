@@ -15,7 +15,7 @@ const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
-  const { data: { outputNode = undefined, output = undefined } = {}, isLoading } = useMetapathOutput({ krg, head })
+  const { data: { outputNode = undefined, output = undefined } = {}, status, isLoading } = useMetapathOutput({ krg, head })
   const story = useStory()
   const processNode = krg.getProcessNode(head.process.type)
   const currentCellMetadata = cellMetadata[head.id] ?? {}
@@ -64,6 +64,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               processNode={processNode}
               outputNode={outputNode}
               output={output}
+              status={status}
             />
             : <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={currentCellMetadata.data_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...currentCellMetadata, data_visible: evt.target.checked, id: '' } }))}} />
@@ -82,6 +83,12 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               </div>
             </div>
             <div className="collapse-content flex flex-col">
+              {status ? (
+                <div className="alert shadow-lg place-content-start align-middle">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <code className="prose max-w-none whitespace-pre-line">{status}</code>
+                </div>
+              ) : null}
               {outputNode?.view && output ? <>
                 <SafeRender component={outputNode.view} props={output} />
                 <FigureCaption id={head.id} story={story} />

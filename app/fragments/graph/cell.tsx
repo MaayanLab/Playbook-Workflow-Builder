@@ -30,6 +30,7 @@ export default function Cell({ session_id, krg, id, head, metapath }: { session_
             outputNode={outputNode}
             output={output}
             metapath={metapath}
+            status={status}
           />
           : <>
           <div className="mb-4">

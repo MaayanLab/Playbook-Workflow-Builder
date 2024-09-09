@@ -5,7 +5,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import dynamic from 'next/dynamic'
 import { z } from 'zod'
 import { MetaNode } from '@/spec/metanode'
-import { UnsupportedMethodError } from '@/spec/error'
+import { UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
+import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
@@ -19,10 +20,17 @@ const BodyType = z.object({
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const session = await getServerSessionWithId(req, res)
+    if (!session?.user?.id) throw new UnauthorizedError()
     if (req.method === 'GET')  {
-      res.status(200).json(await db.objects.suggestion.findMany())
+      res.status(200).json(
+        await db.objects.suggestion.findMany({
+          where: { user: session.user.id }
+        })
+      )
     } else if (req.method === 'POST') {
       const suggestion = BodyType.parse(req.body)
+      if (suggestion.user !== session.user.id) throw new UnauthorizedError()
       // add the suggested KRG node(s)
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {

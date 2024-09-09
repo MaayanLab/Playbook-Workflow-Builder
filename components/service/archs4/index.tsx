@@ -1,3 +1,4 @@
+import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredGenes, ScoredTissues } from '@/components/core/scored'
 import { archs4_icon, weighted_icon } from '@/icons'
@@ -6,6 +7,8 @@ import read_csv from '@/utils/csv'
 import { z } from 'zod'
 import { Cell, Column, Table } from '@/app/components/Table'
 import { downloadBlob } from '@/utils/download'
+import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
+import python from '@/utils/python'
 
 async function archs4_tissue_expression({ search, species = 'human', type = 'tissue' }: { search: string, species?: string, type?: string }) {
   const params = new URLSearchParams()
@@ -73,6 +76,93 @@ export const ARCHS4SignatureResults = MetaNode(`ARCHS4SignatureResults`)
       />
     </Table>
   )
+  .build()
+
+export const SomeARCHS4SignatureResults = MetaNode(`SomeARCHS4SignatureResults`)
+  .meta({
+    label: `Select Some GEO Samples`,
+    description: `Select some GEO Samples`,
+  })
+  .codec(z.record(z.string(), z.literal(true)))
+  .inputs({ results: ARCHS4SignatureResults })
+  .output(ARCHS4SignatureResults)
+  .prompt(props => {
+    const set = props.inputs.results.samples
+    const [selected, setSelected] = React.useState(props.data ? props.data : {} as Record<string, true>)
+    React.useEffect(() => {
+      if (props.output !== undefined) {
+        const selected_ = {} as Record<string, true>
+        set.forEach(item => {
+          if (!props.output?.samples.includes(item)) {
+            selected_[item] = true
+          }
+        })
+        setSelected(selected_)
+      }
+    }, [props.output, set])
+    return (
+      <>
+        <Table
+          height={500}
+          cellRendererDependencies={[set]}
+          rowHeaderCellRenderer={(row) =>
+            <div
+              className="text-center block"
+              onClick={evt => {
+                setSelected(({ [set[row]]: current, ...selected }) => !current ? ({ ...selected, [set[row]]: true }) : selected)
+              }}
+            >
+              <input type="checkbox" checked={!selected[set[row]]} />
+            </div>
+          }
+          numRows={set.length}
+          shape={[set.length - Object.keys(selected).length]}
+          enableGhostCells
+        >
+          <Column
+            name={"Samples"}
+            cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
+          />
+        </Table>
+        <button className="bp5-button bp5-large" onClick={async () => {
+          props.submit(selected)
+        }}>Submit</button>
+      </>
+    )
+  })
+  .resolve(async (props) => {
+    const set = new Set()
+    props.inputs.results.samples.forEach(item => set.add(item))
+    if (Object.keys(props.data).some(key => !set.has(key))) {
+      throw new Error('Please select genes from the table')
+    }
+    return {
+      samples: props.inputs.results.samples.filter((item) => !props.data[item]),
+    }
+  })
+  .story(props =>  ({
+    abstract: `Some GEO samples were selected for further investigation.`,
+    legend: `Some GEO samples taken from ${props.input_refs?.results}.`,
+  }))
+  .build()
+
+export const ARCHS4SignatureResolve = MetaNode(`ARCHS4SignatureResolve`)
+  .meta({
+    label: `Fetch GEO Sample Expression`,
+    description: `Get the gene count expression data from ARCHS4`,
+  })
+  .inputs({ results: ARCHS4SignatureResults })
+  .output(GeneCountMatrix)
+  .resolve(async (props) => await python(
+    'components.service.archs4.fetch_samples',
+    { kargs: [props.inputs.results.samples] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props => ({
+    abstract: `Gene expression for published samples was obtained from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
+    legend: `A table showing the basic structure and shape of the gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
+  }))
   .build()
 
 export const ARCHS4SignatureSearchT = [

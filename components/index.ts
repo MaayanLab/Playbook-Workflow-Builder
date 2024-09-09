@@ -263,6 +263,10 @@ import * as service_regulatoryElementInfo from "./service/regulatoryElementInfo"
 import service_regulatoryElementInfo_packageJson from "./service/regulatoryElementInfo/package.json"
 metanodes.push(...MetaNodesFromExports(service_regulatoryElementInfo, service_regulatoryElementInfo_packageJson))
 components.push("service/regulatoryElementInfo")
+import * as service_rummagene from "./service/rummagene"
+import service_rummagene_packageJson from "./service/rummagene/package.json"
+metanodes.push(...MetaNodesFromExports(service_rummagene, service_rummagene_packageJson))
+components.push("service/rummagene")
 import * as service_sigcom_lincs from "./service/sigcom-lincs"
 import service_sigcom_lincs_packageJson from "./service/sigcom-lincs/package.json"
 metanodes.push(...MetaNodesFromExports(service_sigcom_lincs, service_sigcom_lincs_packageJson))

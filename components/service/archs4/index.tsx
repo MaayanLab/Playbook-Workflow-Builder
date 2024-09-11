@@ -161,6 +161,7 @@ export const ARCHS4SignatureResolve = MetaNode(`ARCHS4SignatureResolve`)
   .story(props => ({
     abstract: `Gene expression for published samples was obtained from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
     introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
+    methods: `The GEO study samples were taken from processed ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} matrix using the ARCHS4 API.`,
     legend: `A table showing the basic structure and shape of the gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
   }))
   .build()

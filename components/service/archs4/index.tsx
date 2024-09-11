@@ -2,13 +2,15 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredGenes, ScoredTissues } from '@/components/core/scored'
 import { archs4_icon, weighted_icon } from '@/icons'
-import { GeneTerm } from '@/components/core/term'
+import { DiseaseTerm, DrugTerm, GeneTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
 import read_csv from '@/utils/csv'
 import { z } from 'zod'
 import { Cell, Column, Table } from '@/app/components/Table'
 import { downloadBlob } from '@/utils/download'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import python from '@/utils/python'
+import * as array from '@/utils/array'
+import { Disease, Drug, Gene, Phenotype, Tissue } from '@/components/core/primitives'
 
 async function archs4_tissue_expression({ search, species = 'human', type = 'tissue' }: { search: string, species?: string, type?: string }) {
   const params = new URLSearchParams()
@@ -213,3 +215,58 @@ export const ARCHS4SignatureSearchT = [
   }))
   .build()
 )
+
+export const ARCHS4SignatureTermSearchT = [
+  'Human', 'Mouse',
+].flatMap(species => [
+  {T: Gene, TermT: GeneTerm},
+  {T: Disease, TermT: DiseaseTerm},
+  {T: Drug, TermT: DrugTerm},
+  {T: Phenotype, TermT: PhenotypeTerm},
+  {T: Tissue, TermT: TissueTerm},
+].map(({ T, TermT }) => MetaNode(`ARCHS4SignatureTermSearch[${species}, ${T.name}]`)
+    .meta({
+      label: `ARCHS4 Signature ${T.label} Search`,
+      description: `Query ARCHS4 ${species} Signatures by term`,
+      icon: [archs4_icon],
+    })
+    .inputs({ term: TermT })
+    .output(ARCHS4SignatureResults)
+    .resolve(async (props) => {
+      const studySearchParams = new URLSearchParams()
+      studySearchParams.append('species', species.toLowerCase())
+      studySearchParams.append('search', props.inputs.term)
+      const studyReq = await fetch(`https://maayanlab.cloud/archs4/search/getSampleMatch.php?${studySearchParams.toString()}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+      if (!studyReq.ok) throw new Error(`ARCHS4 Signature Term Search Error: ${await studyReq.text()}`)
+      const [_0, _1, studies] = z.tuple([
+        z.string(),
+        z.number().array(),
+        z.string().array().transform(study_groups => array.unique(study_groups.flatMap(study_group => study_group.split('\t')))),
+      ]).parse(await studyReq.json())
+      const study_samples = await Promise.all(studies.map(async (study) => {
+        const searchParams = new URLSearchParams()
+        searchParams.append('series_id', study)
+        const req = await fetch(`https://api.archs4.maayanlab.cloud/meta/samples/geo_accession?${searchParams.toString()}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        })
+        if (!req.ok) throw new Error(`ARCHS4 Study Not Found`)
+        return z.string().array().parse(await req.json())
+      }))
+      return { samples: array.unique(study_samples.flatMap(samples => samples)) }
+    })
+    .story(props => ({
+      abstract: `GEO studies were identified matching ${props.inputs?.term ? props.inputs.term : T.label.toLowerCase()} using ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} term search.`,
+      introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
+      methods: `Samples from GEO studies with ${props.inputs?.term ? props.inputs.term : `the ${T.label.toLowerCase()}`} in the metadata from GEO were identified using the ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} website's REST APIs.`,
+      legend: `A table of GEO sample ids for matching signatures identified by ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    }))
+    .build()
+))

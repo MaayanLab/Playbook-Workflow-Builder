@@ -11,7 +11,7 @@ function matchAll(str: string, re: RegExp) {
 
 export default function Linkify({ children }: { children?: string | null }) {
   if (!children) return children
-  const { i, el } = matchAll(children, /(doi:|https:\/\/)([^\s]+)/g)
+  const { i, el } = matchAll(children, /(doi:|https?:\/\/)([^\s]+)/g)
     .reduce(({ i, el }, m) => m.index ? ({
       i: m.index + m[0].length,
       el: [

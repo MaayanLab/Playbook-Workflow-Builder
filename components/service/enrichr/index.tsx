@@ -50,6 +50,8 @@ import { Table, Cell, Column } from '@/app/components/Table'
 import type { ValuesOf } from '@/utils/types'
 import { downloadBlob } from '@/utils/download'
 import pluralize from 'pluralize'
+import python from '@/utils/python'
+import { PlotlyPlot } from '@/components/viz/plotly'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
@@ -143,7 +145,26 @@ export const EnrichrSetTToSetT = [
         legend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
       }))
       .build(),
-
+    MetaNode(`EnrichrSetTToUMAP[${T.name}]`)
+      .meta({
+        label: `${EnrichrSetT.meta.label} as UMAP`,
+        icon: [enrichr_icon],
+        description: `Load Enrichr set as UMAP`,
+      })
+      .inputs({ enrichrset: EnrichrSetT })
+      .output(PlotlyPlot)
+      .resolve(async (props) => await python(
+        'components.service.enrichr.resolveGenesetLibraryUMAP',
+        { kargs: [props.inputs.enrichrset] },
+        message => props.notify({ type: 'info', message }),
+      ))
+      .story(props => ({
+        abstract: `Relevant terms are displayed on a gene set library UMAP\\ref{doi:10.48550/arXiv.1802.03426}${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
+        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the original gene set library to produce ${props.output_ref}.`,
+        legend: `The relevant gene sets highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      }))
+      .build(),
   ]
 )
 

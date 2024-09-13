@@ -20,7 +20,7 @@ export const UMAPBokehPlotFromGeneCountMatrix = MetaNode('UMAPBokehPlotFromGeneC
   .story(props => ({
     abstract: `The gene count matrix was then visualized as a UMAP plot\\ref{doi:10.48550/arXiv.1802.03426} ${props.output_ref}.`,
     introduction: `Uniform Manifold Approximation and Projection (UMAP) is a dimensionality reduction technique that is useful to visualize high-dimensional data\\ref{doi:10.48550/arXiv.1802.03426}.`,
-    methods: `A UMAP representation was generated for the gene count matrix and plotted using the Bokeh toolkit\\ref{bokeh.org}.`,
+    methods: `A UMAP representation was generated for the gene count matrix and plotted using the Bokeh toolkit\\ref{Bokeh Development Team (2018). Bokeh: Python library for interactive visualization, http://www.bokeh.pydata.org}.`,
     legend: `A Bokeh plot displaying the UMAP representation of the gene count matrix.`,
   }))
   .build()

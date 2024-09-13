@@ -8,6 +8,7 @@ import * as dict from '@/utils/dict'
 import type KRG from '@/core/KRG'
 import { z_uuid } from '@/utils/zod'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import * as Auth from 'next-auth/react'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -106,7 +107,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
 
 export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
   const router = useRouter()
-  const { data: userSession } = useSessionWithId({ required: true })
+  const { data: userSession } = useSessionWithId()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined
   const [suggestion, setSuggestion] = React.useState({
@@ -116,6 +117,11 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
     user: userSession?.user?.id,
     description: '',
   })
+  if (!userSession?.user?.id) return (
+    <div className="alert alert-warning shadow-lg block prose max-w-none">
+      You are required to &nbsp; <button className="btn btn-sm" onClick={() => {Auth.signIn()}}>sign in</button> &nbsp; to make suggestions.
+    </div>
+  )
   return (
     <div>
       <ControlGroup fill vertical>

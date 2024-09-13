@@ -215,6 +215,10 @@ import * as service_drugshot from "./service/drugshot"
 import service_drugshot_packageJson from "./service/drugshot/package.json"
 metanodes.push(...MetaNodesFromExports(service_drugshot, service_drugshot_packageJson))
 components.push("service/drugshot")
+import * as service_elysium from "./service/elysium"
+import service_elysium_packageJson from "./service/elysium/package.json"
+metanodes.push(...MetaNodesFromExports(service_elysium, service_elysium_packageJson))
+components.push("service/elysium")
 import * as service_enrichr from "./service/enrichr"
 import service_enrichr_packageJson from "./service/enrichr/package.json"
 metanodes.push(...MetaNodesFromExports(service_enrichr, service_enrichr_packageJson))
@@ -259,6 +263,10 @@ import * as service_regulatoryElementInfo from "./service/regulatoryElementInfo"
 import service_regulatoryElementInfo_packageJson from "./service/regulatoryElementInfo/package.json"
 metanodes.push(...MetaNodesFromExports(service_regulatoryElementInfo, service_regulatoryElementInfo_packageJson))
 components.push("service/regulatoryElementInfo")
+import * as service_rummagene from "./service/rummagene"
+import service_rummagene_packageJson from "./service/rummagene/package.json"
+metanodes.push(...MetaNodesFromExports(service_rummagene, service_rummagene_packageJson))
+components.push("service/rummagene")
 import * as service_sigcom_lincs from "./service/sigcom-lincs"
 import service_sigcom_lincs_packageJson from "./service/sigcom-lincs/package.json"
 metanodes.push(...MetaNodesFromExports(service_sigcom_lincs, service_sigcom_lincs_packageJson))

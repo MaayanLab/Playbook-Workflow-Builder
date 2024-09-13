@@ -37,7 +37,7 @@ async function fetchIndividualCitation(doi: string, style = 'nature') {
 
 async function fetchCitation(doi: string) {
   const [nature, bibtex] = await Promise.all([
-    fetchIndividualCitation(doi, 'nature').then(text => text.replace(/^1\.\s*/, '').replace(/\s*$/g, '')),
+    fetchIndividualCitation(doi, 'nature').then(text => text.replace(/^1\.\s*/, '').replace(/\s*$/g, '').replace(/\s+doi:.+\.$/g, '')),
     fetchIndividualCitation(doi, 'bibtex').then(text => {
       console.log(text)
       const m = /^\s*@(\w+)\{(.+?),((.|\n)+)\}\s*$/.exec(text)

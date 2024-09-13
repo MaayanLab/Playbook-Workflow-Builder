@@ -197,10 +197,10 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList);
     }).story(props => ({
-      abstract: `Variant/variant set associated allele specific epigenomic signatures were retrieved from CFDE LDH [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] based on Roadmap and ENTEx data [\\ref{doi:10.1038/nature14248}, \\ref{doi:10.1126/science.aar3146}].`,
-      introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+      abstract: `Variant/variant set associated allele specific epigenomic signatures were retrieved from CFDE LDH\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} based on Roadmap and ENTEx data\\ref{doi:10.1038/nature14248}\\ref{doi:10.1126/science.aar3146}.`,
+      introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
       methods: `Input variant(s) were queried through CFDE LDH API endpoints and their associated allele specificity evidence was retrieved in JSON response.`,
-      legend: `A table displaying 1) the type of allele specific epigenomic signature identified at the variant site, 2) the level of epigenomic modification at either allele, 3)  its statistical significance, and 4) the original source of the evidence`,
+      legend: `A table displaying 1) the type of allele specific epigenomic signature identified at the variant site, 2) the level of epigenomic modification at either allele, 3) its statistical significance, and 4) the original source of the evidence`,
     })).build()
 
     export const AlleleSpecificEvidenceForVariantSet = MetaNode('AlleleSpecificEvidenceForVariantSet')
@@ -395,8 +395,8 @@ function getAlleleSpecificEvdncFromGitDataHub(alleleSpecificEvidencesList: any){
       }
       return returnObj;
     }).story(props => ({
-      abstract: `Variant/variant set associated allele specific epigenomic signatures were retrieved from CFDE LDH [\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}] based on Roadmap and ENTEx data [\\ref{doi:10.1038/nature14248}, \\ref{doi:10.1126/science.aar3146}].`,
+      abstract: `Variant/variant set associated allele specific epigenomic signatures were retrieved from CFDE LDH\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} based on Roadmap and ENTEx data\\ref{doi:10.1038/nature14248}, \\ref{doi:10.1126/science.aar3146}.`,
       introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx`,
       methods: `Input variant(s) were queried through CFDE LDH API endpoints and their associated tissue- and cell type-specific allele specificity evidence was retrieved from the JSON response.`,
-      legend: `A table displaying 1) the type of allele specific epigenomic signature identified at the variant site, 2) the level of epigenomic modification at either allele, 3)  its statistical significance, and 4) the original source of the evidence`,
+      legend: `A table displaying 1) the type of allele specific epigenomic signature identified at the variant site, 2) the level of epigenomic modification at either allele, 3) its statistical significance, and 4) the original source of the evidence`,
     })).build()

@@ -4,7 +4,7 @@ import { RegulatoryElementTerm } from '@/components/core/term'
 import { VariantSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
-import { getRegElemPositionData } from '@/components/service/regulatoryElementInfo'
+import { getRegulatoryElementPosition } from '@/components/service/regulatoryElementInfo'
 import { downloadBlob } from '@/utils/download'
 import { resolveVariantCaID, variantIdResolveErrorMessage, linkedDataHubErroMessage } from './variantUtils'
 import { getGitDataHubVariantInfo } from './variantInfoSources/gitDataHubVariantInfo'
@@ -110,10 +110,15 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
           'rePosition':""
         }
 
-        const rePositionData = await getRegElemPositionData(reEntId);
-        if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){
-          tempObj.rePosition = rePositionData.data.cCREQuery[0].coordinates.chromosome+": "+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
+        const rePositionData = await getRegulatoryElementPosition(reEntId);
+        let coordinates = null;
+        if(rePositionData != null && rePositionData.coordinates != null){
+          coordinates = rePositionData.coordinates;
+        }else{
+          continue;
         }
+        tempObj.rePosition = coordinates.chromosome+":"+coordinates.start+"-"+coordinates.end;
+
         varAndRegulatoryElem.push(tempObj);
       }
     }

@@ -1,12 +1,15 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm, VariantTerm } from '@/components/core/term'
 import { z } from 'zod'
-import { gene_icon, mygeneinfo_icon } from '@/icons'
+import { gene_icon, mygeneinfo_icon, datafile_icon } from '@/icons'
 import * as array from '@/utils/array'
 import { z_maybe_array } from '@/utils/zod'
 import { resolveVariantCaID, getMyVarintInfoLink, variantIdResolveErrorMessage, alleleRegRespErrorMessage } from '@/components/service/variantinfo/variantUtils'
 import { getAlleleRegistryVariantInfo } from '@/components/service/variantinfo/variantInfoSources/alleleRegistryVariantInfo'
 import { getVariantInfoFromMyVariantInfo } from '@/components/service/variantinfo/variantInfoSources/myVariantInfo'
+import { MyRegulatoryElementSetInfoC } from '@/components/service/regulatoryElementInfo/reUtils'
+import { Table, Cell, Column} from '@/app/components/Table'
+import { downloadBlob } from '@/utils/download'
 
 export const MyVariantInfoC = z.object({
   _id: z.string(),
@@ -118,4 +121,47 @@ export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromV
     methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
     legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
   }))
+  .build()
+
+  export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
+  .meta({
+    label: 'Regulatory Element Set Info',
+    description: '',
+    icon: [datafile_icon],
+    hidden: true,
+  })
+  .codec(MyRegulatoryElementSetInfoC)
+  .view(regulatoryElementSet => {
+    return( 
+      <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
+        <Table
+          height={500}
+          cellRendererDependencies={[regulatoryElementSet]}
+          numRows={regulatoryElementSet.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}>
+          <Column
+            name="Entity id"
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
+          />
+          <Column
+            name="Chromosome"
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.chromosome}</Cell>}
+          />
+          <Column
+            name="Start Pos."
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.start}</Cell>}
+          />
+          <Column
+            name="End Pos."
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.end}</Cell>}
+          />
+        </Table>
+      </>
+    )
+  })
   .build()

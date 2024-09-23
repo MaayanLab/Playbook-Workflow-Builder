@@ -97,8 +97,8 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     let response = await getRegulatoryElementsSetPosition(regElemeIdsSet);
     return response;
   }).story(props => ({
-    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
-    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifiers were queried through CFDE LDH API endpoints and their GRCh38 genomic positions, including chr, start, and end, were retrieved from the JSON response.`,
     legend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
   })).build()

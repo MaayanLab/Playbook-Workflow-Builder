@@ -6,19 +6,20 @@ import { z } from 'zod'
 import { linkeddatahub_icon, datafile_icon } from '@/icons'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { downloadBlob } from '@/utils/download'
-import { myRegElemInfo_query, getRegElemPositionData, RegulatoryElementInfoC, RE_UniqueRegionC, RE_UniqueRegionSet, 
-    RE_UniqueRegionSetC, getUniqueGenomicRegions, getUniqueGenomicRegionsCrossReference, reformatUniqueGenomicRegions } from './reUtils'
+import { myRegElemInfoFromLDH, RegulatoryElementPositionC, RegulatoryElementSetPositionC,
+  getRegulatoryElementPosition, getRegulatoryElementsSetPosition, MyRegulatoryElementSetInfoC,
+  RE_UniqueRegionC, RE_UniqueRegionSet, RE_UniqueRegionSetC, getUniqueGenomicRegions, getUniqueGenomicRegionsCrossReference, reformatUniqueGenomicRegions } from './reUtils'
 import { Reset } from '@blueprintjs/icons'
 
-export const RegulatoryElementPosition = MetaNode('RegulatoryElementPosition')
+export const RegulatoryElementPositionInfo = MetaNode('RegulatoryElementPositionInfo')
   .meta({
     label: 'Regulatory Element position',
     description: 'Regulatory Element position',
     icon: [linkeddatahub_icon],
   })
-  .codec(RegulatoryElementInfoC)
+  .codec(RegulatoryElementPositionC)
   .view(regElem => (
-    <div className="prose max-w-none"> {regElem.data.entId} Regulatory Element<br></br>Position: {regElem.data.coordinates.chromosome}: {regElem.data.coordinates.start}-{regElem.data.coordinates.end} (GRCh38)</div>
+    <div className="prose max-w-none"> {regElem.entId} Regulatory Element<br></br>Position: {regElem.coordinates.chromosome}: {regElem.coordinates.start}-{regElem.coordinates.end} (GRCh38)</div>
   ))
   .build()
 
@@ -29,31 +30,80 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     icon: [linkeddatahub_icon],
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
-  .output(RegulatoryElementPosition)
+  .output(RegulatoryElementPositionInfo)
   .resolve(async (props) => {
-    const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
-    
-    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
-    if(response == null || response.data == null){
+    let reCoordinatesObj = await getRegulatoryElementPosition(props.inputs.regulatoryElement);
+    if(reCoordinatesObj == null){
       throw new Error("Unable to get data from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
     }
-
-    if(rePositionData != null && rePositionData.data.cCREQuery[0].coordinates != null){
-      response.data.coordinates = rePositionData.data.cCREQuery[0].coordinates;
-    }else{
-      response.data.coordinates = {
-          chromosome: "",
-          start: 0,
-          end: 0
-      };
-    }
-    return response;
+    return reCoordinatesObj;
   }).story(props => ({
     abstract: `Genomic position of provided unique regulatory element identifier was retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its genoimc position is retrieved from the JSON response.`,
     legend: `Genomic location`,
   })).build()
+
+
+  export const RegulatoryElementsSetPosition = MetaNode('RegulatoryElementsSetPosition')
+  .meta({
+    label: 'Regulatory Element(s) position',
+    description: 'Regulatory Element(s) position',
+    icon: [linkeddatahub_icon],
+  })
+  .codec(RegulatoryElementSetPositionC)
+  .view(regulatoryElementSet => (
+      <>
+        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
+        <Table
+          height={500}
+          cellRendererDependencies={[regulatoryElementSet]}
+          numRows={regulatoryElementSet.length}
+          enableGhostCells
+          enableFocusedCell
+          downloads={{
+            JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
+          }}>
+          <Column
+            name="Entity id"
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
+          />
+          <Column
+            name="Chromosome"
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].coordinates.chromosome}</Cell>}
+          />
+          <Column
+            name="Start Pos."
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].coordinates.start}</Cell>}
+          />
+          <Column
+            name="End Pos."
+            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].coordinates.end}</Cell>}
+          />
+        </Table>
+      </>  
+  )).build()
+
+  export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFromRegElementTerm')
+  .meta({
+    label: 'Retrieve regulatory element(s) position',
+    description: 'Find regulatory element postions (GRCh38).',
+    icon: [linkeddatahub_icon],
+  })
+  .inputs({ regulatoryElementSet: RegulatoryElementSet })
+  .output(RegulatoryElementsSetPosition)
+  .resolve(async (props) => {
+    let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
+    let response = await getRegulatoryElementsSetPosition(regElemeIdsSet);
+    return response;
+  }).story(props => ({
+    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub [\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}].`,
+    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx [\\ref{doi:10.1038/s41586-020-2493-4},\\ref{doi:10.1126/science.aaz1776},\\ref{doi:10.1126/science.aar3146}]`,
+    methods: `Input regulatory element identifiers were queried through CFDE LDH API endpoints and their GRCh38 genomic positions, including chr, start, and end, were retrieved from the JSON response.`,
+    legend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
+  })).build()
+
+
 
 export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryElementInfo')
   .meta({
@@ -63,7 +113,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   .inputs({  regulatoryElement: RegulatoryElementTerm   })
   .output(GeneSet)
   .resolve(async (props) => {
-    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    const response = await myRegElemInfoFromLDH(props.inputs.regulatoryElement);
     if(response == null || response.data == null){
       throw new Error("The provided regulatory element is not found in CFDE Linked Data Hub. Please try another regulatory element.");
     }
@@ -140,7 +190,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     let geneSetForEachRE = [];
     for(let i in reSet){
         let re = reSet[i];
-        const response = await myRegElemInfo_query(re);
+        const response = await myRegElemInfoFromLDH(re);
         if(response == null || response.data == null){
           continue;
         }
@@ -168,7 +218,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
   .inputs({ regulatoryElement: RegulatoryElementTerm  })
   .output(VariantSet)
   .resolve(async (props) => {
-    const response = await myRegElemInfo_query(props.inputs.regulatoryElement);
+    const response = await myRegElemInfoFromLDH(props.inputs.regulatoryElement);
     if(response == null || response.data == null){
       throw new Error("Unable to get data from LInked Data Hub API, please try again or wait a few minutes before the next atempt!");
     }
@@ -185,66 +235,6 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked variants were retrieved from the JSON response.`,
     legend: `A list of variants in the region of given regulatory element`,
   })).build()
-
-const MyRegulatoryElementC = z.object({
-  entId: z.string(),
-  ldhId: z.string(),
-  entContent: z.object({
-    coordinates: z.object({    
-      chromosome: z.string(),
-      end: z.any(),
-      start: z.any()
-    })
-  })
-})
-export type MyRegulatoryElement = z.infer<typeof MyRegulatoryElementC>
-
-export const MyRegulatoryElementSetInfoC = z.array(
-  MyRegulatoryElementC
-)
-export type MyRegulatoryElementSetInfo = z.infer<typeof MyRegulatoryElementSetInfoC>
-
-export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
-  .meta({
-    label: 'Regulatory Element Set Info',
-    description: '',
-    icon: [datafile_icon]
-  })
-  .codec(MyRegulatoryElementSetInfoC)
-  .view(regulatoryElementSet => {
-    return( 
-      <>
-        <p style={{fontSize: '14px'}}><b>Note:</b> In order to view all data, if avaliable, please expand the table rows!</p>
-        <Table
-          height={500}
-          cellRendererDependencies={[regulatoryElementSet]}
-          numRows={regulatoryElementSet.length}
-          enableGhostCells
-          enableFocusedCell
-          downloads={{
-            JSON: () => downloadBlob(new Blob([JSON.stringify(regulatoryElementSet)], { type: 'application/json;charset=utf-8' }), 'data.json')
-          }}>
-          <Column
-            name="Entity id"
-            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entId}</Cell>}
-          />
-          <Column
-            name="Chromosome"
-            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.chromosome}</Cell>}
-          />
-          <Column
-            name="Start Pos."
-            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.start}</Cell>}
-          />
-          <Column
-            name="End Pos."
-            cellRenderer={row => <Cell key={row+''}>{regulatoryElementSet[row].entContent.coordinates.end}</Cell>}
-          />
-        </Table>
-      </>
-    )
-  })
-  .build()
 
   export const MyGeneToRegulatoryElementSetInfoC = z.array(z.object({
     gene: z.string(),
@@ -322,51 +312,6 @@ export const RegulatoryElementSetInfo = MetaNode('RegulatoryElementSetInfo')
   })
   .build()
 
-export async function setGenomicPositionsForRegulatoryElementSet(regElemeIdsSet: string[]): Promise<MyRegulatoryElementSetInfo> {
-  let response: MyRegulatoryElementSetInfo = [];
-  for(let i in regElemeIdsSet){
-    let rgId = regElemeIdsSet[i];
-    const rePositionData = await getRegElemPositionData(rgId);
-
-    let coordinates = null;
-    if(rePositionData != null && rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
-      coordinates = rePositionData.data.cCREQuery[0].coordinates;
-    }else{
-      coordinates = {
-          chromosome: "",
-          start: 0,
-          end: 0
-      };
-    }
-    let rgObj = {
-      entId: rgId,
-      ldhId: rgId,
-      entContent: {
-        coordinates: coordinates
-      }
-    }
-    response.push(rgObj);
-  }
-  return response;
-} 
-
-export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFromRegElementTerm')
-  .meta({
-    label: 'Retrieve regulatory element positions',
-    description: 'Find regulatory element postions (GRCh38).',
-    icon: [linkeddatahub_icon],
-  })
-  .inputs({ regulatoryElementSet: RegulatoryElementSet })
-  .output(RegulatoryElementSetInfo)
-  .resolve(async (props) => {
-    let regElemeIdsSet = props.inputs.regulatoryElementSet.set;
-    return await setGenomicPositionsForRegulatoryElementSet(regElemeIdsSet);
-  }).story(props => ({
-    abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
-    introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
-    methods: `Input regulatory element identifiers were queried through CFDE LDH API endpoints and their GRCh38 genomic positions, including chr, start, and end, were retrieved from the JSON response.`,
-    legend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
-  })).build()
 
   export const UniqueGenomicRegion = MetaNode('UniqueGenomicRegion')
   .meta({
@@ -419,8 +364,16 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   .inputs({ regulatoryElement: RegulatoryElementTerm })
   .output(UniqueGenomicRegion)
   .resolve(async (props) => {
-    const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
-    let positionString = rePositionData.data.cCREQuery[0].coordinates.chromosome+":"+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
+    const rePositionData = await getRegulatoryElementPosition(props.inputs.regulatoryElement);
+        
+    let coordinates = null;
+    if(rePositionData != null && rePositionData.coordinates != null){
+      coordinates = rePositionData.coordinates;
+    }else{
+      throw new Error("Unable to get Regulatory Element coordinates!");
+    }
+    let positionString = coordinates.chromosome+":"+coordinates.start+"-"+coordinates.end;
+    
     let response = await getUniqueGenomicRegions(positionString);
     if(response == null || (response != null && !Array.isArray(response))){
       throw new Error('The genomic region provided is not yet registered on Genomic Location Registry. Please contact keyang.yu@bcm.edu to register the region(s) for globally unique and persistant id(s) or check the input format (example: "GRCh38 (chr1:825620-825820)") and try again.');
@@ -506,11 +459,11 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     let referenceArray: RE_UniqueRegionSet = [];
     for(let i in regElemeIdsSet){
       let rgId = regElemeIdsSet[i];
-      const rePositionData = await getRegElemPositionData(rgId);
+      const rePositionData = await getRegulatoryElementPosition(rgId);
 
       let coordinates = null;
-      if(rePositionData != null && rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
-        coordinates = rePositionData.data.cCREQuery[0].coordinates;
+      if(rePositionData != null && rePositionData.coordinates != null){
+        coordinates = rePositionData.coordinates;
       }else{
         continue;
       }
@@ -590,8 +543,16 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
   .inputs({ regulatoryElement: RegulatoryElementTerm })
   .output(UniqueGenomicRegionCrossReference)
   .resolve(async (props) => {
-    const rePositionData = await getRegElemPositionData(props.inputs.regulatoryElement);
-    let positionString = rePositionData.data.cCREQuery[0].coordinates.chromosome+":"+rePositionData.data.cCREQuery[0].coordinates.start+"-"+rePositionData.data.cCREQuery[0].coordinates.end;
+    const rePositionData = await getRegulatoryElementPosition(props.inputs.regulatoryElement);
+
+    let coordinates = null;
+    if(rePositionData != null && rePositionData.coordinates != null){
+      coordinates = rePositionData.coordinates;
+    }else{
+      throw new Error("Unable to get Regulatory Element coordinates!");
+    }
+    let positionString = coordinates.chromosome+":"+coordinates.start+"-"+coordinates.end;
+
     let response = await getUniqueGenomicRegionsCrossReference(positionString);
     let references = reformatUniqueGenomicRegions(response);
     let temp = {
@@ -665,11 +626,11 @@ export const RegElementSetInfoFromRegElementTerm = MetaNode('RegElementSetInfoFr
     let referenceArray = [];
     for(let i in regElemeIdsSet){
       let rgId = regElemeIdsSet[i];
-      const rePositionData = await getRegElemPositionData(rgId);
+      const rePositionData = await getRegulatoryElementPosition(rgId);
 
       let coordinates = null;
-      if(rePositionData != null && rePositionData.data.cCREQuery[0] != null && rePositionData.data.cCREQuery[0].coordinates != null){
-        coordinates = rePositionData.data.cCREQuery[0].coordinates;
+      if(rePositionData != null && rePositionData.coordinates != null){
+        coordinates = rePositionData.coordinates;
       }else{
         continue;
       }

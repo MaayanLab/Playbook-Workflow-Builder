@@ -1,10 +1,11 @@
 import { MetaNode } from '@/spec/metanode'
 import { GeneTerm } from '@/components/core/term'
-import { GeneSet } from '@/components/core/set'
-import { RegulatoryElementSetInfo, RegulatoryElementSetForGeneSetInfo, setGenomicPositionsForRegulatoryElementSet, MyGeneToRegulatoryElementSetInfo, MyRegulatoryElementSetInfo } from '@/components/service/regulatoryElementInfo'
+import { GeneSet, RegulatoryElementSet } from '@/components/core/set'
+import { RegulatoryElementSetForGeneSetInfo, MyGeneToRegulatoryElementSetInfo, MyRegulatoryElementSetInfo } from '@/components/service/regulatoryElementInfo'
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { linkeddatahub_icon } from '@/icons'
 import { z } from 'zod'
+import { describe } from 'node:test'
 
 export const MyGeneInfoByTermC = z.object({
   data: z.object({
@@ -60,23 +61,31 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
     pagerank: 1,
   })
   .inputs({ geneInfo: GeneInfo })
-  .output(RegulatoryElementSetInfo)
+  .output(RegulatoryElementSet)
   .resolve(async (props) => {
     const response =  await myGeneInfoFromLinkDataHub(props.inputs.geneInfo.symbol);
     if(response.data == null || response.data.ld == null){
       throw new Error("Unable to get data from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
     }
 
-    let reObjSet: any = response.data.ld.RegulatoryElement;
+    let reObjSet = response.data.ld.RegulatoryElement;
     if(reObjSet == null || reObjSet.length == 0){
       throw new Error("Unable to get Regulatory Element data for gene "+props.inputs.geneInfo.symbol+" from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
     }
-    let reInfoSet = getREPositionDataFromLinkDataHub(reObjSet);
-    if(reInfoSet == null || reInfoSet.length == 0){
-      throw new Error("Unable to get Regulatory Element(s) coordinates for gene "+props.inputs.geneInfo.symbol+" from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
-    }
     
-    return reInfoSet;
+    let reIdentifiersSet = [];
+    for(let i in reObjSet){
+      reIdentifiersSet.push(reObjSet[i].entId);
+    }
+    if(reIdentifiersSet.length == 0){
+      throw new Error("Unable to get Regulatory Element data for gene "+props.inputs.geneInfo.symbol+" from Linked Data Hub API, please try again or wait a few minutes before the next atempt!");
+    }
+
+    let tempObj = {
+      description:"Regulatory Elements Set",
+      set: reIdentifiersSet
+    }
+    return tempObj;
   })
   .story(props => ({
     abstract: `Regulatory elements in 10kbps region upstream or downstream of gene ${props.inputs ? ` ${props.inputs.geneInfo.symbol}` : ''}.`

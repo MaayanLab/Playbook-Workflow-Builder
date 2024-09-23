@@ -266,8 +266,8 @@ export const GMTConcatenate = MetaNode('GMTConcatenate')
   .story(props => ({
     abstract: `Multiple GMTs were combined into one GMT.`,
     introduction: `The gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29} is an efficient sparse matrix format well suited for gene set libraries.`,
-    methods: `A joint GMT was constructed by stacking GMTs from ${(props.input_refs?.gmts as string[]).join(', ')}.`,
-    legend: `The GMTs from ${(props.input_refs?.gmts as string[]).join(', ')} collected into a joint GMT.`,
+    methods: `A joint GMT was constructed by stacking GMTs${props.input_refs?.gmts ? ` from ${(props.input_refs?.gmts as string[]).join(', ')}` : ''}.`,
+    legend: `The GMTs${props.input_refs?.gmts ? ` from ${(props.input_refs?.gmts as string[]).join(', ')}` : ''} collected into a joint GMT.`,
      
   }))
   .build()

@@ -68,9 +68,9 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
   })
   .story(props => ({
     abstract: `The closest gene to the variant was found using MyVariant.info\\ref{doi:10.1093/bioinformatics/btac017}.`,
-    introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
-    methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
-    legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
+    legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
   }))
   .build()
 
@@ -117,9 +117,9 @@ export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromV
   })
   .story(props => ({
     abstract: `The closest gene to the variant was found using MyVariant.info\\ref{doi:10.1093/bioinformatics/btac017}.`,
-    introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
-    methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
-    legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info [\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
+    methods: `${props.inputs?.variant ? props.inputs.variant : 'The variant'} is queried with the MyVariant.info REST web API to resolve up to date annotations\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017} from which the closest gene is extracted from either dbSNP, ClinVar, or SnpEff.`,
+    legend: `The closest gene to ${props.inputs?.variant ? props.inputs.variant : 'the variant'}, as reported by MyVariant.info\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
   }))
   .build()
 

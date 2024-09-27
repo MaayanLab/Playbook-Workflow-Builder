@@ -351,7 +351,7 @@ export const ReduceMultiScoredT = [
       })
       .story(props => ({
         abstract: `The mean across multiple ${ScoredT.meta.label} is computed.`,
-        legend: `The mean across${(props.input_refs?.scored as string[]).join(', ')}.`,
+        legend: `The mean across${props.input_refs?.scored ? ` ${(props.input_refs?.scored as string[]).join(', ')}` : ''}.`,
       }))
       .build(),
     MetaNode(`AbsMaxScoredT[${T.label}]`)
@@ -376,7 +376,7 @@ export const ReduceMultiScoredT = [
       })
       .story(props => ({
         abstract: `The absolute maximum across multiple ${ScoredT.meta.label} is computed.`,
-        legend: `The absolute maximum across ${(props.input_refs?.scored as string[]).join(', ')}.`,
+        legend: `The absolute maximum${props.input_refs?.scored ? ` across ${(props.input_refs.scored as string[]).join(', ')}` : ''}.`,
       }))
       .build(),
 ])

@@ -1,6 +1,6 @@
 import { MetaNode } from '@/spec/metanode'
 import { VariantTerm } from '@/components/core/term'
-import { VariantSet } from '@/components/core/set'
+import { VariantSet, GeneSet } from '@/components/core/set'
 import { Table, Cell, Column} from '@/app/components/Table'
 import { z } from 'zod'
 import { downloadBlob } from '@/utils/download'
@@ -238,6 +238,27 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     methods: `Input variant(s) were queried through MyVariant.info (hg38) API endpoints, and associated genes were retreived from the JSON response.`,
     legend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
   })).build()
+
+  export const ExtractGenesFromGeneAssociationsHG38 = MetaNode('ExtractGenesFromGeneAssociationsHG38')
+  .meta({
+    label: 'Extract gene set from this table',
+    description: 'Extract gene set from this table.'
+  })
+  .inputs({ gaHG38: GeneAssociations_HG38 })
+  .output(GeneSet)
+  .resolve(async (props) => {
+    var associationArray = props.inputs.gaHG38;
+    if(associationArray == null || associationArray.length == 0){
+      throw new Error("Input data null or empty");
+    }
+    let tempSet = associationArray.map(({ geneId }) => geneId);;
+    let geneSet = {
+      description: "Gene set from Gene Associations HG38",
+      set: tempSet
+    }
+    return geneSet;
+  }).story(props => ({}))
+  .build()
 
   export const GeneAssociationsSet_HG38 = MetaNode('GeneAssociationsSet_HG38')
   .meta({

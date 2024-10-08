@@ -215,6 +215,10 @@ import * as service_drugshot from "./service/drugshot"
 import service_drugshot_packageJson from "./service/drugshot/package.json"
 metanodes.push(...MetaNodesFromExports(service_drugshot, service_drugshot_packageJson))
 components.push("service/drugshot")
+import * as service_drugtoxicity from "./service/drugtoxicity"
+import service_drugtoxicity_packageJson from "./service/drugtoxicity/package.json"
+metanodes.push(...MetaNodesFromExports(service_drugtoxicity, service_drugtoxicity_packageJson))
+components.push("service/drugtoxicity")
 import * as service_elysium from "./service/elysium"
 import service_elysium_packageJson from "./service/elysium/package.json"
 metanodes.push(...MetaNodesFromExports(service_elysium, service_elysium_packageJson))

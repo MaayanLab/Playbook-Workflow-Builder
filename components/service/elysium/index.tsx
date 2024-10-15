@@ -9,6 +9,7 @@ import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
 import * as array from '@/utils/array'
+import * as dict from '@/utils/dict'
 
 export const FASTQAlignment = MetaNode(`FASTQAlignment`)
   .meta({
@@ -136,7 +137,7 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
                 Paired-end reads (pairs should be marked with suffixes: _1 & _2)
               </label>
             </div>
-            {Object.keys(uploads).length > 0 ? Object.keys(uploads)
+            {!dict.isEmpty(uploads) ? dict.sortedKeys(uploads)
               .filter(filename => // hide aborted files
                 uploads[filename].error !== 'aborted'
               )

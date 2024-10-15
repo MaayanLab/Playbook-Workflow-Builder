@@ -53,7 +53,7 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
             })).then(filenames => {props.submit({ uid, filenames, organism }, false)})
             .catch(err => setError(err))
           }}>
-            <input type="file" name="file" multiple />
+            <input type="file" name="file" multiple accept=".fastq.gz" />
             <input type="submit" />
           </form>
           {props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}

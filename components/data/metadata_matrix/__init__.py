@@ -43,18 +43,18 @@ def metadata_matrix(file: File) -> MetadataMatrix:
     top = d.shape[0] - 1
     bottom = 1
 
-  if d.shape[1] != 1:
-    raise Exception("Metadata file should contain exactly one column \
-                    indicating the class to which each sample belongs.")
-  col = d.columns[0]
-  if len(d[col].unique()) != 2:
-    raise Exception("Sample class column should only have two unique values, \
-                    identifying the control group and perturbation group.")
+  if len(d.columns) < 1:
+    raise Exception("Metadata file should contain at least one column the last of which \
+                    indicates the class to which each sample belongs.")
+  col = d.columns[-1]
+  if d[col].dropna().nunique() != 2:
+    raise Exception("Sample class column (last column) should only have \
+                     two unique values, identifying the control group and perturbation group.")
 
   index = np.concatenate([d.index[:top], d.index[-bottom:]]).tolist()
   columns = d.columns.tolist()
   values = np_jsonifyable(np.concatenate([
-    d.iloc[:top], d.iloc[-bottom:]
+    d.iloc[:top].fillna(''), d.iloc[-bottom:].fillna('')
   ]))
   ellipses = [
     top if len(index) != d.shape[0] else None,

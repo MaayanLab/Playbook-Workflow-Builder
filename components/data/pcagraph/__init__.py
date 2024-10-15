@@ -77,8 +77,9 @@ def createmetapcagraph(anndata):
         col = 'Type: Control or Perturbation'
         grp_ids = ['Control', 'Perturbation']
     else:
-        col = dataset.obs.columns[0]
+        col = dataset.obs.columns[-1]
         grp_ids = dataset.obs[col].unique()
+        assert len(grp_ids) == 2, "Expected two possible groups"
 
     ctrl_ids = dataset.obs[dataset.obs[col] == grp_ids[0]].index.tolist()
     ctrl_mask = [x in ctrl_ids for x in dataset.obs_names]

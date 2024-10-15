@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import uuid
 import time
@@ -9,21 +10,44 @@ from components.core.file import upsert_file
 from components.data.gene_count_matrix import gene_count_matrix
 from collections import Counter
 
-def process_single_end(upload_uid, filenames, organism='human', polling_interval=10):
+def process_alignment(upload_uid, filenames, paired=False, organism='human', polling_interval=10):
   alignment_uid = str(uuid.uuid4())
   # start jobs with uploaded files
   jobs = []
-  for filename in filenames:
-    print(f"Creating job for {filename}...", file=sys.stderr)
-    cloudalignmentCreatejobReq = requests.get('https://maayanlab.cloud/cloudalignment/createjob', params=dict(
-      username=os.environ['ELYSIUM_USERNAME'],
-      password=os.environ['ELYSIUM_PASSWORD'],
-      organism=organism, # or mouse
-      file1=f"{upload_uid}-{filename}",
-      outname=f"{alignment_uid}-{filename.rsplit('.', 2)[0]}-{organism.replace('human', 'hs').replace('mouse', 'mm')}",
-    ))
-    cloudalignmentCreatejobRes = cloudalignmentCreatejobReq.json()
-    jobs.append(cloudalignmentCreatejobRes)
+  if paired:
+    pairs = {}
+    for filename in filenames:
+      m = re.match(r'^(.+)_(1|2)\.fastq\.gz$', filename)
+      if not m: continue
+      prefix = m.group(1)
+      suffix = m.group(2)
+      if prefix not in pairs: pairs[prefix] = { 'file1': None, 'file2': None }
+      if suffix == '1': pairs[prefix]['file1'] = f"{upload_uid}-{filename}"
+      elif suffix == '2': pairs[prefix]['file2'] = f"{upload_uid}-{filename}"
+    #
+    for suffix, files in pairs.items():
+      print(f"Creating job for {prefix}...", file=sys.stderr)
+      cloudalignmentCreatejobReq = requests.get('https://maayanlab.cloud/cloudalignment/createjob', params=dict(
+        username=os.environ['ELYSIUM_USERNAME'],
+        password=os.environ['ELYSIUM_PASSWORD'],
+        organism=organism,
+        **files,
+        outname=f"{alignment_uid}-{suffix}-{organism.replace('human', 'hs').replace('mouse', 'mm')}",
+      ))
+      cloudalignmentCreatejobRes = cloudalignmentCreatejobReq.json()
+      jobs.append(cloudalignmentCreatejobRes)
+  else:
+    for filename in filenames:
+      print(f"Creating job for {filename}...", file=sys.stderr)
+      cloudalignmentCreatejobReq = requests.get('https://maayanlab.cloud/cloudalignment/createjob', params=dict(
+        username=os.environ['ELYSIUM_USERNAME'],
+        password=os.environ['ELYSIUM_PASSWORD'],
+        organism=organism,
+        file1=f"{upload_uid}-{filename}",
+        outname=f"{alignment_uid}-{filename.rsplit('.', 2)[0]}-{organism.replace('human', 'hs').replace('mouse', 'mm')}",
+      ))
+      cloudalignmentCreatejobRes = cloudalignmentCreatejobReq.json()
+      jobs.append(cloudalignmentCreatejobRes)
   # wait for alignment to complete
   status = -2
   while True:

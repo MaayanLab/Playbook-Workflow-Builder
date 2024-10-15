@@ -27,6 +27,7 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
     const [uid, _] = React.useState(() => uuid4())
     const organism = 'human'
     const [error, setError] = React.useState<string>()
+    const [progress, setProgress] = React.useState<Record<string, string>>({})
     return <div>
       {!session || !session.user ? (
         <div className="alert alert-warning shadow-lg block prose max-w-none">
@@ -70,9 +71,27 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
                   charonFormData.append(k, charonRes.formData[k])
                 }
                 charonFormData.append('file', file)
-                // TODO: progress bar (?) https://github.com/MaayanLab/biojupies/blob/6d087aebbd2ff5bc0e8eace5cb67c1f5e19d85e3/website/app/templates/upload/upload_reads.html#L139
-                const s3Req = await fetch(charonRes.url, { method: 'POST', body: charonFormData })
-                if (!s3Req.ok) throw new Error(`Failed to upload ${file.name}: ${await s3Req.text()}`)
+                const s3Req = await new Promise<{ ok: boolean, text: string }>((resolve, reject) => {
+                  const s3Xhr = new XMLHttpRequest()
+                  try {
+                    s3Xhr.open('POST', charonRes.url, true)
+                    s3Xhr.addEventListener('loadstart', evt => {setProgress(progress => ({ ...progress, [file.name]: '0' }))})
+                    s3Xhr.addEventListener('loadend', evt => {setProgress(progress => ({ ...progress, [file.name]: '100' }))})
+                    s3Xhr.upload.addEventListener('progress', evt => {
+                      const pct = Math.ceil((evt.loaded / evt.total) * 100);
+                      setProgress(progress => ({ ...progress, [file.name]: `${pct}` }))
+                    }, false)
+                    s3Xhr.addEventListener('readystatechange', (evt) => {
+                      if (s3Xhr.readyState === 4) {
+                        resolve({ ok: s3Xhr.status < 300, text: s3Xhr.responseText })
+                      }
+                    })
+                    s3Xhr.send(charonFormData)
+                  } catch (e: any) {
+                    throw new Error(e.toString())
+                  }
+                })
+                if (!s3Req.ok) throw new Error(`Failed to upload ${file.name}: ${s3Req.text}`)
                 return file.name
               })).then(filenames => {props.submit({ uid, filenames, paired, organism }, false)})
               .catch(err => {
@@ -81,13 +100,16 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
               })
             }}
           >
-            <label className="bp5-control bp5-switch">
-              <input type="checkbox" name="paired" />
-              <span className="bp5-control-indicator"></span>
-              Paired-end reads (pairs should be marked with suffixes: _1 & _2)
-            </label>
-            <input type="file" name="file" multiple accept=".fastq.gz" />
-            <input type="submit" />
+            <input className="file-input" type="file" name="file" multiple accept=".fastq.gz" />
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <input type="checkbox" name="paired" className="toggle" defaultChecked={props.data?.paired} />
+                &nbsp;
+                Paired-end reads (pairs should be marked with suffixes: _1 & _2)
+              </label>
+            </div>
+            {Object.keys(progress).map(filename => <div key={filename}><progress className="progress progress-primary w-56" value={+progress[filename]} max={100} />&nbsp;{filename}</div>)}
+            <input type="submit" className="btn" title="Submit" />
           </form>
           {props.output ? <SafeRender component={GeneCountMatrix.view} props={props.output} /> : null}
         </>

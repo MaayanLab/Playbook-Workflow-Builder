@@ -65,7 +65,7 @@ def process_alignment(upload_uid, filenames, paired=False, organism='human', pol
     elif 'submitted' in status_count:
       if status < 0:
         status = 0
-        print(f"\nSubmitted", end='', file=sys.stderr, flush=True)
+        print(f"\nJob started", end='', file=sys.stderr, flush=True)
       else:
         while status < status_count.get('completed', 0):
           print('!', end='', file=sys.stderr)
@@ -75,7 +75,7 @@ def process_alignment(upload_uid, filenames, paired=False, organism='human', pol
     elif 'waiting' in status_count:
       if status != -1:
         status = -1
-        print(f"\nWaiting", end='', file=sys.stderr, flush=True)
+        print(f"\nWaiting for job to start", end='', file=sys.stderr, flush=True)
       else:
         print('.', end='', file=sys.stderr, flush=True)
       continue

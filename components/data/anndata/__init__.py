@@ -21,7 +21,8 @@ def anndata(file: File) -> AnnDataFile:
 def anndata_from_gene_count_matrix_and_metadata_matrix(gene_count_matrix: GeneCountMatrix, metadata_matrix: MetadataMatrix):
   df = anndata_from_file(gene_count_matrix)
   df_meta = metadata_from_file(metadata_matrix)
-  df.obs = df_meta
+  for c in (set(df_meta.columns) - set(df.obs.columns)): df.obs[c] = float('nan')
+  df.obs.update(df_meta)
   with upsert_file('.h5ad', description=gene_count_matrix.get('description')) as f:
     df.write_h5ad(f.file)
   return anndata(f)

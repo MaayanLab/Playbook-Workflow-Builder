@@ -30,7 +30,8 @@ def plot(volcano_plot_results):
         x=volcano_plot_results['x'],
         y=volcano_plot_results['y'],
         mode='markers',
-        marker=dict(color=volcano_plot_results['color'])
+        marker=dict(color=volcano_plot_results['color']),
+        hovertext=volcano_plot_results['text'],
     ))
     fig.update_layout(
         xaxis_title='log2FC',

@@ -169,6 +169,17 @@ export const GMTConsensus = MetaNode('GMTConsensus')
   }))
   .build()
 
+export const GenesetToGMT = MetaNode('GenesetToGMT')
+  .meta({
+    label: `Treat Gene Set as GMT`,
+    description: 'Create a single-line GMT from a gene set for comparison with other GMTs',
+  })
+  .inputs({ geneset: GeneSet })
+  .output(GMT)
+  .resolve(async (props) => ({ [props.inputs.geneset.description ?? 'gene set']: { set: props.inputs.geneset.set } }))
+  .story(props => ({}))
+  .build()
+
 export const GenesetsToGMT = MetaNode('GenesetsToGMT')
   .meta({
     label: `Assemble GMT from Gene Sets`,

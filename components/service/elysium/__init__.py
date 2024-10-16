@@ -105,7 +105,7 @@ def process_alignment(upload_uid, filenames, paired=False, organism='human', pol
       names=[filename.split('-', 5)[-1][:-len('-hs_gene.tsv')]],
     ).iloc[:, 0]
     for filename in alignedFiles
-  ], axis=1)
+  ], axis=1).round(0).astype(int)
   # add file to the platform and return as gene count matrix
   with upsert_file('.tsv', description='Aligned gene count matrix') as f:
     df.to_csv(f.file, sep='\t')

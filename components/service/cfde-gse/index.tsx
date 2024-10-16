@@ -50,7 +50,15 @@ export const CFDEGSEKG = MetaNode('CFDEGSEKG')
 export const EnrichrUserListToCFDEGSEKG = MetaNode('EnrichrUserListToCFDEGSEKG')
   .meta({
     label: 'Visualize CFDE Gene Set Enrichment Knowledge Graph',
-    description: 'View gene set results as a knowledge graph',    
+    description: 'View gene set results as a knowledge graph',
+    tags: {
+      'Output Type': {
+        'Knowledge Graph': 1,
+      },
+      'Data Source': {
+        'CFDE': 1
+      },
+    },
   })
   .inputs({ enrichr: EnrichrEnrichmentAnalysis })
   .output(CFDEGSEKG)

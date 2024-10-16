@@ -46,3 +46,17 @@ export function any<T>(L: T[]) {
 export function all<T>(L: T[]) {
   return !L.some(el => !el)
 }
+
+export function chunked<T>(L: T[], chunk_size = 100) {
+  const chunked: T[][] = []
+  let current_chunk: T[] = []
+  for (const el of L) {
+    current_chunk.push(el)
+    if (current_chunk.length === chunk_size) {
+      chunked.push(current_chunk)
+      current_chunk = []
+    }
+  }
+  if (current_chunk.length > 0) chunked.push(current_chunk)
+  return chunked
+}

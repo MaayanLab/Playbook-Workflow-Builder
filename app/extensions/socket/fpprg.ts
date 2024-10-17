@@ -34,8 +34,7 @@ export function onSocketFPPRG(server: Server, client: Socket) {
       status: '',
     }
     // forward partial resolution update to the client
-    const unsub = db.listen(`distributed:resolved:${id}:status`, (rawUpdate: string) => {
-      const update: StatusUpdate = JSON.parse(rawUpdate)
+    const unsub = db.listen(`distributed:resolved:${id}:status`, (update: StatusUpdate) => {
       if (update.type === 'progress') status.percent = update.percent
       else if (update.type === 'info') status.status += update.message
       client.emit(`fpprg:resolved:${id}`, status)

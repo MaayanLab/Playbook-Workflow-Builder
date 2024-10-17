@@ -112,10 +112,10 @@ export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
       console.error(`process '${processId}' not found`)
     } else if (instanceProcess.resolved === undefined) {
       console.debug(`resolving ${instanceProcess.type} (${processId})..`)
-      db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, JSON.stringify({ type: 'progress', percent: 0 }))
+      db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, { type: 'progress', percent: 0 })
       const resolved = await resolve_process(krg, instanceProcess, (update) => {
         // broadcast partial updates through the db
-        db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, JSON.stringify(update))
+        db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, update)
       })
       // store the result in the db
       await db.upsertResolved(resolved)

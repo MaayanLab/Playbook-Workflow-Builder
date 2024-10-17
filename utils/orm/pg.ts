@@ -79,7 +79,7 @@ export class PgDatabase implements DbDatabase {
         const dbEvt = evt.slice(evt.indexOf(':')+1)
         this.subscriber.listenTo(dbEvt)
         this.subscriber.notifications.on(dbEvt, (rawPayload) => {
-          this.notify(evt, rawPayload)
+          this._notify(evt, rawPayload)
         })
       }
     }
@@ -95,7 +95,20 @@ export class PgDatabase implements DbDatabase {
       }
     }
   }
+  /*
+   * Send events with distributed: to the db
+   * but don't send receive them here
+   */
   notify = <T>(evt: string, data: T) => {
+    if (evt.startsWith('distributed:')) {
+      const dbEvt = evt.slice(evt.indexOf(':')+1)
+      this.subscriber.notify(dbEvt, data)
+    } else {
+      this._notify(evt, data)
+    }
+  }
+
+  _notify = <T>(evt: string, data: T) => {
     for (const listener of dict.values(this.listeners[evt] ?? {})) {
       listener(data)
     }

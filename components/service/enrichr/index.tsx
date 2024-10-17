@@ -197,7 +197,7 @@ export const EnrichrTToT = [
     })
     .inputs({ enrichrset: EnrichrSetT })
     .output(SetT)
-    .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
+    .resolve(async (props) => ({ set: array.unique(props.inputs.enrichrset.set) }))
     .story(props => ({
       abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
@@ -479,11 +479,11 @@ const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   return {
     background: bg.name,
     terms,
-    set: array.unique(terms.map((term: string) => {
+    set: terms.map((term: string) => {
       const m = bg.termRe.exec(term)
       if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
       else return term
-    })),
+    }),
   }
 }
 
@@ -581,11 +581,11 @@ const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   return {
     background: bg.name,
     terms,
-    set: array.unique(terms.map((term: string) => {
+    set: terms.map((term: string) => {
       const m = bg.termRe.exec(term)
       if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
       else return term
-    }))
+    })
   }
 }
 

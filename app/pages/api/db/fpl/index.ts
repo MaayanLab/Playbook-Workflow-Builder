@@ -11,6 +11,13 @@ const BodyType = z.object({
   metadata: IdOrPlaybookMetadataC.optional(),
 })
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '8mb',
+    },
+  }
+}
 export default handler(async (req, res) => {
   if (req.method !== 'POST') throw new UnsupportedMethodError(req.method)
   const { data, workflow, metadata } = BodyType.parse(req.body)

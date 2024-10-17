@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic'
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 export default function useKRG({ session_id }: { session_id?: string }) {
-  const { data: suggestions, error } = useSWR(`/api/suggest`)
+  const { data: suggestions, error } = useSWR(`/api/suggest`, { refreshInterval: 0 })
   const [krg_, setKrg_] = React.useState({ krg })
   React.useEffect(() => {
     if (!suggestions) return

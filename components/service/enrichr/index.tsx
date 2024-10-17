@@ -73,10 +73,20 @@ function EnrichrSet_T<T = InternalDataMetaNode>(SetT: DataMetaNode<T>) {
         enableFocusedCell
         downloads={{
           JSON: () => downloadBlob(new Blob([JSON.stringify(enrichrset)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          CSV: () => downloadBlob(new Blob([
+            [
+              `${enrichrset.background},${SetT.meta.label}`,
+              ...(enrichrset.set.map((term, i) => [JSON.stringify(enrichrset.terms[i]), JSON.stringify(term)].join(',')))
+            ].join('\n')
+          ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
         }}
       >
         <Column
           name={enrichrset.background}
+          cellRenderer={row => <Cell key={row+''}>{enrichrset.terms[row]}</Cell>}
+        />
+        <Column
+          name={SetT.meta.label}
           cellRenderer={row => <Cell key={row+''}>{enrichrset.set[row]}</Cell>}
         />
       </Table>
@@ -93,10 +103,73 @@ export const EnrichrGeneSet = EnrichrSet_T(GeneSet)
 export const EnrichrGlycanSet = EnrichrSet_T(GlycanSet)
 export const EnrichrMetaboliteSet = EnrichrSet_T(MetaboliteSet)
 
+function EnrichrScored_T<T = InternalDataMetaNode>(ScoredT: DataMetaNode<T>) {
+  return MetaNode(`Enrichr[${ScoredT.spec}]`)
+    .meta({
+      label: `Enrichr ${ScoredT.meta.label}`,
+      description: ScoredT.meta.description,
+      icon: [enrichr_icon, ...array.ensureArray(ScoredT.meta.icon)],
+      color: ScoredT.meta.color,
+    })
+    .codec(z.object({ background: z.string(), terms: z.array(z.string()), scored: z.array(z.object({ term: z.string(), zscore: z.union([z.number(), z.literal('nan'), z.literal('inf'), z.literal('-inf')]) })) }))
+    .view(enrichrscored => (
+      <Table
+        height={500}
+        cellRendererDependencies={[enrichrscored.scored]}
+        numRows={enrichrscored.scored.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(enrichrscored)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          CSV: () => downloadBlob(new Blob([
+            [
+              `${enrichrscored.background},${ScoredT.meta.label},ZScore`,
+              ...(enrichrscored.scored.map(({ term, zscore }, i) => [JSON.stringify(enrichrscored.terms[i]), JSON.stringify(term), zscore].join(',')))
+            ].join('\n')
+          ], { type: 'text/csv;charset=utf-8' }), 'data.csv'),
+        }}
+      >
+        <Column
+          name={enrichrscored.background}
+          cellRenderer={row => <Cell key={row+''}>{enrichrscored.terms[row]}</Cell>}
+        />
+        <Column
+          name={ScoredT.meta.label}
+          cellRenderer={row => <Cell key={row+''}>{enrichrscored.scored[row].term}</Cell>}
+        />
+        <Column
+          name="ZScore"
+          cellRenderer={row => <Cell key={row+''}>{enrichrscored.scored[row].zscore}</Cell>}
+        />
+      </Table>
+    ))
+    .build()
+}
+
+export const EnrichrScoredDiseases = EnrichrScored_T(ScoredDiseases)
+export const EnrichrScoredDrugs = EnrichrScored_T(ScoredDrugs)
+export const EnrichrScoredPathways = EnrichrScored_T(ScoredPathways)
+export const EnrichrScoredPhenotypes = EnrichrScored_T(ScoredPhenotypes)
+export const EnrichrScoredTissues = EnrichrScored_T(ScoredTissues)
+export const EnrichrScoredGenes = EnrichrScored_T(ScoredGenes)
+export const EnrichrScoredGlycans = EnrichrScored_T(ScoredGlycans)
+export const EnrichrScoredMetabolites = EnrichrScored_T(ScoredMetabolites)
+
+/**
+ * Get the GMT, don't send too many terms per request
+ */
+async function resolveGmtChunked({ background, terms }: { background: string, terms: string[] }) {
+  const gmt: Record<string, string[]> = {}
+  for (const chunk of array.chunked(terms, 100)) {
+    const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(chunk.join(';'))}`)
+    const res = await req.json()
+    Object.assign(gmt, z.record(z.string(), z.array(z.string())).parse(res))
+  }
+  return gmt
+}
+
 async function resolveGenesetLibrary({ terms, background }: { background: string, terms: string[] }) {
-  const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(terms.join(';'))}`)
-  const res = await req.json()
-  const gmt = z.record(z.string(), z.array(z.string())).parse(res)
+  const gmt = await resolveGmtChunked({ background, terms })
   return dict.init(
     terms.map(rawTerm => {
       const m = backgrounds[background].termRe.exec(rawTerm)
@@ -105,68 +178,115 @@ async function resolveGenesetLibrary({ terms, background }: { background: string
     })
   )
 }
-export const EnrichrSetTToSetT = [
-  { T: Disease, EnrichrSetT: EnrichrDiseaseSet, SetT: DiseaseSet },
-  { T: Drug, EnrichrSetT: EnrichrDrugSet, SetT: DrugSet },
-  { T: Pathway, EnrichrSetT: EnrichrPathwaySet, SetT: PathwaySet },
-  { T: Phenotype, EnrichrSetT: EnrichrPhenotypeSet, SetT: PhenotypeSet },
-  { T: Tissue, EnrichrSetT: EnrichrTissueSet, SetT: TissueSet },
-  { T: Gene, EnrichrSetT: EnrichrGeneSet, SetT: GeneSet },
-].flatMap(({ T, EnrichrSetT, SetT }) => [
-    MetaNode(`EnrichrSetTToSetT[${T.name}]`)
-      .meta({
-        label: `${EnrichrSetT.meta.label} as Set`,
-        icon: [enrichr_icon],
-        description: `Load Enrichr set as standard set`,
-      })
-      .inputs({ enrichrset: EnrichrSetT })
-      .output(SetT)
-      .resolve(async (props) => ({ set: props.inputs.enrichrset.set }))
-      .story(props => ({
-        abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
-        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-        methods: `The disease terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted to produce ${props.output_ref}.`,
-        legend: `A set of disease terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset}.`,
-      }))
-      .build(),
-    MetaNode(`EnrichrSetTToGMT[${T.name}]`)
-      .meta({
-        label: `${EnrichrSetT.meta.label} as GMT`,
-        icon: [enrichr_icon],
-        description: `Load Enrichr set as GMT`,
-      })
-      .inputs({ enrichrset: EnrichrSetT })
-      .output(GMT)
-      .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
-      .story(props => ({
-        abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
-        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted from the original gene set library to produce ${props.output_ref}.`,
-        legend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
-      }))
-      .build(),
-    MetaNode(`EnrichrSetTToUMAP[${T.name}]`)
-      .meta({
-        label: `${EnrichrSetT.meta.label} as UMAP`,
-        icon: [enrichr_icon],
-        description: `Load Enrichr set as UMAP`,
-      })
-      .inputs({ enrichrset: EnrichrSetT })
-      .output(PlotlyPlot)
-      .resolve(async (props) => await python(
-        'components.service.enrichr.resolveGenesetLibraryUMAP',
-        { kargs: [props.inputs.enrichrset] },
-        message => props.notify({ type: 'info', message }),
-      ))
-      .story(props => ({
-        abstract: `Relevant terms are displayed on a gene set library UMAP\\ref{doi:10.48550/arXiv.1802.03426}${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
-        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
-        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the original gene set library to produce ${props.output_ref}.`,
-        legend: `The relevant gene sets highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
-      }))
-      .build(),
-  ]
-)
+
+export const EnrichrTToT = [
+  { T: Disease, EnrichrScoredT: EnrichrScoredDiseases, ScoredT: ScoredDiseases, EnrichrSetT: EnrichrDiseaseSet, SetT: DiseaseSet },
+  { T: Drug, EnrichrScoredT: EnrichrScoredDrugs, ScoredT: ScoredDrugs, EnrichrSetT: EnrichrDrugSet, SetT: DrugSet },
+  { T: Pathway, EnrichrScoredT: EnrichrScoredPathways, ScoredT: ScoredPathways, EnrichrSetT: EnrichrPathwaySet, SetT: PathwaySet },
+  { T: Phenotype, EnrichrScoredT: EnrichrScoredPhenotypes, ScoredT: ScoredPhenotypes, EnrichrSetT: EnrichrPhenotypeSet, SetT: PhenotypeSet },
+  { T: Tissue, EnrichrScoredT: EnrichrScoredTissues, ScoredT: ScoredTissues, EnrichrSetT: EnrichrTissueSet, SetT: TissueSet },
+  { T: Gene, EnrichrScoredT: EnrichrScoredGenes, ScoredT: ScoredGenes, EnrichrSetT: EnrichrGeneSet, SetT: GeneSet },
+  { T: Glycan, EnrichrScoredT: EnrichrScoredGlycans, ScoredT: ScoredGlycans, EnrichrSetT: EnrichrGlycanSet, SetT: GlycanSet },
+  { T: Metabolite, EnrichrScoredT: EnrichrScoredMetabolites, ScoredT: ScoredMetabolites, EnrichrSetT: EnrichrMetaboliteSet, SetT: MetaboliteSet },
+].flatMap(({ T, EnrichrScoredT, ScoredT, EnrichrSetT, SetT }) => [
+  MetaNode(`EnrichrSetTToSetT[${T.name}]`)
+    .meta({
+      label: `${EnrichrSetT.meta.label} as Set`,
+      icon: [enrichr_icon],
+      description: `Load Enrichr set as standard set`,
+    })
+    .inputs({ enrichrset: EnrichrSetT })
+    .output(SetT)
+    .resolve(async (props) => ({ set: array.unique(props.inputs.enrichrset.set) }))
+    .story(props => ({
+      abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `The terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted to produce ${props.output_ref}.`,
+      legend: `A set of terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset}.`,
+    }))
+    .build(),
+  MetaNode(`EnrichrSetTToGMT[${T.name}]`)
+    .meta({
+      label: `${EnrichrSetT.meta.label} as GMT`,
+      icon: [enrichr_icon],
+      description: `Load Enrichr set as GMT`,
+    })
+    .inputs({ enrichrset: EnrichrSetT })
+    .output(GMT)
+    .resolve(async (props) => await resolveGenesetLibrary(props.inputs.enrichrset))
+    .story(props => ({
+      abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted from the original gene set library to produce ${props.output_ref}.`,
+      legend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
+    }))
+    .build(),
+  MetaNode(`EnrichrSetTToUMAP[${T.name}]`)
+    .meta({
+      label: `${EnrichrSetT.meta.label} as UMAP`,
+      icon: [enrichr_icon],
+      description: `Load Enrichr set as UMAP`,
+    })
+    .inputs({ enrichrset: EnrichrSetT })
+    .output(PlotlyPlot)
+    .resolve(async (props) => await python(
+      'components.service.enrichr.resolveGenesetLibraryUMAP',
+      { kargs: [props.inputs.enrichrset] },
+      message => props.notify({ type: 'info', message }),
+    ))
+    .story(props => ({
+      abstract: `Relevant terms are displayed on a gene set library UMAP\\ref{doi:10.48550/arXiv.1802.03426}${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the original gene set library to produce ${props.output_ref}.`,
+      legend: `The relevant gene sets highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+    }))
+    .build(),
+  MetaNode(`EnrichrScoredTToScoredT[${T.name}]`)
+    .meta({
+      label: `${EnrichrScoredT.meta.label} as Scored`,
+      icon: [enrichr_icon],
+      description: `Load Enrichr scored as standard scored`,
+    })
+    .inputs({ enrichrscored: EnrichrScoredT })
+    .output(ScoredT)
+    .resolve(async (props) => props.inputs.enrichrscored.scored)
+    .story(props => ({
+      abstract: `A ${ScoredT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrscored?.background ? ` for ${props.inputs.enrichrscored.background}` : ''}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `The terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored} are extracted to produce ${props.output_ref}.`,
+      legend: `A table of significantly enriched terms paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+    }))
+    .build(),
+  MetaNode(`EnrichrScoredTToEnrichrSetT[${T.name}]`)
+    .meta({
+      label: `${EnrichrScoredT.meta.label} as Enrichr Set`,
+      icon: [enrichr_icon],
+      description: `Load Enrichr scored as set`,
+    })
+    .inputs({ enrichrscored: EnrichrScoredT })
+    .output(EnrichrSetT)
+    .resolve(async (props) => {
+      const filter = (_: unknown, i: number) => {
+        const scored = props.inputs.enrichrscored.scored[i]
+        return (
+          scored.zscore === 'inf'
+          || (typeof scored.zscore === 'number' && Math.abs(scored.zscore) > 2)
+        )
+      }
+      return {
+        background: props.inputs.enrichrscored.background,
+        terms: props.inputs.enrichrscored.terms.filter(filter),
+        set: props.inputs.enrichrscored.scored.filter(filter).map(({ term }) => term),
+      }
+    })
+    .story(props => ({
+      abstract: `A ${ScoredT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrscored?.background ? ` for ${props.inputs.enrichrscored.background}` : ''}.`,
+      introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+      methods: `The terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored} are extracted to produce ${props.output_ref}.`,
+      legend: `A set of terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored}.`,
+    }))
+    .build(),
+])
 
 export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
   .meta({
@@ -252,26 +372,32 @@ const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof background
   const res = z.object({ [bg.name]: z.array(z.tuple([
     z.number(), z.string(), z.number(), z.number(), z.number(), z.array(z.string()), z.number(), z.number(), z.number()
   ])) }).parse(await req.json())
-  const results = (res[bg.name] || []).map(([
+  const terms: string[] = []
+  const scored: {term: string, zscore: number}[] = []
+  for (const [
     rank, rawTerm, pvalue, zscore, combinedscore, overlapping_genes, adjusted_pvalue, unused_0, unused_1
-  ]) => {
+  ] of (res[bg.name] || [])) {
     const m = bg.termRe.exec(rawTerm)
     const term = (m && m.groups && 'term' in m.groups && m.groups.term && m.groups.term) || rawTerm
-    return { term, zscore }
-  })
-  results.sort((a, b) => b.zscore - a.zscore)
-  return results
+    terms.push(rawTerm)
+    scored.push({ term, zscore })
+  }
+  const sorted = array.arange(terms.length).sort((a, b) => scored[b].zscore - scored[a].zscore)
+  return {
+    terms: sorted.map(i => terms[i]),
+    scored: sorted.map(i => scored[i]),
+  }
 }
 
 export const EnrichrGenesetSearchT = [
-  { backgrounds: Disease_backgrounds, output: ScoredDiseases, T: Disease },
-  { backgrounds: Drug_backgrounds, output: ScoredDrugs, T: Drug },
-  { backgrounds: Pathway_backgrounds, output: ScoredPathways, T: Pathway },
-  { backgrounds: Phenotype_backgrounds, output: ScoredPhenotypes, T: Phenotype },
-  { backgrounds: Tissue_backgrounds, output: ScoredTissues, T: Tissue },
-  { backgrounds: Gene_backgrounds, output: ScoredGenes, T: Gene },
-  { backgrounds: Glycan_backgrounds, output: ScoredGlycans, T: Glycan },
-  { backgrounds: Metabolite_backgrounds, output: ScoredMetabolites, T: Metabolite },
+  { backgrounds: Disease_backgrounds, output: EnrichrScoredDiseases, T: Disease },
+  { backgrounds: Drug_backgrounds, output: EnrichrScoredDrugs, T: Drug },
+  { backgrounds: Pathway_backgrounds, output: EnrichrScoredPathways, T: Pathway },
+  { backgrounds: Phenotype_backgrounds, output: EnrichrScoredPhenotypes, T: Phenotype },
+  { backgrounds: Tissue_backgrounds, output: EnrichrScoredTissues, T: Tissue },
+  { backgrounds: Gene_backgrounds, output: EnrichrScoredGenes, T: Gene },
+  { backgrounds: Glycan_backgrounds, output: EnrichrScoredGlycans, T: Glycan },
+  { backgrounds: Metabolite_backgrounds, output: EnrichrScoredMetabolites, T: Metabolite },
 ].flatMap(({ backgrounds, output, T }) =>
 backgrounds.map(bg => ({ bg, output, T }))
 ).map(({ bg, output, T }) =>
@@ -290,7 +416,14 @@ backgrounds.map(bg => ({ bg, output, T }))
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
     .resolve(async (props) => {
-      return 'empty' in props.inputs.searchResults ? [] : await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults)
+      return !('empty' in props.inputs.searchResults) ? {
+        background: bg.name,
+        ...(await resolveEnrichrGenesetSearchResults(bg, props.inputs.searchResults))
+      } : {
+        background: bg.name,
+        terms: [],
+        scored: [],
+      }
     })
     .story(props => ({
       abstract: `The gene set was enriched against the ${bg.label}${bg.ref} library to identify statistically significant ${bg.termLabel}.`,
@@ -346,11 +479,11 @@ const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   return {
     background: bg.name,
     terms,
-    set: array.unique(terms.map((term: string) => {
+    set: terms.map((term: string) => {
       const m = bg.termRe.exec(term)
       if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
       else return term
-    })),
+    }),
   }
 }
 
@@ -448,11 +581,11 @@ const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>,
   return {
     background: bg.name,
     terms,
-    set: array.unique(terms.map((term: string) => {
+    set: terms.map((term: string) => {
       const m = bg.termRe.exec(term)
       if (m && m.groups && 'term' in m.groups && m.groups.term) return m.groups.term
       else return term
-    }))
+    })
   }
 }
 

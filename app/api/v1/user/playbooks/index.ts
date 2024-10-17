@@ -12,7 +12,7 @@ import { tsvector, tsvector_intersect } from '@/utils/tsvector'
 import publicPlaybooks from '@/app/public/playbooksDemo'
 const playbook_tsvectors: Record<string, Set<string>> = {}
 publicPlaybooks.forEach(playbook => {
-  playbook.id = playbook.workflow.workflow[playbook.workflow.workflow.length-1].id
+  playbook.workflow.workflow[playbook.workflow.workflow.length-1].id = playbook.id
   playbook_tsvectors[playbook.id] = tsvector([
     playbook.label,
     playbook.description,

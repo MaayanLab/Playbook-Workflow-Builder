@@ -147,6 +147,7 @@ export function useMetapathInputs({ krg, head }: { krg: KRG, head: Metapath }) {
         values.forEach((value, i) => {
           const [k, ...rest] = keys[i].toString().split(':')
           const v = value.type === 'resolved' ? value.data.data?.value : undefined
+          if (v === undefined) return
           if (rest.length > 0) {
             if (!(k in inputs)) inputs[k] = []
             inputs[k].push(v)

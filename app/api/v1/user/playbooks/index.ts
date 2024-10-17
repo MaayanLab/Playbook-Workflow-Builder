@@ -12,6 +12,7 @@ import { tsvector, tsvector_intersect } from '@/utils/tsvector'
 import publicPlaybooks from '@/app/public/playbooksDemo'
 const playbook_tsvectors: Record<string, Set<string>> = {}
 publicPlaybooks.forEach(playbook => {
+  playbook.id = playbook.workflow.workflow[playbook.workflow.workflow.length-1].id
   playbook_tsvectors[playbook.id] = tsvector([
     playbook.label,
     playbook.description,
@@ -65,7 +66,25 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
       },
     })
     const userPlaybookLookup = dict.init(userPlaybooks.map((playbook) => ({ key: playbook.playbook, value: playbook })))
-    const results = playbooks.map(({ inputs, outputs, dataSources, ...playbook }) => {
+    const results = await Promise.all(playbooks.map(async ({ inputs, outputs, dataSources, ...playbook }) => {
+      if (userPlaybookLookup[playbook.id] === undefined) {
+        try {
+          await fpprg.resolveFPL(playbook.workflow as any)
+          userPlaybookLookup[playbook.id] = await db.objects.user_playbook.upsert({
+            create: {
+              playbook: playbook.id,
+              title: playbook.label,
+              description: playbook.description,
+              public: true,
+            },
+            where: {
+              id: playbook.id
+            },
+          })
+        } catch (e) {
+          console.error(e)
+        }
+      }
       return {
         ...playbook,
         inputs: inputs.map(t => t.spec as string).join(', '),
@@ -74,7 +93,7 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
         clicks: userPlaybookLookup[playbook.id]?.clicks || 0,
         disabled: userPlaybookLookup[playbook.id] === undefined,
       }
-    })
+    }))
     if (!search) results.sort((a, b) => b.clicks - a.clicks)
     return results
   })

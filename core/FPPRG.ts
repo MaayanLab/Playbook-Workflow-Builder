@@ -17,7 +17,7 @@ import { z } from 'zod'
 import { Db } from '@/utils/orm'
 import * as fpprgSchema from '@/db/fpprg'
 import { TypedSchema } from '@/spec/sql'
-import { TimeoutError } from '@/spec/error'
+import { NotFoundError, ResponseCodedError, TimeoutError } from '@/spec/error'
 
 /**
  * A process is unique by its own data (configuration) and process outputs
@@ -748,6 +748,45 @@ export default class FPPRG {
     }
   }
 
+  resolveFPL = async ({ data = {}, workflow, metadata }: { data?: Record<string, z.infer<typeof DataC>>, workflow: z.infer<typeof IdOrProcessC>[], metadata?: z.infer<typeof IdOrPlaybookMetadataC> }) => {
+    // resolve the process array by walking through the specification, collecting instantiated processes
+    const processArray: Process[] = []
+    const processArrayLookup: Record<string|number, string> = {}
+    for (const el of workflow) {
+      if ('id' in el && 'type' in el) {
+        // given both id and type makes this a 
+        const { id, ...proc } = el
+        if (proc.data !== undefined) {
+          if ('id' in proc.data) {
+            proc.data = data[proc.data.id]
+          }
+        }
+        if (proc.inputs !== undefined) {
+          for (const k in proc.inputs) {
+            if (!(proc.inputs[k].id in processArrayLookup)) throw new ResponseCodedError(400, `${proc.inputs[k].id} not found in preceeding graph`)
+            proc.inputs[k].id = processArrayLookup[proc.inputs[k].id]
+          }
+        }
+        const resolvedProc = await this.resolveProcess(proc)
+        processArrayLookup[id] = resolvedProc.id
+        processArray.push(resolvedProc)
+      } else if ('id' in el) {
+        const resolvedProc = await this.resolveProcess(el)
+        processArrayLookup[resolvedProc.id] = resolvedProc.id
+        processArray.push(resolvedProc)
+      } else {
+        const resolvedProc = await this.resolveProcess(el)
+        processArrayLookup[resolvedProc.id] = resolvedProc.id
+        processArray.push(resolvedProc)
+      }
+    }
+    const playbookMetadata = metadata ? await this.resolvePlaybookMetadata(metadata) : undefined
+    const processArrayFPL = FPL.fromProcessArray(processArray, playbookMetadata)
+    if (!processArrayFPL) throw new NotFoundError()
+    const lastStep = workflow[workflow.length-1]
+    if ('id' in lastStep) processArrayFPL.id = lastStep.id
+    return await this.upsertFPL(processArrayFPL)
+  }
   getFPL = async (id: string): Promise<FPL | undefined> => {
     if (!(id in this.fplTable)) {
       const result = await this.db.objects.fpl.findUnique({ where: { id } })

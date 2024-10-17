@@ -21,7 +21,7 @@ fs.writeFileSync(path.join(base, 'index.ts'), [
   ...components
     .flatMap(component => {
       const componentPath = path.relative(base, component)
-      const componentSlug = componentPath.replaceAll(/[/-]/g, '_')
+      const componentSlug = componentPath.replace(/[/-]/g, '_')
       return [
         `import * as ${componentSlug} from ${JSON.stringify(`./${componentPath}`)}`,
         `import ${componentSlug}_packageJson from ${JSON.stringify(`./${componentPath}/package.json`)}`,

@@ -107,7 +107,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           rows={8}
           fill
           large
-          onChange={evt => setSet(evt.target.value.replaceAll('\t', '\n'))}
+          onChange={evt => setSet(evt.target.value.replace(/\t/g, '\n'))}
           value={set}
         />
         <div className="bp5-input-group">

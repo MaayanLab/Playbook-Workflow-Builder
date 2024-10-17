@@ -65,7 +65,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     : []
   ).join('')
   const contributors = array.unique(fullFPL.map(head => props.krg.getProcessNode(head.process.type).meta.author).filter((author): author is string => !!author)).map(contributor => latexEscape(contributor))
-  const figures = (await Promise.all(fullFPL.map(async (head) => {
+  const figures = (await array.mapSequential(fullFPL, async (head) => {
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
     if (figure?.type !== 'figure') return []
     const figure_num = story.figures.get(figure.ref)
@@ -84,7 +84,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
       filename: `figures/fig${figure_num}.pdf`,
       legend,
     }]
-  }))).flatMap(fig => fig)
+  })).flatMap(fig => fig)
   const keywords = [
     'Playbook Workflow Builder',
     ...array.unique(

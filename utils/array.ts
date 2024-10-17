@@ -60,3 +60,12 @@ export function chunked<T>(L: T[], chunk_size = 100) {
   if (current_chunk.length > 0) chunked.push(current_chunk)
   return chunked
 }
+
+export async function mapSequential<I, O>(L: I[], callbackfn: (value: I, index: number, array: I[]) => Promise<O>): Promise<O[]> {
+  const output: O[] = []
+  for (let i = 0; i < L.length; i++) {
+    const value = L[i]
+    output.push(await callbackfn(value, i, L))
+  }
+  return output
+}

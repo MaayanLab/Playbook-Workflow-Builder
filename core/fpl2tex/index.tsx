@@ -6,15 +6,19 @@ import { fpl_expand, Metadata, Author } from "@/core/common"
 import puppeteer from 'puppeteer'
 import path from 'path'
 import fs from 'fs'
+import cache from '@/utils/global_cache'
+
+const puppeteerSingleton = cache('puppeteer', () => puppeteer.launch())
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
-  const browser = await puppeteer.launch()
-  const page = await browser.newPage()
+  const browser = await puppeteerSingleton
+  const ctx = await browser.createBrowserContext()
+  const page = await ctx.newPage()
   await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`, { waitUntil: 'networkidle0' })
   const body = await page.$('main')
   const boundingBox = await body?.boundingBox()
   const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height } : { format: 'letter' })
-  await browser.close()
+  await ctx.close()
   return pdf
 }
 

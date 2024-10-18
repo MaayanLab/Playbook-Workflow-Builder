@@ -581,16 +581,17 @@ export default class FPPRG {
 
   resolvePlaybookMetadata = async (playbook_metadata: IdOrPlaybookMetadata) => {
     if ('id' in playbook_metadata) {
-      return await this.getPlaybookMetadata(playbook_metadata.id) as PlaybookMetadata
-    } else {
-      return await this.upsertPlaybookMetadata(
-        new PlaybookMetadata(
-          playbook_metadata.title,
-          playbook_metadata.description,
-          playbook_metadata.summary || 'auto',
-          playbook_metadata.gpt_summary || '',
-        ))
+      let metadata = await this.getPlaybookMetadata(playbook_metadata.id)
+      if (metadata) return metadata
     }
+    return await this.upsertPlaybookMetadata(
+      new PlaybookMetadata(
+        ('title' in playbook_metadata ? playbook_metadata.title : undefined),
+        ('description' in playbook_metadata ? playbook_metadata.description : undefined),
+        ('summary' in playbook_metadata ? playbook_metadata.summary : undefined) || 'auto',
+        ('gpt_summary' in playbook_metadata ? playbook_metadata.gpt_summary : undefined)|| '',
+      )
+    )
   }
   getPlaybookMetadata = async (id: string) => {
     if (!(id in this.playbookMetadataTable)) {

@@ -377,6 +377,63 @@ References:
     workflow: {"data":{"60e507db-c00d-d5eb-d014-6498e81aed4f":{"type":"Input[Set[Gene]]","value":{"description":"Example gene set","set":["UTP14A","S100A6","SCAND1","RRP12","CIAPIN1","ADH5","MTERF3","SPR","CHMP4A","UFM1","VAT1","HACD3","RFC5","COTL1","NPRL2","TRIB3","PCCB","TLE1","CD58","BACE2","KDM3A","TARBP1","RNH1","CHAC1","MBNL2","VDAC1","TES","OXA1L","NOP56","HAT1","CPNE3","DNMT1","ARHGAP1","VPS28","EIF2S2","BAG3","CDCA4","NPDC1","RPS6KA1","FIS1","SYPL1","SARS","CDC45","CANT1","HERPUD1","SORBS3","MRPS2","TOR1A","TNIP1","SLC25A46","MAL","EPCAM","HDAC6","CAPN1","TNRC6B","PKD1","RRS1","HP","ANO10","CEP170B","IDE","DENND2D","CAMK2B","ZNF358","RPP38","MRPL19","NUCB2","GNAI1","LSR","ADGRE2","PKMYT1","CDK5R1","ABL1","PILRB","AXIN1","FBXL8","MCF2L","DBNDD1","IGHMBP2","WIPF2","WFS1","OGFOD2","MAPK1IP1L","COL11A1","REG3A","SERPINA1","MYCBP2","PIGK","TCAP","CRADD","ELK1","DNAJB2","ZBTB16","DAZAP1","MAPKAPK2","EDRF1","CRIP1","UCP3","AGR2","P4HA2"]}}},"workflow":[{"id":"df5b091e-7c80-f268-9967-dbaffc68d89c","type":"Input[Set[Gene]]","data":{"id":"60e507db-c00d-d5eb-d014-6498e81aed4f"}},{"id":"0b3cae1b-2e8d-4fab-ad1c-42fb483a5e62","type":"GeneSet_CTD_String","inputs":{"geneset":{"id":"df5b091e-7c80-f268-9967-dbaffc68d89c"}}},{"id":"b838fc0a-ab33-574c-6967-f9d8699925bc","type":"Highly_Connected_Genes","inputs":{"ctdResponseInfo":{"id":"0b3cae1b-2e8d-4fab-ad1c-42fb483a5e62"}}},{"id":"ec5da81b-6bc2-66b9-713c-c1d7de9ec3c6","type":"Guilty_By_Association_Genes","inputs":{"ctdResponseInfo":{"id":"0b3cae1b-2e8d-4fab-ad1c-42fb483a5e62"}}}],"metadata":{"id":"d02a3634-df43-ee76-a23f-7f23b0a16138","title":"Use Case 10: Guilt by Association","description":"Given a set of genes, connect the dots (CTD) is performed against protein & pathway graphs to obtain a small subset of highly connected genes and those that are guilty by association.","summary":"auto","gpt_summary":""}},
   },
   {
+    id: '09c234c4-14e3-46c7-9b6a-8d5930dc3c01',
+    label: 'Use Case 10: Connecting the Dots (CTD) with STRING and WikiPathways',
+    description: `Given a set of genes, connect the dots (CTD) is performed against protein & pathway graphs to obtain a small subset of highly connected genes and those that are guilty by association.`,
+    gpt_summary: `The workflow begins with a gene set. The CTD algorithm is applied in two stages:
+
+1. **STRING Network Analysis**:
+- CTD diffuses through all nodes in STRING [1] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [2][3].
+
+2. **WikiPathways Network Analysis**:
+- CTD diffuses through all nodes in WikiPathways [4] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest [2][3].
+
+**Outputs from CTD Analysis**:
+- Graph Nodes are extracted from the CTD output.
+- A list of Guilty By Association Genes is obtained from the CTD output.
+- A list of Highly Connected Genes is obtained from the CTD output.`,
+    published: 'Oct 18, 2024',
+    version: '1.0.0',
+    authors: ['CFDE Playbook Partnership'],
+    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    license: 'CC-BY-NC-SA-4.0',
+    dataSources: [
+      'ClinGen',
+      'STRING',
+      'WikiPathways',
+    ],
+    inputs: [
+      GeneSet,
+    ],
+    outputs: [
+      GeneSet,
+    ],
+    workflow: {"data":{"8e251b4e-bb7b-6f0a-edd4-6f3add603a65":{"type":"Input[Set[Gene]]","value":{"description":"","set":["ABCC9","ABCD4","ABL1","ACTB","ADAMTS10","ADK","AHDC1","ALDH18A1","ALKBH8","ARHGAP31","ARSK","ATIC","B3GALT6","B3GAT3","B3GLCT","BBS2","BCOR","BGN","BRAF","CAPN15","CCDC22","CCNQ","CDH2","CDK8","CEP57","CFAP53","CHD4","CHST3","CIROP","COQ4","CRELD1","CTCF","CTSA","DDX58","DHCR7","DPM2","DTNA","DYNC2LI1","EDNRA","EGFR","EIF5A","ELN","ENPP1","ERBB3","FBN1","FBN2","FGF23","FGFR1","FKTN","FLI1","FLNA","FOXF1","GATA4","GATA5","GATA6","GATAD2B","GDF1","GJA1","GJA5","GJA8","GLB1","GLI3","GNB2","GNPTG","HAAO","HCN4","HGD","HRAS","IDUA","IFIH1","IFT122","JAG1","KANSL1","KDM6A","KIF3B","KMT2D","KRAS","KYNU","LEMD2","LOX","LPA","LTBP2","LZTR1","MAP2K1","MAP3K7","MED12","MEIS2","MKKS","MKS1","MLXIPL","MYH11","MYH7","MYRF","NADSYN1","NFE2L2","NKX2-5","NOTCH1","NOTCH3","NR2F2","NRAS","NT5E","NUP188","NXN","PACS1","PAH","PCGF2","PKD1L1","POLR3GL","PPP1CB","PTPN11","RBM8A","RNU4ATAC","ROBO4","RPL26","RPS19","SGO1","SLC25A24","SLC29A3","SMAD2","SMAD4","SMAD6","SMO","SNIP1","SOS 2","SPOP","SRCAP","STAG2","STRA6","TAB2","TAF2","TALDO1","TBX1","TBX4","TBX5","TGDS","TGFB2","TGFBR1","TGFBR2","TMEM218","TNXB","TRAF7","TRRAP","UBE3B","UNC45B","WASHC5","WBP11","WDPCP","WT1"]}}},"workflow":[{"id":"345d13e3-c726-d62f-dc10-73fbdfa798d6","type":"Input[Set[Gene]]","data":{"id":"8e251b4e-bb7b-6f0a-edd4-6f3add603a65"}},{"id":"9e2430af-a7bf-47b8-5a40-d3af47d2226f","type":"GeneSet_CTD_String","inputs":{"geneset":{"id":"345d13e3-c726-d62f-dc10-73fbdfa798d6"}}},{"id":"d17d15e2-f528-506b-9f2a-c74b185e7e07","type":"GeneSet_CTD_Wikipathways","inputs":{"geneset":{"id":"345d13e3-c726-d62f-dc10-73fbdfa798d6"}}},{"id":"4ec9afc0-5d14-aa25-2039-77aa8ec9a4fc","type":"CTD_Graph_Nodes","inputs":{"ctdResponseInfo":{"id":"9e2430af-a7bf-47b8-5a40-d3af47d2226f"}}},{"id":"80a4cfb9-04d9-13f2-aa5f-36a14e4037b4","type":"CTD_Graph_Nodes","inputs":{"ctdResponseInfo":{"id":"d17d15e2-f528-506b-9f2a-c74b185e7e07"}}},{"id":"551ce9a7-cee3-fd1e-6691-c58ea94b460d","type":"Guilty_By_Association_Genes","inputs":{"ctdResponseInfo":{"id":"9e2430af-a7bf-47b8-5a40-d3af47d2226f"}}},{"id":"2da6ed42-4e74-f872-4413-033fb534501c","type":"Guilty_By_Association_Genes","inputs":{"ctdResponseInfo":{"id":"d17d15e2-f528-506b-9f2a-c74b185e7e07"}}},{"id":"2960e348-f61d-0099-a3b3-467155d08111","type":"Highly_Connected_Genes","inputs":{"ctdResponseInfo":{"id":"9e2430af-a7bf-47b8-5a40-d3af47d2226f"}}},{"id":"a0c48377-1227-c91d-8a50-618194a16b46","type":"Highly_Connected_Genes","inputs":{"ctdResponseInfo":{"id":"d17d15e2-f528-506b-9f2a-c74b185e7e07"}}}],"metadata":{"id":"ee518aee-0a3e-523c-07f7-1ce5dcca99de","title":"Use Case 10: Connecting the Dots (CTD) with STRING and WikiPathways","description":"","summary":"auto","gpt_summary":""}},
+  },
+  {
+    id: '6fe772b4-6c15-5729-8baa-05b7e62abcd8',
+    label: 'Use Case 10: Connecting the Dots (CTD) with experimental data',
+    description: `These cards generate an adjacency matrix from an expression matrix and then uses this matrix to perform CTD in a user's experimental data.`,
+    gpt_summary: `The gene count matrix was uploaded, and a custom CTD Adjacency JSON File is being created. The workflow begins with a gene set, which includes an input gene set and adjacency matrix, to be sent to the CTD API for precalculations. These three files were sent to the CTD API for processing. From the CTD output, graph nodes were extracted, and a list of highly connected genes was obtained.`,
+    published: 'Oct 18, 2024',
+    version: '1.0.0',
+    authors: ['CFDE Playbook Partnership'],
+    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    license: 'CC-BY-NC-SA-4.0',
+    dataSources: [
+      'ClinGen',
+      'STRING',
+      'WikiPathways',
+    ],
+    inputs: [
+      GeneSet,
+    ],
+    outputs: [
+      GeneSet,
+    ],
+    workflow: {"data":{"770c0103-3cd6-e7f1-142f-84332508c04a":{"type":"GeneCountMatrixFileUpload","value":{"description":"","url":"drs://playbook-workflow-builder.cloud/54fd6a02-a0ff-4608-86fc-734dd280f24b","filename":"test_exp_luma_small.csv","sha256":"e5c0c307d12c7292602d9435db5f36d2b5c23b7df950b008dc4fd131efb788ea","size":1735909}},"f9b9b71f-0b74-4c76-6695-8365c9103910":{"type":"Input[Set[Gene]]","value":{"description":"","set":["taco1","mrpl28","c16orf13","rab40c","tprn","tgfbr2","smad9","itga9","lrrtm2","hif3a","itga7","chst7","rem1","chst2","chst3","serping1","aftph","thsd4","tsks","camk1","sqle","gtse1","gpsm2","hlf","chst9"]}}},"workflow":[{"id":"2af28a32-4313-13d5-36b3-880f9ffde755","type":"GeneCountMatrixFileUpload","data":{"id":"770c0103-3cd6-e7f1-142f-84332508c04a"}},{"id":"6af1baf1-baf8-5cc3-fd1c-3a7b1b338854","type":"CTD_CreateACustomMatrix","inputs":{"geneExpressions":{"id":"2af28a32-4313-13d5-36b3-880f9ffde755"}}},{"id":"39f286b7-435f-0d7a-aedf-5753fcec762d","type":"Input[Set[Gene]]","data":{"id":"f9b9b71f-0b74-4c76-6695-8365c9103910"}},{"id":"aa129ffe-97ad-9d9e-60e2-a06269a9a4ec","type":"Execute_CTD_Precalculations_Combined","inputs":{"ctdAdjacencyAndExpressions":{"id":"6af1baf1-baf8-5cc3-fd1c-3a7b1b338854"},"geneSet":{"id":"39f286b7-435f-0d7a-aedf-5753fcec762d"}}},{"id":"620c74e3-752f-1bc0-a95e-cd08f04db8bf","type":"CTD_UseCustomMatrixCombined","inputs":{"ctdDataSet":{"id":"aa129ffe-97ad-9d9e-60e2-a06269a9a4ec"}}},{"id":"4389b115-2a13-ca11-5bfb-9130f42339e7","type":"CTD_Graph_Nodes","inputs":{"ctdResponseInfo":{"id":"620c74e3-752f-1bc0-a95e-cd08f04db8bf"}}},{"id":"aa60f850-e1e1-e601-b567-4077e2b264c0","type":"Highly_Connected_Genes","inputs":{"ctdResponseInfo":{"id":"620c74e3-752f-1bc0-a95e-cd08f04db8bf"}}}],"metadata":{"id":"7c137e00-19c4-7e5b-6e49-555b39f8450f","title":"Use Case 10: Connecting the Dots (CTD) with experimental data","description":"These cards generate an adjacency matrix from an expression matrix and then uses this matrix to perform CTD in a user's experimental data.","summary":"manual","gpt_summary":""}},
+  },
+  {
     id: '24f9b280-82fa-4fb3-94e9-1ad80c7b9f3e',
     label: 'Use Case 11: Related Proteins/Metabolites across DCCs',
     description: `Using directly related proteins to a gene of interest, we return a slew of related information to the gene protein network from different DCCs.`,

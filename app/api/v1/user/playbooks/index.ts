@@ -8,24 +8,28 @@ import fpprg from '@/app/fpprg'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
 import { tsvector, tsvector_intersect } from '@/utils/tsvector'
+import cache from '@/utils/global_cache'
 
 import publicPlaybooks from '@/app/public/playbooksDemo'
-const playbook_tsvectors: Record<string, Set<string>> = {}
-publicPlaybooks.forEach(playbook => {
-  playbook.workflow.workflow[playbook.workflow.workflow.length-1].id = playbook.id
-  playbook_tsvectors[playbook.id] = tsvector([
-    playbook.label,
-    playbook.description,
-    ...playbook.inputs.flatMap(input => [
-      input.meta.label,
-      input.meta.description,
-    ]),
-    ...playbook.outputs.flatMap(output => [
-      output.meta.label,
-      output.meta.description,
-    ]),
-    ...playbook.dataSources,
-  ].join(' '))
+const playbook_tsvectors = cache('playbook_tsvectors', () => {
+  const playbook_tsvectors: Record<string, Set<string>> = {}
+  publicPlaybooks.forEach(playbook => {
+    playbook.workflow.workflow[playbook.workflow.workflow.length-1].id = playbook.id
+    playbook_tsvectors[playbook.id] = tsvector([
+      playbook.label,
+      playbook.description,
+      ...playbook.inputs.flatMap(input => [
+        input.meta.label,
+        input.meta.description,
+      ]),
+      ...playbook.outputs.flatMap(output => [
+        output.meta.label,
+        output.meta.description,
+      ]),
+      ...playbook.dataSources,
+    ].join(' '))
+  })
+  return playbook_tsvectors
 })
 
 export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
@@ -63,6 +67,9 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
         playbook: {
           in: playbooks.map(({ id }) => id),
         },
+      },
+      orderBy: {
+        created: 'desc',
       },
     })
     const userPlaybookLookup = dict.init(userPlaybooks.map((playbook) => ({ key: playbook.playbook, value: playbook })))
@@ -167,10 +174,14 @@ export const UserPlaybook = API.get('/api/v1/user/playbooks/[id]')
     if (fpl === undefined) throw new NotFoundError()
     // TODO: move this logic into a db trigger
     // TODO: address playbook republishing
-    const [publicUserPlaybook, ..._] = await db.objects.user_playbook.findMany({
+    const [publicUserPlaybook] = await db.objects.user_playbook.findMany({
       where: {
         playbook: inputs.query.id,
         public: true,
+      },
+      take: 1,
+      orderBy: {
+        created: 'asc',
       },
     })
     if (publicUserPlaybook) {

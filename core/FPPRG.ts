@@ -784,8 +784,6 @@ export default class FPPRG {
     const playbookMetadata = metadata ? await this.resolvePlaybookMetadata(metadata) : undefined
     const processArrayFPL = FPL.fromProcessArray(processArray, playbookMetadata)
     if (!processArrayFPL) throw new NotFoundError()
-    const lastStep = workflow[workflow.length-1]
-    if ('id' in lastStep) processArrayFPL.id = lastStep.id
     return await this.upsertFPL(processArrayFPL)
   }
   getFPL = async (id: string): Promise<FPL | undefined> => {

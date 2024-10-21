@@ -76,7 +76,9 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
     const results = await Promise.all(playbooks.map(async ({ inputs, outputs, dataSources, ...playbook }) => {
       if (userPlaybookLookup[playbook.id] === undefined) {
         try {
-          await fpprg.resolveFPL(playbook.workflow as any)
+          const fpl = await fpprg.resolveFPL(playbook.workflow as any)
+          fpl.id = playbook.id
+          await fpprg.upsertFPL(fpl)
           userPlaybookLookup[playbook.id] = await db.objects.user_playbook.upsert({
             create: {
               playbook: playbook.id,

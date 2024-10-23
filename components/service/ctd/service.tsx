@@ -382,7 +382,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
   }).story(props => ({
     abstract: `CTD is applied which diffuses through all nodes in STRING\\ref{doi:10.1093/nar/gku1003} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}. STRING is an online database that stores graphical protein-protein interaction networks\\ref{doi:10.1093/nar/gku1003}.`,
-    methods: `CTD is used to identify the highly connected and Guilty By Association sets of proteins in the STRING protein interaction graph [ref{doi:10.1093/nar/gku1003}].`,
+    methods: `CTD is used to identify the highly connected and Guilty By Association sets of proteins in the STRING protein interaction graph\\ref{doi:10.1093/nar/gku1003}.`,
     legend: `A table displaying the CTD output including highly connected node subsets.`,
   })).build()
 

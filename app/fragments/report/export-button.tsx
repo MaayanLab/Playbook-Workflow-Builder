@@ -48,6 +48,14 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               download={`cwl-${id}.zip`}
             />
           </div>
+          <div className="tooltip block text-left" data-tip="Download RO-Crate object metadata for this workflow">
+            <Bp5MenuItem
+              icon="document"
+              text="Research Object Crate (RO-Crate)"
+              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/ro-crate/${id}`}
+              download={`ro-crate-metadata.json`}
+            />
+          </div>
           <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
             <Bp5MenuItem
               icon="document"

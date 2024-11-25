@@ -38,6 +38,12 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
             href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/cwl/${id}`}
             download={`cwl-${id}.zip`}
           />
+          <Bp5MenuItem
+            icon="document"
+            text="Research Object Crate (RO-Crate)"
+            href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/ro-crate/${id}`}
+            download={`ro-crate-metadata.json`}
+          />
         </Bp5Menu>
       }
       placement="bottom"

@@ -59,6 +59,7 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
     description: 'Regulatory elements in 10kbps region upstream or downstream of gene body.',
     icon: [linkeddatahub_icon],
     pagerank: 1,
+    external: true,
   })
   .inputs({ geneInfo: GeneInfo })
   .output(RegulatoryElementSet)
@@ -112,6 +113,7 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
     description: 'Regulatory elements in 10kbps region upstream or downstream of gene body.',
     icon: [linkeddatahub_icon],
     pagerank: 1,
+    external: true,
   })
   .inputs({ geneSet: GeneSet })
   .output(RegulatoryElementSetForGeneSetInfo)

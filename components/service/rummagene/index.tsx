@@ -10,6 +10,7 @@ export const RummageneGeneSet = MetaNode(`RummageneGeneSet`)
     label: 'Rummagene Gene Set',
     description: 'A gene set uploaded to rummagene',
     icon: [rummagene_icon],
+    external: true,
   })
   .codec(z.object({
     id: z.string(),
@@ -28,6 +29,7 @@ export const RummageneEnrichmentAnalysis = MetaNode(`RummageneEnrichmentAnalysis
   .meta({
     label: 'Rummagene Enrichment Analysis',
     description: 'Use Rummagene to search through gene sets in PubMedCentral supplemental material',
+    external: true,
   })
   .inputs({ gene_set: GeneSet })
   .output(RummageneGeneSet)

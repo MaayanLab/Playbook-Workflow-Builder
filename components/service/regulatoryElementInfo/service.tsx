@@ -28,6 +28,7 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     label: 'Retrieve regulatory element position',
     description: 'Find regulatory element postion (GRCh38)',
     icon: [linkeddatahub_icon],
+    external: true,
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
   .output(RegulatoryElementPositionInfo)
@@ -89,6 +90,7 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     label: 'Retrieve regulatory element(s) position',
     description: 'Find regulatory element postions (GRCh38).',
     icon: [linkeddatahub_icon],
+    external: true,
   })
   .inputs({ regulatoryElementSet: RegulatoryElementSet })
   .output(RegulatoryElementsSetPosition)
@@ -109,6 +111,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   .meta({
     label: 'Identify Genes In Vicinity',
     description: 'Identify genes in 10kbps distance of regulatory element.',
+    external: true,
   })
   .inputs({  regulatoryElement: RegulatoryElementTerm   })
   .output(GeneSet)
@@ -181,6 +184,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
   .meta({
     label: 'Identify Genes In Vicinity',
     description: 'Identify genes in 10kbps distance of regulatory element(s).',
+    external: true,
   })
   .inputs({  regulatoryElementSet: RegulatoryElementSet  })
   .output(REGeneSet)
@@ -214,6 +218,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
   .meta({
     label: 'Identify Variants Within Regulatory Element',
     description: 'Retrieve registered variants in the region of given regulatory element from Allele Registry',
+    external: true,
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm  })
   .output(VariantSet)
@@ -360,6 +365,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     label: 'Get unique name for genomic region(s)',
     description: 'Get unique name for genomic location (if registered). Input format example: GRCh38 (chr1:826020-826220).',
     icon: [linkeddatahub_icon],
+    external: true,
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
   .output(UniqueGenomicRegion)
@@ -451,6 +457,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     label: 'Get unique name for genomic region(s)',
     description: 'Get unique name for genomic region(s)',
     icon: [linkeddatahub_icon],
+    external: true,
   })
   .inputs({ regulatoryElementSet: RegulatoryElementSet })
   .output(UniqueGenomicRegionRESet)
@@ -539,6 +546,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     label: 'Genomic region coordinate transformation across references',
     description: 'Get coordinates for genomic region(s) cross references: GRCh38, GRCh37 and NCBI36.',
     icon: [linkeddatahub_icon],
+    external: true,
   })
   .inputs({ regulatoryElement: RegulatoryElementTerm })
   .output(UniqueGenomicRegionCrossReference)
@@ -618,6 +626,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     label: 'Genomic region coordinate transformation across references',
     description: 'Get coordinates for genomic region(s) cross references: GRCh38, GRCh37 and NCBI36.',
     icon: [linkeddatahub_icon],
+    external: true,
   })
   .inputs({ regulatoryElementSet: RegulatoryElementSet })
   .output(UniqueGenomicRegionCrossReferenceRESet)

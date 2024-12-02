@@ -15,6 +15,7 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
   .meta({
     label: 'Align FASTQ Files',
     description: 'Align FASTQ files in the cloud',
+    external: true,
   })
   .codec(z.object({
     uid: z.string(),

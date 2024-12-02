@@ -107,6 +107,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   .meta({
     label: 'Retrieve Variant Associated eQTL Or sQTL Evidence',
     description: 'Identify eQTL and sQTL information ro the given variant based on GTEx data.',
+    external: true,
   })
   .inputs({ variant: VariantTerm  })
   .output(xQTL_EvidenceDataTable)
@@ -234,7 +235,8 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
   export const GetVariantSetXQTLEvidence = MetaNode('GetVariantSetXQTLEvidence')
   .meta({
     label: `Identify eQTLs and sQTLs and retrieve evidence`,
-    description: "Identify eQTL and sQTL information for the given variant(s) based on GTEx data."
+    description: "Identify eQTL and sQTL information for the given variant(s) based on GTEx data.",
+    external: true,
   })
   .inputs({ variantset: VariantSet })
   .output(xQTL_EvidenceFroVariantSet)

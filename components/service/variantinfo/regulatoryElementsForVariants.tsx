@@ -86,7 +86,8 @@ export const GetRegulatoryElementsForThisVariant = MetaNode('GetRegulatoryElemen
   export const GetRegulatoryElementsForVariantSet = MetaNode('GetRegulatoryElementsForVariantSet')
   .meta({
     label: `Identify regulatory elements associated with variant(s)`,
-    description: "Retrieve regulatory element(s) that overlap with each given variant(s) from CFDE LDH."
+    description: "Retrieve regulatory element(s) that overlap with each given variant(s) from CFDE LDH.",
+    external: true,
   })
   .inputs({ variantset: VariantSet })
   .output(REforVariantSetInfo)

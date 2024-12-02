@@ -73,6 +73,7 @@ export const DrugShotTermSearchT = [
             Weighted: 1,
           },
         },
+        external: true,
       })
       .inputs({ term: TermT })
       .output(ScoredDrugs)
@@ -139,6 +140,7 @@ export const DrugShotDrugSetAugmentation = ([
           Weighted: 1,
         },
       },
+      external: true,
     })
     .inputs({ drugset: DrugSet })
     .output(ScoredDrugs)
@@ -177,6 +179,7 @@ export const DrugShotDrugSetAugmentation = ([
           Weighted: 1,
         },
       },
+      external: true,
     })
     .inputs({ drug: DrugTerm })
     .output(ScoredDrugs)

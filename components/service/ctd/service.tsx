@@ -94,7 +94,8 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
         CTD: 1
       }
     },
-    icon: [ctd_icon]
+    icon: [ctd_icon],
+    external: true,
   })
   .inputs({geneExpressions: GeneCountMatrix})
   .output(CTDAdjacencyAndExpressions)
@@ -128,7 +129,8 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
   .meta({
     label: `Connect the Dots in Precalculated Graph`,
     description: `Use CTD to "Connect the Dots" and identify highly connected set of proteins using the pre-calculated graph.`,
-    icon: [ctd_icon]
+    icon: [ctd_icon],
+    external: true,
   })
   .inputs({ geneSet: GeneSet, ctdAdjacencyAndExpressions: CTDAdjacencyAndExpressions})
   .output(CTD_DataSet)
@@ -207,6 +209,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
   .meta({
     label: `CTD Custom Response - Final`,
     description: `This card sends the gene expression matrix, the gene set and the adjacency matrix to the CTD API for processing. The following card shows the outputs for CTD.`,
+    external: true,
   })
   .inputs({ ctdDataSet: CTD_DataSet})
   .output(CTDResponseInfo)
@@ -363,6 +366,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     label: `CTD - Connect the Dots in STRING`,
     description: 'Use CTD to "Connect the Dots" and identify highly connected set of proteins in the STRING protein interaction graph. *Please note 10-150 genes of interest are required to run CTD',
     icon: [ctd_icon],
+    external: true,
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
@@ -391,6 +395,7 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
     label: `CTD - Connect the Dots in Wikipathways`,
     description: `Use CTD to "Connect the Dots" and identify highly connected set of genes in the WikiPathways pathway annotation graph. *Please note 10-150 genes of interest are required to run CTD`,
     icon: [ctd_icon],
+    external: true,
   })
   .inputs({ geneset: GeneSet })
   .output(CTDResponseInfo)
@@ -417,7 +422,8 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
     label: `CTD String For Genes Set File`,
     description: "Ensure a file contains a gene set, values separated by a \\n character  and with the extension .csv",
-    icon: [file_transfer_icon]
+    icon: [file_transfer_icon],
+    external: true,
   })
   .inputs({ file: FileURL })
   .output(CTDResponseInfo)
@@ -446,7 +452,8 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
   .meta({
     label: `CTD Wikipathways For Genes Set File`,
     description: `Ensure a file contains a gene set, values separated by a \\n character and with the extension .csv`,
-    icon: [file_transfer_icon]
+    icon: [file_transfer_icon],
+    external: true,
   })
   .inputs({ file: FileURL })
   .output(CTDResponseInfo)

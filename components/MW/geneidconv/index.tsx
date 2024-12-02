@@ -12,6 +12,7 @@ export const GeneIDConv = MetaNode('GeneIDConv')
     label: 'Gene ID Conversion',
     description: 'Given one type of gene ID, generate other types of gene IDs',
     icon: [metabolomicsworkbench_icon],
+    external: true,
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
@@ -48,6 +49,7 @@ export const GeneSetIDConv = MetaNode('GeneSetIDConv')
   .meta({
     label: 'Gene ID Conversion for a set of genes',
     description: 'Given one type of gene ID for a set of genes, generate other types of gene IDs.',
+    external: true,
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

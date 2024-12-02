@@ -11,6 +11,7 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
     label: 'MetGENE Studies',
     description: 'Extract Metabolomics studies for the gene from MetGENE',
     icon: [metgene_icon],
+    external: true,
   })
 
 
@@ -48,6 +49,7 @@ export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
     label: 'MetGENE Studies with gene set',
     description: 'Compute the MetGENE studies function for a gene set',
     icon: [gene_icon, set_icon, additional_info_icon],
+    external: true,
   })
 
 

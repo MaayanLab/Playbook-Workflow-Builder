@@ -191,6 +191,7 @@ export const FetchStringDBPPI = MetaNode('FetchStringDBPPI')
   label: 'Fetch StringDB PPI',
   description: 'Given a gene or gene set (SYMBOL), extract PPI using StringDB APIs',
   icon: [metabolomicsworkbench_icon],
+  external: true,
 })
 // This should be a mapping from argument name to argument type
 //  the types are previously defined Meta Node Data Types

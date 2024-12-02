@@ -53,6 +53,8 @@ export type InternalIdentifiableMetaNode = {
     version?: string,
     author?: string,
     license?: string,
+    // whether or not this metanode relies on external resources to function
+    external?: boolean,
   }
 }
 

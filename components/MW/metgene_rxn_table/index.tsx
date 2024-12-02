@@ -35,6 +35,7 @@ export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
     label: 'MetGENE Reaction Table',
     description: 'MetGENE Reaction Table',
     icon: [reaction_icon, additional_info_icon],
+    external: true,
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

@@ -72,6 +72,7 @@ export const ConvertedGeneID = MetaNode('ConvertedGeneID')
     label: 'Gene IDs table',
     description: 'Gene IDs table',
     icon: [gene_icon, additional_info_icon],
+    external: true,
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

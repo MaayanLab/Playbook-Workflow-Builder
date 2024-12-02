@@ -28,6 +28,7 @@ export const GlycanViewResponseNode = MetaNode("GlycanViewResponse")
   .meta({
     label: "Glycan information",
     description: "Glycan information from GlyGen",
+    external: true,
   })
   .codec(GlycanResponse)
   .view((data) => {
@@ -98,6 +99,7 @@ export const GlyGenGlycanSetResponseNode = MetaNode("GlyGenGlycanSetResponse")
     label: "GlyGen Glycans",
     description: "Protein product records in GlyGen",
     icon: [glygen_icon],
+    external: true,
   })
   .codec(GlyGenGlycanSetResponse)
   .view((data) => {
@@ -177,6 +179,7 @@ export const GlycanInformation = MetaNode("GlycanInformation")
     description: "Search for Glycan information",
     // icon: []
     pagerank: 2,
+    external: true,
   })
   .inputs({ glycan: GlycanTerm })
   .output(GlycanViewResponseNode)
@@ -200,6 +203,7 @@ export const GlyGenGlycanSet = MetaNode("GGGS")
     description: "Find glycan records in GlyGen.",
     icon: [glygen_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ glycan_glytoucan_acc_set: GlycanSet })
   .output(GlyGenGlycanSetResponseNode)

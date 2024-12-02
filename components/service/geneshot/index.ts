@@ -56,6 +56,7 @@ export const GeneshotTermSearchT = [
         label: `Search PubMed for Gene Co-Mentions with ${label}`,
         description: `Geneshot ${T.label.toLowerCase()}-gene co-mentions`,
         icon: [geneshot_icon, ...icon],
+        external: true,
         tags: {
           'Input Type': {
             [T.name]: 1,
@@ -130,6 +131,7 @@ export const GeneshotGeneSetAugmentation = ([
       label: `Expand a Gene Set based on ${label}`,
       description: 'Geneshot Gene Set Augmentation',
       icon: [geneshot_icon, ...icon],
+      external: true,
       tags: {
         'Input Type': {
           Gene: 1,
@@ -167,6 +169,7 @@ export const GeneshotGeneSetAugmentation = ([
       label: `Construct a Gene Set based on ${label}`,
       description: 'Geneshot Gene Set Augmentation',
       icon: [geneshot_icon, ...icon],
+      external: true,
       tags: {
         'Input Type': {
           Gene: 1,
@@ -196,7 +199,7 @@ export const GeneshotGeneSetAugmentation = ([
     .story(props => ({
       abstract: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} was augmented with Geneshot based on ${label}\\ref{doi:10.1093/nar/gkz393}.`,
       methods: `${props.inputs?.gene ? props.inputs.gene : 'The gene'} is augmented using a similarity matrix based on ${label} using Geneshot's REST API\\ref{doi:10.1093/nar/gkz393}.`,
-      legend: `A table of similar genes to ${props.inputs?.gene ? props.inputs.gene : '{props.input_ref.gene}'} produced by using a ${label} similarity matrix with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
+      legend: `A table of similar genes to ${props.inputs?.gene ? props.inputs.gene : `${props.input_refs?.gene}`} produced by using a ${label} similarity matrix with Geneshot\\ref{doi:10.1093/nar/gkz393}.`,
     }))
     .build(),
 ])

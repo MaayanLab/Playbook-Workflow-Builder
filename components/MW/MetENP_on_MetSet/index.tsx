@@ -29,6 +29,7 @@ export const MetENP_MetSet = MetaNode('MetENP_MetSet')
     label: 'Output from MetENP on MetaboliteSet',
     description: 'Output from MetENP on MetaboliteSet',
     icon: [additional_info_icon],
+    external: true,
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed
@@ -64,6 +65,7 @@ export const Call_MetENP_on_MetSet = MetaNode('Call_MetENP_on_MetSet')
   label: 'Perform MetENP analysis on a list of metabolites (no numeric data)',
   description: 'Given a list of metabolites as MetaboliteSet, Perform MetENP analysis on the list',
   icon: [metabolomicsworkbench_icon],
+  external: true,
 })
 // This should be a mapping from argument name to argument type
 //  the types are previously defined Meta Node Data Types

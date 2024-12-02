@@ -111,7 +111,8 @@ export const RankedDrugToxicity = MetaNode(`[RankedDrugToxicityTable]`)
 export const RankedListDrugToxicity = MetaNode(`[RankedListOfDrugsCandidates]`)
     .meta({
         label: 'Ranked List of Drug Candidates',
-        description: 'Rank List of Drug Candidates via Cytotoxicity, Blood Brain Barrier, and Confidence Score'
+        description: 'Rank List of Drug Candidates via Cytotoxicity, Blood Brain Barrier, and Confidence Score',
+        external: true,
     })
     .inputs({ ScoredDrugs, DrugCytotoxictyChembl, DrugBloodBrainBarrier })
     .output(RankedDrugToxicity)

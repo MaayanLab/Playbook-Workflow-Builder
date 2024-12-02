@@ -99,6 +99,7 @@ export const KEA3KinaseEnrichmentAnalysis = MetaNode('KEA3KinaseEnrichmentAnalys
     label: 'Kinase Enrichment Analysis',
     description: 'Use KEA3 API to infer upstream kinases whose putative substrates are overrepresented in the input set',
     icon: [kea3_icon],
+    external: true,
   })
   .inputs({ gene_set: GeneSet })
   .output(GeneRanked)

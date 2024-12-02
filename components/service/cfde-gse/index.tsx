@@ -10,6 +10,7 @@ export const CFDEGSEKG = MetaNode('CFDEGSEKG')
     label: 'CFDE Gene Set Enrichment Knowledge Graph',
     description: 'A CFDE-Centric knowledge graph for gene set enrichment results',
     icon: [view_in_graph_icon],
+    external: true,
   })
   .codec(z.union([
     z.object({
@@ -59,6 +60,7 @@ export const EnrichrUserListToCFDEGSEKG = MetaNode('EnrichrUserListToCFDEGSEKG')
         'CFDE': 1
       },
     },
+    external: true,
   })
   .inputs({ enrichr: EnrichrEnrichmentAnalysis })
   .output(CFDEGSEKG)

@@ -124,6 +124,7 @@ export const AlleleRegistryExternalRecordsTable = MetaNode('AlleleRegistryExtern
   .meta({
     label: 'Retrieve alternative identifiers for variant',
     description: 'Retrieve MyVariant.info, dbSNP, gnomAD, and other common identifiers for given variant from ClinGen Allele Registry.',
+    external: true,
   })
   .inputs({ variant: VariantTerm  })
   .output(AlleleRegistryExternalRecordsTable)

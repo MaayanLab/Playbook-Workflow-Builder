@@ -53,6 +53,7 @@ export const GeneInfo = MetaNode('GeneInfo')
     label: 'Gene Information',
     description: 'A Gene resolved with MyGeneInfo',
     icon: [gene_icon],
+    external: true,
   })
   .codec(MyGeneInfoC)
   .view(geneinfo => (
@@ -68,6 +69,7 @@ export const GeneInfoFromGeneTerm = MetaNode('GeneInfoFromGeneTerm')
     description: 'Resolve gene info from gene term with MyGeneInfo',
     icon: [mygeneinfo_icon],
     hidden: true,
+    external: true,
   })
   .inputs({ gene: GeneTerm })
   .output(GeneInfo)

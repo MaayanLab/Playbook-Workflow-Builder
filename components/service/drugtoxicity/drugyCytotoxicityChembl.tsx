@@ -93,6 +93,7 @@ export const QueryDrugCytotoxocityCHEMBL = MetaNode('QueryDrugCytotoxocityCHEMBL
         label: 'Query CHEMBL Drug Cytotoxocity',
         description: 'Use CHEMBL API Activity Model to obtain drug cytotoxicity data',
         pagerank: 1,
+        external: true,
     })
     .inputs({ ScoredDrugs })
     .output(DrugCytotoxictyChembl)

@@ -14,6 +14,7 @@ export const TargtRangerScreenTargetsT = [
       label: `Screen for Targets against ${label}`,
       description: `Identify significantly overexpressed genes when compared to normal tissue in ${label}`,
       icon: [targetranger_icon, icon],
+      external: true,
     })
     .inputs({ input: GeneCountMatrix })
     .output(ScoredGenes)

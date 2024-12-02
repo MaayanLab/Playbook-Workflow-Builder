@@ -99,6 +99,7 @@ export const ChEA3TFEnrichmentAnalysis = MetaNode('ChEA3TFEnrichmentAnalysis')
     label: 'Transcription Factor Enrichment Analysis',
     description: 'Use ChEA3 API to identify TFs associated with the input set',
     icon: [chea3_icon],
+    external: true,
   })
   .inputs({ gene_set: GeneSet })
   .output(GeneRanked)

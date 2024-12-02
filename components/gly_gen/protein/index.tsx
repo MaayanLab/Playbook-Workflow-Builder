@@ -32,6 +32,7 @@ export const GlyGenProteinResponseNode = MetaNode("GlyGenProteinResponse")
     label: "GlyGen Protein Products",
     description: "Protein product records in GlyGen",
     icon: [glygen_icon],
+    external: true,
   })
   .codec(GlyGenProteinResponse)
   .view((data) => {
@@ -123,6 +124,7 @@ export const GlyGenProteinSetResponseNode = MetaNode("GlyGenProteinSetResponse")
     label: "GlyGen Protein Products",
     description: "Protein product records in GlyGen",
     icon: [glygen_icon],
+    external: true,
   })
   .codec(GlyGenProteinSetResponse)
   .view((data) => {
@@ -184,6 +186,7 @@ export const GlycosylationViewResponseNode = MetaNode(
     label: "Glycosylation Information for Glycoproteins",
     description: "Glycosylation product records in GlyGen",
     icon: [glygen_icon],
+    external: true,
   })
   .codec(GlycosylationData)
   .view((data) => {
@@ -281,6 +284,7 @@ export const SNVViewResponseNode = MetaNode("SNVViewResponseNode")
     label: "SNV Information",
     description: "SNV Information",
     icon: [glygen_icon],
+    external: true,
   })
   .codec(GlyGenProteinResponseArray)
   .view((data) => {
@@ -368,6 +372,7 @@ export const GlyGenProtein = MetaNode("GGP")
     description: "Find protein product records in GlyGen for the gene",
     icon: [glygen_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ protein_uniprot_canonical_ac: ProteinTerm })
   .output(GlyGenProteinResponseNode)
@@ -389,6 +394,7 @@ export const GlyGenProteinSet = MetaNode("GGPS")
     description: "Find protein product records in GlyGen.",
     icon: [glygen_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ protein_uniprot_canonical_acs: ProteinSet })
   .output(GlyGenProteinSetResponseNode)
@@ -470,6 +476,7 @@ export const SNVInformation = MetaNode("SNVInformation")
     description: "SNV information",
     icon: [glygen_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ glyGenSetProteinResponse: GlyGenProteinSetResponseNode })
   .output(SNVViewResponseNode)

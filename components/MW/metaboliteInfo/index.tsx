@@ -11,6 +11,7 @@ export const MetaboliteInfo = MetaNode('MetaboliteInfo')
     label: 'Metabolite information',
     description: 'Extract information for a metabolite',
     icon: [metabolomicsworkbench_icon],
+    external: true,
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
@@ -47,6 +48,7 @@ export const MetaboliteSetInfo = MetaNode('MetaboliteSetInfo')
   .meta({
     label: 'Extract metabolite set information',
     description: 'Extract information for a set of metabolites',
+    external: true,
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

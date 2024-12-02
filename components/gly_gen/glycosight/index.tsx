@@ -76,6 +76,7 @@ export const GlycoSightFileURLNode = MetaNode("GlycoSightURL")
         label:"GlycoSight File URL",
         description: "URL to storage of MZID archives",
         icon: [glygen_icon],
+        external: true,
     })
     .codec(GlycoSightFileURLC)
     .view((data) => (
@@ -90,6 +91,7 @@ export const GlycoSightProcessNode = MetaNode("GlycoSightProcessNode")
         label: `Launch GlycoSight Analysis`,
         description: `Run GlycoSight Analysis on MZID file(s)`,
         icon: [glygen_icon],
+        external: true,
     })
     .inputs({ file: GlycoSightFileURLNode })
     .output(GlycoSightOutputNode)
@@ -102,7 +104,7 @@ export const GlycoSightProcessNode = MetaNode("GlycoSightProcessNode")
       }
       const fileBuffer = Buffer.concat(chunks);
 
-      const result = UploadAndAnalyze(props.inputs.file, fileBuffer);
+      const result = await UploadAndAnalyze(props.inputs.file, fileBuffer);
       
       return result;
     })
@@ -116,6 +118,7 @@ export const GlycoSightFileUpload = MetaNode("GlycoSightUpload")
         label: "Upload GlycoSight MZID",
         description: "Upload MZID data for peptide-to-Uniprot sample mapping",
         icon: [glygen_icon],
+        external: true,
     })
     .codec(FileC)
     .inputs() 

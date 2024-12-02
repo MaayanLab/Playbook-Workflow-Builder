@@ -26,6 +26,7 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
     label: 'MetGENE Studies Table',
     description: 'Studies table corresponding to gene',
     icon: [study_icon, additional_info_icon],
+    external: true,
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

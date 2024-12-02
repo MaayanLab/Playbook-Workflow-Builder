@@ -11,6 +11,7 @@ export const MetGeneSummary = MetaNode('MetGeneSummary')
     label: `MetGENE Summary`,
     description: 'A dashboard for reviewing gene-centric information for a given gene from metabolomics',
     icon: [metgene_icon, plot_icon],
+    external: true,
   })
   .codec(z.object({ gene: z.string() }))
   .view(value => {

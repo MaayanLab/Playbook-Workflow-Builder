@@ -23,6 +23,7 @@ export const CTD_DataSet = MetaNode('CTD_DataSet')
   label: 'Data set containg all of the inout types for the final CTD request!',
   description: 'Data set containig the Adjacency Matrix (.csv), PErmutations (.RData) and Gene Set (.csv)',
   icon: [datafile_icon],
+  external: true,
 })
 .codec(CTD_DataSetC)
 .view(props => {
@@ -77,6 +78,7 @@ export const CTDAdjacencyAndExpressions = MetaNode('CTDAdjacencyAndExpressions')
   label: 'CTD Adjacency and Expression file',
   description: 'An Adjacency JSON file and Expression CSV file.',
   icon: [datafile_icon],
+  external: true,
 })
 .codec(
   z.object({

@@ -24,6 +24,7 @@ export const GlyGenProteinProduct = MetaNode("GGPP")
     description: "Find protein product records in GlyGen for the gene",
     icon: [glygen_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ gene: GeneInfo })
   .output(GlyGenProteinResponseNode)
@@ -45,6 +46,7 @@ export const GlyGenProteinInformation = MetaNode("GlyGenProteinInformation")
     description: "Find protein product records in GlyGen for the gene",
     icon: [glygen_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ gene: GeneTerm })
   .output(GlyGenProteinResponseNode)

@@ -25,6 +25,7 @@ export const MetGeneSummaryTable = MetaNode('MetGeneSummaryTable')
   .meta({
     label: 'Metgene Summary Table',
     description: 'Metgene Summary Table comprises of the number of pathways, reactions, metabolites and studies corresponding to the given gene.',
+    external: true,
   })
   // this should have a codec which can encode or decode the data type represented by this node
   //  using zod, a compile-time and runtime type-safe codec can be constructed

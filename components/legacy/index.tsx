@@ -54,6 +54,7 @@ export const GeneTermFromVariantTerm = MetaNode('GeneTermFromVariantTerm')
     description: 'Identify the closest gene to this variant',
     icon: [mygeneinfo_icon],
     hidden: true,
+    external: true,
   })
   .inputs({ variant: VariantTerm })
   .output(GeneTerm)
@@ -92,7 +93,8 @@ export const VariantInfoFromVariantTermMyVarintInfo = MetaNode('VariantInfoFromV
   .meta({
     label: 'Resolve Variant Info from Term (MyVarintInfo)',
     description: 'Resolve variant info from variant term using the MyVarintInfo API.',
-    hidden: true
+    hidden: true,
+    external: true,
   })
   .inputs({ variant: VariantTerm })
   .output(MyVariantInfo)

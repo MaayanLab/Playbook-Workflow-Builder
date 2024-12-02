@@ -33,6 +33,7 @@ export const IDGFilterT = [
       description: `Based on IDG proteins list`,
       icon: [idg_icon],
       pagerank: -1,
+      external: true,
     })
     .inputs({ input: ScoredGenes })
     .output(ScoredGenes)
@@ -53,6 +54,7 @@ export const IDGFilterT = [
       description: `Based on IDG understudied proteins list`,
       icon: [idg_icon],
       pagerank: -1,
+      external: true,
     })
     .inputs({ input: GeneSet })
     .output(GeneSet)

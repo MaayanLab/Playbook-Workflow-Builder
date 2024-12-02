@@ -210,6 +210,7 @@ export const EnrichrTToT = [
       label: `${EnrichrSetT.meta.label} as GMT`,
       icon: [enrichr_icon],
       description: `Load Enrichr set as GMT`,
+      external: true,
     })
     .inputs({ enrichrset: EnrichrSetT })
     .output(GMT)
@@ -226,6 +227,7 @@ export const EnrichrTToT = [
       label: `${EnrichrSetT.meta.label} as UMAP`,
       icon: [enrichr_icon],
       description: `Load Enrichr set as UMAP`,
+      external: true,
     })
     .inputs({ enrichrset: EnrichrSetT })
     .output(PlotlyPlot)
@@ -293,6 +295,7 @@ export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
     label: 'Enrichr Enrichment Analysis',
     description: 'A gene set submitted to [Enrichr](https://maayanlab.cloud/Enrichr/)',
     icon: [enrichr_icon, gene_icon],
+    external: true,
   })
   .codec(z.union([
     z.object({
@@ -338,6 +341,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     },
     icon: [enrichr_icon],
     description: 'Perform Enrichment Analysis',
+    external: true,
   })
   .inputs({ geneset: GeneSet })
   .output(EnrichrEnrichmentAnalysis)
@@ -412,6 +416,7 @@ backgrounds.map(bg => ({ bg, output, T }))
         },
         ...('tags' in bg ? bg.tags as Record<string, Record<string, 1>> : {}),
       },
+      external: true,
     })
     .inputs({ searchResults: EnrichrEnrichmentAnalysis })
     .output(output)
@@ -439,6 +444,7 @@ export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
     label: `Enrichr Gene Search Results`,
     icon: [enrichr_icon, search_icon, gene_icon],
     description: `Find terms in Enrichr Libraries containing the gene`,
+    external: true,
   })
   .codec(z.string())
   .view(gene => {
@@ -458,6 +464,7 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
     label: `Extract Gene Sets Containing the Gene`,
     icon: [enrichr_icon, search_icon, gene_icon],
     description: `Find terms in Enrichr Libraries containing the gene`,
+    external: true,
   })
   .inputs({ gene: GeneTerm })
   .output(EnrichrGeneSearchResults)
@@ -510,6 +517,7 @@ backgrounds.map(bg => ({ bg, output, T }))
         },
         ...('tags' in bg ? bg.tags as Record<string, Record<string, 1>> : {}),
       },
+      external: true,
     })
     .inputs({ searchResults: EnrichrGeneSearchResults })
     .output(output)
@@ -530,6 +538,7 @@ export const EnrichrTermSearchResults = MetaNode(`EnrichrTermSearchResults`)
     label: `Enrichr Term Search Results`,
     icon: [enrichr_icon, search_icon],
     description: `Results of an Enrichr Term Search`,
+    external: true,
   })
   .codec(z.string())
   .view(term => {
@@ -607,6 +616,7 @@ export const EnrichrTermSearchT = [
       icon: [enrichr_icon, ...(bg.icon||[])],
       description: `Extract Terms from the ${bg.label} Library`,
       hidden: 'hidden' in bg && bg.hidden === true,
+      external: true,
       tags: {
         'Output Type': {
           [pluralize(T.label)]: 1,

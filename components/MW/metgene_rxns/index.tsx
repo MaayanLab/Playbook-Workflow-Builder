@@ -11,6 +11,7 @@ export const MetGeneRxns = MetaNode('MetGeneRxns')
     label: 'MetGENE Reactions',
     description: 'Extract Metabolomics reactions for the gene from MetGENE',
     icon: [metgene_icon],
+    external: true,
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types
@@ -46,6 +47,7 @@ export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
   .meta({
     label: 'MetGENE Reactions with Gene Set',
     description: 'Compute the MetGENE Reactions for a Gene Set',
+    external: true,
   })
   // This should be a mapping from argument name to argument type
   //  the types are previously defined Meta Node Data Types

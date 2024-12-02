@@ -40,6 +40,7 @@ export const LINCSL1000ReverseSearchDashboard = MetaNode('LINCSL1000ReverseSearc
     label: `LINCS L1000 Reverse Search Dashboard`,
     description: 'A dashboard for performing L1000 Reverse Search queries for a given gene',
     icon: [lincs_icon, plot_icon],
+    external: true,
   })
   .codec(z.object({ gene: z.string() }))
   .view(value => {
@@ -79,6 +80,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
     label: `Extract Up Regulating Perturbagens`,
     description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene.',
     icon: [up_icon],
+    external: true,
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
   .output(ScoredDrugs)
@@ -103,6 +105,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
     label: `Extract Down Regulating Perturbagens`,
     description: 'Identify RNA-seq-like LINCS L1000 Chemical Perturbagen Signatures which reverse the expression of the gene.',
     icon: [down_icon],
+    external: true,
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
   .output(ScoredDrugs)
@@ -127,6 +130,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
     label: `Extract Up Regulating CRISPR KO Genes`,
     description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene.',
     icon: [up_icon],
+    external: true,
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
   .output(ScoredGenes)
@@ -151,6 +155,7 @@ export const LINCSL1000ReverseSearchExtractGeneDown = MetaNode('LINCSL1000Revers
     label: `Extract Down Regulating CRISPR KOs`,
     description: 'Identify RNA-seq-like LINCS L1000 CRISPR KO Signatures which reverse the expression of the gene.',
     icon: [down_icon],
+    external: true,
   })
   .inputs({ search: LINCSL1000ReverseSearchDashboard })
   .output(ScoredGenes)

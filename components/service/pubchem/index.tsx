@@ -7,6 +7,7 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
   .meta({
     label: 'Extract FDA Approved Drugs',
     description: 'Filter the drug set with PubChem APIs',
+    external: true,
   })
   .inputs({ drugs: DrugSet })
   .output(DrugSet)
@@ -28,6 +29,7 @@ export const FilterFDAApprovedSetDrugs = MetaNode(`FilterFDAApprovedDrugs[Set[Dr
   .meta({
     label: 'Extract FDA Approved Drugs',
     description: 'Filter the drugs with PubChem APIs',
+    external: true,
   })
   .inputs({ drugs: ScoredDrugs })
   .output(ScoredDrugs)

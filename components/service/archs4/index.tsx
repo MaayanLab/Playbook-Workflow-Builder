@@ -34,6 +34,7 @@ export const ARCHS4TissueExpression = MetaNode('ARCHS4TissueExpression')
     label: 'Query ARCHS4 Median Tissue Expression',
     description: 'Use ARCHS4 API to obtain median tissue expression for the given gene',
     icon: [archs4_icon],
+    external: true,
   })
   .inputs({ gene: GeneTerm })
   .output(ScoredTissues)
@@ -152,6 +153,7 @@ export const ARCHS4SignatureResolve = MetaNode(`ARCHS4SignatureResolve`)
   .meta({
     label: `Fetch GEO Sample Expression`,
     description: `Get the gene count expression data from ARCHS4`,
+    external: true,
   })
   .inputs({ results: ARCHS4SignatureResults })
   .output(GeneCountMatrix)
@@ -175,6 +177,7 @@ export const ARCHS4SignatureSearchT = [
     label: `ARCHS4 Signature Search`,
     description: `Query ARCHS4 ${species} Signatures`,
     icon: [archs4_icon],
+    external: true,
   })
   .inputs({ genes: ScoredGenes })
   .output(ARCHS4SignatureResults)
@@ -229,6 +232,7 @@ export const ARCHS4SignatureTermSearchT = [
       label: `ARCHS4 Signature ${T.label} Search`,
       description: `Query ARCHS4 ${species} Signatures by term`,
       icon: [archs4_icon],
+      external: true,
     })
     .inputs({ term: TermT })
     .output(ARCHS4SignatureResults)

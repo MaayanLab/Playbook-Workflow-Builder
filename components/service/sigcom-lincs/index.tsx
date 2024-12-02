@@ -142,6 +142,7 @@ export const SigComLINCSSignatureSearch = MetaNode(`SigComLINCSSignatureSearch`)
     label: 'SigCom LINCS Signature Search',
     description: 'Query LINCS L1000 Signatures',
     icon: [lincs_icon],
+    external: true,
   })
   .inputs({ genes: ScoredGenes })
   .output(SigComLINCSSignatureResults)
@@ -175,6 +176,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_cp = MetaNode(`ExtractSigC
     label: `Extract LINCS L1000 Chemical Perturbagens`,
     description: 'Extract signatures from the results',
     icon: [lincs_icon, drug_icon],
+    external: true,
   })
   .inputs({ searchResults: SigComLINCSSignatureResults })
   .output(ScoredDrugs)
@@ -204,6 +206,7 @@ export const ExtractSigComLINCSSignatureSearchT_l1000_xpr = MetaNode(`ExtractSig
     label: `Extract LINCS L1000 CRISPR KOs`,
     description: 'Extract signatures from the results',
     icon: [lincs_icon, gene_icon],
+    external: true,
   })
   .inputs({ searchResults: SigComLINCSSignatureResults })
   .output(ScoredGenes)
@@ -233,6 +236,7 @@ export const SigComLINCSGeneSetResults = MetaNode(`SigComLINCSGeneSetResults`)
     label: 'SigCom LINCS Gene Set Search Results',
     description: 'LINCS L1000 Gene Set Query Results',
     icon: [lincs_icon, set_icon],
+    external: true,
   })
   .codec(z.object({ id: z.string(), entities: z.array(z.string()) }))
   .view(props => (
@@ -250,6 +254,7 @@ export const SigComLINCSGeneSetSearch = MetaNode(`SigComLINCSGeneSetSearch`)
     label: 'SigCom LINCS Gene Set Search',
     description: 'Query LINCS L1000 Signatures',
     icon: [lincs_icon],
+    external: true,
   })
   .inputs({ genes: GeneSet })
   .output(SigComLINCSGeneSetResults)
@@ -272,6 +277,7 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_cp = MetaNode(`ExtractSigCom
     label: `Extract LINCS L1000 Chemical Perturbagens`,
     description: 'Extract signatures from the results',
     icon: [lincs_icon, drug_icon],
+    external: true,
   })
   .inputs({ searchResults: SigComLINCSGeneSetResults })
   .output(ScoredDrugs)
@@ -300,6 +306,7 @@ export const ExtractSigComLINCSGeneSetSearchT_l1000_xpr = MetaNode(`ExtractSigCo
     label: `Extract LINCS L1000 CRISPR KOs`,
     description: 'Extract signatures from the results',
     icon: [lincs_icon, gene_icon],
+    external: true,
   })
   .inputs({ searchResults: SigComLINCSGeneSetResults })
   .output(ScoredGenes)

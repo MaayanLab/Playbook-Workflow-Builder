@@ -30,6 +30,7 @@ export const SupervennFromGMT = MetaNode('SupervennFromGMT')
     label: 'Compare sets with Supervenn',
     description: 'Interactively analyse overlap between sets',
     icon: [supervenn_icon],
+    external: true,
   })
   .inputs({ gmt: GMT })
   .output(Supervenn)
@@ -63,6 +64,7 @@ export const SupervennFromDMT = MetaNode('SupervennFromDMT')
     label: 'Compare sets with Supervenn',
     description: 'Interactively analyse overlap between sets',
     icon: [supervenn_icon],
+    external: true,
   })
   .inputs({ dmt: DMT })
   .output(Supervenn)

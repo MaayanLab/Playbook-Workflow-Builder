@@ -92,6 +92,7 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
     label: 'Query KF Gene Expression in Tumor',
     description: 'Use KF API to obtain tumors expressing the given gene',
     pagerank: 1,
+    external: true,
   })
   .inputs({ gene_info: GeneInfo })
   .output(TumorGeneExpression)

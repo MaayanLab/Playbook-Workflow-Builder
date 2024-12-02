@@ -63,6 +63,7 @@ export const QueryDrugBloodBrainBarrier = MetaNode('QueryDrugBloodBrainBarrier')
         label: 'Query Drug Blood Brain Barrier Permeability',
         description: 'Use B3DB to query Blood Brain Barrier Permeability',
         pagerank: 1,
+        external: true,
     })
     .inputs({ ScoredDrugs })
     .output(DrugBloodBrainBarrier)

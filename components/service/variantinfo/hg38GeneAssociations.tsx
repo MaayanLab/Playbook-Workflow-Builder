@@ -178,7 +178,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   export const GetGeneForVariantFromMyVariantInfo = MetaNode('GetGeneForVariantFromMyVariantInfo')
   .meta({
     label: 'Identify genes in the vicinity of given variant',
-    description: 'Retrieve gene(s) in the vicinity of given variant from MyVariant.info.'
+    description: 'Retrieve gene(s) in the vicinity of given variant from MyVariant.info.',
+    external: true,
   })
   .inputs({ variant: VariantTerm })
   .output(GeneAssociations_HG38)
@@ -210,7 +211,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   export const GetVariantToGeneAssociation_HG38 = MetaNode('GetVariantToGeneAssociation_HG38')
   .meta({
     label: `Identify Variant And Gene Association (HG38)`,
-    description: "Get Associated Gene info for a given Variant."
+    description: "Get Associated Gene info for a given Variant.",
+    external: true,
   })
   .inputs({ externalRecords: AlleleRegistryExternalRecordsTable })
   .output(GeneAssociations_HG38)
@@ -426,7 +428,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   export const GetVariantSetToGeneAssociation_HG38 = MetaNode('GetVariantSetToGeneAssociation_HG38')
   .meta({
     label: `Identify genes in the vicinity of given variant(s)`,
-    description: "Retrieve gene(s) in the vicinity of given variant(s) from MyVariant.info."
+    description: "Retrieve gene(s) in the vicinity of given variant(s) from MyVariant.info.",
+    external: true,
   })
   .inputs({ variantset: VariantSet })
   .output(GeneAssociationsSet_HG38)
@@ -454,7 +457,8 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
   export const GetVariantSetExternalRecToGeneAssociation_HG38 = MetaNode('GetVariantSetExternalRecToGeneAssociation_HG38')
   .meta({
     label: `Identify Variant (Set) And Gene Associations HG38`,
-    description: "Get Associated Gene info for a given set of Variant External records."
+    description: "Get Associated Gene info for a given set of Variant External records.",
+    external: true,
   })
   .inputs({ variantSetExternalRecordsInfo: VariantSetExternalRecordsInfo })
   .output(GeneAssociationsSet_HG38)

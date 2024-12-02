@@ -18,7 +18,7 @@ const cwl = {
   "doc": "Execute playbook workflows using CAVATICA resources.",
   "s:version": version,
   "s:author": "Daniel J. B. Clarke",
-  "s:license": "CC-BY-4.0",
+  "s:license": packageJson.license,
   "s:codeRepository": "https://github.com/MaayanLab/Playbook-Workflow-Builder",
   "s:keywords": ["pwb"],
   "inputs": [

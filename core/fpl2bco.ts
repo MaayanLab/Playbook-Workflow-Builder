@@ -32,7 +32,7 @@ export default async function FPL2BCO(props: { krg: KRG, fpl: FPL, metadata?: Me
       embargo: {}, // ?
       name: props.metadata?.title || 'Playbook',
       version: packageJson.version,
-      license: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+      license: 'https://creativecommons.org/licenses/by/4.0/',
       derived_from: `${process.env.PUBLIC_URL}/report/${fullFPL[fullFPL.length - 1].id}`,
       contributors: [],
       review: [],

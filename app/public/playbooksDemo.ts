@@ -36,7 +36,7 @@ Here are the references for the sources used:
     published: 'July 26, 2023',
     version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'KOMP',
@@ -70,7 +70,7 @@ Finally, a Supervenn diagram was used to visualize the collection of gene sets. 
     published: 'Mar 16, 2023',
     version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'GWAS Catalog',
@@ -109,7 +109,7 @@ References:
     published: 'July 26, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'GTEx',
@@ -133,7 +133,7 @@ References:
     published: 'Mar 16, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'ENCODE',
@@ -171,7 +171,7 @@ References:
     published: 'July 26, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'HPO',
@@ -202,7 +202,7 @@ References:
     published: 'July 26, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'BioThings',
@@ -229,7 +229,7 @@ References:
     published: 'July 26, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'BioThings',
@@ -258,7 +258,7 @@ References:
     published: 'July 26, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'BioThings',
@@ -287,7 +287,7 @@ References:
 //     published: 'July 26, 2023',
 //     version: '1.0.0',
 //     authors: ['CFDE Playbook Partnership'],
-//     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+//     licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
 //     license: 'CC-BY-4.0',
 //     dataSources: [
 //       'KidsFirst',
@@ -316,7 +316,7 @@ References:
 //     published: 'July 26, 2023',
 //     version: '1.0.0',
 //     authors: ['CFDE Playbook Partnership'],
-//     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+//     licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
 //     license: 'CC-BY-4.0',
 //     dataSources: [
 //       'KidsFirst',
@@ -339,7 +339,7 @@ References:
   //   published: 'July 26, 2023',
   //   version: '1.0.0',
   //   authors: ['CFDE Playbook Partnership'],
-  //   licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+  //   licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
   //   license: 'CC-BY-4.0',
   //   dataSources: [
   //     'ClinGen',
@@ -362,7 +362,7 @@ References:
     published: 'July 26, 2023',
     version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'ClinGen',
@@ -395,7 +395,7 @@ References:
     published: 'Oct 18, 2024',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'ClinGen',
@@ -418,7 +418,7 @@ References:
     published: 'Oct 18, 2024',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'ClinGen',
@@ -447,7 +447,7 @@ Here are the references for the sources mentioned:
     published: 'July 27, 2023',
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'LINCS',
@@ -497,7 +497,7 @@ The Metabolomics Workbench was used to identify associated metabolites and relev
     published: 'Mar 30, 2023',
     version: '1.0.2',
     authors: ['CFDE Playbook Partnership'],
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     license: 'CC-BY-4.0',
     dataSources: [
       'KidsFirst',

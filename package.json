@@ -3,6 +3,7 @@
   "version": "0.71.4",
   "description": "A repository for the playbook workflow builder collaboration.",
   "private": true,
+  "license": "CC-BY-4.0",
   "workspaces": [
     "./app",
     "./components/**"

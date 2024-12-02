@@ -25,7 +25,7 @@ export default async function fpl2ro_create(props: { krg: KRG, fpl: FPL, metadat
     "name": props.metadata?.title,
     "description": props.metadata?.description ?? story,
     "dateCreated": toISO8601TimeString(),
-    "license": 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    "license": 'https://creativecommons.org/licenses/by/4.0/',
     "programmingLanguage": [
       {
         "@type": "ComputerLanguage",

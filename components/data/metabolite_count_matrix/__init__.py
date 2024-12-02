@@ -11,32 +11,9 @@ class MetaboliteCountMatrix(File, typing.TypedDict):
   values: typing.List[typing.List[typing.Union[int, typing.Literal['nan'], typing.Literal['inf'], typing.Literal['-inf']]]]
   ellipses: typing.Tuple[typing.Union[int, None], typing.Union[int, None]]
 
-def metanndata_from_gctx(file: File):
-  with file_as_path(file, 'r') as fr:
-    import h5py
-    f = h5py.File(fr, 'r')
-    return ad.AnnData(
-      X=f['0']['DATA']['0']['MATRIX'],
-      obs=f['0']['META']['0']['ROW'],
-      var=f['0']['META']['0']['COL'],
-    )
-
-def metanndata_from_gct(file: File):
-  with file_as_stream(file, 'r') as fr:
-    import pandas as pd
-    version = fr.readline()
-    shape = list(map(int, fr.readline().split('\t')))
-    columns = fr.readline().split('\t')
-    df = pd.read_csv(fr, sep='\t', header=columns)
-    return ad.AnnData(
-      X=df.iloc[-shape[1]:],
-      obs=df.iloc[:-shape[1]],
-    )
-
 def metanndata_from_file(file: File):
   ''' Read from a bunch of different formats, get an anndata file
   '''
-  print("I AM HERE")
   if file['filename'].endswith('.h5ad'):
     with file_as_path(file, 'r') as fr:
       return ad.read_h5ad(fr)
@@ -52,10 +29,6 @@ def metanndata_from_file(file: File):
   elif file['filename'].endswith('.xlsx'):
     with file_as_path(file, 'r') as fr:
       return ad.read_excel(fr).transpose()
-  elif file['filename'].endswith('.gctx'):
-    return metanndata_from_gctx(file)
-  elif file['filename'].endswith('.gct'):
-    return metanndata_from_gct(file)
   elif file['filename'].endswith('.h5'):
     with file_as_path(file, 'r') as fr:
       return ad.read_hdf(fr).transpose()

@@ -1,4 +1,3 @@
-import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 
 //General RE info

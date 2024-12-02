@@ -5,7 +5,6 @@ import { RegulatoryElementSetForGeneSetInfo, MyGeneToRegulatoryElementSetInfo, M
 import { GeneInfo, GeneInfoFromGeneTerm } from '@/components/service/mygeneinfo'
 import { linkeddatahub_icon } from '@/icons'
 import { z } from 'zod'
-import { describe } from 'node:test'
 
 export const MyGeneInfoByTermC = z.object({
   data: z.object({

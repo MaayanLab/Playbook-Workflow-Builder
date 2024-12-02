@@ -80,7 +80,7 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
       <div>
         <h2>MetGENE metabolites</h2>
         <span style={{ color: "#0000F0" }}>
-          <h3>Full table as a json file is available at <a href={`${data.jsonfile.FileURL}`} target="__blank">{data.jsonfile.FileDescription}</a>. {ExtraText_if_more_rows}</h3>
+          <h3>Full table as a json file is available at <a href={`${data.jsonfile.FileURL}`} target="_blank">{data.jsonfile.FileDescription}</a>. {ExtraText_if_more_rows}</h3>
         </span>
         {data.contents.slice(0, ng2show).map((arrayVal:MetGeneMetObjArray, index:number) => (
           <div key={index}>
@@ -106,7 +106,7 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
                     return (
                       <tr key={j}>
                         <td>{val.Gene}</td>
-                        <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "__blank">{val.KEGG_COMPOUND_ID}</a></td>
+                        <td><a href = {`https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`} target = "_blank">{val.KEGG_COMPOUND_ID}</a></td>
                         <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
                         <td>
                           {rxn_id_arr.map((rxn_id:string, i:number) =>
@@ -116,7 +116,7 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
                             </>
                           )}
                         </td>
-                        <td><a href = {val.METSTAT_LINK} target = "__blank">METSTAT</a></td>
+                        <td><a href = {val.METSTAT_LINK} target = "_blank">METSTAT</a></td>
                       </tr>
                     )
                 })}

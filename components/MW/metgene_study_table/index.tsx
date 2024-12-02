@@ -38,6 +38,17 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
     const heading3 = "Study Ids"
 
     const studyID_url = "https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID="
+
+    const contents = data.filter(arrval => arrval.STUDY_ID.split(', ').length > 0)
+    if (contents.length === 0) {
+      return (
+        <div className="prose max-w-none">
+          <h2 className="m-0">MetGENE Studies</h2>
+          <span className="text-red-500">No studies found.</span>
+        </div>
+      )
+    }
+
     return (
       <div className="prose max-w-none">
         <h2>MetGENE Studies</h2>

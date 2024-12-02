@@ -46,8 +46,11 @@ export const MetGeneStudies = MetaNode('MetGeneStudies')
 export const MetGeneStudiesGeneSet = MetaNode('MetGeneStudiesGeneSet')
   // Human readble descriptors about this node should go here
   .meta({
-    label: 'MetGENE Studies with gene set',
+    label: 'MetGENE Studies with Gene Set',
     description: 'Compute the MetGENE studies function for a gene set',
+    tags: {
+      Service: { 'MetGENE': 1 },
+    },
     icon: [gene_icon, set_icon, additional_info_icon],
     external: true,
   })

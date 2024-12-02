@@ -47,6 +47,9 @@ export const MetGeneRxnsGeneSet = MetaNode('MetGeneRxnsSet')
   .meta({
     label: 'MetGENE Reactions with Gene Set',
     description: 'Compute the MetGENE Reactions for a Gene Set',
+    tags: {
+      Service: { 'MetGENE': 1 },
+    },
     external: true,
   })
   // This should be a mapping from argument name to argument type

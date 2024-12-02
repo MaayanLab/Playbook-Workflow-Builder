@@ -59,8 +59,17 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
     const heading5 = "METSTAT_LINK"
 
     const MaxRows2Show = 50;
-    const ng = data.contents.length;
-    const arrlen:number[] = data.contents.map(x=>x.length);
+    const contents = data.contents.filter(arrval => arrval.length > 0)
+    if (contents.length === 0) {
+      return (
+        <div className="prose max-w-none">
+          <h2 className="m-0">MetGENE Metabolites</h2>
+          <span className="text-red-500">No metabolites found.</span>
+        </div>
+      )
+    }
+    const ng = contents.length;
+    const arrlen:number[] = contents.map(x=>x.length);
     let arrlen_cumsum: number[] = [];  
     arrlen.reduce( (prev, curr,i) =>  arrlen_cumsum[i] = prev + curr , 0 );
     //console.log(arrlen); console.log(arrlen_cumsum);
@@ -77,14 +86,13 @@ export const MetgeneMetaboliteTable = MetaNode('MetgeneMetaboliteTable')
 
     // Below, data.contents is array of array of objects; trying to show at most 50 rows
     return (
-      <div>
-        <h2>MetGENE metabolites</h2>
+      <div className="prose max-w-none">
+        <h2 className="m-0">MetGENE Metabolites</h2>
         <span style={{ color: "#0000F0" }}>
           <h3>Full table as a json file is available at <a href={`${data.jsonfile.FileURL}`} target="_blank">{data.jsonfile.FileDescription}</a>. {ExtraText_if_more_rows}</h3>
         </span>
-        {data.contents.slice(0, ng2show).map((arrayVal:MetGeneMetObjArray, index:number) => (
-          <div key={index}>
-
+        {contents.slice(0, ng2show).map((arrayVal:MetGeneMetObjArray, index:number) => (
+          arrayVal.length > 0 && <div key={index}>
             <table>
               <thead>
               <tr>

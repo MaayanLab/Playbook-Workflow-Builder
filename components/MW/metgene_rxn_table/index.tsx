@@ -49,12 +49,19 @@ export const MetGeneRxnTable = MetaNode('MetGeneRxnTable')
     const heading2 = "KEGG Rxn Id"
     const heading3 = "KEGG Rxn Name"
     const heading4 = "KEGG Rxn Equation"
-
+    const contents = data.filter(arrval => arrval.length > 0)
+    if (contents.length === 0) {
+      return (
+        <div className="prose max-w-none">
+          <h2 className="m-0">MetGENE Reactions</h2>
+          <span className="text-red-500">No reactions found.</span>
+        </div>
+      )
+    }
     return (
-
       <div className="prose max-w-none">
-        <h2>MetGENE Reactions</h2>
-        {data.map((arrayVal:MetGeneRxnObjArray, index:number) => (
+        <h2 className="m-0">MetGENE Reactions</h2>
+        {contents.map((arrayVal:MetGeneRxnObjArray, index:number) => (
           <div key={index}>
           <table>
 

@@ -22,10 +22,10 @@
     "codegen:table": "ts-node cli/build-table.ts > metanodes.tsv",
     "codegen:use-case-table": "ts-node cli/build-use-case-table.ts > use-cases.tsv",
     "codegen:analytics": "ts-node cli/dump-analytics.ts > analytics.tsv",
-    "dev": "npm run --workspace=app dev",
-    "start:worker": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) ts-node cli/resolve-process-worker.ts",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app dev",
+    "start:worker": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_ENV=production APP_ROOT=$(dirname $(pwd)) ts-node cli/resolve-process-worker.ts",
     "start:run-wes-worker": "ts-node cli/run-wes-worker.ts",
-    "start": "npm run --workspace=app start",
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app start",
     "version": "ts-node cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
     "postversion": "docker-compose push"
   },

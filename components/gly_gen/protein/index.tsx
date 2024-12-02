@@ -310,7 +310,7 @@ export const SNVViewResponseNode = MetaNode("SNVViewResponseNode")
           </thead>
           <tbody>
             {data.map((protein, index) =>
-              protein.snv.map((snv, snvIndex) => (
+              protein.snv?.map((snv, snvIndex) => (
                 <tr key={`${index}-${snvIndex}`}>
                   <td>
                     <a
@@ -423,7 +423,7 @@ export const GlycosylationInformation = MetaNode("GlycosylationInformation")
       "glycosylation",
     );
     if (!glycosylation_check(data)) {
-      throw new Error("Expected glycosylation data but got something else.");
+      throw new Error("No glycosylation data available.");
     }
     return data;
   })

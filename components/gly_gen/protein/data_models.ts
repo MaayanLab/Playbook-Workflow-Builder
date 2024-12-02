@@ -13,7 +13,7 @@ const GlycosylationEntry = z.object({
 
 export const GlycosylationArray = z.array(GlycosylationEntry);
 export const GlycosylationData = z.object({
-  glycosylation: z.boolean(),
+  glycosylation: z.boolean().optional(),
   glycosylation_data: GlycosylationArray.optional(),
   protein_accession: z.string(),
 });
@@ -90,7 +90,7 @@ const SNVArray = z.array(SNVEntry);
 // Formatted GlyGen protein response data model
 export const GlyGenProteinResponse = z
   .object({
-    snv: SNVArray,
+    snv: SNVArray.optional(),
     gene: z.object({
       name: z.string(),
       locus: z.object({

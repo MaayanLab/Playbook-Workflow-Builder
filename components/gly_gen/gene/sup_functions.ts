@@ -13,7 +13,7 @@ export async function filter_glygen_proteins(gene_symbol: String): Promise<GlyGe
    * Returns: object in the format of GlyGenProteinResponse.
    */
 
-  const search_response = await fetch("https://api.glyGen.org/protein/search/", {
+  const search_response = await fetch("https://api.glygen.org/protein/search/", {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -32,7 +32,7 @@ export async function filter_glygen_proteins(gene_symbol: String): Promise<GlyGe
   const id = search_result.list_id;
   
   const protein_response = await fetch(
-    "https://api.glyGen.org/protein/list/",
+    "https://api.glygen.org/protein/list/",
     {
       method: "POST",
       headers: {
@@ -65,7 +65,7 @@ export async function filter_glygen_proteins(gene_symbol: String): Promise<GlyGe
         console.log(`Human result: ${item["gene_name"]}`)
         console.log(`Type of result: ${typeof(item)}`)
         console.log("==========================")
-        return get_single_protein_data(item["uniprot_canonical_ac"]);
+        return await get_single_protein_data(item["uniprot_canonical_ac"]);
       }
     }
   }

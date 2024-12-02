@@ -53,9 +53,9 @@ def metanndata_from_file(file: File):
     with file_as_path(file, 'r') as fr:
       return ad.read_excel(fr).transpose()
   elif file['filename'].endswith('.gctx'):
-    return anndata_from_gctx(file)
+    return metanndata_from_gctx(file)
   elif file['filename'].endswith('.gct'):
-    return anndata_from_gct(file)
+    return metanndata_from_gct(file)
   elif file['filename'].endswith('.h5'):
     with file_as_path(file, 'r') as fr:
       return ad.read_hdf(fr).transpose()

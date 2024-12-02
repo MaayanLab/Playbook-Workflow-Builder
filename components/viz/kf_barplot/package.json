@@ -1,7 +1,7 @@
 {
     "name": "kf_barplot",
     "version": "1.0.0",
-    "license": "CC-BY-NC-SA-4.0",
+    "license": "CC-BY-4.0",
     "author": "William Khan <wnkhan32@gmail.com>",
     "private": true,
     "dependencies": {

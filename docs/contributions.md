@@ -51,7 +51,7 @@ The `package.json` is a standard by the javascript ecosystem and is used to capt
 {
   "name": "mycomponent",
   "version": "1.0.0",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "CC-BY-4.0",
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "contributors": [],
   "private": true,

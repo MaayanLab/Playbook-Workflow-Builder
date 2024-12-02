@@ -1,7 +1,7 @@
 {
   "name": "regulatoryElementInfo",
   "version": "1.0.0",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "CC-BY-4.0",
   "author": "Miroslav Milinkov - Persida Team <miroslav.milinkov@persida-bio.com>",
   "private": true,
   "dependencies": {

@@ -1,7 +1,7 @@
 {
   "name": "@playbook-partnership/anndatamet",
   "version": "1.0.0",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "CC-BY-4.0",
   "author": "Sumana Srinivasan <susrinivasan@ucsd.edu>",
   "private": true,
   "dependencies": {

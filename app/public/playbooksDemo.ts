@@ -37,7 +37,7 @@ Here are the references for the sources used:
     version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'KOMP',
       'HPO',
@@ -71,7 +71,7 @@ Finally, a Supervenn diagram was used to visualize the collection of gene sets. 
     version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'GWAS Catalog',
       'KOMP',
@@ -110,7 +110,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'GTEx',
       'GEO',
@@ -134,7 +134,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'ENCODE',
       'ChEA',
@@ -172,7 +172,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'HPO',
       'KOMP',
@@ -203,7 +203,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'BioThings',
       'LINCS',
@@ -230,7 +230,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'BioThings',
       'LINCS',
@@ -259,7 +259,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'BioThings',
       'KidsFirst',
@@ -288,7 +288,7 @@ References:
 //     version: '1.0.0',
 //     authors: ['CFDE Playbook Partnership'],
 //     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-//     license: 'CC-BY-NC-SA-4.0',
+//     license: 'CC-BY-4.0',
 //     dataSources: [
 //       'KidsFirst',
 //       'GTEx',
@@ -317,7 +317,7 @@ References:
 //     version: '1.0.0',
 //     authors: ['CFDE Playbook Partnership'],
 //     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-//     license: 'CC-BY-NC-SA-4.0',
+//     license: 'CC-BY-4.0',
 //     dataSources: [
 //       'KidsFirst',
 //       'GTEx',
@@ -340,7 +340,7 @@ References:
   //   version: '1.0.0',
   //   authors: ['CFDE Playbook Partnership'],
   //   licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-  //   license: 'CC-BY-NC-SA-4.0',
+  //   license: 'CC-BY-4.0',
   //   dataSources: [
   //     'ClinGen',
   //     'STRING',
@@ -363,7 +363,7 @@ References:
     version: '1.0.1',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'ClinGen',
       'STRING',
@@ -396,7 +396,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'ClinGen',
       'STRING',
@@ -419,7 +419,7 @@ References:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'ClinGen',
       'STRING',
@@ -448,7 +448,7 @@ Here are the references for the sources mentioned:
     version: '1.0.0',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'LINCS',
       'STRING',
@@ -498,7 +498,7 @@ The Metabolomics Workbench was used to identify associated metabolites and relev
     version: '1.0.2',
     authors: ['CFDE Playbook Partnership'],
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    license: 'CC-BY-NC-SA-4.0',
+    license: 'CC-BY-4.0',
     dataSources: [
       'KidsFirst',
       'LINCS',

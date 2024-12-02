@@ -1,7 +1,7 @@
 {
   "name": "MetENP_on_MetSet",
   "version": "1.0.0",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "CC-BY-4.0",
   "author": "Mano Maurya <mano@sdsc.edu>",
   "private": true,
   "dependencies": {

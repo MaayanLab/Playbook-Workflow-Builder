@@ -1,7 +1,7 @@
 {
   "name": "metadata_matrix",
   "version": "1.0.0",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "CC-BY-4.0",
   "author": "Zhuorui (Sherry) Xie <zhuorui.xie@mssm.edu>",
   "private": true,
   "dependencies": {

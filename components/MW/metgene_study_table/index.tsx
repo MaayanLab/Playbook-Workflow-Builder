@@ -62,12 +62,15 @@ export const MetGeneStudyTable = MetaNode('MetGeneStudyTable')
           var all_study_ids = val.STUDY_ID
 
           var study_id_arr = all_study_ids.split(", ")
-
+          const m = /href\s*=\s*["'](.+)["'].*?>?([^><]+)/g.exec(val.KEGG_COMPOUND_ID)
+          const { url, compound } = m === null ?
+            { url: `https://www.kegg.jp/entry/${val.KEGG_COMPOUND_ID}`, compound: val.KEGG_COMPOUND_ID }
+            : { url: m[1], compound: m[2] }
 
           return (
             <tr key={key}>
               <>
-              <td>{ val.KEGG_COMPOUND_ID }</td>
+              <td><a href = {url} target = "_blank">{compound}</a></td>
               <td><a href = {`https://www.metabolomicsworkbench.org/databases/refmet/refmet_details.php?REFMET_NAME=${val.REFMET_NAME}`} target = "_blank">{val.REFMET_NAME}</a></td>
               <td>
                 {study_id_arr.map((study_id: string, i: number) =>

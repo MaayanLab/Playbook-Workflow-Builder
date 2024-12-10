@@ -32,6 +32,7 @@ export const MetGeneSearch = MetaNode('MetGeneSearch')
     description: 'Identify gene-centric information from Metabolomics.',
     icon: [metgene_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ gene: GeneTerm })
   .output(MetGeneSummary)

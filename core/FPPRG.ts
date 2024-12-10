@@ -400,6 +400,7 @@ export const IdOrProcessC = z.union([
     type: z.string(),
     data: IdOrDataC.optional(),
     inputs: z.record(z.string(), z.object({ id: z.string() })).optional(),
+    output: z.object({ id: z.string() }).optional(),
   }),
   z.object({
     id: z.string(),
@@ -408,6 +409,7 @@ export const IdOrProcessC = z.union([
     type: z.string(),
     data: IdOrDataC.optional(),
     inputs: z.record(z.string(), z.object({ id: z.string() })).optional(),
+    output: z.object({ id: z.string() }).optional(),
   }),
 ])
 export type IdOrProcess = z.infer<typeof IdOrProcessC>
@@ -627,11 +629,14 @@ export default class FPPRG {
   }
 
   resolveData = async (data: IdOrData): Promise<Data> => {
+    let resolved: Data | undefined
     if ('id' in data) {
-      return await this.getData(data.id) as Data
-    } else {
-      return await this.upsertData(new Data(data.type, data.value))
+      resolved = await this.getData(data.id)
     }
+    if (resolved === undefined && 'type' in data && 'value' in data) {
+      resolved = await this.upsertData(new Data(data.type, data.value))
+    }
+    return resolved as Data
   }
   getData = async (id: string): Promise<Data | undefined> => {
     if (!(id in this.dataTable)) {
@@ -753,6 +758,9 @@ export default class FPPRG {
     // resolve the process array by walking through the specification, collecting instantiated processes
     const processArray: Process[] = []
     const processArrayLookup: Record<string|number, string> = {}
+    for (const k in data) {
+      await this.resolveData(data[k])
+    }
     for (const el of workflow) {
       if ('id' in el && 'type' in el) {
         // given both id and type makes this a 
@@ -771,6 +779,9 @@ export default class FPPRG {
         const resolvedProc = await this.resolveProcess(proc)
         processArrayLookup[id] = resolvedProc.id
         processArray.push(resolvedProc)
+        if (proc.output !== undefined) {
+          await this.upsertResolved(new Resolved(resolvedProc, await this.resolveData(proc.output)))
+        }
       } else if ('id' in el) {
         const resolvedProc = await this.resolveProcess(el)
         processArrayLookup[resolvedProc.id] = resolvedProc.id

@@ -10,7 +10,7 @@ const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup 
 
 type KVCounts = { [key: string]: { [val: string]: number } }
 
-export default function Catalog<T extends { spec: string, meta?: { pagerank?: number, tags?: Record<string, Record<string, number>> } }>({ items, weights, serialize, children }: {
+export default function Catalog<T extends { spec: string, meta?: { pagerank?: number, tags?: Record<string, Record<string, number>>, external?: boolean } }>({ items, weights, serialize, children }: {
   items: Array<T>,
   weights: Record<string, number>,
   serialize: (item: T) => string,
@@ -27,6 +27,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
     for (const k in items) {
       const item = items[k]
       const item_meta = item.meta||{}
+      item_meta.tags = {...(item_meta.tags||{}), "External": { [item_meta.external ? 'True': 'False']: 1 } }
       item_search_ts[k] = tsvector(serialize(item))
       pagerank_max = Math.max(item_meta.pagerank||0, pagerank_max)
       weight_max = Math.max(weights[item.spec]||0, weight_max)

@@ -5,12 +5,16 @@ export const nullable_undefined_codec = <Output, Def extends z.ZodTypeDef = z.Zo
   decode: type.nullable().transform(v => v !== null ? v : undefined).parse,
   encode: type.optional().transform(v => v !== undefined ? v : null).parse,
 })
+export const json_safe_timestamp_nullable_codec = () => ({
+  encode: z.union([z.null(), z.date().transform((v) => v.toISOString())]).parse,
+  decode: z.union([z.null(), z.date(), z.string().transform((v) => new Date(v))]).parse,
+})
 export const json_safe_timestamp_codec = () => ({
-  decode: z.date().transform((v) => v.toISOString()).parse,
-  encode: z.string().transform((v) => new Date(v)).parse,
+  encode: z.date().transform((v) => v.toISOString()).parse,
+  decode: z.union([z.date(), z.string().transform((v) => new Date(v))]).parse,
 })
 export const z_bigint_codec = () => ({
-  decode: (db: unknown) => z.string().transform(v => +v).parse(db),
+  decode: (db: unknown) => z.union([z.number(), z.string()]).transform(v => +v).parse(db),
   encode: (v: number) => v.toString(),
 })
 

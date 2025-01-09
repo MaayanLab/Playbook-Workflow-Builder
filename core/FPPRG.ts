@@ -55,7 +55,7 @@ export class Process {
       type,
       data?.id ?? null,
       dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id })),
-      timestamp?.toISOString() ?? null,
+      timestamp?.getUTCMilliseconds() ?? null,
     ])
   }
 
@@ -242,9 +242,8 @@ export class FPL {
    */
   rebaseCellMetadata = (updates: Record<string, CellMetadata>) => {
     const fplArray = this.resolve()
-    let head = undefined
-    for (let i = 0; i < fplArray.length; i++) {
-      const cur = fplArray[i]
+    let head: FPL | undefined = undefined
+    for (const cur of fplArray) {
       if (cur.id in updates) {
         head = new FPL(cur.process, head, updates[cur.id], cur.playbook_metadata)
       } else {
@@ -784,7 +783,7 @@ export default class FPPRG {
         create: {
           id: resolved.id,
           data: resolved.data !== undefined ? resolved.data.id : null,
-          created: resolved.created ?? new Date(),
+          created: resolved.created ? resolved.created : new Date(),
         },
       })
       this.resolvedTable[resolved.id] = resolved

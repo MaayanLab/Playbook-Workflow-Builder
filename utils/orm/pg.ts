@@ -9,6 +9,14 @@ import * as db from '@/db/orm'
 import { z } from 'zod'
 
 /**
+ * Fix pg driver timezone bug
+ * https://github.com/brianc/node-postgres/issues/993#issuecomment-267684417
+ */
+pg.types.setTypeParser(1114, function(stringValue) {
+  return new Date(stringValue + 'Z')
+})
+
+/**
  * Easy prepared statement building.
  * Usage:
  * prepare(subst => `select * from item where id = ${subst('whatever')}`) == {

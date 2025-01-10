@@ -1,4 +1,4 @@
-FROM node:21.3.0 as base
+FROM node:21.3.0 AS base
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get update \
@@ -16,32 +16,32 @@ RUN npm i -g ts-node
 USER node
 WORKDIR /app
 
-FROM base as prepare_system
+FROM base AS prepare_system
 USER root
 RUN echo "Installing system deps..." && apt-get -y update && apt-get -y install r-base python3-dev python3-pip python3-venv pkg-config libhdf5-dev && rm -rf /var/lib/apt/lists/*
 ENV PYTHON_BIN="python3"
 USER node
 
-FROM prepare_system as prepare_r
+FROM prepare_system AS prepare_r
 USER root
 COPY --chown=node:node cli/setup.R /app/setup.R
 RUN echo "Running setup.R..." && R -e "source('/app/setup.R')" && rm /app/setup.R
 USER node
 
-FROM base as prepare_src
+FROM base AS prepare_src
 COPY --chown=node:node . /app
 
-FROM prepare_src as prepare_package_json
+FROM prepare_src AS prepare_package_json
 RUN find /app -type d -name "node_modules" -exec rm -rf {} + \
   && find /app -type f -a \! \( -name "package.json" -o -name "package-lock.json" -o -name ".puppeteerrc.cjs" \) -delete \
   && find /app -type d -empty -delete
 
-FROM prepare_src as prepare_requirements_txt
+FROM prepare_src AS prepare_requirements_txt
 RUN find /app -type d -name "node_modules" -exec rm -rf {} + \
   && find /app -type f -a \! \( -name "requirements.txt" -o -name "enumerate-requirements.ts" \) -delete \
   && find /app -type d -empty -delete
 
-FROM base as prepare_npm_i
+FROM base AS prepare_npm_i
 COPY --from=prepare_package_json /app /app
 RUN echo "Installing NodeJS dependencies..." && npm i
 
@@ -56,18 +56,18 @@ RUN mv /app/requirements.txt /tmp/requirements.txt \
   && chown node:node /app/requirements.txt
 USER node
 
-FROM prepare_src as prepare_build
+FROM prepare_src AS prepare_build
 COPY --from=prepare_npm_i /app /app
 RUN echo "Building app..." && LANDING_PAGE=/graph/extend PUBLIC_URL=https://playbook-workflow-builder.cloud npm run build
 
-FROM prepare_system as prepare_python
+FROM prepare_system AS prepare_python
 COPY --from=prepare_requirements_txt_complete /app /app
 USER root
 RUN echo "Installing python dependencies..." && python3 -m pip install --break-system-packages -r /app/requirements.txt && rm /app/requirements.txt
 USER node
 
 # TARGET: dev -- development environment with dependencies to run dev tools
-FROM prepare_system as dev
+FROM prepare_system AS dev
 USER root
 RUN echo "Installing dev deps..." \
   && apt-get -y update \
@@ -98,13 +98,13 @@ COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 CMD ["/bin/bash"]
 
 # TARGET: app_minimal -- production server with dependencies to run just the webserver
-FROM base as app_minimal
+FROM base AS app_minimal
 COPY --from=prepare_build /app /app
 ENV PORT 3000
 CMD ["npm", "run", "start"]
 
 # TARGET: app -- production server with dependencies to run everything
-FROM prepare_system as app
+FROM prepare_system AS app
 COPY --from=prepare_r /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_python /usr/local/lib/ /usr/local/lib/
 COPY --from=prepare_build /app /app

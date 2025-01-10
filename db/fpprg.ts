@@ -26,6 +26,7 @@ export const process = Table.create('process')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
+  .field('timestamp', 'timestamp', '', z.date().nullable(), { default: () => null })
   .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
   .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
   .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
@@ -67,6 +68,7 @@ export const process_complete = View.create('process_complete')
     .field('id', z_uuid(), { primaryKey: true })
     .field('type', z.string())
     .field('data', z.string().nullable())
+    .field('timestamp', z.date().nullable())
     .field('inputs', z.record(z.string(), z_uuid()))
     .field('resolved', z.boolean())
     .field('output', z_uuid().nullable())
@@ -75,6 +77,7 @@ export const process_complete = View.create('process_complete')
         "process"."id",
         "process"."type",
         "process"."data",
+        "process"."timestamp",
         coalesce(
           (select jsonb_object_agg("process_input"."key", "process_input"."value")
            from "process_input"
@@ -86,13 +89,14 @@ export const process_complete = View.create('process_complete')
       from "process"
       left join "resolved" on "process"."id" = "resolved"."id";
     `)
-    .js(async (db: any) => await Promise.all((await db.objects.process.findMany()).map(async ({ id, type, data }: any) => {
+    .js(async (db: any) => await Promise.all((await db.objects.process.findMany()).map(async ({ id, type, data, timestamp }: any) => {
       const resolved = await db.objects.resolved.findUnique({ where: { id } })
       const inputs = dict.init(await db.objects.process_input.findMany({ where: { id } }))
       return {
         id,
         type,
         data,
+        timestamp,
         inputs,
         resolved: resolved !== null,
         output: resolved !== null ? resolved.data : null,

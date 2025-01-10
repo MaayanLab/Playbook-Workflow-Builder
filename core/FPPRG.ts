@@ -43,11 +43,20 @@ export class Process {
      */
     public inputs: Record<string|number, Process> = {},
     /**
+     * The timestamp when this process was saved
+     */
+    public timestamp: Date | undefined = undefined,
+    /**
      * A database instance to operate this class like an ORM
      */
     public db: FPPRG | undefined = undefined,
   ) {
-    this.id = uuid([type, data?.id, dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id }))])
+    this.id = uuid([
+      type,
+      data?.id ?? null,
+      dict.sortedItems(inputs).map(({ key, value }) => ({ key, value: value.id })),
+      timestamp?.toISOString() ?? null,
+    ])
   }
 
   toJSONWithOutput = async () => {
@@ -62,7 +71,8 @@ export class Process {
     return {
       'id': this.id,
       'type': this.type,
-      'data': this.data !== undefined ? this.data.toJSON() : null,
+      'data': this.data?.toJSON() ?? null,
+      'timestamp': this.timestamp ? this.timestamp.toISOString() : null,
       'inputs': dict.init(
         dict.sortedItems(this.inputs)
           .map(({ key, value }) => ({ key, value: { id: value.id } }))
@@ -111,14 +121,15 @@ export class Process {
 export class Resolved {
   public id: string
 
-  constructor(public process: Process, public data: Data | undefined) {
+  constructor(public process: Process, public data: Data | undefined, public created: Date | undefined = undefined) {
     this.id = process.id
   }
 
   toJSON = () => {
     return {
       'id': this.id,
-      'data': this.data ? this.data.toJSON() : null,
+      'data': this.data?.toJSON() ?? null,
+      'created': this.created ? this.created.toISOString() : null,
     }
   }
 }
@@ -136,9 +147,9 @@ export class FPL {
   ) {
     this.id = uuid([
       process.id,
-      cell_metadata,
-      playbook_metadata,
-      parent?.id,
+      cell_metadata ?? null,
+      playbook_metadata ?? null,
+      parent?.id ?? null,
     ])
   }
 
@@ -275,6 +286,7 @@ export class FPL {
             ({ key, value: update[value.id] || value })
           )
         ),
+        (update[el.process.id] || el.process).timestamp,
         el.process.db,
       )
       head = new FPL(new_proc, head, el.cell_metadata, el.playbook_metadata)
@@ -282,6 +294,37 @@ export class FPL {
     }
     return { rebased, head }
   }
+
+  rebaseInTime = async () => {
+    const fplArray = this.resolve()
+    const update: Record<string, Process> = {}
+    const now = new Date()
+    let head: FPL | undefined = undefined
+    for (const el of fplArray) {
+      const existing_resolved = (update[el.process.id] || el.process).resolved
+      const timestamp = existing_resolved?.created ?? now
+      let new_proc = new Process(
+        (update[el.process.id] || el.process).type,
+        (update[el.process.id] || el.process).data,
+        dict.init(
+          dict.sortedItems(el.process.inputs).map(({ key, value }) =>
+            ({ key, value: update[value.id] || value })
+          )
+        ),
+        timestamp,
+        el.process.db,
+      )
+      if (el.process.db && existing_resolved) {
+        new_proc = await el.process.db.upsertProcess(new_proc)
+        if (existing_resolved.data) await el.process.db.upsertResolved(new Resolved(new_proc, existing_resolved.data, timestamp))
+        await el.process.db.deleteResolved(existing_resolved)
+      }
+      head = new FPL(new_proc, head, el.cell_metadata, el.playbook_metadata)
+      update[el.process.id] = new_proc
+    }
+    return head
+  }
+
 }
 
 /**
@@ -453,6 +496,7 @@ export default class FPPRG {
           result.type,
           result.data !== null ? await this.getData(result.data) : undefined,
           dict.init(await Promise.all(dict.sortedItems(result.inputs).map(async ({ key, value }) => ({ key, value: (await this.getProcess(value)) as Process })))),
+          result.timestamp ? new Date(result.timestamp) : undefined,
           this
         )
         if (id === process.id) this.processTable[process.id] = process
@@ -464,6 +508,7 @@ export default class FPPRG {
             const resolved = new Resolved(
               process,
               result.output !== null ? (await this.getData(result.output)) : undefined,
+              result.timestamp !== null ? new Date(result.timestamp) : undefined,
             )
             if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
             else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
@@ -509,6 +554,7 @@ export default class FPPRG {
           id: process.id,
           type: process.type,
           data: process.data !== undefined ? process.data.id : null,
+          timestamp: process.timestamp !== undefined ? process.timestamp : null,
         }
       })
       for (const key in process.inputs) {
@@ -684,6 +730,7 @@ export default class FPPRG {
         const resolved = new Resolved(
           process,
           result.data !== null ? (await this.getData(result.data)) as Data : undefined,
+          result.created !== null ? new Date(result.created) : undefined,
         )
         if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
         else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
@@ -737,6 +784,7 @@ export default class FPPRG {
         create: {
           id: resolved.id,
           data: resolved.data !== undefined ? resolved.data.id : null,
+          created: resolved.created ?? new Date(),
         },
       })
       this.resolvedTable[resolved.id] = resolved
@@ -780,7 +828,7 @@ export default class FPPRG {
         processArrayLookup[id] = resolvedProc.id
         processArray.push(resolvedProc)
         if (proc.output !== undefined) {
-          await this.upsertResolved(new Resolved(resolvedProc, await this.resolveData(proc.output)))
+          await this.upsertResolved(new Resolved(resolvedProc, await this.resolveData(proc.output), resolvedProc.timestamp ?? new Date()))
         }
       } else if ('id' in el) {
         const resolvedProc = await this.resolveProcess(el)

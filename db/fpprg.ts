@@ -1,13 +1,13 @@
 import { SQL, Table, View } from '@/spec/sql'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
-import { z_bigint_codec, z_uuid } from '@/utils/zod'
+import { json_safe_timestamp_codec, json_safe_timestamp_nullable_codec, z_bigint_codec, z_uuid } from '@/utils/zod'
 
 export const data = Table.create('data')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())
   .field('value', 'varchar', 'not null', z.string())
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
   .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
   .build()
@@ -26,7 +26,8 @@ export const process = Table.create('process')
   .field('id', 'uuid', '', z_uuid(), { primaryKey: true })
   .field('type', 'varchar', 'not null', z.string())
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('timestamp', 'timestamp without time zone', '', json_safe_timestamp_nullable_codec(), { default: () => null })
+  .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
   .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
   .build()
@@ -50,7 +51,7 @@ export const process_input = Table.create('process_input')
 export const resolved = Table.create('resolved')
   .field('id', 'uuid', 'references process ("id") on delete cascade', z_uuid(), { primaryKey: true })
   .field('data', 'uuid', 'references data ("id") on delete cascade', z_uuid().nullable())
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .build()
 
 export const resolved_trigger = SQL.create()
@@ -67,6 +68,7 @@ export const process_complete = View.create('process_complete')
     .field('id', z_uuid(), { primaryKey: true })
     .field('type', z.string())
     .field('data', z.string().nullable())
+    .field('timestamp', json_safe_timestamp_nullable_codec())
     .field('inputs', z.record(z.string(), z_uuid()))
     .field('resolved', z.boolean())
     .field('output', z_uuid().nullable())
@@ -75,6 +77,7 @@ export const process_complete = View.create('process_complete')
         "process"."id",
         "process"."type",
         "process"."data",
+        "process"."timestamp",
         coalesce(
           (select jsonb_object_agg("process_input"."key", "process_input"."value")
            from "process_input"
@@ -86,13 +89,14 @@ export const process_complete = View.create('process_complete')
       from "process"
       left join "resolved" on "process"."id" = "resolved"."id";
     `)
-    .js(async (db: any) => await Promise.all((await db.objects.process.findMany()).map(async ({ id, type, data }: any) => {
+    .js(async (db: any) => await Promise.all((await db.objects.process.findMany()).map(async ({ id, type, data, timestamp }: any) => {
       const resolved = await db.objects.resolved.findUnique({ where: { id } })
       const inputs = dict.init(await db.objects.process_input.findMany({ where: { id } }))
       return {
         id,
         type,
         data,
+        timestamp,
         inputs,
         resolved: resolved !== null,
         output: resolved !== null ? resolved.data : null,
@@ -106,7 +110,7 @@ export const cell_metadata = Table.create('cell_metadata')
   .field('description', 'varchar', '', z.string())
   .field('process_visible', 'boolean', '', z.boolean())
   .field('data_visible', 'boolean', '', z.boolean())
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .build()
 
 export const cell_metadata_notify = SQL.create()
@@ -125,7 +129,7 @@ export const playbook_metadata = Table.create('playbook_metadata')
   .field('description', 'varchar', '', z.string())
   .field('summary', 'varchar', '', z.enum(['auto', 'gpt', 'manual']))
   .field('gpt_summary', 'varchar', '', z.string())
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .build()
 
 export const playbook_metadata_notify = SQL.create()
@@ -144,7 +148,7 @@ export const fpl = Table.create('fpl')
   .field('parent', 'uuid', 'references fpl ("id") on delete cascade', z_uuid().nullable())
   .field('playbook_metadata', 'uuid', 'references playbook_metadata ("id") on delete cascade', z_uuid().nullable())
   .field('cell_metadata', 'uuid', 'references cell_metadata ("id") on delete cascade', z_uuid().nullable())
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .field('hits', 'bigint', 'not null default 0', z_bigint_codec(), { default: () => 0 })
   .onSetExtra('hits', 'hits + 1', (record: any) => ({ ...record, hits: record.hits + 1 }))
   .build()

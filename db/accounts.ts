@@ -1,17 +1,17 @@
 import { SQL, Table } from '@/spec/sql'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
-import { z_uuid, nullable_undefined_codec, z_bigint_codec } from '@/utils/zod'
+import { z_uuid, nullable_undefined_codec, z_bigint_codec, json_safe_timestamp_nullable_codec, json_safe_timestamp_codec } from '@/utils/zod'
 
 
 export const user = Table.create('user')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('name', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('email', 'varchar', 'not null', z.string())
-  .field('emailVerified', 'timestamp', '', z.date().nullable())
+  .field('emailVerified', 'timestamp', '', json_safe_timestamp_nullable_codec())
   .field('image', 'varchar', '', nullable_undefined_codec(z.string()))
   .field('affiliation', 'varchar', '', nullable_undefined_codec(z.string()))
-  .field('created', 'timestamp', 'not null default now()', z.date(), { default: () => new Date() })
+  .field('created', 'timestamp', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .build()
 
 export const user_email_index = SQL.create()
@@ -38,7 +38,7 @@ export const account = Table.create('account')
 
 export const session = Table.create('session')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
-  .field('expires', 'timestamp', '', z.date())
+  .field('expires', 'timestamp', '', json_safe_timestamp_codec())
   .field('sessionToken', 'varchar', 'not null', z.string())
   .field('userId', 'uuid', 'not null references "user" ("id") on delete cascade', z_uuid())
   .build()
@@ -47,7 +47,7 @@ export const verification_token = Table.create('verification_token')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('identifier', 'varchar', '', z.string())
   .field('token', 'varchar', '', z.string())
-  .field('expires', 'timestamp', '', z.date())
+  .field('expires', 'timestamp', '', json_safe_timestamp_codec())
   .build()
 
 export const user_integrations = Table.create('user_integrations')

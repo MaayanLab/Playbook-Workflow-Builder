@@ -1,7 +1,7 @@
 {
   "name": "limma_voom",
   "version": "1.0.0",
-  "license": "CC-BY-4.0",
+  "license": "GPL-2.0-or-later",
   "author": "Alex Agris <aagris@stanford.edu>",
   "private": true,
   "dependencies": {

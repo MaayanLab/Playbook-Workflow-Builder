@@ -276,6 +276,7 @@ CREATE TABLE public.process (
     data uuid,
     hits bigint DEFAULT 0 NOT NULL,
     id uuid NOT NULL,
+    "timestamp" timestamp without time zone,
     type character varying NOT NULL
 );
 
@@ -310,6 +311,7 @@ CREATE VIEW public.process_complete AS
  SELECT process.id,
     process.type,
     process.data,
+    process."timestamp",
     COALESCE(( SELECT jsonb_object_agg(process_input.key, process_input.value) AS jsonb_object_agg
            FROM public.process_input
           WHERE (process.id = process_input.id)), '{}'::jsonb) AS inputs,
@@ -353,6 +355,36 @@ CREATE TABLE public.session (
 
 
 --
+-- Name: socket_io_attachments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.socket_io_attachments (
+    id bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    payload bytea
+);
+
+
+--
+-- Name: socket_io_attachments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.socket_io_attachments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: socket_io_attachments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.socket_io_attachments_id_seq OWNED BY public.socket_io_attachments.id;
+
+
+--
 -- Name: suggestion; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -364,6 +396,33 @@ CREATE TABLE public.suggestion (
     name character varying NOT NULL,
     output character varying NOT NULL,
     "user" uuid NOT NULL
+);
+
+
+--
+-- Name: thread; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.thread (
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    openai_thread character varying NOT NULL,
+    "user" uuid
+);
+
+
+--
+-- Name: thread_message; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.thread_message (
+    content character varying NOT NULL,
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    feedback character varying,
+    fpl uuid,
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    role character varying NOT NULL,
+    thread uuid NOT NULL
 );
 
 
@@ -464,6 +523,13 @@ CREATE TABLE public.verification_token (
     identifier character varying,
     token character varying
 );
+
+
+--
+-- Name: socket_io_attachments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.socket_io_attachments ALTER COLUMN id SET DEFAULT nextval('public.socket_io_attachments_id_seq'::regclass);
 
 
 --
@@ -587,11 +653,35 @@ ALTER TABLE ONLY public.session
 
 
 --
+-- Name: socket_io_attachments socket_io_attachments_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.socket_io_attachments
+    ADD CONSTRAINT socket_io_attachments_id_key UNIQUE (id);
+
+
+--
 -- Name: suggestion suggestion_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.suggestion
     ADD CONSTRAINT suggestion_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: thread_message thread_message_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.thread_message
+    ADD CONSTRAINT thread_message_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: thread thread_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.thread
+    ADD CONSTRAINT thread_pkey PRIMARY KEY (id);
 
 
 --
@@ -841,6 +931,30 @@ ALTER TABLE ONLY public.session
 
 ALTER TABLE ONLY public.suggestion
     ADD CONSTRAINT suggestion_user_fkey FOREIGN KEY ("user") REFERENCES public."user"(id) ON DELETE CASCADE;
+
+
+--
+-- Name: thread_message thread_message_fpl_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.thread_message
+    ADD CONSTRAINT thread_message_fpl_fkey FOREIGN KEY (fpl) REFERENCES public.fpl(id) ON DELETE CASCADE;
+
+
+--
+-- Name: thread_message thread_message_thread_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.thread_message
+    ADD CONSTRAINT thread_message_thread_fkey FOREIGN KEY (thread) REFERENCES public.thread(id) ON DELETE CASCADE;
+
+
+--
+-- Name: thread thread_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.thread
+    ADD CONSTRAINT thread_user_fkey FOREIGN KEY ("user") REFERENCES public."user"(id) ON DELETE CASCADE;
 
 
 --

@@ -1,7 +1,7 @@
 {
   "name": "pca-transformation",
   "version": "1.0.0",
-  "license": "CC-BY-4.0",
+  "license": "GPL-3.0-or-later",
   "author": "Juncheng Pan <pan_juncheng@yahoo.com>",
   "private": true,
   "dependencies": {

@@ -61,6 +61,7 @@ export const LINCSL1000ReverseSearch = MetaNode('LINCSL1000ReverseSearch')
     description: 'Identify RNA-seq-like LINCS L1000 Signatures which reverse the expression of the gene.',
     icon: [lincs_icon],
     pagerank: 2,
+    external: true,
   })
   .inputs({ gene: GeneTerm })
   .output(LINCSL1000ReverseSearchDashboard)

@@ -568,6 +568,7 @@ export const EnrichrTermTSearch = [
       label: `Extract Gene Sets Containing the ${T.label} in the Set Label`,
       icon: [...array.ensureArray(T.icon), enrichr_icon],
       description: `Find ${T.label} Terms in Enrichr Libraries`,
+      external: true,
     })
     .inputs({ term: TermT })
     .output(EnrichrTermSearchResults)

@@ -87,6 +87,10 @@ import * as core_term from "./core/term"
 import core_term_packageJson from "./core/term/package.json"
 metanodes.push(...MetaNodesFromExports(core_term, core_term_packageJson))
 components.push("core/term")
+import * as core_test from "./core/test"
+import core_test_packageJson from "./core/test/package.json"
+metanodes.push(...MetaNodesFromExports(core_test, core_test_packageJson))
+components.push("core/test")
 import * as data_anndata from "./data/anndata"
 import data_anndata_packageJson from "./data/anndata/package.json"
 metanodes.push(...MetaNodesFromExports(data_anndata, data_anndata_packageJson))

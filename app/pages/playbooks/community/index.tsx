@@ -237,8 +237,8 @@ export default function CommunityPlaybooks() {
           </div>
           : null}
         </div>
-        <Link href="/playbooks">
-          <button className="btn btn-primary w-min whitespace-nowrap place-self-center text-center">
+        <Link href="/playbooks" className="place-self-center">
+          <button className="btn btn-primary w-min whitespace-nowrap">
             Click for Playbooks Curated by the Playbook Partnership
           </button>
         </Link>

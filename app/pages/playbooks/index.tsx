@@ -356,8 +356,8 @@ export default function Playbooks() {
           </div>
           : null}
         </div>
-        <Link href="/playbooks/community">
-          <button className="btn btn-primary w-min whitespace-nowrap place-self-center text-center">
+        <Link href="/playbooks/community" className="place-self-center">
+          <button className="btn btn-primary w-min whitespace-nowrap">
             Click for Additional Playbooks Contributed by Other Users
           </button>
         </Link>

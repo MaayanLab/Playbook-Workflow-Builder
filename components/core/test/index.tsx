@@ -23,7 +23,7 @@ export const TestView = MetaNode('TestView')
   })
   .inputs({})
   .output(TestView)
-  .resolve(async (props) => 'test')
+  .resolve(async (props) => `${Math.random()}`)
   .story(props => ({}))
   .build()
 

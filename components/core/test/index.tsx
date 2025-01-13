@@ -14,15 +14,22 @@ export const TestView = MetaNode('TestView')
   ))
   .build()
 
-  export const InitialTestProcess = MetaNode('InitialTestProcess')
+export const InitialTestProcess = MetaNode('InitialTestProcess')
   .meta({
     label: 'Test',
     description: 'A test process',
     icon: [],
     hidden: true,
   })
+  .codec(z.string())
   .inputs({})
   .output(TestView)
+  .prompt(props => {
+    React.useEffect(() => {
+      if (!props.data) props.submit(`${Math.random()}`, true)
+    }, [props.data])
+    return <></>
+  })
   .resolve(async (props) => `${Math.random()}`)
   .story(props => ({}))
   .build()

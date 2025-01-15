@@ -24,6 +24,9 @@ def test_depth(depth: int):
   playbook_id = res.json()
   submit = time.time()
   res = requests.get(ENDPOINT + '/api/db/fpl/' + playbook_id + '/output/export')
+  while res.status_code == 504:
+    res = requests.get(ENDPOINT + '/api/db/fpl/' + playbook_id + '/output/export')
+  res.raise_for_status()
   playbook = res.json()
   resolve = time.time()
   return {
@@ -46,7 +49,21 @@ for u in range(1, 50+1):
     results += [dict(result, n_users=u, depth=d) for result in test_parallel(u, d)]
 
 df = pd.DataFrame(results)
-df.to_csv('results3.tsv', sep='\t')
+df.to_csv('results-2x5.tsv', sep='\t')
 
 #%%
-sns.heatmap(df.pivot_table(columns='depth', index='n_users', values='resolution', aggfunc='mean'))
+(
+  sns.FacetGrid(df[df['depth'].isin([5,10])&df['parallel users'].isin([1,10,20,30,40,50])], col='depth', hue='parallel users')
+    .map(sns.stripplot, 'processes', 'resolution')
+    .add_legend()
+)
+
+#%%
+(
+  sns.FacetGrid(df[df['depth'].isin([5,10])&df['parallel users'].isin([1,10,20,30,40,50])], col='depth', hue='parallel users')
+    .map(sns.stripplot, 'processes', 'submission')
+    .add_legend()
+)
+
+#%%
+# sns.heatmap(df.pivot_table(columns='depth', index='n_users', values='resolution', aggfunc='mean'))

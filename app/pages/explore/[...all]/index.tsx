@@ -15,7 +15,7 @@ const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => A
 function Graph<
   N extends { id: string, x?: number, y?: number },
   L extends { id: string, source: N, target: N }
->({ origin, nodes, links, onClick }: { origin: string, nodes: N[], links: L[], onClick?: (node: N, evt: any) => void }) {
+>({ origin, nodes, links, groupLinks, onClick }: { origin: string, nodes: N[], links: L[], groupLinks: L[], onClick?: (node: N, evt: any) => void }) {
   const svgRef = React.useRef<any>(null)
   const [width, height] = [800, 600]
 
@@ -24,6 +24,7 @@ function Graph<
 
     const N = [...nodes]
     const L = [...links]
+    const GL = [...groupLinks]
 
     // capture origin node based on id
     let originNode = { id: origin } as N
@@ -55,10 +56,11 @@ function Graph<
     const simulation = d3.forceSimulation(N)
       .force('charge', d3.forceManyBody().strength(-100))
       .force("link", d3.forceLink(L).distance(1))
+      .force("group_link", d3.forceLink(GL).distance(0.01))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force("x", d3.forceX())
       .force("y", d3.forceY())
-      .alpha(0.1)
+      .alphaMin(0.0000001)
 
     simulation.on('tick', () => {
       for (const n of N) {
@@ -188,6 +190,41 @@ export default function Explore() {
   )
   const nodes = dict.values(nodes_)
   const links = dict.keys(links_).map((id) => ({ ...links_[id], id, source: nodes_[links_[id].source], target: nodes_[links_[id].target] }))
+  const groups: Record<string, string[]> = {}
+  krg.getDataNodes().forEach(n => {
+    let pkg = n.meta.package || ''
+    if (pkg.startsWith('@playbook-partnership/core-')||pkg.startsWith('@playbook-partnership/viz-')) return
+    if (!(pkg in groups)) groups[pkg] = []
+    groups[pkg].push(n.spec)
+    let author = n.meta.author || ''
+    if (!(author in groups)) groups[author] = []
+    groups[author].push(n.spec)
+  })
+  krg.getProcessNodes().forEach(n => {
+    let pkg = n.meta.package || ''
+    if (pkg.startsWith('@playbook-partnership/core-')||pkg.startsWith('@playbook-partnership/viz-')) return
+    if (!(pkg in groups)) groups[pkg] = []
+    groups[pkg].push(n.spec)
+    let author = n.meta.author || ''
+    if (!(author in groups)) groups[author] = []
+    groups[author].push(n.spec)
+  })
+  const groupLinks = dict.items(groups).flatMap(({ key, value }) => {
+    const links: { id: string, source: { id: string, x?: number, y?: number }, target: { id: string, x?: number, y?: number } }[] = []
+    for (const src in value) {
+      for (const tgt in value) {
+        if (src === tgt) continue
+        if (src in nodes_ && tgt in nodes_) {
+          links.push({
+            id: `${key}-${src}-${tgt}`,
+            source: nodes_[src],
+            target: nodes_[tgt],
+          })
+        }
+      }
+    }
+    return links
+  })
   return (
     <Layout>
       <Head>
@@ -197,6 +234,7 @@ export default function Explore() {
         origin={path[path.length-1]}
         nodes={nodes}
         links={links}
+        groupLinks={groupLinks}
         onClick={(node, evt) => {
           router.push({
             pathname: '/explore/[...all]',

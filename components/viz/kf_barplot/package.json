@@ -1,5 +1,5 @@
 {
-    "name": "kf_barplot",
+    "name": "@playbook-partnership/viz-kf_barplot",
     "version": "1.0.0",
     "license": "CC-BY-4.0",
     "author": "William Khan <wnkhan32@gmail.com>",

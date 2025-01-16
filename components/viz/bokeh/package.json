@@ -1,5 +1,5 @@
 {
-  "name": "bokeh",
+  "name": "@playbook-partnership/viz-bokeh",
   "version": "1.0.0",
   "license": "CC-BY-4.0",
   "author": "Juncheng Pan <pan_juncheng@yahoo.com>",

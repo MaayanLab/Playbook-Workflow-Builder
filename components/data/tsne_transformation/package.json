@@ -1,5 +1,5 @@
 {
-  "name": "tsne-transformation",
+  "name": "@playbook-partnership/data-tsne-transformation",
   "version": "1.0.0",
   "license": "CC-BY-4.0",
   "author": "Juncheng Pan <pan_juncheng@yahoo.com>",

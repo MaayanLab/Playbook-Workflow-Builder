@@ -1,5 +1,5 @@
 {
-  "name": "met_z_score_normalization",
+  "name": "@playbook-partnership/data-met_z_score_normalization",
   "version": "1.0.0",
   "license": "CC-BY-4.0",
   "author": "Sumana Srinivasan <susrinivasan@ucsd.edu>",

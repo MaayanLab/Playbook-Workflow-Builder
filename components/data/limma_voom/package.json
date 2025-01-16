@@ -1,5 +1,5 @@
 {
-  "name": "limma_voom",
+  "name": "@playbook-partnership/data-limma_voom",
   "version": "1.0.0",
   "license": "GPL-2.0-or-later",
   "author": "Alex Agris <aagris@stanford.edu>",

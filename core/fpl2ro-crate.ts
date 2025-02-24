@@ -5,13 +5,22 @@ import type { FPL } from "@/core/FPPRG"
 import type KRG from "@/core/KRG"
 import * as dict from '@/utils/dict'
 import packageJson from '@/package.json'
+import jsonld from 'jsonld'
+import YAML from 'yaml'
 import { Author, Metadata, fpl_expand, toISO8601TimeString } from "./common";
+import { cwl_for_playbook } from "./fpl2cwl"
 
 const version = packageJson.version
 
-export default async function fpl2ro_create(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }) {
+export async function fpl2ro_crate_metadata(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }) {
   const { processLookup, story } = await fpl_expand(props)
-  return {
+  let doc: string
+  if (props.metadata?.description) {
+    doc = props.metadata.description
+  } else {
+    doc = story.ast.flatMap(part => part.tags.includes('abstract') ? [part.type === 'bibitem' ? '\n' : '', part.text] : []).join('')
+  }
+  return jsonld.flatten({
     "@context": "https://w3id.org/ro/crate/1.1/context",
     "@id": `${process.env.PUBLIC_URL}/report/${props.fpl.id}`,
     "@type": "ComputationalWorkflow",
@@ -23,7 +32,7 @@ export default async function fpl2ro_create(props: { krg: KRG, fpl: FPL, metadat
       "url": "https://playbook-workflow-builder.cloud"
     },
     "name": props.metadata?.title,
-    "description": props.metadata?.description ?? story,
+    "description": doc,
     "dateCreated": toISO8601TimeString(),
     "license": 'https://creativecommons.org/licenses/by/4.0/',
     "programmingLanguage": [
@@ -105,5 +114,15 @@ export default async function fpl2ro_create(props: { krg: KRG, fpl: FPL, metadat
         "contentUrl": `${process.env.PUBLIC_URL}/api/bco/${props.fpl.id}`,
       },
     ],
+  })
+}
+
+export async function fpl2ro_crate(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }) {
+  return {
+    ...dict.init(
+      dict.items(await cwl_for_playbook(props))
+        .map(({ key, value }) => ({ key, value: YAML.stringify(value) }))
+    ),
+    'ro-crate-metadata.json': JSON.stringify(await fpl2ro_crate_metadata(props)),
   }
 }

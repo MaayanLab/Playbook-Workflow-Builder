@@ -48,11 +48,19 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               download={`cwl-${id}.zip`}
             />
           </div>
-          <div className="tooltip block text-left" data-tip="Download RO-Crate object metadata for this workflow">
+          <div className="tooltip block text-left" data-tip="Download RO-Crate object bundle for this workflow">
             <Bp5MenuItem
               icon="document"
               text="Research Object Crate (RO-Crate)"
-              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/ro-crate/${id}`}
+              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/ro-crate/${id}?format=zip`}
+              download={`ro-crate.zip`}
+            />
+          </div>
+          <div className="tooltip block text-left" data-tip="Download RO-Crate JSON object metadata for this workflow">
+            <Bp5MenuItem
+              icon="document"
+              text="Research Object Crate (RO-Crate) (Detached)"
+              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/ro-crate/${id}?format=json`}
               download={`ro-crate-metadata.json`}
             />
           </div>

@@ -41,9 +41,19 @@ def anndata_from_file(file: File):
   elif file['filename'].endswith('.csv'):
     with file_as_stream(file, 'r') as fr:
       return ad.read_text(fr, delimiter=',').transpose()
+  elif file['filename'].endswith('.csv.gz'):
+    import gzip
+    with file_as_stream(file, 'rb') as fr_compressed:
+      with gzip.open(fr_compressed, 'rt') as fr:
+        return ad.read_text(fr, delimiter=',').transpose()
   elif file['filename'].endswith('.tsv'):
     with file_as_stream(file, 'r') as fr:
       return ad.read_text(fr, delimiter='\t').transpose()
+  elif file['filename'].endswith('.tsv.gz'):
+    import gzip
+    with file_as_stream(file, 'rb') as fr_compressed:
+      with gzip.open(fr_compressed, 'rt') as fr:
+        return ad.read_text(fr, delimiter='\t').transpose()
   elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
     with file_as_stream(file, 'r') as fr:
       try:

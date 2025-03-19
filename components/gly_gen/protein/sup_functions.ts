@@ -41,6 +41,9 @@ export async function get_single_protein_data(
         accept: "application/type",
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        "uniprot_canonical_ac": accession,
+      })
     },
   );
 

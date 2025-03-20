@@ -275,6 +275,10 @@ import * as service_rummagene from "./service/rummagene"
 import service_rummagene_packageJson from "./service/rummagene/package.json"
 metanodes.push(...MetaNodesFromExports(service_rummagene, service_rummagene_packageJson))
 components.push("service/rummagene")
+import * as service_rummageo from "./service/rummageo"
+import service_rummageo_packageJson from "./service/rummageo/package.json"
+metanodes.push(...MetaNodesFromExports(service_rummageo, service_rummageo_packageJson))
+components.push("service/rummageo")
 import * as service_sigcom_lincs from "./service/sigcom-lincs"
 import service_sigcom_lincs_packageJson from "./service/sigcom-lincs/package.json"
 metanodes.push(...MetaNodesFromExports(service_sigcom_lincs, service_sigcom_lincs_packageJson))

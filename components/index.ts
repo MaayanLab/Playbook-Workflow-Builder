@@ -251,6 +251,10 @@ import * as service_kf from "./service/kf"
 import service_kf_packageJson from "./service/kf/package.json"
 metanodes.push(...MetaNodesFromExports(service_kf, service_kf_packageJson))
 components.push("service/kf")
+import * as service_l2s2 from "./service/l2s2"
+import service_l2s2_packageJson from "./service/l2s2/package.json"
+metanodes.push(...MetaNodesFromExports(service_l2s2, service_l2s2_packageJson))
+components.push("service/l2s2")
 import * as service_ldh from "./service/ldh"
 import service_ldh_packageJson from "./service/ldh/package.json"
 metanodes.push(...MetaNodesFromExports(service_ldh, service_ldh_packageJson))

@@ -1,4 +1,6 @@
+leidenalg
 pandas
 plotly
+scanpy
 scikit-learn
 umap

@@ -1,4 +1,5 @@
 bokeh<3
 leidenalg
 pandas
+umap
 scanpy

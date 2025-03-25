@@ -259,6 +259,27 @@ export const EnrichrTToT = [
       legend: `A table of significantly enriched terms paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build(),
+    MetaNode(`EnrichrScoredTToUMAP[${T.name}]`)
+      .meta({
+        label: `${EnrichrScoredT.meta.label} as UMAP`,
+        icon: [enrichr_icon],
+        description: `Load Enrichr set as UMAP`,
+        external: true,
+      })
+      .inputs({ enrichrscored: EnrichrScoredT })
+      .output(PlotlyPlot)
+      .resolve(async (props) => await python(
+        'components.service.enrichr.resolveGeneScoredLibraryUMAP',
+        { kargs: [props.inputs.enrichrscored] },
+        message => props.notify({ type: 'info', message }),
+      ))
+      .story(props => ({
+        abstract: `Relevant terms are displayed on a gene set library UMAP\\ref{doi:10.48550/arXiv.1802.03426}${props.inputs?.enrichrscored?.background ? ` for ${props.inputs.enrichrscored.background}` : ''}.`,
+        introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
+        methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored} are highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the original gene set library to produce ${props.output_ref}.`,
+        legend: `The relevant gene sets highlighted in a UMAP\\ref{doi:10.48550/arXiv.1802.03426} of the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      }))
+      .build(),
   MetaNode(`EnrichrScoredTToEnrichrSetT[${T.name}]`)
     .meta({
       label: `${EnrichrScoredT.meta.label} as Enrichr Set`,

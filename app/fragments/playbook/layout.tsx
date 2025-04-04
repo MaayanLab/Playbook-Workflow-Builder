@@ -63,9 +63,9 @@ export default function Layout({ children }: React.PropsWithChildren) {
         </div>
 
         <div className="container mx-auto my-2 flex flex-col gap-2">
-          <DismissableAlert id="biorxv" style={{ backgroundColor: '#d4fb79' }}>
-            <Link href="https://www.biorxiv.org/content/10.1101/2024.06.08.598037v1" className="dark:text-inherit dark:hover:text-inherit">
-              An article that describes the Playbook Workflow Builder project is now available at bioRxiv!
+          <DismissableAlert id="plos" style={{ backgroundColor: '#d4fb79' }}>
+            <Link href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">
+              An article that describes the Playbook Workflow Builder project is now published in PLOS Computational Biology!
             </Link>
           </DismissableAlert>
         </div>

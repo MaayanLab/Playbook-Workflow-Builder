@@ -2,6 +2,10 @@
 
 The Common Fund Data Ecosystem (CFDE) Playbook Partnership Workflow Builder (PPWB) is a web-based platform that facilitates knowledge resolution by enabling users to traverse an ever-growing network of input datasets, semantically annotated API endpoints, and data visualization tools contributed by the ecosystem. Via a user-friendly web-based user interface, workflows can be constructed from these building-blocks without technical expertise.
 
+Please acknowledge Playbook Workflow Builder in your publications by citing the following reference:
+
+>Clarke, D. J. B. et al. Playbook workflow builder: Interactive construction of bioinformatics workflows. PLOS Computational Biology vol. 21 e1012901 (2025). <https://doi.org/10.1371/journal.pcbi.1012901>
+
 ## Table of Contents
 
 This user guide is broken up into several documents describing different aspects of the platform. Please click the link below to learn about the platform:

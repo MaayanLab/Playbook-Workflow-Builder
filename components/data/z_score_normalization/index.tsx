@@ -22,6 +22,6 @@ export const ZScoreNormalizeGeneCountMatrix = MetaNode('ZScoreNormalizeGeneCount
     abstract: `The gene count matrix was then Z-score normalized.`,
     introduction: `Gene count are normalized to control for different levels of variance depending on the gene expression levels.`,
     methods: `The gene count matrix was normalized using a z-score transformation.`,
-    legend: `A table displaying the z-score normalized gene count matrix.`,
+    tableLegend: `A table displaying the z-score normalized gene count matrix.`,
   }))
   .build()

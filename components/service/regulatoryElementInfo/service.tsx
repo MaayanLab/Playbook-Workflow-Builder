@@ -102,7 +102,7 @@ export const GetRegulatoryElementPosition = MetaNode('GetRegulatoryElementPositi
     abstract: `Genomic positions of provided unique regulatory element identifiers were retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifiers were queried through CFDE LDH API endpoints and their GRCh38 genomic positions, including chr, start, and end, were retrieved from the JSON response.`,
-    legend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
+    tableLegend: `A table displaying the GRCh38 genomic postion of the given regulatory elements`,
   })).build()
 
 
@@ -389,7 +389,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     abstract: `Get unique name for genomic region(s) from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
     introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifier for the registered locations and regions.`,
     methods: `Input genomic region expression(s) were queried through GL Registry API endpoints. Unique identifiers were retrieved from those that have been registered on GL Registry`,
-    legend: `A table displaying the unique identifier(s) of given genomic region(s)`,
+    tableLegend: `A table displaying the unique identifier(s) of given genomic region(s)`,
   })).build()
 
   export const UniqueGenomicRegionRESet = MetaNode('UniqueGenomicRegionRESet')
@@ -496,7 +496,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     abstract: `Get unique name for genomic region(s) from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
     introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions.`,
     methods: `Input genomic region expression(s) were queried through GL Registry API endpoints. Unique identifiers were retrieved from those that have been registered on GL Registry`,
-    legend: `A table displaying the unique identifier(s) of given genomic region(s)`,
+    tableLegend: `A table displaying the unique identifier(s) of given genomic region(s)`,
   })).build()
 
   export const CrossReferenceGenomicRegionC = z.object({
@@ -573,7 +573,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
     introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in different reference assembly.`,
     methods: `Input regulatory element identifier(s) or genomic region(s) were queried through GL Registry coordinate transform API endpoints and their genomic location in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved.`,
-    legend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
+    tableLegend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
   })).build()
 
   export const UniqueGenomicRegionCrossReferenceRESet = MetaNode('UniqueGenomicRegionCrossReferenceRESet')
@@ -664,5 +664,5 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     abstract: `Genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved from Genomic Location Registry\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}`,
     introduction: `Genomic location registry (GL Registry)\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/} is a naming and registration service for any type of genomic location with a start and end position. It provides globally unique and persistant identifiers for the registered locations and regions. The id provided is also reference assembly version agnostic and enables mapping in different reference assembly.`,
     methods: `Input regulatory element identifier(s) or genomic region(s) were queried through GL Registry coordinate transform API endpoints and their genomic location in GRCh38, GRCh37, and NCBI36 reference genomes were retrieved.`,
-    legend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
+    tableLegend: `A table displaying the genomic location of given regulatory element(s) in GRCh38, GRCh37, and NCBI36 reference genomes.`,
   })).build()

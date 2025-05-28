@@ -133,7 +133,7 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     abstract: `GTEx eQTL and sQTL evidence for the given variant(s) were retrieved from CFDE LDH\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}\\ref{doi:10.1126/science.aaz1776}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input variant(s) were queried through CFDE LDH API endpoints and their associated tissue- and cell type-specific allele specificity evidence was retrieved from the JSON response.`,
-    legend: `A table displaying the effect size and statistically significance of tissue-specific eQTL and sQTL calls from GTEx`,
+    tableLegend: `A table displaying the effect size and statistically significance of tissue-specific eQTL and sQTL calls from GTEx`,
   })).build()
 
   
@@ -285,5 +285,5 @@ export const xQTL_EvidenceDataTable = MetaNode('xQTL_EvidenceDataTable')
     abstract: `GTEx eQTL and sQTL evidence for the given variant(s) were retrieved from CFDE LDH\\ref{Genomic Location Registry, https://reg.genome.network/reg/loc/}\\ref{doi:10.1126/science.aaz1776}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input variant(s) were queried through CFDE LDH API endpoints and their associated eQTL and sQTL evidence was retrieved`,
-    legend: `A table displaying the effect size and statistically significance of tissue-specific eQTL and sQTL calls from GTEx`,
+    tableLegend: `A table displaying the effect size and statistically significance of tissue-specific eQTL and sQTL calls from GTEx`,
   })).build()

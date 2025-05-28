@@ -97,7 +97,7 @@ export const LINCSL1000ReverseSearchExtractDrugUp = MetaNode('LINCSL1000ReverseS
     abstract: `Drugs which up-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 Chemical Perturbagens\\ref{doi:10.1093/nar/gkac328}.`,
     introduction: `The LINCS L1000 data\\ref{doi:10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. A modified CycleGAN model was used to transorm the L1000 assay measurements to RNA-seq-like expression\\ref{doi:10.1186/s12859-022-04895-5}. Characteristic direction\\ref{doi:10.1186/1471-2105-15-79} was used to compute differential gene expression signatures.`,
     methods: `Pre-computed characteristic direction\\ref{doi:10.1186/1471-2105-15-79}-based differential gene expression signatures from RNA-seq-like LINCS L1000 Expression Profiles\\ref{doi:10.1186/s12859-022-04895-5} which maximally increase or decrease the expression of the gene are retrieved from the LINCS Reverse Search Dashboard\\ref{LINCS Reverse Search Dashboard, https://github.com/MaayanLab/lincs-reverse-search-dashboard}.`,
-    legend: `A table of drugs which up-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
+    tableLegend: `A table of drugs which up-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()
 
@@ -122,7 +122,7 @@ export const LINCSL1000ReverseSearchExtractDrugDown = MetaNode('LINCSL1000Revers
     abstract: `Drugs which down-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 Chemical Perturbagens\\ref{doi:10.1093/nar/gkac328}.`,
     introduction: `The LINCS L1000 data\\ref{doi:10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. A modified CycleGAN model was used to transorm the L1000 assay measurements to RNA-seq-like expression\\ref{doi:10.1186/s12859-022-04895-5}. Characteristic direction\\ref{doi:10.1186/1471-2105-15-79} was used to compute differential gene expression signatures.`,
     methods: `Pre-computed characteristic direction\\ref{doi:10.1186/1471-2105-15-79}-based differential gene expression signatures from RNA-seq-like LINCS L1000 Expression Profiles\\ref{doi:10.1186/s12859-022-04895-5} which maximally increase or decrease the expression of the gene are retrieved from the LINCS Reverse Search Dashboard\\ref{LINCS Reverse Search Dashboard, https://github.com/MaayanLab/lincs-reverse-search-dashboard}.`,
-    legend: `A table of drugs which down-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
+    tableLegend: `A table of drugs which down-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()
 
@@ -147,7 +147,7 @@ export const LINCSL1000ReverseSearchExtractGeneUp = MetaNode('LINCSL1000ReverseS
     abstract: `CRISPR KO genes which up-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 CRISPR Knockouts\\ref{doi:10.1093/nar/gkac328}.`,
     introduction: `The LINCS L1000 data\\ref{doi:10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. A modified CycleGAN model was used to transorm the L1000 assay measurements to RNA-seq-like expression\\ref{doi:10.1186/s12859-022-04895-5}. Characteristic direction\\ref{doi:10.1186/1471-2105-15-79} was used to compute differential gene expression signatures.`,
     methods: `Pre-computed characteristic direction\\ref{doi:10.1186/1471-2105-15-79}-based differential gene expression signatures from RNA-seq-like LINCS L1000 CRISPR Knockouts\\ref{doi:10.1186/s12859-022-04895-5} which maximally increase or decrease the expression of the gene are retrieved from the LINCS Reverse Search Dashboard\\ref{LINCS Reverse Search Dashboard, https://github.com/MaayanLab/lincs-reverse-search-dashboard}.`,
-    legend: `A table of CRISPR KO genes which up-regulate the expression of  ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
+    tableLegend: `A table of CRISPR KO genes which up-regulate the expression of  ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()
 
@@ -172,6 +172,6 @@ export const LINCSL1000ReverseSearchExtractGeneDown = MetaNode('LINCSL1000Revers
     abstract: `Genes which down-regulate the expression of ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} were identified from the RNA-seq-like LINCS L1000 CRISPR Knockouts\\ref{doi:10.1093/nar/gkac328}.`,
     introduction: `The LINCS L1000 data\\ref{doi:10.1016/j.cell.2017.10.049} now consists of over 3 million chemical and genetic perturbational signatures. A modified CycleGAN model was used to transorm the L1000 assay measurements to RNA-seq-like expression\\ref{doi:10.1186/s12859-022-04895-5}. Characteristic direction\\ref{doi:10.1186/1471-2105-15-79} was used to compute differential gene expression signatures.`,
     methods: `Pre-computed characteristic direction\\ref{doi:10.1186/1471-2105-15-79}-based differential gene expression signatures from RNA-seq-like LINCS L1000 CRISPR Knockouts\\ref{doi:10.1186/s12859-022-04895-5} which maximally increase or decrease the expression of the gene are retrieved from the LINCS Reverse Search Dashboard\\ref{LINCS Reverse Search Dashboard, https://github.com/MaayanLab/lincs-reverse-search-dashboard}.`,
-    legend: `A table of CRISPR KO genes which down-regulate the expression of  ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
+    tableLegend: `A table of CRISPR KO genes which down-regulate the expression of  ${props.inputs?.search ? props.inputs.search.gene : 'the gene'} identified from the RNA-seq-like LINCS L1000 Chemical Perturbagen signatures\\ref{doi:10.1093/nar/gkac328}.`,
   }))
   .build()

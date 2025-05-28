@@ -56,7 +56,7 @@ export const MetadataMatrixFromFile = MetaNode('MetadataMatrixFromFile')
   .story(props => ({
     abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a metadata matrix.`,
     introduction: `Metadata for gene count matrices provide more information about the cells from which the samples originated, providing context to signatures. Possible metadata categories include sample title, stage of disease, and cell type.`,
-    legend: `A table of metadata uploaded by the user.`,
+    tableLegend: `A table of metadata uploaded by the user.`,
   }))
   .build()
 
@@ -86,6 +86,6 @@ export const MetadataMatrixFileUpload = MetaNode('MetadataMatrixFileUpload')
   .story(props => ({
     abstract: `A metadata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
     introduction: `Metadata for gene count matrices provide more information about the cells from which the samples originated, providing context to signatures. Possible metadata categories include sample title, stage of disease, and cell type.`,
-    legend: `A table of metadata uploaded by the user.`,
+    tableLegend: `A table of metadata uploaded by the user.`,
   }))
   .build()

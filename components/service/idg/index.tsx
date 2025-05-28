@@ -45,7 +45,7 @@ export const IDGFilterT = [
       abstract: `Genes were filtered by IDG ${label}\\ref{IDG Protein List, https://druggablegenome.net/IDGProteinList}.`,
       introduction: `The Illuminating the Druggable Genome (IDG) Program seeks to improve our understanding of the properties and functions of proteins not currently well studied within commonly drug-targeted protein families. IDG maintains a list of understudied proteins from three key druggable protein families (GPCR, Ion Channels and Kinases).`,
       methods: `Genes in ${props.input_refs?.input} are filtered by the list of IDG ${label}.`,
-      legend: `A table of IDG ${label} filtered from ${props.input_refs?.input}.`,
+      tableLegend: `A table of IDG ${label} filtered from ${props.input_refs?.input}.`,
     }))
     .build(),
   MetaNode(`IDGFilter[${GeneSet.spec}, ${kind}]`)
@@ -69,7 +69,7 @@ export const IDGFilterT = [
       abstract: `Genes were filtered by IDG ${label}\\ref{IDG Understudied Proteins, https://druggablegenome.net/AboutIDGProteinList}.`,
       introduction: `The Illuminating the Druggable Genome (IDG) Program seeks to improve our understanding of the properties and functions of proteins not currently well studied within commonly drug-targeted protein families. IDG maintains a list of understudied proteins from three key druggable protein families (GPCR, Ion Channels and Kinases).`,
       methods: `Genes in ${props.input_refs?.input} are filtered by the list of IDG ${label}.`,
-      legend: `A table of IDG ${label} filtered from ${props.input_refs?.input}.`,
+      tableLegend: `A table of IDG ${label} filtered from ${props.input_refs?.input}.`,
     }))
     .build(),
 ])

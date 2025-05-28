@@ -22,6 +22,6 @@ export const LimmaVoom = MetaNode('Limma-Voom')
     abstract: `The AnnData file was then analyzed using differential expression by Limma-Voom\\ref{doi:10.1186/gb-2014-15-2-r29}\\ref{doi:10.1093/nar/gkv007}.`,
     introduction: `The AnnData Python package handles annotated data matrices in memory and on disk and can be used to store gene count information. Limma-voom is a pair of normal linear modeilng strategies that is used to analyze read counts from RNA-seq experiments\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}.`,
     methods: `The AnnData package was used to store gene signature data. Differential gene expression analysis was performed using Limma-Voom\\ref{doi:10.1186/gb-2014-15-2-r29}, \\ref{doi:10.1093/nar/gkv007}.`,
-    legend: `A table of results from differential gene expression analysis between two gene sets.`,
+    tableLegend: `A table of results from differential gene expression analysis between two gene sets.`,
   }))
   .build()

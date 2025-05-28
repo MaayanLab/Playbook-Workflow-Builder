@@ -45,7 +45,7 @@ export const ARCHS4TissueExpression = MetaNode('ARCHS4TissueExpression')
     abstract: `Median expression of ${props.inputs?.gene ? props.inputs.gene : 'the gene'} was obtained from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
     introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
     methods: `Median expression of the gene in various tissues across experiments from GEO are resolved from the ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} website's REST API. 1000 random genes were queried against the ARCHS4 to get a mean and standard deviation for the median value. The medians returned by the ARCHS4 for each tissue are assigned a z-score based on the pre-computed mean and standard deviations.`,
-    legend: `A table showing the median expression of the gene in various tissues from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    tableLegend: `A table showing the median expression of the gene in various tissues from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
   }))
   .build()
 
@@ -166,7 +166,7 @@ export const ARCHS4SignatureResolve = MetaNode(`ARCHS4SignatureResolve`)
     abstract: `Gene expression for published samples was obtained from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
     introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
     methods: `The GEO study samples were taken from processed ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} matrix using the ARCHS4 API.`,
-    legend: `A table showing the basic structure and shape of the gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
   }))
   .build()
 
@@ -214,7 +214,7 @@ export const ARCHS4SignatureSearchT = [
     abstract: `Reversers and mimickers from GEO signatures were identified using ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
     introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
     methods: `Reverser and mimicker signatures from GEO were identified using the ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} website's REST API.`,
-    legend: `A table of GEO sample ids for matching signatures identified by ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    tableLegend: `A table of GEO sample ids for matching signatures identified by ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
   }))
   .build()
 )
@@ -270,7 +270,7 @@ export const ARCHS4SignatureTermSearchT = [
       abstract: `GEO studies were identified matching ${props.inputs?.term ? props.inputs.term : T.label.toLowerCase()} using ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} term search.`,
       introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
       methods: `Samples from GEO studies with ${props.inputs?.term ? props.inputs.term : `the ${T.label.toLowerCase()}`} in the metadata from GEO were identified using the ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} website's REST APIs.`,
-      legend: `A table of GEO sample ids for matching signatures identified by ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
+      tableLegend: `A table of GEO sample ids for matching signatures identified by ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
     }))
     .build()
 ))

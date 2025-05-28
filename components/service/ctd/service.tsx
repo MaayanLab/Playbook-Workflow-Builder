@@ -122,7 +122,7 @@ export async function getCTDCustomResponse(formData: FormData): Promise<CTDRespo
     abstract: `A custom CTD Adjacency JSON File is being created!`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `A custom CTD Adjacency JSON File is created for the input gene count matrix file by using a CTD adjacency JSON file and gene expression CSV file\\ref{doi:10.1371/journal.pcbi.1009551}.`,
-    legend: `A table displaying highly connected sets of proteins from the input graph.`,
+    tableLegend: `A table displaying highly connected sets of proteins from the input graph.`,
   })).build()
 
 export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precalculations_Combined')
@@ -163,7 +163,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     abstract: `Input Gene Set and Adj. Matrix to send to the CTD API for precalculations.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Highly connected sets of proteins are identified using the CTD algorithm and a precalculated graph including a gene set and adjacency matrix\\ref{doi:10.1371/journal.pcbi.1009551}.`,
-    legend: `A table displaying highly connected sets of proteins from the input graph.`,
+    tableLegend: `A table displaying highly connected sets of proteins from the input graph.`,
   })).build()
 
   export const CTDResponseInfo = MetaNode('CTDResponseInfo')
@@ -235,7 +235,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     abstract: `The three files where send to the CTD API for precalculations.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `The custom gene list, adjacency matrix file and permutations (RData) file were sent to the CTD API for precalculations.`,
-    legend: `A table displaying the CTD output including highly connected node subsets.`,
+    tableLegend: `A table displaying the CTD output including highly connected node subsets.`,
   })).build()
 
   export const Highly_Connected_Genes = MetaNode('Highly_Connected_Genes')
@@ -261,7 +261,7 @@ export const Execute_CTD_Precalculations_Combined = MetaNode('Execute_CTD_Precal
     abstract: `A list of Highly Connected Genes was obtained from the CTD output.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Nodes within the initial node set are extracted if they are determined to be highly connected by CTD. `,
-    legend: `A table of the extracted highly connected genes as determined by CTD.`,
+    tableLegend: `A table of the extracted highly connected genes as determined by CTD.`,
   })).build()
 
 export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes')
@@ -287,7 +287,7 @@ export const Guilty_By_Association_Genes = MetaNode('Guilty_By_Association_Genes
     abstract: `A list of Guilty By Association Genes was obtained from the CTD output.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Nodes are extracted as Guilty By Association if they connet initial genes of interest within the graph.`,
-    legend: `A table of Guilty By Association genes.`,
+    tableLegend: `A table of Guilty By Association genes.`,
   })).build()
 
 export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
@@ -358,7 +358,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     abstract: `Graph Nodes were extracted from the CTD output.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Highly connected nodes as well as nodes that are connect these nodes (Guilty By Association) are extracted.`,
-    legend: `A table of graph nodes extracted using CTD.`,
+    tableLegend: `A table of graph nodes extracted using CTD.`,
   })).build()
 
   export const GeneSet_CTD_String = MetaNode('GeneSet_CTD_String')
@@ -387,7 +387,7 @@ export const CTD_Graph_Nodes = MetaNode('CTD_Graph_Nodes')
     abstract: `CTD is applied which diffuses through all nodes in STRING\\ref{doi:10.1093/nar/gku1003} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}. STRING is an online database that stores graphical protein-protein interaction networks\\ref{doi:10.1093/nar/gku1003}.`,
     methods: `CTD is used to identify the highly connected and Guilty By Association sets of proteins in the STRING protein interaction graph\\ref{doi:10.1093/nar/gku1003}.`,
-    legend: `A table displaying the CTD output including highly connected node subsets.`,
+    tableLegend: `A table displaying the CTD output including highly connected node subsets.`,
   })).build()
 
 export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
@@ -415,7 +415,7 @@ export const GeneSet_CTD_Wikipathways = MetaNode('GeneSet_CTD_Wikipathways')
     abstract: `CTD is applied which diffuses through all nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960} to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\\ref{doi:10.1371/journal.pcbi.1009551}. WikiPathways is a web-based software application that stores biological pathways contributed by the research community\\ref{doi:10.1093/nar/gkad960}. `,
     methods: `CTD is used to identify the highly connected and Guilty By Association nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960}\\ref{doi:10.1371/journal.pcbi.1009551}.`,
-     legend: `A table displaying the CTD output including highly connected node subsets.`,
+     tableLegend: `A table displaying the CTD output including highly connected node subsets.`,
    })).build()
 
 export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
@@ -444,7 +444,7 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     abstract: `CTD is applied which diffuses through all nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Input files were checked for proper formatting before being used by CTD. Proper file formatting is defined as having values separated by a \\n character and a .csv extension.`,
-    legend: `A table displaying the CTD output including highly connected node subsets.`,
+    tableLegend: `A table displaying the CTD output including highly connected node subsets.`,
   }))
   .build()
 
@@ -474,5 +474,5 @@ export const GenesFile_CTD_String = MetaNode('GenesFile_CTD_String')
     abstract: `CTD is applied which diffuses through all nodes in WikiPathways\\ref{doi:10.1093/nar/gkad960}] to identify nodes that are "guilty by association" and highly connected to the initial gene set of interest\\ref{doi:10.1371/journal.pcbi.1009551}\\ref{doi:10.1016/j.isci.2022.105799}.`,
     introduction: `Connect the Dots (CTD) is an algorithm that was developed in order to quickly identify highly connected subsets of graph nodes\ref{doi:10.1371/journal.pcbi.1009551}.`,
     methods: `Input files were checked for proper formatting before being used by CTD. Proper file formatting is defined as having values separated by a \\n character and a .csv extension.`,
-    legend: `A table displaying the CTD output including highly connected node subsets.`,
+    tableLegend: `A table displaying the CTD output including highly connected node subsets.`,
   })).build()

@@ -256,7 +256,7 @@ export const EnrichrTToT = [
       abstract: `A ${ScoredT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrscored?.background ? ` for ${props.inputs.enrichrscored.background}` : ''}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `The terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored} are extracted to produce ${props.output_ref}.`,
-      legend: `A table of significantly enriched terms paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      tableLegend: `A table of significantly enriched terms paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build(),
     MetaNode(`EnrichrScoredTToUMAP[${T.name}]`)
@@ -455,7 +455,7 @@ backgrounds.map(bg => ({ bg, output, T }))
       abstract: `The gene set was enriched against the ${bg.label}${bg.ref} library to identify statistically significant ${bg.termLabel}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `The enrichment analysis results against the ${bg.label}${bg.ref} library are resolved via the Enrichr API\\ref{doi:10.1002/cpz1.90}.`,
-      legend: `A table of significantly enriched ${bg.termLabel} from the ${bg.label}${bg.ref} library paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      tableLegend: `A table of significantly enriched ${bg.termLabel} from the ${bg.label}${bg.ref} library paired with their significance scores as reported by Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build()
 )
@@ -549,7 +549,7 @@ backgrounds.map(bg => ({ bg, output, T }))
       abstract: `Identified matching terms from the ${bg.label}${bg.ref} library were assembled into a collection of gene sets.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `Gene sets in the ${bg.label}${bg.ref} library containing the provided gene were resolved via the Enrichr API\\ref{doi:10.1002/cpz1.90}.`,
-      legend: `A table of disease signatures from the ${bg.label}${bg.ref} library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      tableLegend: `A table of disease signatures from the ${bg.label}${bg.ref} library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build()
 )
@@ -655,7 +655,7 @@ export const EnrichrTermSearchT = [
       abstract: `Identified matching terms from the ${bg.label}${bg.ref} library were assembled into a collection of gene sets.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `Gene sets in the ${bg.label}${bg.ref} library containing the provided term in the gene set label were resolved via the Enrichr API\\ref{doi:10.1002/cpz1.90}.`,
-      legend: `A table of disease signatures from the ${bg.label}${bg.ref} library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
+      tableLegend: `A table of disease signatures from the ${bg.label}${bg.ref} library from Enrichr\\ref{doi:10.1002/cpz1.90}.`,
     }))
     .build()
 )

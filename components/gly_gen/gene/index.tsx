@@ -35,7 +35,7 @@ export const GlyGenProteinProduct = MetaNode("GGPP")
     abstract: `Next, the GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of proteins that originate from ${props.inputs?.gene?.symbol ? props.inputs.gene.symbol : "the gene"}.`,
     introduction: `GlyGen provides information about proteins translated from genes. Proteins are identified through their UniProtKB accession and information such as its name, length, organism, gene location and whether it is a glycoprotein or a phosphoprotein is shown.`,
     methods: `A protein search was performed for each gene name of interest using the GlyGen database\\ref{doi:10.1093/glycob/cwz080}. The relevant set of proteins returned by the search was recorded.`,
-    legend: `A table showing the relevant proteins returned by each GlyGen search.`,
+    tableLegend: `A table showing the relevant proteins returned by each GlyGen search.`,
   }))
   .build();
 
@@ -58,6 +58,6 @@ export const GlyGenProteinInformation = MetaNode("GlyGenProteinInformation")
     abstract: `The GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of protein products that originate from ${props.inputs?.gene ? props.inputs.gene : "the gene"}.`,
     introduction: `GlyGen provides information about proteins translated from genes. Proteins are identified through their UniProtKB accession and information such as its name, length, organism, gene location and whether it is a glycoprotein or a phosphoprotein is shown.`,
     methods: `A protein search was performed for each gene name of interest using the GlyGen database\\ref{doi:10.1093/glycob/cwz080}. The relevant set of proteins returned by the search was recorded.`,
-    legend: `A table showing the relevant proteins returned by each GlyGen search.`,
+    tableLegend: `A table showing the relevant proteins returned by each GlyGen search.`,
   }))
   .build();

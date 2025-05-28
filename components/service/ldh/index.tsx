@@ -103,7 +103,7 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
     abstract: `A list of regulatory elements in the vicinity of the gene were retrieved from the CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}.`,
     methods: `Input gene was queried through CFDE LDH API endpoints, and JSON response with linked data were parsed to retrieve FAIR identifiers for linked regulatory elements.`,
-    legend: `A table displaying the globally unique identifiers and positions for regulatory elements in the gene body or in the 10kbps upstream or downstream region.`,
+    tableLegend: `A table displaying the globally unique identifiers and positions for regulatory elements in the gene body or in the 10kbps upstream or downstream region.`,
   })).build()
 
   export const GetRegulatoryElementsInfoForGeneInfoSet = MetaNode('GetRegulatoryElementsInfoForGeneInfoSet')
@@ -148,5 +148,5 @@ export const GetRegulatoryElementsInfoForGeneInfo = MetaNode('GetRegulatoryEleme
     abstract: `A list of regulatory elements in the vicinity of the genes were retrieved from the CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}.`,
     methods: `Input genes was queried through CFDE LDH API endpoints, and JSON response with linked data were parsed to retrieve FAIR identifiers for linked regulatory elements.`,
-    legend: `A table displaying the globally unique identifiers and positions for regulatory elements in the gene body or in the 10kbps upstream or downstream region.`,
+    tableLegend: `A table displaying the globally unique identifiers and positions for regulatory elements in the gene body or in the 10kbps upstream or downstream region.`,
   })).build()

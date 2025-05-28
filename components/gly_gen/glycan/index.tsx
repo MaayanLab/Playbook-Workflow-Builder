@@ -192,7 +192,7 @@ export const GlycanInformation = MetaNode("GlycanInformation")
     abstract: `The GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify information about ${props.inputs?.glycan ? props.inputs.glycan : "the glycan"}.`,
     introduction: `GlyGen provides information about glycans which are monosaccharides or polysaccharides covalently attached to a protein. Glycan are identifies through GlyTouCan accession and properties like Monoisotopic Mass, Monoisotopic Mass-pMe (Da), Glycan Type / Glycan Subtype are shown. Corresponding glycan image and accessions for PubChem Compound and PubChem Substance are also shown.`,
     methods: `A search was performed to identify information about the glycan by using the GlyGen database\\ref{doi:10.1093/glycob/cwz080} and the glycan's GlyTouCan accession\\ref{doi:10.1093/glycob/cwx066}.`,
-    legend: `A table showing the relevant info returned for each GlyGen glycan search.`,
+    tableLegend: `A table showing the relevant info returned for each GlyGen glycan search.`,
   }))
   .build();
 
@@ -222,7 +222,7 @@ export const GlyGenGlycanSet = MetaNode("GGGS")
     abstract: `Next, the GlyGen database\\ref{doi:10.1093/glycob/cwz080} was searched to identify a relevant set of glycans.`,
     introduction: `GlyGen provides information about glycans which are monosaccharides or polysaccharides covalently attached to a protein. Glycan are identifies through GlyTouCan accession and properties like Monoisotopic Mass, Monoisotopic Mass-pMe (Da), Glycan Type / Glycan Subtype are shown. Corresponding glycan image and accessions for PubChem Compound and PubChem Substance are also shown.`,
     methods: `A search was performed to identify information about the glycans by using the GlyGen database\\ref{doi:10.1093/glycob/cwz080} and the glycan's GlyTouCan accessions\\ref{doi:10.1093/glycob/cwx066}.`,
-    legend: `A table showing the relevant info is returned for GlyGen glycans search.`,
+    tableLegend: `A table showing the relevant info is returned for GlyGen glycans search.`,
   }))
   .build();
 
@@ -247,6 +247,6 @@ export const GlycoenzymeInformation = MetaNode("GlycoenzymeInformation")
     abstract: `The glycoenzyme data was extracted from the GlyGen glycan response and prepared for presentation in the view metanode.`,
     introduction: `The Glycoenzyme information contains the enzyme information involved in the synthesis of a given glycan. The information consists of UniProtKB ac, Gene name, Protein Name, Organism of the given enzyme.`,
     methods: `A search was performed to identify the glycoenzyme information in GlyGen\\ref{doi:10.1093/glycob/cwz080} for glycans based on the GlyTouCan accessions\\ref{doi:10.1093/glycob/cwx066}.`,
-    legend: `A table showing the relevant info is returned for the glycoenzyme for glycans searched.`,
+    tableLegend: `A table showing the relevant info is returned for the glycoenzyme for glycans searched.`,
   }))
   .build();

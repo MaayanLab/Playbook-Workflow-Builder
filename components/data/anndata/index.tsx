@@ -59,7 +59,7 @@ export const AnnDataFromFile = MetaNode('AnnDataFromFile')
     abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as an anndata matrix.`,
     introduction: 'The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.',
     methods: 'Gene expression count matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.',
-    legend: `A table showing the basic structure and shape of the uploaded annotated gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the uploaded annotated gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
   }))
   .build()
 
@@ -91,7 +91,7 @@ export const AnnDataFileUpload = MetaNode('AnnDataFileUpload')
     abstract: `An anndata matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
     introduction: 'The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.',
     methods: 'Gene expression count matrices are stored alongside sample metadata annotations in H5 format using AnnData\\ref{doi:10.1101/2021.12.16.473007}.',
-    legend: `A table showing the basic structure and shape of the uploaded annotated gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the uploaded annotated gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
   }))
   .build()
 
@@ -112,6 +112,6 @@ export const AnnDataFromGeneCountMatrixAndMetadataMatrix = MetaNode('AnnDataFrom
     abstract: `An AnnData file was prepared from the input data${props.inputs && props.inputs.gene_count_matrix.description ? ` containing ${props.inputs.gene_count_matrix.description}` : ''} and metadata${props.inputs && props.inputs.metadata_matrix.description ? ` containing ${props.inputs.metadata_matrix.description}` : ''}.`,
     introduction: 'The AnnData Python package handles annotated data matrices in memory and on disk\\ref{doi:10.1101/2021.12.16.473007}.',
     methods: `The gene count matrix and metadata matrix were combined into a joint H5 formatted file using AnnData\\ref{doi:10.1101/2021.12.16.473007}.`,
-    legend: `A table showing the basic structure and shape of the uploaded annotated gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the uploaded annotated gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
   }))
   .build()

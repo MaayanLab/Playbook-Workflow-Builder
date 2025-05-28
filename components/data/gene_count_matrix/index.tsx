@@ -55,7 +55,7 @@ export const GeneCountMatrixFromFile = MetaNode('GeneCountMatrixFromFile')
   ))
   .story(props => ({
     abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was parsed as a gene count matrix.`,
-    legend: `A table showing the basic structure and shape of the uploaded gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the uploaded gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
   }))
   .build()
 
@@ -85,7 +85,7 @@ export const GeneCountMatrixFileUpload = MetaNode('GeneCountMatrixFileUpload')
   ))
   .story(props => ({
     abstract: `The gene count matrix${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
-    legend: `A table showing the basic structure and shape of the uploaded gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the uploaded gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
   }))
   .build()
 
@@ -105,6 +105,6 @@ export const Transpose = MetaNode('Transpose')
   .story(props => ({
     abstract: `The gene count matrix was then transposed.`,
     methods: `The gene count matrix in ${props.input_refs?.file} as transposed to produce ${props.output_ref}.`,
-    legend: `A table showing the basic structure and shape of the transposed gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the transposed gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
   }))
   .build()

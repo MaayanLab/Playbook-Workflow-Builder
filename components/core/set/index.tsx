@@ -145,7 +145,7 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
   })
   .story(props => ({
     abstract: `The workflow starts with a ${T.label.toLocaleLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`,
-    legend: `A table showing the input ${T.label.toLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`,
+    tableLegend: `A table showing the input ${T.label.toLowerCase()} set${props.output && props.output.description ? ` created from ${props.output.description}` : ''}.`,
   }))
   .build()
 
@@ -181,7 +181,7 @@ export const TermToSetT = [
     })
     .story(props => ({
       abstract: `The terms${props.inputs?.terms ? ` ${props.inputs.terms.join(', ')}` : ''} were combined to make a ${SetT.meta.label.toLowerCase()}.`,
-      legend: `A table showing the ${SetT.meta.label.toLowerCase()} of combined terms .`,
+      tableLegend: `A table showing the ${SetT.meta.label.toLowerCase()} of combined terms .`,
     }))
     .build()
 )

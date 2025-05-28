@@ -109,7 +109,7 @@ export const RankedToSetT = [
       return { set: props.inputs.ranked.ranked, description: props.inputs.ranked.description }
     })
     .story(props => ({
-      legend: `A table showing the ${SetT.meta.label.toLowerCase()}.`,
+      tableLegend: `A table showing the ${SetT.meta.label.toLowerCase()}.`,
     }))
     .build()
 )

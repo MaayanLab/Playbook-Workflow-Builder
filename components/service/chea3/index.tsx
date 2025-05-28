@@ -127,6 +127,6 @@ export const ChEA3TFEnrichmentAnalysis = MetaNode('ChEA3TFEnrichmentAnalysis')
     abstract: `Transcription Factor Enrichment Analysis was performed on ${props.inputs?.gene_set ? props.inputs.gene_set.description : 'the gene set'} using ChEA3\\ref{doi:10.1093/nar/gkz446}.`,
     introduction: `Transcription factors (TFs) play an important role in gene regulatory networks. TF Enrichment Analysis can be used to identify relevant TFs based on known TF-target interactions.`,
     methods: `Transcription Factor Enrichment Analysis was performed on the gene set using the ChEA3\\ref{doi:10.1093/nar/gkz446} web API and using Mean Rank across all available TF Libraries.`,
-    legend: `A table of significantly enriched TFs identified with ChEA3\\ref{doi:10.1093/nar/gkz446}.`,
+    tableLegend: `A table of significantly enriched TFs identified with ChEA3\\ref{doi:10.1093/nar/gkz446}.`,
   }))
   .build()

@@ -437,7 +437,7 @@ export const GlycosylationInformation = MetaNode("GlycosylationInformation")
     abstract: "The glycosylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.",
     introduction: `If a protein is a glycoprotein, glycosylation information such as residue (amino acid + site position), glycosylation site category, glycosylation type and GlyTouCan accession is shown.`,
     methods: `A search was performed to identify the glycosylation information in GlyGen\\ref{doi:10.1093/glycob/cwz080} for given proteins`,
-    legend: `A table showing the relevant glycosylation info is returned for the for proteins searched.`,
+    tableLegend: `A table showing the relevant glycosylation info is returned for the for proteins searched.`,
   }))
   .build();
 
@@ -465,7 +465,7 @@ export const PhosphorylationInformation = MetaNode("PhosphorylationInformation")
     abstract: `The phosphorylation data was extracted from the GlyGen protein response and prepared for presentation in the view metanode.`,
     // introduction: `If a protein is a phosphoprotein, phosphorylation information such as residue (amino acid + site position), protein name and gene name of kinase phosphorylating the protein and associated notes is shown.`,
     methods: `A search was performed to identify the phosphorylation information in GlyGen\\ref{doi:10.1093/glycob/cwz080} for the given proteins`,
-    legend: `A table showing the relevant phosphorylation info is returned for the proteins searched.`,
+    tableLegend: `A table showing the relevant phosphorylation info is returned for the proteins searched.`,
   }))
   .build();
 
@@ -494,7 +494,7 @@ export const SNVInformation = MetaNode("SNVInformation")
     abstract: `The SNV data is parsed from the GlyGen Protein data and prepared for presentation in the data view metanode.`,
     introduction: `Single Nucleotide Variation (SNV) information contains somatic and germline vartiation information observed in a protein. The SNV informationconsists of Genomic Locus, Ref Nucleotide, Alt Nucleotide, Start Pos, End Pos, Sequence, Disease and Keywords (somatic or germline)`,
     methods: `A search was performed to identify the SNV information in GlyGen\\ref{doi:10.1093/glycob/cwz080} for given proteins.`,
-    legend: `A table showing the relevant SNV info is returned for the for proteins searched.`,
+    tableLegend: `A table showing the relevant SNV info is returned for the for proteins searched.`,
   }))
   .build();
 

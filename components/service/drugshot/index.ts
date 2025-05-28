@@ -84,7 +84,7 @@ export const DrugShotTermSearchT = [
         abstract: `${props.inputs?.term ? props.inputs.term : `The ${T.label.toLowerCase()}`}-drug co-mentions on PubMed were queried with DrugShot based on ${label}\\ref{doi:10.1186/s12859-022-04590-5}.`,
         introduction: `PubMed contains millions of abstracts containing drugs and other biomedical terms such as genes or diseases. DrugShot is a web server that facilitates arbitrary term searches against PubMed to find drug co-mentions & drug set augmentation with a variety of drug-drug similarity resources\\ref{doi:10.1186/s12859-022-04590-5}.`,
         methods: `The term was queried against PubMed, and drugs co-mentioned in the resulting abstracts were found and ranked by occurrence using DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
-        legend: `A table of the normalized drugs co-occurring with the term from PubMed abstracts based on ${label} identified with DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
+        tableLegend: `A table of the normalized drugs co-occurring with the term from PubMed abstracts based on ${label} identified with DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
       }))
       .build()
   ])
@@ -154,7 +154,7 @@ export const DrugShotDrugSetAugmentation = ([
       abstract: `The drug set${props.inputs && props.inputs.drugset.description ? ` containing ${props.inputs.drugset.description}` : ''} was augmented with DrugShot based on ${label}\\ref{doi:10.1186/s12859-022-04590-5}.`,
       introduction: `PubMed contains millions of abstracts containing drugs and other biomedical terms such as genes or diseases. DrugShot is a web server that facilitates arbitrary term searches against PubMed to find drug co-mentions & drug set augmentation with a variety of drug-drug similarity resources\\ref{doi:10.1186/s12859-022-04590-5}.`,
       methods: `The drug set in ${props.input_refs?.drugset} is augmented using a similarity matrix based on ${label} using DrugShot's REST API\\ref{doi:10.1186/s12859-022-04590-5}.`,
-      legend: `A table of similar drugs to ${props.input_refs?.drugset} produced by using a ${label} similarity matrix with DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
+      tableLegend: `A table of similar drugs to ${props.input_refs?.drugset} produced by using a ${label} similarity matrix with DrugShot\\ref{doi:10.1186/s12859-022-04590-5}.`,
     }))
     .build(),
   MetaNode(`DrugShotDrugAugmentation[${rc}]`)

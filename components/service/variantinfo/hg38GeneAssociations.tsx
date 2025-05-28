@@ -205,7 +205,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     abstract: `Gene(s) in the vicinity of the given variant(s) were retrieved from MyVariant.info API results\\ref{doi:10.1093/bioinformatics/btac017}.`,
     introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
     methods: `Input variant(s) were queried through MyVariant.info (hg38) API endpoints, and associated genes were retreived from the JSON response.`,
-    legend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
+    tableLegend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
   })).build()
 
   export const GetVariantToGeneAssociation_HG38 = MetaNode('GetVariantToGeneAssociation_HG38')
@@ -238,7 +238,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     abstract: `Gene(s) in the vicinity of the given variant(s) were retrieved from MyVariant.info API results\\ref{doi:10.1093/bioinformatics/btac017}.`,
     introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
     methods: `Input variant(s) were queried through MyVariant.info (hg38) API endpoints, and associated genes were retreived from the JSON response.`,
-    legend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
+    tableLegend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
   })).build()
 
   export const ExtractGenesFromGeneAssociationsHG38 = MetaNode('ExtractGenesFromGeneAssociationsHG38')
@@ -450,7 +450,7 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     abstract: `Gene(s) in the vicinity of the given variant(s) were retrieved from MyVariant.info API results\\ref{doi:10.1093/bioinformatics/btac017}.`,
     introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
     methods: `Input variant(s) were queried through MyVariant.info (hg38) API endpoints, and associated genes were retreived from the JSON response.`,
-    legend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
+    tableLegend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
   })).build()
 
 
@@ -470,5 +470,5 @@ export const GeneAssociations_HG38 = MetaNode('GeneAssociations_HG38')
     abstract: `Gene(s) in the vicinity of the given variant(s) were retrieved from MyVariant.info API results\\ref{doi:10.1093/bioinformatics/btac017}.`,
     introduction: `MyVariant.info is a REST web service for querying and retrieving common variant annotation data\\ref{doi:10.1186/s13059-016-0953-9}\\ref{doi:10.1093/bioinformatics/btac017}.`,
     methods: `Input variant(s) were queried through MyVariant.info (hg38) API endpoints, and associated genes (transcripts) were retreived from the JSON response.`,
-    legend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
+    tableLegend: `A table displaying the gene annotations for the given variant(s) from MyVariant.info.`,
   })).build()

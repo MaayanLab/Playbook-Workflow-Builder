@@ -150,7 +150,7 @@ export const SelectScoredT = [
     })
     .story(props => ({
       abstract: `Up ${ScoredT.meta.label.toLowerCase()} were selected.`,
-      legend: `A table of ${ScoredT.meta.label.toLowerCase()} with only positive z-scores.`,
+      tableLegend: `A table of ${ScoredT.meta.label.toLowerCase()} with only positive z-scores.`,
     }))
     .build(),
   MetaNode(`SelectFromScored[${ScoredT.spec}, down]`)
@@ -169,7 +169,7 @@ export const SelectScoredT = [
     })
     .story(props => ({
       abstract: `Down ${ScoredT.meta.label.toLocaleLowerCase()} were selected.`,
-      legend: `A table of ${ScoredT.meta.label.toLowerCase()} with only negative z-scores.`,
+      tableLegend: `A table of ${ScoredT.meta.label.toLowerCase()} with only negative z-scores.`,
     }))
     .build(),
 ])
@@ -193,7 +193,7 @@ export const SetFromScoredT = [
     .resolve(async (props) => ({ set: props.inputs.scored.map(({ term }) => term) }))
     .story(props => ({
       abstract: `A set was constructed using the ${ScoredT.meta.label.toLowerCase()}.`,
-      legend: `The set of drugs from ${props.input_refs?.scored}.`,
+      tableLegend: `The set of drugs from ${props.input_refs?.scored}.`,
     }))
     .build(),
   MetaNode(`OneSetT[${SetT.spec}]`)
@@ -245,7 +245,7 @@ export const SetFromScoredT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.set}.`,
+      tableLegend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.set}.`,
     }))
     .build(),
   MetaNode(`SomeSetT[${SetT.spec}]`)
@@ -313,7 +313,7 @@ export const SetFromScoredT = [
     })
     .story(props =>  ({
       abstract: `Some ${pluralize(T.label.toLowerCase())} were selected for further investigation.`,
-      legend: `Some ${pluralize(T.label.toLowerCase())} taken from ${props.input_refs?.set}.`,
+      tableLegend: `Some ${pluralize(T.label.toLowerCase())} taken from ${props.input_refs?.set}.`,
     }))
     .build(),
 ])
@@ -351,7 +351,7 @@ export const ReduceMultiScoredT = [
       })
       .story(props => ({
         abstract: `The mean across multiple ${ScoredT.meta.label} is computed.`,
-        legend: `The mean across${props.input_refs?.scored ? ` ${(props.input_refs?.scored as string[]).join(', ')}` : ''}.`,
+        tableLegend: `The mean across${props.input_refs?.scored ? ` ${(props.input_refs?.scored as string[]).join(', ')}` : ''}.`,
       }))
       .build(),
     MetaNode(`AbsMaxScoredT[${T.label}]`)
@@ -376,7 +376,7 @@ export const ReduceMultiScoredT = [
       })
       .story(props => ({
         abstract: `The absolute maximum across multiple ${ScoredT.meta.label} is computed.`,
-        legend: `The absolute maximum${props.input_refs?.scored ? ` across ${(props.input_refs.scored as string[]).join(', ')}` : ''}.`,
+        tableLegend: `The absolute maximum${props.input_refs?.scored ? ` across ${(props.input_refs.scored as string[]).join(', ')}` : ''}.`,
       }))
       .build(),
 ])
@@ -429,7 +429,7 @@ export const TopKRankedT = [
     })
     .story(props => ({
       abstract: `The top ${props.data?.k || 'K'} ${RankedT.meta.label} were selected.`,
-      legend: `The top ${props.data?.k || 'K'} drugs from ${props.input_refs?.ranked}.`,
+      tableLegend: `The top ${props.data?.k || 'K'} drugs from ${props.input_refs?.ranked}.`,
     }))
     .build(),
   MetaNode(`OneRankedT[${RankedT.spec}]`)

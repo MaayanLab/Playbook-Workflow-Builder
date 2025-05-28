@@ -53,34 +53,39 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : []
   ).join('')
   const introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : []
   )).join('')
   const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : []
   ).join('')
   const contributors = array.unique(fullFPL.map(head => props.krg.getProcessNode(head.process.type).meta.author).filter((author): author is string => !!author)).map(contributor => latexEscape(contributor))
   const figures = (await array.mapSequential(fullFPL, async (head) => {
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
     if (figure?.type !== 'figure') return []
-    const figure_num = story.figures.get(figure.ref)
-    const legend = story.ast.filter(part => part.tags.includes('legend') && part.tags.includes(head.id)).map(part =>
+    const figure_num = story.figures.get(figure.ref)?.ref
+    const legend = story.ast.filter(part => (part.tags.includes('legend') || part.tags.includes('figureLegend')) && part.tags.includes(head.id)).map(part =>
       part.type === 'text' ? latexEscape(part.text)
       : part.type === 'cite' ? `~\\cite{${story.bibitems.get(part.ref)}}`
-      : part.type === 'figref' ? `Fig. \\ref{fig:${story.figures.get(part.ref)}}`
+      : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? `Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`
+      : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? `Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`
       : ''
     ).join('')
     return [{
       id: head.id,
+      kind: figure.kind,
       files: {
         [`figures/fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
@@ -197,7 +202,7 @@ ${fullFPL.flatMap(head => {
   const step_introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') || !part.tags.includes(head.id) ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
+    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : [])).join('')
   if (!step_introduction) return []
   else return [
@@ -221,7 +226,7 @@ ${fullFPL.flatMap(head => {
   const step_methods = array.unique(story.ast.flatMap(part => !part.tags.includes('methods') || !part.tags.includes(head.id) ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)}}`]
+    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : [])).join('')
   const step_figure = figures.filter(fig => fig?.id === head.id)
   return [
@@ -341,7 +346,14 @@ ${methods}
 
 \\section*{Results}
 
-${figures.map(fig => `
+${figures.filter(fig => fig.kind === 'table').map(table => `
+\\begin{center}\\vspace{1cm}
+\\includegraphics[width=0.5\\linewidth]{${table.filename}}
+\\captionof{figure}{${table.legend}}\\label{${table.label}}
+\\end{center}\\vspace{1cm}
+`).join('\n\n')}
+
+${figures.filter(fig => fig.kind === 'figure').map(fig => `
 \\begin{center}\\vspace{1cm}
 \\includegraphics[width=0.5\\linewidth]{${fig.filename}}
 \\captionof{figure}{${fig.legend}}\\label{${fig.label}}

@@ -25,7 +25,7 @@ console.log(
         node.meta.description,
         node.meta.color,
         story.abstract ?? '',
-        story.legend ?? '',
+        story.legend ?? story.figureLegend ?? story.tableLegend ?? '',
         story.introduction ?? '',
         story.methods ?? '',
         story.results ?? '',

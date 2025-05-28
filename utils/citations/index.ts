@@ -38,24 +38,39 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
     | { type: 'cite', text: string, ref: string, tags: string[] }
     | { type: 'bibitem', text: string, ref: string, bibtex?: { type: string, record: string }, tags: string[] }
     | { type: 'figref', text: string, ref: string, tags: string[] }
-    | { type: 'figure', text: string, ref: string, tags: string[] }
+    | { type: 'figure', kind: 'figure' | 'table', text: string, ref: string, tags: string[] }
   )[] = []
-  const figures = new Map<string, string>()
-  const figure_asts: Record<string, { type: 'figure', ref: string, text: string, tags: string[] }> = {}
+  const figures = new Map<string, { kind: 'figure' | 'table', ref: string }>()
+  const figure_asts: Record<string, { type: 'figure', kind: 'figure' | 'table', ref: string, text: string, tags: string[] }> = {}
   const bibitems = new Map<string, string>()
   const bibitem_asts: Record<string, { type: 'bibitem', ref: string, text: string, bibtex?: { type: string, record: string }, tags: string[] }> = {}
   for (const { text, tags } of texts) {
     if (!text) continue
-    if (tags.includes('legend')) {
-      const ref = tags.filter(tag => tag !== 'legend').join('-')
+    if (tags.includes('legend') || tags.includes('figureLegend')) {
+      const ref = tags.filter(tag => tag !== 'legend' && tag !== 'figureLegend').join('-')
       if (!(ref in figure_asts)) {
-        figure_asts[ref] = { type: 'figure', text: '', ref, tags }
+        figure_asts[ref] = { type: 'figure', kind: 'figure', text: '', ref, tags }
       } else {
+        figure_asts[ref].kind = 'figure'
         figure_asts[ref].tags = array.unique([...figure_asts[ref].tags, ...tags])
       }
       if (!figures.has(ref)) {
         figure_asts[ref].text = ''
-        figures.set(ref, `${figures.size+1}`)
+        figures.set(ref, { kind: figure_asts[ref].kind, ref: `${figures.size+1}` })
+        ast.push(figure_asts[ref])
+      }
+    }
+    if (tags.includes('tableLegend')) {
+      const ref = tags.filter(tag => tag !== 'tableLegend').join('-')
+      if (!(ref in figure_asts)) {
+        figure_asts[ref] = { type: 'figure', kind: 'table', text: '', ref, tags }
+      } else {
+        figure_asts[ref].kind = 'table'
+        figure_asts[ref].tags = array.unique([...figure_asts[ref].tags, ...tags])
+      }
+      if (!figures.has(ref)) {
+        figure_asts[ref].text = ''
+        figures.set(ref, { kind: figure_asts[ref].kind, ref: `${figures.size+1}` })
         ast.push(figure_asts[ref])
       }
     }
@@ -78,12 +93,12 @@ export default function extractCitations(texts: { text?: string, tags: string[] 
         i = m.index + m[0].length
       } else if (reftype === 'figref') {
         if (!(ref in figure_asts)) {
-          figure_asts[ref] = { type: 'figure', text: '', ref, tags }
+          figure_asts[ref] = { type: 'figure', kind: 'figure', text: '', ref, tags }
         } else {
           figure_asts[ref].tags = array.unique([...figure_asts[ref].tags, ...tags])
         }
         ast.push({ type: 'text', text: text.substring(i, m.index), tags })
-        ast.push({ type: 'figref', text: `Fig.`, ref, tags })
+        ast.push({ type: 'figref', text: figure_asts[ref].kind ? `Fig.` : 'Table.', ref, tags })
         i = m.index + m[0].length
       }
     }

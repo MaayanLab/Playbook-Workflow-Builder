@@ -76,9 +76,17 @@ export type Story = {
    */
   results?: string,
   /**
-   * A figure legend describing this metanode's output figure.
+   * @deprecated A figure legend describing this metanode's output figure.
    */
   legend?: string,
+  /**
+   * A figure legend describing this metanode's output figure.
+   */
+  figureLegend?: string,
+  /**
+   * A table legend describing this metanode's output table.
+   */
+  tableLegend?: string,
 }
 type FnArgs<T> = T extends (...args: infer A) => infer R ? A : never
 type FnCanReturnString<T> = T extends (...args: infer A) => infer R ? (...args: A) => R|string : never

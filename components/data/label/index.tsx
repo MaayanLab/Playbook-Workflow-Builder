@@ -12,13 +12,17 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
     label: 'Manual Labeling of Samples',
     description: 'Manually label samples as either control or perturbation.',
   })
-  .codec(z.record(z.string(), z.record(z.string(), z.string())))
+  .codec(z.object({
+    description: z.string().optional(),
+    data: z.record(z.string(), z.record(z.string(), z.string())),
+  }))
   .inputs({ matrix: AnnData })
   .output(AnnData)
   .prompt(props => {
     const matrix = props.output ? props.output : props.inputs.matrix
+    const [currentDescription, setCurrentDescription] = React.useState(props.data?.description ?? matrix.description ?? undefined)
     const { data, isLoading } = useClientMetadataFromFile(matrix)
-    const [tableData, setTableData] = React.useState(props.data ? props.data : {} as Record<string, Record<string, string>>)
+    const [tableData, setTableData] = React.useState(props.data?.data ? props.data.data : {} as Record<string, Record<string, string>>)
 
     React.useEffect(() => {
       if (!data) return
@@ -118,16 +122,28 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
             </tbody>
           </table>
         </div>
+        <div className="max-w-sm">
+          <div className="bp5-input-group">
+            <input
+              type="text"
+              name="description"
+              className="bp5-input"
+              placeholder={`New file description`}
+              onChange={evt => {setCurrentDescription(() => evt.target.value)}}
+              value={currentDescription || ''}
+            />
+          </div>
+        </div>
         <button className="bp5-button bp5-large" onClick={() => {
-          props.submit(tableData, true)
+          props.submit({ description: currentDescription, data: tableData }, true)
         }}>Submit</button>
       </div>
     );
   })
   .resolve(async (props) => {
     return await updateMetadataColumn({
-      file: props.inputs.matrix,
-      data: props.data,
+      file: {...props.inputs.matrix, description: props.data.description},
+      data: props.data.data,
     })
   })
   .story(props => ({

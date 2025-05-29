@@ -2,15 +2,19 @@ import requests
 import numpy as np
 import pandas as pd
 import scipy.stats as st
+import typing as t
+from components.data.anndata import AnnDataFile
 from components.data.gene_count_matrix import GeneCountMatrix, anndata_from_file
 
 targetranger_url = 'https://targetranger.maayanlab.cloud'
 
-def targetscreener(m: GeneCountMatrix, *, bg):
+def targetscreener(m: t.Union[AnnDataFile, GeneCountMatrix], *, bg):
   ''' We prepare the incoming data for target screener by producing summary stats
   and translate the output into Scored[Gene]
   '''
   d = anndata_from_file(m)
+  if 'Type: Control or Perturbation' in d.obs.columns:
+    d = d[d.obs['Type: Control or Perturbation'] == 'Perturbation', :]
   # compute statistics which targetranger uses for the query
   n = d.X.shape[0]
   mean = d.X.mean(axis=0)
@@ -30,7 +34,7 @@ def targetscreener(m: GeneCountMatrix, *, bg):
   assert req.status_code == 200
   res = req.json()
   if len(res) == 0: raise Exception(f"No targets found")
-  res = pd.DataFrame(res)
+  res = pd.DataFrame(res).dropna()
   # Translate response into output
   res = res.sort_values('adj_p', ascending=True)
   res['zscore'] = st.norm.ppf(1-res['adj_p'])

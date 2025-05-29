@@ -76,7 +76,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     const [figure] = story.ast.filter(part => part.type === 'figure' && part.tags[0] === head.id)
     if (figure?.type !== 'figure') return []
     const figure_num = story.figures.get(figure.ref)?.ref
-    const legend = story.ast.filter(part => (part.tags.includes('legend') || part.tags.includes('figureLegend')) && part.tags.includes(head.id)).map(part =>
+    const legend = story.ast.filter(part => (part.tags.includes('legend') || part.tags.includes('figureLegend') || part.tags.includes('tableLegend')) && part.tags.includes(head.id)).map(part =>
       part.type === 'text' ? latexEscape(part.text)
       : part.type === 'cite' ? `~\\cite{${story.bibitems.get(part.ref)}}`
       : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? `Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`

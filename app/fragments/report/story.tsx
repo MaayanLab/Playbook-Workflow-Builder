@@ -61,7 +61,7 @@ export function Methods({ id, story }: { id: string, story: ReturnType<typeof ex
 }
 
 export function FigureCaption({ id, story }: { id: string, story: ReturnType<typeof extractCitations> }) { 
-  const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => part.tags.includes('legend') && part.tags.includes(id)), [id, story.ast])
+  const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => (part.tags.includes('legend') || part.tags.includes('figureLegend') || part.tags.includes('tableLegend')) && part.tags.includes(id)), [id, story.ast])
   if (!storyFiltered.length) return null
   return (
     <div className="prose max-w-none">

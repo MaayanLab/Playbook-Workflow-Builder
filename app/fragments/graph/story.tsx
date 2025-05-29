@@ -38,14 +38,13 @@ export function Methods({ id, story }: { id: string, story: ReturnType<typeof ex
 }
 
 export function FigureCaption({ id, story }: { id: string, story: ReturnType<typeof extractCitations> }) { 
-  const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => part.tags.includes('legend') && part.tags.includes(id)), [id, story.ast])
+  const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => (part.tags.includes('legend') || part.tags.includes('figureLegend') || part.tags.includes('tableLegend')) && part.tags.includes(id)), [id, story.ast])
   if (!storyFiltered.length) return null
   return (
     <div className="prose max-w-none">
       {story.figures.get(id)?.kind === 'figure' && <strong>Figure {story.figures.get(id)?.ref}.</strong>}
       {story.figures.get(id)?.kind === 'table' && <strong>Table {story.figures.get(id)?.ref}.</strong>}
       &nbsp;
-      <strong>Figure {story.figures.get(id)?.ref}.</strong>&nbsp;
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>
         : part.type === 'cite' ? <span key={i}> [<a href={`#${part.ref}`}>{story.bibitems.get(part.ref)}</a>]</span>

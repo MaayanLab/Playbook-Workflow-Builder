@@ -82,15 +82,13 @@ def createmetapcagraph(anndata):
         assert len(grp_ids) == 2, "Expected two possible groups"
 
     ctrl_ids = dataset.obs[dataset.obs[col] == grp_ids[0]].index.tolist()
-    ctrl_mask = [x in ctrl_ids for x in dataset.obs_names]
     case_ids = dataset.obs[dataset.obs[col] == grp_ids[1]].index.tolist()
-    case_mask = [x in case_ids for x in dataset.obs_names]
     
     # Get PCA data
     pca = run(dataset.to_df().transpose())
     
     # Assign colors based on control and case masks
-    colors = ['blue' if mask else 'red' for mask in (ctrl_mask + case_mask)]
+    colors = ['blue' if x in ctrl_ids else ('red' if x in case_ids else 'grey') for x in dataset.obs_names]
     
     # Create the scatter plot with colored points
     fig = go.Figure(data=[go.Scatter3d(

@@ -214,6 +214,6 @@ export const FileInput = MetaNode('FileInput')
   .prompt(FilePrompt)
   .story(props => ({
     abstract: `A file${props.output?.description ? ` containing ${props.output?.description}` : ''} was first uploaded.`,
-    legend: `An file provided by the user and accessible${props.data?.url ? ` at ${props.data.url}` : ` via DRS`}.`,
+    legend: `A file provided by the user and accessible${props.data?.url ? ` at ${props.data.url}` : ` via DRS`}.`,
   }))
   .build()

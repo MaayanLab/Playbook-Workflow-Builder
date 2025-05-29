@@ -191,7 +191,7 @@ export const MGMetTable2MetSet_T = [
 })
 .story(props => ({
   abstract: `Then, MetaboliteSet (${id}) is extracted from the table of MetGENE Metabolites for various genes.`,
-  legend: `List of metabolites (REFMET names; MetaboliteSet).`,
+  tableLegend: `List of metabolites (REFMET names; MetaboliteSet).`,
 }))
 .build()
 ) // matches map

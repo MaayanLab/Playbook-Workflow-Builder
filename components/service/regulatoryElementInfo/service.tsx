@@ -131,7 +131,7 @@ export const GetGenesForRegulatoryElementInfo = MetaNode('GetGenesForRegulatoryE
     abstract: `A list of genes in the 10kbps region of the given regulatory element was retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx\\ref{doi:10.1038/s41586-020-2493-4}\\ref{doi:10.1126/science.aaz1776}\\ref{doi:10.1126/science.aar3146}`,
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked genes were retieved from the JSON response.`,
-    legend: `A list of genes in the vicinity of given regulatory element`,
+    tableLegend: `A list of genes in the vicinity of given regulatory element`,
   })).build()
 
   export const REGeneSet = MetaNode('REGeneSet')
@@ -238,7 +238,7 @@ export const GetVariantsForRegulatoryElementInfo = MetaNode('GetVariantListForRe
     abstract: `A list of variants in the region of the regulatory element was retrieved from CFDE Linked Data Hub\\ref{CFDE Linked Data Hub, https://ldh.genome.network/cfde/ldh/}.`,
     introduction: `CFDE LDH is a graph-based network that facilitates access to excerpted regulatory information from external databases and studies including SCREEN, GTEx, and EN-TEx.`,
     methods: `Input regulatory element identifier was queried through CFDE LDH API endpoints and its linked variants were retrieved from the JSON response.`,
-    legend: `A list of variants in the region of given regulatory element`,
+    tableLegend: `A list of variants in the region of given regulatory element`,
   })).build()
 
   export const MyGeneToRegulatoryElementSetInfoC = z.array(z.object({

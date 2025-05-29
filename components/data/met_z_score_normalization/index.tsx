@@ -22,6 +22,6 @@ export const ZScoreNormalizeMetaboliteCountMatrix = MetaNode('ZScoreNormalizeMet
     abstract: `The metabolite count matrix was then Z-score normalized.`,
     introduction: `Metabolite counts are normalized to control for different levels of variance depending on the metabolite expression levels.`,
     methods: `The metabolite count matrix ${props.input_refs?.matrix} was normalized using a z-score transformation.`,
-    legend: `A zscore normalized metabolite count matrix.`,
+    tableLegend: `A zscore normalized metabolite count matrix.`,
   }))
   .build()

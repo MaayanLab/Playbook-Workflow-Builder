@@ -63,7 +63,7 @@ export const TopKScoredT = [
     .story(props => ({
       abstract: `The top ${props.data?.k || 'K'} ${ScoredT.meta.label} were selected.`,
       methods: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} were selected from ${props.input_refs?.scored}.`,
-      legend: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} from ${props.input_refs?.scored}.`,
+      tableLegend: `The top ${props.data?.k || 'K'} ${pluralize(T.label.toLowerCase())} from ${props.input_refs?.scored}.`,
     }))
     .build(),
   MetaNode(`OneScoredT[${ScoredT.spec}]`)
@@ -120,7 +120,7 @@ export const TopKScoredT = [
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
       methods: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} was taken from ${props.input_refs?.scored}.`,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.scored}.`,
+      tableLegend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.scored}.`,
     }))
     .build()
 ])
@@ -483,7 +483,7 @@ export const TopKRankedT = [
     })
     .story(props => ({
       abstract: props.data ? `${props.data} was chosen for further investigation.` : undefined,
-      legend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.ranked}.`,
+      tableLegend: `${props.data ? props.data : `The ${T.label.toLowerCase()}`} taken from ${props.input_refs?.ranked}.`,
     }))
     .build()
 ])

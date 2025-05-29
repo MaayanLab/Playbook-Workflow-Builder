@@ -68,7 +68,7 @@ export const DMT = MetaNode(`DMT`)
   .story(props => ({
     abstract: `The file${props.inputs && props.inputs.file.description ? ` containing ${props.inputs.file.description}` : ''} was loaded as a drug matrix transpose.`,
     introduction: `Drug set libraries associate biomedical terms with drugs and small molecules. Drug set libraries are stored as drug matrix transposed (.DMT) files, a tab delimited file format that describes a collection of term-drug set associations.\\ref{doi:10.1093/database/baab017}`,
-    legend: `A drug set library provided by the user.`,
+    tableLegend: `A drug set library provided by the user.`,
   }))
   .build()
 
@@ -99,7 +99,7 @@ export const DMTFileUpload = MetaNode('DMTFileUpload')
   .story(props => ({
     abstract: `A drug matrix transpose${props.data && props.data.description ? ` containing ${props.data.description}` : ''} was uploaded.`,
     introduction: `Drug set libraries associate biomedical terms with drugs and small molecules. Drug set libraries are stored as drug matrix transposed (.DMT) files, a tab delimited file format that describes a collection of term-drug set associations.\\ref{doi:10.1093/database/baab017}`,
-    legend: `A drug set library provided by the user.`,
+    tableLegend: `A drug set library provided by the user.`,
   }))
   .build()
 
@@ -248,7 +248,7 @@ export const DrugSetsToDMT = MetaNode('DrugSetsToDMT')
     abstract: `The drug sets collected were combined into one drug set library.`,
     introduction: `Drug set libraries associate biomedical terms with drugs and small molecules. Drug set libraries are stored as drug matrix transposed (.DMT) files, a tab delimited file format that describes a collection of term-drug set associations.\\ref{doi:10.1093/database/baab017}`,
     methods: `The drug sets${props.input_refs?.sets ? ` from ${(props.input_refs.sets as string[]).join(', ')}` : ''} are combined into a drug set library${props.output_ref}.`,
-    legend: `A drug set library produced by combining drug sets.`,
+    tableLegend: `A drug set library produced by combining drug sets.`,
   }))
   .build()
 
@@ -266,6 +266,6 @@ export const DMTConcatenate = MetaNode('DMTConcatenate')
     abstract: `The identified drug sets were combined into one drug set library.`,
     introduction: `Drug set libraries associate biomedical terms with drugs and small molecules. Drug set libraries are stored as drug matrix transposed (.DMT) files, a tab delimited file format that describes a collection of term-drug set associations.\\ref{doi:10.1093/database/baab017}`,
     methods: `A joint drug sets library is constructed by stacking${props.input_refs?.dmts ? ` ${(props.input_refs?.dmts as string[]).join(', ')}` : ''}.`,
-    legend: `A drug set library produced by combining multiple drug set libraries.`,
+    tableLegend: `A drug set library produced by combining multiple drug set libraries.`,
   }))
   .build()

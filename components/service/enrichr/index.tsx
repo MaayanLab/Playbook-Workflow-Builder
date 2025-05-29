@@ -202,7 +202,7 @@ export const EnrichrTToT = [
       abstract: `A ${SetT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `The terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted to produce ${props.output_ref}.`,
-      legend: `A set of terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset}.`,
+      tableLegend: `A set of terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset}.`,
     }))
     .build(),
   MetaNode(`EnrichrSetTToGMT[${T.name}]`)
@@ -219,7 +219,7 @@ export const EnrichrTToT = [
       abstract: `A GMT was extracted from the Enrichr results${props.inputs?.enrichrset?.background ? ` for ${props.inputs.enrichrset.background}` : ''}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `The significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrset} are extracted from the original gene set library to produce ${props.output_ref}.`,
-      legend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
+      tableLegend: `The significantly enriched gene sets filtered from the gene set library from Enrichr\\ref{doi:10.1002/cpz1.90} stored in the gene matrix transpose (GMT) format\\ref{Gene Matrix Transpose file format, https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29}.`,
     }))
     .build(),
   MetaNode(`EnrichrSetTToUMAP[${T.name}]`)
@@ -306,7 +306,7 @@ export const EnrichrTToT = [
       abstract: `A ${ScoredT.meta.label} was extracted from the Enrichr results${props.inputs?.enrichrscored?.background ? ` for ${props.inputs.enrichrscored.background}` : ''}.`,
       introduction: `Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets\\ref{doi:10.1002/cpz1.90}.`,
       methods: `The terms in the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored} are extracted to produce ${props.output_ref}.`,
-      legend: `A set of terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored}.`,
+      tableLegend: `A set of terms associated with the significantly enriched gene sets from the Enrichr\\ref{doi:10.1002/cpz1.90} results in ${props.input_refs?.enrichrscored}.`,
     }))
     .build(),
 ])

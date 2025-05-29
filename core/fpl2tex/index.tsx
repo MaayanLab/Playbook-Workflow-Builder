@@ -87,10 +87,10 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
       id: head.id,
       kind: figure.kind,
       files: {
-        [`figures/fig${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
+        [`${figure.kind}s/${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
       label: `fig:${figure_num}`,
-      filename: `figures/fig${figure_num}.pdf`,
+      filename: `${figure.kind}s/${figure_num}.pdf`,
       legend,
     }]
   })).flatMap(fig => fig)
@@ -144,8 +144,21 @@ ${methods}
 
 \\section{Conclusion}\\label{conclusion}
 
+\\clearpage
+\\section{Tables}\\label{tables}
+${figures.filter(fig => fig.kind === 'table').flatMap((fig) => fig ? [
+  `
+\\begin{table}[h]
+\\centering
+\\includegraphics[width=0.9\\textwidth]{${fig.filename}}
+\\caption{${fig.legend}}\\label{${fig.label}}
+\\end{table}
+`
+] : []).join('')}
+
+\\clearpage
 \\section{Figures}\\label{figures}
-${figures.flatMap((fig) => fig ? [
+${figures.filter(fig => fig.kind === 'figure').flatMap((fig) => fig ? [
   `
 \\begin{figure}[h]
 \\centering
@@ -202,7 +215,8 @@ ${fullFPL.flatMap(head => {
   const step_introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') || !part.tags.includes(head.id) ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : [])).join('')
   if (!step_introduction) return []
   else return [
@@ -226,7 +240,8 @@ ${fullFPL.flatMap(head => {
   const step_methods = array.unique(story.ast.flatMap(part => !part.tags.includes('methods') || !part.tags.includes(head.id) ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
-    : part.type === 'figref' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : [])).join('')
   const step_figure = figures.filter(fig => fig?.id === head.id)
   return [
@@ -245,8 +260,15 @@ ${fullFPL.flatMap(head => {
 \\begin{frame}
 	\\frametitle{${step_title}: Results}
 	
+  ${step_figure.filter(fig => fig.kind === 'table').map(fig => `
+  \\begin{table}[h]
+  \\centering
+  \\includegraphics[width=0.5\\textwidth]{${fig.filename}}
+  \\caption{${fig.legend}}\\label{${fig.label}}
+  \\end{table}
+`).join('')}
 
-  ${step_figure.map(fig => `
+  ${step_figure.filter(fig => fig.kind === 'figure').map(fig => `
   \\begin{figure}[h]
   \\centering
   \\includegraphics[width=0.5\\textwidth]{${fig.filename}}
@@ -349,7 +371,7 @@ ${methods}
 ${figures.filter(fig => fig.kind === 'table').map(table => `
 \\begin{center}\\vspace{1cm}
 \\includegraphics[width=0.5\\linewidth]{${table.filename}}
-\\captionof{figure}{${table.legend}}\\label{${table.label}}
+\\captionof{table}{${table.legend}}\\label{${table.label}}
 \\end{center}\\vspace{1cm}
 `).join('\n\n')}
 

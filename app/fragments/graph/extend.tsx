@@ -19,23 +19,43 @@ const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
-export default function Extend({ session_id, krg, id, head, metapath }: { session_id?: string, krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
+export default function Extend({ session_id, krg, id, heads, metapath }: { session_id?: string, krg: KRG, id: string, heads: Metapath[], metapath: Metapath[] }) {
   const router = useRouter()
-  const processNode = head ? krg.getProcessNode(head.process.type) : undefined
-  const selections = React.useMemo(() => {
+  const processNode = heads[0] ? krg.getProcessNode(heads[0].process.type) : undefined
+  const { items, selections } = React.useMemo(() => {
     // we'll use leaf nodes of the metapath + the current selected node as the selections
     const selections: Record<string, { process: Metapath["process"], processNode: ProcessMetaNode }> = {}
-    ;[...metapath, head].forEach(item => {
-      if (item === undefined) return
-      // add this to the selections
-      selections[item.process.id] = { process: item.process, processNode: krg.getProcessNode(item.process.type) }
-      // if a selection previously registered is a parent of this selection, remove it from selections
-      dict.values(item.process.inputs).forEach(k => {
-        if (k.id in selections) delete selections[k.id]
+    if (heads.length === 1) {
+      ;[...metapath, heads[0]].forEach(item => {
+        if (item === undefined) return
+        // add this to the selections
+        selections[item.process.id] = { process: item.process, processNode: krg.getProcessNode(item.process.type) }
+        // if a selection previously registered is a parent of this selection, remove it from selections
+        dict.values(item.process.inputs).forEach(k => {
+          if (k.id in selections) delete selections[k.id]
+        })
       })
-    })
-    return selections
-  }, [metapath, head])
+      const items = [
+        ...krg.getNextProcess(processNode ? processNode.output.spec : '')
+          .filter(proc => proc.meta.hidden !== true)
+          .map(proc => ({ ...proc, meta: { ...proc.meta, tags: { ...(proc.meta.tags??{}), External: { [proc.meta.external ? 'True': 'False']: 1 } } } })),
+        ...SuggestionEdges(processNode ? processNode.output : undefined),
+      ]
+      return { items, selections }
+    } else {
+      heads.forEach(item => {
+        if (item === undefined) return
+        selections[item.process.id] = { process: item.process, processNode: krg.getProcessNode(item.process.type) }
+      })
+      const items = krg.getNextProcess(processNode ? processNode.output.spec : '')
+        .filter(proc => proc.meta.hidden !== true && dict.values(proc.inputs).some(value => Array.isArray(value)))
+        .map(proc => ({ ...proc, meta: { ...proc.meta, tags: { ...(proc.meta.tags??{}), External: { [proc.meta.external ? 'True': 'False']: 1 } } } }))
+      return {
+        selections,
+        items,
+      }
+    }
+  }, [metapath, heads])
   const weights = React.useMemo(() => {
     const key = ['Start', ...metapath.map(p => p.process.type)].slice(-2).join(' ')
     const weights = pathWeights[key as keyof typeof pathWeights] || {}
@@ -47,12 +67,7 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
         <title>Playbook: Extend{processNode?.output.meta.label ? ` from ${processNode?.output.meta.label}` : null}</title>
       </Head>
       <Catalog<ProcessMetaNode & ({}|{ onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
-        items={[
-          ...krg.getNextProcess(processNode ? processNode.output.spec : '')
-            .filter(proc => proc.meta.hidden !== true)
-            .map(proc => ({ ...proc, meta: { ...proc.meta, tags: { ...(proc.meta.tags??{}), External: { [proc.meta.external ? 'True': 'False']: 1 } } } })),
-          ...SuggestionEdges(processNode ? processNode.output : undefined),
-        ]}
+        items={items}
         serialize={item => [
           item.spec,
           item.meta.label,
@@ -94,7 +109,7 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
               onClick={async () => {
                 if (disabled) return
                 if ('onClick' in item) {
-                  item.onClick({ router, id, head })
+                  item.onClick({ router, id, head: heads[0] })
                 } else {
                   const inputs: Record<string, { id: string }> = {}
                   dict.items(item.inputs).forEach(({ key: arg, value: input }) => {
@@ -106,7 +121,7 @@ export default function Extend({ session_id, krg, id, head, metapath }: { sessio
                         })
                     } else {
                       const relevantSelections = dict.filter(selections, ({ value: selection }) => selection.processNode.output.spec === input.spec)
-                      const selection = head.process.id in relevantSelections ? head : array.ensureOne(dict.values(relevantSelections))
+                      const selection = heads[0].process.id in relevantSelections ? heads[0] : array.ensureOne(dict.values(relevantSelections))
                       inputs[arg] = { id: selection.process.id }
                     }
                   })

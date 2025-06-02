@@ -6,6 +6,7 @@ import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
+import { Set } from 'immutable'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs').then(({ Breadcrumbs }) => Breadcrumbs))
 const DataBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ DataBreadcrumb }) => DataBreadcrumb))
@@ -44,7 +45,10 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
   const router = useRouter()
   const krg = useKRG({ session_id })
   const { data: metapath = [] } = useFPL(graph_id)
-  const head = React.useMemo(() => metapath.filter(({ id }) => id === node_id)[0], [metapath, node_id])
+  const node_ids = React.useMemo(() => Set(node_id.split(',')), [node_id])
+  const heads = React.useMemo(() => {
+    return metapath.filter(({ id }) => node_ids.has(id))
+  }, [metapath, node_ids])
   const process_to_step = React.useMemo(() => dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))), [metapath])
   return (
     <>
@@ -76,8 +80,15 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
                   active={false}
                   icon={process.meta.icon || [func_icon]}
                   parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
-                  onClick={() => {
-                    router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
+                  onClick={(evt) => {
+                    if (evt.shiftKey) {
+                      const new_node_id = node_ids.has(step.id) ? node_ids.delete(step.id).join(',') : node_ids.add(step.id).join(',')
+                      if (new_node_id) {
+                        router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}/node/${new_node_id}/extend`, undefined, { shallow: true })
+                      }
+                    } else {
+                      router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
+                    }
                   }}
                 />,
                 <DataBreadcrumb
@@ -86,11 +97,18 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
                   id={`${step.id}:${step.process.id}`}
                   label={process.output.meta.label}
                   head={step}
-                  active={step.id === node_id && !extend}
+                  active={node_ids.has(step.id)}
                   icon={process.output.meta.icon || [variable_icon]}
                   parents={[step.id]}
-                  onClick={() => {
-                    router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
+                  onClick={(evt) => {
+                    if (evt.shiftKey) {
+                      const new_node_id = node_ids.has(step.id) ? node_ids.delete(step.id).join(',') : node_ids.add(step.id).join(',')
+                      if (new_node_id) {
+                        router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}/node/${new_node_id}/extend`, undefined, { shallow: true })
+                      }
+                    } else {
+                      router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== step.id ? `/node/${step.id}` : ''}`, undefined, { shallow: true })
+                    }
                   }}
                 />,
               ]
@@ -102,7 +120,10 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
               label="Extend"
               active={extend || suggest}
               icon={extend_icon}
-              parents={[head ? `${head.id}:${head.process.id}` : `start`]}
+              parents={[
+                ...(heads.length === 0 ? ['start'] : []),
+                ...(heads.length > 0 ? heads.map(head => `${head.id}:${head.process.id}`) : []),
+              ]}
               onClick={() => {
                 router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}${graph_id !== node_id ? `/node/${node_id}` : ''}/extend`, undefined, { shallow: true })
               }}
@@ -116,14 +137,14 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
         </div>
         <main className="flex-grow flex flex-col">
           {suggest ?
-            <Suggest session_id={session_id} krg={krg} id={graph_id} head={head} />
+            <Suggest session_id={session_id} krg={krg} id={graph_id} head={heads[0]} />
             : extend ?
-              <Extend session_id={session_id} krg={krg} id={graph_id} head={head} metapath={metapath} />
+              <Extend session_id={session_id} krg={krg} id={graph_id} heads={heads} metapath={metapath} />
               : node_id === 'start' ?
                 <Home />
-                : head ?
+                : heads.length === 1 ?
                   <StoryProvider krg={krg} metapath={metapath}>
-                    <Cell session_id={session_id} krg={krg} id={graph_id} head={head} metapath={metapathToHead(metapath, head)} />
+                    <Cell session_id={session_id} krg={krg} id={graph_id} head={heads[0]} metapath={metapathToHead(metapath, heads[0])} />
                   </StoryProvider>
                   : null}
         </main>

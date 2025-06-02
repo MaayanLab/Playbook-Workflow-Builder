@@ -38,8 +38,11 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     return { notFound: true }
   }
   const results = fpl.resolve().map(fpl => fpl.toJSON())
-  if ('node_id' in params && !(params.node_id === 'start' || results.some(({ id }) => id === params.node_id))) {
-    return { notFound: true }
+  
+  if ('node_id' in params) {
+    const graph_ids = new Set(['start', ...results.map(({ id }) => id)])
+    if (params.node_id.split(',').filter(id => !graph_ids.has(id)).length > 0)
+      return { notFound: true }
   }
   const fallback: Record<string, unknown> = {
     [`/api/db/fpl/${params.graph_id}`]: results

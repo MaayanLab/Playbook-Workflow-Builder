@@ -25,7 +25,7 @@ export default function Extend({ session_id, krg, id, heads, metapath }: { sessi
   const { items, selections } = React.useMemo(() => {
     // we'll use leaf nodes of the metapath + the current selected node as the selections
     const selections: Record<string, { process: Metapath["process"], processNode: ProcessMetaNode }> = {}
-    if (heads.length === 1) {
+    if (heads.length <= 1) {
       ;[...metapath, heads[0]].forEach(item => {
         if (item === undefined) return
         // add this to the selections

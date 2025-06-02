@@ -34,6 +34,9 @@ if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE 
 
 /** @type {import('next').NextConfig} */
 module.exports = {
+  images: {
+    unoptimized: true,
+  },
   experimental: {
     externalDir: true,
   },

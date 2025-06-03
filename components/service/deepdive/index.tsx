@@ -31,7 +31,7 @@ export const GeneDeepDive = MetaNode(`GeneDeepDive`)
   .inputs({ gene: GeneTerm })
   .output(GeneDeepDiveSummary)
   .resolve(async (props) => {
-    return props.inputs.gene
+    return props.inputs.gene.toUpperCase()
   })
   .story(props => ({
     abstract: `The top 50 most cited paper abstracts that mention ${props.inputs?.gene ?? 'the gene'} were summarized using DeepDive\\ref{DeepDive, https://maayanlab.cloud/deepdive/}.`,

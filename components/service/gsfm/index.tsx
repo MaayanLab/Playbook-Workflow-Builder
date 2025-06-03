@@ -34,7 +34,7 @@ export const GSFM = MetaNode(`GSFM`)
   .inputs({ gene: GeneTerm })
   .output(GSFMSummary)
   .resolve(async (props) => {
-    return props.inputs.gene
+    return props.inputs.gene.toUpperCase()
   })
   .story(props => ({
     abstract: `Gene function predictions for ${props.inputs?.gene ?? 'the gene'} were made using GSFM\\ref{doi:10.1101/2025.05.30.657124}.`,

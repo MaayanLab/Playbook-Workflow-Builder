@@ -106,7 +106,7 @@ export function Breadcrumbs({ children }: React.PropsWithChildren<{}>) {
   return (
     <svg
       className="flex-grow"
-      style={{ height: 40*h }}
+      style={{ height: 40*h, maxHeight: '35vh' }}
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="xMinYMid meet"
     >

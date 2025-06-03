@@ -211,6 +211,10 @@ import * as service_ctd from "./service/ctd"
 import service_ctd_packageJson from "./service/ctd/package.json"
 metanodes.push(...MetaNodesFromExports(service_ctd, service_ctd_packageJson))
 components.push("service/ctd")
+import * as service_deepdive from "./service/deepdive"
+import service_deepdive_packageJson from "./service/deepdive/package.json"
+metanodes.push(...MetaNodesFromExports(service_deepdive, service_deepdive_packageJson))
+components.push("service/deepdive")
 import * as service_drugshot from "./service/drugshot"
 import service_drugshot_packageJson from "./service/drugshot/package.json"
 metanodes.push(...MetaNodesFromExports(service_drugshot, service_drugshot_packageJson))

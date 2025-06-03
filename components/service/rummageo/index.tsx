@@ -19,7 +19,7 @@ export const RummaGEOGeneSet = MetaNode(`RummaGEOGeneSet`)
     <div className="flex-grow flex flex-row m-0" style={{ minHeight: 1000 }}>
       <iframe
         className="flex-grow border-0"
-        src={`${rummageo_url}/enrich?dataset=${props.id}`}
+        src={`${rummageo_url}/enrich?dataset=${props.id}&embed`}
       />
     </div>
   ))

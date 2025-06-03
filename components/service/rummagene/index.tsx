@@ -19,7 +19,7 @@ export const RummageneGeneSet = MetaNode(`RummageneGeneSet`)
     <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
       <iframe
         className="flex-grow border-0"
-        src={`${rummagene_url}/enrich?dataset=${props.id}`}
+        src={`${rummagene_url}/enrich?dataset=${props.id}&embed`}
       />
     </div>
   ))

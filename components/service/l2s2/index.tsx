@@ -19,7 +19,7 @@ export const L2S2GeneSet = MetaNode(`L2S2GeneSet`)
     <div className="flex-grow flex flex-row m-0" style={{ minHeight: 1000 }}>
       <iframe
         className="flex-grow border-0"
-        src={`${l2s2_url}/enrich?dataset=${props.id}`}
+        src={`${l2s2_url}/enrich?dataset=${props.id}&embed`}
       />
     </div>
   ))

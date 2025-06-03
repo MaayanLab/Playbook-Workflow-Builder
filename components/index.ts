@@ -235,6 +235,10 @@ import * as service_geneshot from "./service/geneshot"
 import service_geneshot_packageJson from "./service/geneshot/package.json"
 metanodes.push(...MetaNodesFromExports(service_geneshot, service_geneshot_packageJson))
 components.push("service/geneshot")
+import * as service_gsfm from "./service/gsfm"
+import service_gsfm_packageJson from "./service/gsfm/package.json"
+metanodes.push(...MetaNodesFromExports(service_gsfm, service_gsfm_packageJson))
+components.push("service/gsfm")
 import * as service_gtex from "./service/gtex"
 import service_gtex_packageJson from "./service/gtex/package.json"
 metanodes.push(...MetaNodesFromExports(service_gtex, service_gtex_packageJson))

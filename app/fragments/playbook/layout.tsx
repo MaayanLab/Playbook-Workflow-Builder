@@ -101,7 +101,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
         </div>
         <div className="prose prose-sm max-w-none prose-p:m-0 alert bg-secondary flex-col gap-1 rounded-none">
           <p className="flex-col font-bold">Please acknowledge Playbook Workflow Builder in your publications by citing the following reference:</p>
-          <p className="inline text-center">Clarke, D. J. B. et al. Playbook workflow builder: Interactive construction of bioinformatics workflows. PLOS Computational Biology vol. 21 e1012901 (2025). <a href="https://doi.org/10.1371/journal.pcbi.1012901">doi:10.1371/journal.pcbi.1012901</a></p>
+          <p className="inline text-center">Clarke, D. J. B. et al. Playbook workflow builder: Interactive construction of bioinformatics workflows. PLOS Computational Biology vol. 21 e1012901 (2025). <a href="https://doi.org/10.1371/journal.pcbi.1012901" target="_blank">doi:10.1371/journal.pcbi.1012901</a></p>
         </div>
         <Waypoint id="bottom" />
       </Waypoints>

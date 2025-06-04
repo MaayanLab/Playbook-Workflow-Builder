@@ -99,6 +99,10 @@ import * as data_characteristic_direction from "./data/characteristic_direction"
 import data_characteristic_direction_packageJson from "./data/characteristic_direction/package.json"
 metanodes.push(...MetaNodesFromExports(data_characteristic_direction, data_characteristic_direction_packageJson))
 components.push("data/characteristic_direction")
+import * as data_deseq2 from "./data/deseq2"
+import data_deseq2_packageJson from "./data/deseq2/package.json"
+metanodes.push(...MetaNodesFromExports(data_deseq2, data_deseq2_packageJson))
+components.push("data/deseq2")
 import * as data_drug_matrix_transpose from "./data/drug_matrix_transpose"
 import data_drug_matrix_transpose_packageJson from "./data/drug_matrix_transpose/package.json"
 metanodes.push(...MetaNodesFromExports(data_drug_matrix_transpose, data_drug_matrix_transpose_packageJson))

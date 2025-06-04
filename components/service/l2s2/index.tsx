@@ -47,7 +47,7 @@ export const L2S2EnrichmentAnalysis = MetaNode(`L2S2EnrichmentAnalysis`)
     return { id }
   })
   .story(props => ({
-    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using L2S2\\ref{L2S2, https://l2s2.maayanlab.cloud/}.`,
-    legend: `A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} found using L2S2\\ref{L2S2, https://l2s2.maayanlab.cloud/}.`,
+    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using L2S2\\ref{doi:10.1093/nar/gkaf373}.`,
+    legend: `A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} found using L2S2\\ref{doi:10.1093/nar/gkaf373}.`,
   }))
   .build()

@@ -1,2 +1,2 @@
-maayanlab-bioinformatics @ git+https://github.com/Maayanlab/maayanlab-bioinformatics
+maayanlab-bioinformatics @ git+https://github.com/Maayanlab/maayanlab-bioinformatics@v0.9.0
 pandas

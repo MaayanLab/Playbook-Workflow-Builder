@@ -89,7 +89,7 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
     if (!resolved) {
       return {
         output: undefined,
-        outputNode: krg.getProcessNode(head.process.type).output,
+        outputNode: krg.getProcessNode(head.process.type)?.output,
         status: undefined,
         isLoading: true,
         error: undefined,
@@ -98,7 +98,7 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
     if (resolved.type !== 'resolved') {
       return {
         output: undefined,
-        outputNode: krg.getProcessNode(head.process.type).output,
+        outputNode: krg.getProcessNode(head.process.type)?.output,
         isLoading: resolved.type === 'resolving',
         status: resolved.type === 'resolving' ? resolved.status : undefined,
         error: resolved.type === 'error' ? resolved.error : undefined,

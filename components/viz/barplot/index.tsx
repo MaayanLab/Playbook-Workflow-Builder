@@ -1,10 +1,10 @@
 import python from '@/utils/python'
 import { PlotlyPlot } from '@/components/viz/plotly'
 import { MetaNode } from '@/spec/metanode'
-import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/scored'
+import { ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredGlycans, ScoredMetabolites, ScoredPathways, ScoredPhenotypes, ScoredTissues } from '@/components/core/scored'
 import { barplot_icon } from '@/icons'
 
-export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues].map(ScoredT =>
+export const BarplotFromScoredT = [ScoredDiseases, ScoredDrugs, ScoredGenes, ScoredPathways, ScoredPhenotypes, ScoredTissues, ScoredMetabolites, ScoredGlycans].map(ScoredT =>
   MetaNode(`BarplotFrom[${ScoredT.spec}]`)
     .meta({
       label: `Vertical bar plot from ${ScoredT.meta.label}`,

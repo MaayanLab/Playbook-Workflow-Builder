@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 def barplot(x, terms='Tissues'):
-  x = pd.DataFrame.from_records(x)
+  x = pd.DataFrame.from_records(x).groupby(['term'], sort=False)['zscore'].max().reset_index()
   fig = px.bar(
     x,
     y='zscore',

@@ -54,21 +54,21 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
-    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : []
   ).join('')
   const introduction = array.unique(story.ast.flatMap(part => !part.tags.includes('introduction') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
-    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : []
   )).join('')
   const methods = story.ast.flatMap(part => !part.tags.includes('methods') ? [] :
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
-    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : []
   ).join('')
   const contributors = array.unique(fullFPL.map(head => props.krg.getProcessNode(head.process.type).meta.author).filter((author): author is string => !!author)).map(contributor => latexEscape(contributor))
@@ -80,7 +80,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
       part.type === 'text' ? latexEscape(part.text)
       : part.type === 'cite' ? `~\\cite{${story.bibitems.get(part.ref)}}`
       : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? `Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`
-      : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? `Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`
+      : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? `Table \\ref{fig:${story.figures.get(part.ref)?.ref}}`
       : ''
     ).join('')
     return [{
@@ -216,7 +216,7 @@ ${fullFPL.flatMap(head => {
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
-    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : [])).join('')
   if (!step_introduction) return []
   else return [
@@ -241,7 +241,7 @@ ${fullFPL.flatMap(head => {
     part.type === 'text' ? [latexEscape(part.text)]
     : part.type === 'cite' ? [`~\\cite{${story.bibitems.get(part.ref)}}`]
     : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'figure' ? [`Fig. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
-    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table. \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
+    : part.type === 'figref' && story.figures.get(part.ref)?.kind === 'table' ? [`Table \\ref{fig:${story.figures.get(part.ref)?.ref}}`]
     : [])).join('')
   const step_figure = figures.filter(fig => fig?.id === head.id)
   return [

@@ -22,7 +22,7 @@ def createbarchart(x, terms='Tissues', pvalue_threshold=0.05):
         x=x['zscore'],
         y=x['term'],
         orientation='h',
-        text=x.apply(lambda row: f"{row['term']} (p={row['pvalue']:.4f})", axis=1),
+        text=x.apply(lambda row: f"{row['term']} (p={row['pvalue']:.4})", axis=1),
         textposition='inside',
         insidetextanchor='middle',
         textfont=dict(color='white'),

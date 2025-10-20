@@ -58,6 +58,10 @@ module.exports = {
         source: '/ga4gh/:path*',
         destination: '/api/ga4gh/:path*', // The :path parameter isn't used here so will be automatically passed in the query
       },
+      {
+        source: '/mcp',
+        destination: '/api/mcp', // The :path parameter isn't used here so will be automatically passed in the query
+      },
     ]
   },
   webpack: (config, { isServer, webpack }) => {

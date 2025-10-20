@@ -9,5 +9,6 @@ export default function codecFrom<Output = any, Def extends z.ZodTypeDef = z.Zod
   return {
     encode: (obj: Output) => identity(obj),
     decode: (obj: Output) => typ.parse(identity(obj)),
+    zod: typ,
   }
 }

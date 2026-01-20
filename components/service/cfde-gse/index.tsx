@@ -2,6 +2,7 @@ import { MetaNode } from "@/spec/metanode";
 import { drc_icon } from "@/icons"
 import { z } from 'zod'
 import pluralize from "pluralize"
+import * as str from '@/utils/str'
 import { GeneSet } from "@/components/core/set"
 import { Disease, Drug, Gene, Glycan, Metabolite, Phenotype, Tissue } from "@/components/core/primitives"
 import { Disease_backgrounds, Drug_backgrounds, Phenotype_backgrounds, Tissue_backgrounds, Gene_backgrounds, Glycan_backgrounds, Metabolite_backgrounds } from "@/components/service/enrichr/backgrounds"
@@ -111,7 +112,7 @@ export const CFDEGSEGenesetSearch = MetaNode('CFDEGSEGenesetSearch')
     }
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
-    formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
+    formData.append('description', str.truncate(`playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`, 255))
     const response = await fetch(`${cfde_gse_enrich_url}/addList`, {
       method: 'post',
       body: formData,

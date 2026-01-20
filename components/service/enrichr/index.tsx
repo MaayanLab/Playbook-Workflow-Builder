@@ -51,6 +51,7 @@ import type { ValuesOf } from '@/utils/types'
 import { downloadBlob } from '@/utils/download'
 import pluralize from 'pluralize'
 import python from '@/utils/python'
+import * as str from '@/utils/str'
 import { PlotlyPlot } from '@/components/viz/plotly'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
@@ -372,7 +373,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     }
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
-    formData.append('description', `playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`)
+    formData.append('description', str.truncate(`playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`, 255))
     const response = await fetch(`${enrichr_url}/addList`, {
       method: 'post',
       body: formData,

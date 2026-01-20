@@ -3,4 +3,4 @@ pandas
 plotly
 scanpy
 scikit-learn
-umap
+umap-learn

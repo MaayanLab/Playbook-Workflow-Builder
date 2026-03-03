@@ -1,3 +1,4 @@
+export * from './accession'
 export * from './disease'
 export * from './drug'
 export * from './gene'

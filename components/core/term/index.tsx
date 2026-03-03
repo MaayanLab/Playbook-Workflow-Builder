@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Protein, Glycan, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
+import { Gene, Protein, Glycan, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease, Accession } from '@/components/core/primitives'
 
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
@@ -28,6 +28,7 @@ const Term_T = (T: Primative) => MetaNode(`Term[${T.name}]`)
 export const DiseaseTerm = Term_T(Disease)
 export const DrugTerm = Term_T(Drug)
 export const GeneTerm = Term_T(Gene)
+export const AccessionTerm = Term_T(Accession)
 export const ProteinTerm = Term_T(Protein)
 export const GlycanTerm = Term_T(Glycan)
 export const VariantTerm = Term_T(Variant)
@@ -156,3 +157,4 @@ export const InputMetaboliteTerm = Input_Term_T(Metabolite, MetaboliteTerm)
 export const InputPathwayTerm = Input_Term_T(Pathway, PathwayTerm)
 export const InputPhenotypeTerm = Input_Term_T(Phenotype, PhenotypeTerm)
 export const InputTissueTerm = Input_Term_T(Tissue, TissueTerm)
+export const inputAccessionTerm = Input_Term_T(Accession, AccessionTerm)

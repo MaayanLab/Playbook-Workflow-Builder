@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredGenes, ScoredTissues } from '@/components/core/scored'
 import { archs4_icon, weighted_icon } from '@/icons'
-import { AccessionTerm, DiseaseTerm, DrugTerm, GeneTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
+import { GEOAccessionTerm, DiseaseTerm, DrugTerm, GeneTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
 import read_csv from '@/utils/csv'
 import { z } from 'zod'
 import { Cell, Column, Table } from '@/app/components/Table'
@@ -10,7 +10,7 @@ import { downloadBlob } from '@/utils/download'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import python from '@/utils/python'
 import * as array from '@/utils/array'
-import { Disease, Drug, Gene, Phenotype, Tissue, Accession } from '@/components/core/primitives'
+import { Disease, Drug, Gene, Phenotype, Tissue, GEOAccession } from '@/components/core/primitives'
 import { MetadataMatrix } from '@/components/data/metadata_matrix'
 
 async function archs4_tissue_expression({ search, species = 'human', type = 'tissue' }: { search: string, species?: string, type?: string }) {
@@ -249,7 +249,7 @@ export const ARCHS4SignatureTermSearchT = [
   {T: Drug, TermT: DrugTerm},
   {T: Phenotype, TermT: PhenotypeTerm},
   {T: Tissue, TermT: TissueTerm},
-  {T: Accession, TermT: AccessionTerm}
+  {T: GEOAccession, TermT: GEOAccessionTerm}
 ].map(({ T, TermT }) => MetaNode(`ARCHS4SignatureTermSearch[${species}, ${T.name}]`)
     .meta({
       label: `ARCHS4 Signature ${T.label} Search`,

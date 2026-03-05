@@ -72,7 +72,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
       <div>
         <progress className={classNames('progress w-full', { 'hidden': !isLoading })}></progress>
         <div className={classNames("overflow-x-auto", { 'hidden': index.length === 0 || columns.length === 0 })}>
-          <table style={{ borderCollapse: 'collapse', border: '1px solid black' }}>
+          <table style={{ borderCollapse: 'collapse', border: '1px solid black', width: '100%' }}>
             <thead>
               <tr>
                 <th style={{ border: '1px solid black', padding: '5px' }}>&nbsp;</th>

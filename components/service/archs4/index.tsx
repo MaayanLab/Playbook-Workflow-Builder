@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { ScoredGenes, ScoredTissues } from '@/components/core/scored'
 import { archs4_icon, weighted_icon } from '@/icons'
-import { DiseaseTerm, DrugTerm, GeneTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
+import { GEOAccessionTerm, DiseaseTerm, DrugTerm, GeneTerm, PhenotypeTerm, TissueTerm } from '@/components/core/term'
 import read_csv from '@/utils/csv'
 import { z } from 'zod'
 import { Cell, Column, Table } from '@/app/components/Table'
@@ -10,7 +10,8 @@ import { downloadBlob } from '@/utils/download'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import python from '@/utils/python'
 import * as array from '@/utils/array'
-import { Disease, Drug, Gene, Phenotype, Tissue } from '@/components/core/primitives'
+import { Disease, Drug, Gene, Phenotype, Tissue, GEOAccession } from '@/components/core/primitives'
+import { MetadataMatrix } from '@/components/data/metadata_matrix'
 
 async function archs4_tissue_expression({ search, species = 'human', type = 'tissue' }: { search: string, species?: string, type?: string }) {
   const params = new URLSearchParams()
@@ -55,7 +56,7 @@ export const ARCHS4SignatureResults = MetaNode(`ARCHS4SignatureResults`)
     description: 'ARCHS4 Signatures Query Results',
     icon: [archs4_icon, weighted_icon],
   })
-  .codec(z.object({ samples: z.array(z.string()) }))
+  .codec(z.object({ samples: z.array(z.string()), species:z.string() }))
   .view(results =>
     <Table
       height={500}
@@ -141,6 +142,7 @@ export const SomeARCHS4SignatureResults = MetaNode(`SomeARCHS4SignatureResults`)
     }
     return {
       samples: props.inputs.results.samples.filter((item) => !props.data[item]),
+      species: props.inputs.results.species
     }
   })
   .story(props =>  ({
@@ -159,14 +161,35 @@ export const ARCHS4SignatureResolve = MetaNode(`ARCHS4SignatureResolve`)
   .output(GeneCountMatrix)
   .resolve(async (props) => await python(
     'components.service.archs4.fetch_samples',
-    { kargs: [props.inputs.results.samples] },
+    { kargs: [props.inputs.results.samples, props.inputs.results.species] },
     message => props.notify({ type: 'info', message }),
   ))
   .story(props => ({
     abstract: `Gene expression for published samples was obtained from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
     introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
     methods: `The GEO study samples were taken from processed ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} matrix using the ARCHS4 API.`,
-    tableLegend: `A table showing the basic structure and shape of the gene count matrix. Rows represent columns, columns represent genes, and values show the number of mapped reads.`,
+    tableLegend: `A table showing the basic structure and shape of the gene count matrix. Rows represent genes, columns represent samples, and values show the number of mapped reads.`,
+  }))
+  .build()
+
+  export const ARCHS4SignatureMetaResolve = MetaNode(`ARCHS4SignatureMetaResolve`)
+  .meta({
+    label: `Fetch GEO Sample Metadata`,
+    description: `Get the sample metadata from ARCHS4`,
+    external: true,
+  })
+  .inputs({ results: ARCHS4SignatureResults })
+  .output(MetadataMatrix)
+  .resolve(async (props) => await python(
+    'components.service.archs4.fetch_samples_meta',
+    { kargs: [props.inputs.results.samples, props.inputs.results.species] },
+    message => props.notify({ type: 'info', message }),
+  ))
+  .story(props => ({
+    abstract: `Sample metadata for published samples was obtained from ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
+    introduction: `All RNA-seq and ChIP-seq sample and signature search (ARCHS4)\\ref{doi:10.1038/s41467-018-03751-6} is a resource providing access to gene counts uniformly processed from all human and mouse RNA-seq experiments from the Gene Expression Omnibus (GEO) and the Sequence Read Archive (SRA).`,
+    methods: `The GEO study samples were taken from processed ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} matrix using the ARCHS4 API.`,
+    tableLegend: `A table showing the basic structure and shape of the sample metadata.`,
   }))
   .build()
 
@@ -188,27 +211,26 @@ export const ARCHS4SignatureSearchT = [
       if ((typeof zscore === 'number' && zscore >= 1.645) || zscore === 'inf') up[term] = true
       else if ((typeof zscore === 'number' && zscore <= -1.645) || zscore === '-inf') down[term] = true
     })
-    const req = await fetch(`https://maayanlab.cloud/rookpy/signature`, {
+    const req = await fetch(`https://maayanlab.cloud/sigpy/data/knn/signature`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
       body: JSON.stringify({
-        type: 'geneset',
-        signatureName: 'playbook-workflow-builder.cloud input',
+        signame: 'playbook-workflow-builder.cloud input',
         species: species.toLocaleLowerCase(),
-        upgenes: Object.keys(up),
-        downgenes: Object.keys(down),
+        signatures:[{
+          up_genes: Object.keys(up),
+          down_genes: Object.keys(down)
+        }]
       }),
     })
     if (!req.ok) throw new Error(`ARCHS4 Signature Search Error: ${await req.text()}`)
-    return {
-      samples: z.object({
-        name: z.string(),
-        samples: z.array(z.number()),
-      }).parse(await req.json()).samples.map(sample => `GSM${sample}`)
-    }
+    return z.object({
+      samples:  z.string().array(),
+      species: z.string()
+    }).parse(await req.json())
   })
   .story(props => ({
     abstract: `Reversers and mimickers from GEO signatures were identified using ARCHS4\\ref{doi:10.1038/s41467-018-03751-6}.`,
@@ -227,6 +249,7 @@ export const ARCHS4SignatureTermSearchT = [
   {T: Drug, TermT: DrugTerm},
   {T: Phenotype, TermT: PhenotypeTerm},
   {T: Tissue, TermT: TissueTerm},
+  {T: GEOAccession, TermT: GEOAccessionTerm}
 ].map(({ T, TermT }) => MetaNode(`ARCHS4SignatureTermSearch[${species}, ${T.name}]`)
     .meta({
       label: `ARCHS4 Signature ${T.label} Search`,
@@ -237,34 +260,22 @@ export const ARCHS4SignatureTermSearchT = [
     .inputs({ term: TermT })
     .output(ARCHS4SignatureResults)
     .resolve(async (props) => {
-      const studySearchParams = new URLSearchParams()
-      studySearchParams.append('species', species.toLowerCase())
-      studySearchParams.append('search', props.inputs.term)
-      const studyReq = await fetch(`https://maayanlab.cloud/archs4/search/getSampleMatch.php?${studySearchParams.toString()}`, {
+      const searchParams = new URLSearchParams()
+      searchParams.append('query', props.inputs.term)
+      searchParams.append('species', species.toLowerCase())
+      const studyReq = await fetch(`https://maayanlab.cloud/sigpy/meta/quicksearch?${searchParams.toString()}`, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
       })
       if (!studyReq.ok) throw new Error(`ARCHS4 Signature Term Search Error: ${await studyReq.text()}`)
-      const [_0, _1, studies] = z.tuple([
-        z.string(),
-        z.number().array(),
-        z.string().array().transform(study_groups => array.unique(study_groups.flatMap(study_group => study_group.split('\t')))),
-      ]).parse(await studyReq.json())
-      const study_samples = await Promise.all(studies.map(async (study) => {
-        const searchParams = new URLSearchParams()
-        searchParams.append('series_id', study)
-        const req = await fetch(`https://api.archs4.maayanlab.cloud/meta/samples/geo_accession?${searchParams.toString()}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        })
-        if (!req.ok) throw new Error(`ARCHS4 Study Not Found`)
-        return z.string().array().parse(await req.json())
-      }))
-      return { samples: array.unique(study_samples.flatMap(samples => samples)) }
+      const resp = z.object({
+        "samples":z.string().array(),
+        "series_count":z.number(),
+        "species":z.string()
+      }).parse(await studyReq.json())
+      return { samples: array.unique(resp.samples.flatMap(samples => samples)), species: resp.species }
     })
     .story(props => ({
       abstract: `GEO studies were identified matching ${props.inputs?.term ? props.inputs.term : T.label.toLowerCase()} using ARCHS4\\ref{doi:10.1038/s41467-018-03751-6} term search.`,

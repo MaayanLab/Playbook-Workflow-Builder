@@ -46,6 +46,21 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
       return { index: Object.keys(index), columns }
     }, [tableData])
 
+    const handleCellToggle = React.useCallback((row: string, column: string) => {
+      const current = (tableData[column] || {})[row]
+      const newTableData = { ...tableData }
+      if (!(column in newTableData)) newTableData[column] = {}
+      if (!['Control', 'Perturbation'].includes(current)) {
+        newTableData[column][row] = 'Control'
+      } else if (current === 'Control') {
+        newTableData[column][row] = 'Perturbation'
+      } else {
+        const { [row]: _, ...rest } = newTableData[column]
+        newTableData[column] = rest
+      }
+      setTableData(newTableData)
+    }, [tableData])
+
     const handleCellChange = React.useCallback((row: string, column: string, value: string) => {
       const newTableData = {...tableData}
       if (!(column in newTableData)) newTableData[column] = {}
@@ -57,7 +72,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
       <div>
         <progress className={classNames('progress w-full', { 'hidden': !isLoading })}></progress>
         <div className={classNames("overflow-x-auto", { 'hidden': index.length === 0 || columns.length === 0 })}>
-          <table style={{ borderCollapse: 'collapse', border: '1px solid black' }}>
+          <table style={{ borderCollapse: 'collapse', border: '1px solid black', width: '100%' }}>
             <thead>
               <tr>
                 <th style={{ border: '1px solid black', padding: '5px' }}>&nbsp;</th>
@@ -94,7 +109,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
                           ref={ref => {if (ref) ref.indeterminate = !['Control', 'Perturbation'].includes((tableData[column] || {})[row])}}
                           checked={(tableData[column] || {})[row] === 'Perturbation'}
                           onClick={evt =>
-                            handleCellChange(row, column, (tableData[column] || {})[row] === 'Control' ? 'Perturbation' : 'Control')
+                            handleCellToggle(row, column)
                           }
                         />
                         <span className="prose max-w-none hover:cursor-pointer" onClick={() => {

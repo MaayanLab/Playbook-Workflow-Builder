@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataMetaNode, InternalDataMetaNode, MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { Gene, Protein, Glycan, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease } from '@/components/core/primitives'
+import { Gene, Protein, Glycan, Variant, RegulatoryElement, Drug, Primative, Metabolite, Pathway, Phenotype, Tissue, Disease, GEOAccession, PMCAccession} from '@/components/core/primitives'
 
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
@@ -36,6 +36,8 @@ export const MetaboliteTerm = Term_T(Metabolite)
 export const PathwayTerm = Term_T(Pathway)
 export const PhenotypeTerm = Term_T(Phenotype)
 export const TissueTerm = Term_T(Tissue)
+export const GEOAccessionTerm = Term_T(GEOAccession)
+export const PMCAccessionTerm = Term_T(PMCAccession)
 
 const itemRenderer = (item: unknown, { modifiers: { active, disabled }, handleClick }: { modifiers: { active: boolean, disabled: boolean }, handleClick: React.MouseEventHandler }) => (
   <MenuItem
@@ -156,3 +158,5 @@ export const InputMetaboliteTerm = Input_Term_T(Metabolite, MetaboliteTerm)
 export const InputPathwayTerm = Input_Term_T(Pathway, PathwayTerm)
 export const InputPhenotypeTerm = Input_Term_T(Phenotype, PhenotypeTerm)
 export const InputTissueTerm = Input_Term_T(Tissue, TissueTerm)
+export const inputGEOAccessionTerm = Input_Term_T(GEOAccession, GEOAccessionTerm)
+export const inputPMCAccessionTerm = Input_Term_T(PMCAccession, PMCAccessionTerm)

@@ -19,6 +19,10 @@ interface MatrixProps {
    * [optional]: Where to place ellipses, when showing a truncated matrix
    * of the form: [row-elipse-index | null, column-elipse-index | null]
    */
+  height?: number | null
+  /**
+   * [optional]: Height of the matrix display
+   */
   ellipses?: [number | null, number | null]
   /**
    * [optional]: Override the shape
@@ -34,6 +38,7 @@ export default function Matrix(props: MatrixProps) {
   const shape = props.shape ? props.shape : [props.index.length, props.columns.length]
   return (
     <Table
+      height={props.height || 250}
       cellRendererDependencies={[props]}
       numRows={props.values.length + (props.ellipses && props.ellipses[0] ? 1 : 0)}
       enableRowResizing

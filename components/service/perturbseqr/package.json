@@ -1,0 +1,13 @@
+{
+  "name": "@playbook-partnership/perturbseqr",
+  "version": "1.0.0",
+  "license": "CC-BY-4.0",
+  "author": "Ido Diamant <ido.diamant@mssm.edu>",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21"
+  }
+}

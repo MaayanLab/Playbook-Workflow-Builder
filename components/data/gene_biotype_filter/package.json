@@ -1,0 +1,13 @@
+{
+  "name": "gene_biotype_filter",
+  "version": "1.0.0",
+  "license": "GPL-2.0-or-later",
+  "author": "Ido Diamant <ido.diamant@mssm.edu>",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21"
+  }
+}

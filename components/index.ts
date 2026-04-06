@@ -335,3 +335,7 @@ import * as viz_upset from "./viz/upset"
 import viz_upset_packageJson from "./viz/upset/package.json"
 metanodes.push(...MetaNodesFromExports(viz_upset, viz_upset_packageJson))
 components.push("viz/upset")
+import * as data_gene_biotype_filter from "./data/gene_biotype_filter"
+import data_gene_biotype_filter_packageJson from "./data/gene_biotype_filter/package.json"
+metanodes.push(...MetaNodesFromExports(data_gene_biotype_filter, data_gene_biotype_filter_packageJson))
+components.push("data/gene_biotype_filter")

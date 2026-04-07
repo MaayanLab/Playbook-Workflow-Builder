@@ -148,12 +148,13 @@ export const PerturbSeqrSignatureEnrichmentAnalysis = MetaNode(`Perturb-SeqrSign
       return id
     }
 
+    const sorted = [...props.inputs.scored_genes].sort((a, b) => +b.zscore - +a.zscore)
     const [up_id, down_id] = await Promise.all([
-      postSet('Up gene set from pwb', props.inputs.scored_genes
+      postSet('Up gene set from pwb', sorted
         .filter(g => g.zscore === 'inf' || (typeof g.zscore === 'number' && g.zscore > 0))
         .map(g => g.term)
         .slice(0,500)),
-      postSet('Down gene set from pwb', props.inputs.scored_genes
+      postSet('Down gene set from pwb', sorted
         .filter(g => g.zscore === '-inf' || (typeof g.zscore === 'number' && g.zscore < 0))
         .map(g => g.term)
         .slice(-500)),

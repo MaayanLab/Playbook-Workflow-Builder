@@ -275,6 +275,7 @@ export const ARCHS4SignatureTermSearchT = [
         "series_count":z.number(),
         "species":z.string()
       }).parse(await studyReq.json())
+      if (resp.samples.length===0) throw new Error(`Term not found in ARCHS4.`)
       return { samples: array.unique(resp.samples.flatMap(samples => samples)), species: resp.species }
     })
     .story(props => ({

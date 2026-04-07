@@ -267,6 +267,10 @@ import * as service_l2s2 from "./service/l2s2"
 import service_l2s2_packageJson from "./service/l2s2/package.json"
 metanodes.push(...MetaNodesFromExports(service_l2s2, service_l2s2_packageJson))
 components.push("service/l2s2")
+import * as service_perturbseqr from "./service/perturbseqr"
+import service_perturbseqr_packageJson from "./service/perturbseqr/package.json"
+metanodes.push(...MetaNodesFromExports(service_perturbseqr, service_perturbseqr_packageJson))
+components.push("service/perturbseqr")
 import * as service_ldh from "./service/ldh"
 import service_ldh_packageJson from "./service/ldh/package.json"
 metanodes.push(...MetaNodesFromExports(service_ldh, service_ldh_packageJson))
@@ -331,3 +335,7 @@ import * as viz_upset from "./viz/upset"
 import viz_upset_packageJson from "./viz/upset/package.json"
 metanodes.push(...MetaNodesFromExports(viz_upset, viz_upset_packageJson))
 components.push("viz/upset")
+import * as data_gene_biotype_filter from "./data/gene_biotype_filter"
+import data_gene_biotype_filter_packageJson from "./data/gene_biotype_filter/package.json"
+metanodes.push(...MetaNodesFromExports(data_gene_biotype_filter, data_gene_biotype_filter_packageJson))
+components.push("data/gene_biotype_filter")

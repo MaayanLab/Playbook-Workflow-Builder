@@ -3,6 +3,7 @@ from components.core.file import File, upsert_file
 from components.data.anndata import anndata, AnnDataFile
 from components.data.gene_count_matrix import anndata_from_file
 from maayanlab_bioinformatics.harmonization import ncbi_genes_lookup
+from tempfile import gettempdir
 import anndata as ad
 import pandas as pd
 
@@ -13,6 +14,7 @@ def create_lookup(species:typing.Literal['human','mouse']='human', biotypes:typi
     return ncbi_genes_lookup(
         organism=organism,
         filters=lambda ncbi: ncbi['type_of_gene'].isin(biotypes),
+        cache_dir=gettempdir()
     )
 
 def gene_biotype_filter(anndata_file: AnnDataFile, species:typing.Literal['human','mouse']='human', biotypes:typing.List[biotype]=None) -> AnnDataFile:

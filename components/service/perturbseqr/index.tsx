@@ -1,60 +1,11 @@
 import { DrugSet, GeneSet } from "@/components/core/set"
 import { ScoredGenes } from "@/components/core/scored"
-import dynamic from 'next/dynamic'
 import python from '@/utils/python'
-import { downloadBlob } from '@/utils/download'
 import { perturbseqr_icon } from "@/icons"
 import { MetaNode } from "@/spec/metanode"
-import * as array from '@/utils/array'
 import { z } from 'zod'
 
 const perturbseqr_url = 'https://perturbseqr.maayanlab.cloud'
-const Matrix = dynamic(() => import('@/app/components/Matrix'))
-
-const PerturbSeqrValue = z.union([z.string(), z.number(), z.boolean(), z.null()])
-
-export const PerturbSeqrEnrichmentResults = MetaNode(`Perturb-SeqrEnrichmentResults`)
-  .meta({
-    label: 'Perturb-Seqr Enrichment Results',
-    description: 'Enrichment results from Perturb-Seqr',
-    icon: [perturbseqr_icon],
-    external: true,
-  })
-  .codec(z.object({
-    shape: z.tuple([z.number(), z.number()]),
-    index: z.array(z.string()),
-    columns: z.array(z.string()),
-    values: z.array(z.array(PerturbSeqrValue)),
-    ellipses: z.tuple([z.number().nullable(), z.number().nullable()]),
-  }))
-  .view(results => (
-    <Matrix
-      index={results.index}
-      columns={results.columns}
-      values={results.values.map(row => row.map(v => String(v ?? '')))}
-      ellipses={results.ellipses}
-      shape={results.shape}
-      downloads={{
-        JSON: () => downloadBlob(
-          new Blob([JSON.stringify(results)], { type: 'application/json;charset=utf-8' }),
-          'perturbseqr_enrichment.json'
-        ),
-        CSV: () => downloadBlob(
-          new Blob([
-            [
-              ['', ...results.columns].join(','),
-              ...results.index.map((idx, i) =>
-                [idx, ...results.values[i].map(v => v ?? '')].join(',')
-              ),
-            ].join('\n')
-          ], { type: 'text/csv;charset=utf-8' }),
-          'perturbseqr_enrichment.csv'
-        ),
-      }}
-    />
-  ))
-  
-  .build()
 
 export const PerturbSeqrGeneSet = MetaNode(`Perturb-SeqrGeneSet`)
   .meta({
@@ -67,9 +18,11 @@ export const PerturbSeqrGeneSet = MetaNode(`Perturb-SeqrGeneSet`)
     id: z.string(),
   }))
   .view(props => (
-    <div className="prose max-w-none">
-      <p>Gene set uploaded to Perturb-Seqr with ID: <code>{props.id}</code></p>
-      <p>Use <em>Fetch Perturb-Seqr Enrichment Results</em> to load the results table.</p>
+    <div className="flex-grow flex flex-row m-0" style={{ minHeight: 1000 }}>
+      <iframe
+        className="flex-grow border-0"
+        src={`${perturbseqr_url}/enrich?dataset=${props.id}&embed`}
+      />
     </div>
   ))
   .build()
@@ -83,23 +36,24 @@ export const PerturbSeqrGeneSignature = MetaNode(`Perturb-SeqrGeneSignature`)
   })
   .codec(z.object({ up_id: z.string(), down_id: z.string() }))
   .view(props => (
-    <div className="prose max-w-none">
-      <p>Gene signature uploaded to Perturb-Seqr.</p>
-      <p>Up ID: <code>{props.up_id}</code> / Down ID: <code>{props.down_id}</code></p>
-      <p>Use <em>Fetch Perturb-Seqr Enrichment Results</em> to load the results table.</p>
+    <div className="flex-grow flex flex-row m-0" style={{ minHeight: 1000 }}>
+      <iframe
+        className="flex-grow border-0"
+        src={`${perturbseqr_url}/enrichpair?dataset=${props.up_id}&dataset=${props.down_id}&embed`}
+      />
     </div>
   ))
   .build()
 
 export const PerturbSeqrEnrichmentAnalysis = MetaNode(`Perturb-SeqrEnrichmentAnalysis`)
   .meta({
-    label: 'LINCS L1000 Signature Search (Perturb-Seqr)',
+    label: 'Perturb-Seqr Gene Set Search',
     description: 'Use Perturb-Seqr to identify small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the gene set',
     icon: [perturbseqr_icon],
     external: true,
   })
   .inputs({ gene_set: GeneSet })
-  .output(PerturbSeqrEnrichmentResults)
+  .output(PerturbSeqrGeneSet)
   .resolve(async (props) => {
     const req = await fetch(`${perturbseqr_url}/graphql`, {
       headers: {
@@ -111,11 +65,7 @@ export const PerturbSeqrEnrichmentAnalysis = MetaNode(`Perturb-SeqrEnrichmentAna
     })
     if (!req.ok) throw new Error('Failed to submit gene set to Perturb-Seqr')
     const { data: { addUserGeneSet: { userGeneSet: { id } } } } = await req.json()
-    return await python(
-      'components.service.perturbseqr.fetch_geneset_enrichment_results',
-      { kargs: [id] },
-      message => props.notify({ type: 'info', message }),
-    )
+    return { id }
   })
   .story(props => ({
     abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
@@ -131,7 +81,7 @@ export const PerturbSeqrSignatureEnrichmentAnalysis = MetaNode(`Perturb-SeqrSign
     external: true,
   })
   .inputs({ scored_genes: ScoredGenes })
-  .output(PerturbSeqrEnrichmentResults)
+  .output(PerturbSeqrGeneSignature)
   .resolve(async (props) => {
     const postSet = async (description: string, genes: string[]) => {
       const req = await fetch(`${perturbseqr_url}/graphql`, {
@@ -160,15 +110,11 @@ export const PerturbSeqrSignatureEnrichmentAnalysis = MetaNode(`Perturb-SeqrSign
         .slice(-500)),
     ])
 
-    return await python(
-      'components.service.perturbseqr.fetch_enrichment_results',
-      { kargs: [up_id, down_id] },
-      message => props.notify({ type: 'info', message }),
-    )
+    return { up_id:up_id, down_id:down_id }
   })
   .story(props => ({
-    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the signature were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}..`,
-    legend: `A table of drug and gene perturbation enrichment results from Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}..`,
+    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the signature were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
+    legend: `A table of drug and gene perturbation enrichment results from Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
   }))
   .build()
 
@@ -184,19 +130,19 @@ function makePerturbSeqrExtractNode<T>(
       icon: [perturbseqr_icon],
       external: true,
     })
-    .inputs({ searchResults: PerturbSeqrEnrichmentResults })
+    .inputs({ signature: PerturbSeqrGeneSignature })
     .output(SetT)
     .resolve(async (props) => {
       return await python(
         'components.service.perturbseqr.extract_perturbation_set',
-        { kargs: [props.inputs.searchResults, perturbationType, direction] },
+        { kargs: [props.inputs.signature, perturbationType, direction] },
         message => props.notify({ type: 'info', message }),
       )
     })
     .story(props => ({
-      abstract: `${perturbationType} ${direction.toLocaleLowerCase()} were extracted from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}. enrichment results.`,
-      methods: `Rows whose dataset matched the ${perturbationType.toLowerCase()} perturbation libraries with p-value < 0.05 were selected from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}. enrichment results.`,
-      tableLegend: `A set of ${perturbationType.toLocaleLowerCase()} ${direction.toLocaleLowerCase()} identified from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}. enrichment results.`,
+      abstract: `${perturbationType} ${direction.toLocaleLowerCase()} were extracted from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/} enrichment results.`,
+      methods: `Rows whose dataset matched the ${perturbationType.toLowerCase()} perturbation libraries with p-value < 0.05 were selected from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/} enrichment results.`,
+      tableLegend: `A set of ${perturbationType.toLocaleLowerCase()} ${direction.toLocaleLowerCase()} identified from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/} enrichment results.`,
     }))
     .build()
 }

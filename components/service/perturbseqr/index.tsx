@@ -118,8 +118,8 @@ export const PerturbSeqrEnrichmentAnalysis = MetaNode(`Perturb-SeqrEnrichmentAna
     )
   })
   .story(props => ({
-    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using Perturb-Seqr.`,
-    legend: `A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} found using Perturb-Seqr.`,
+    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
+    legend: `A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} found using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
   }))
   .build()
 
@@ -166,8 +166,8 @@ export const PerturbSeqrSignatureEnrichmentAnalysis = MetaNode(`Perturb-SeqrSign
     )
   })
   .story(props => ({
-    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the signature were identified using Perturb-Seqr.`,
-    legend: `A table of drug and gene perturbation enrichment results from Perturb-Seqr.`,
+    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the signature were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}..`,
+    legend: `A table of drug and gene perturbation enrichment results from Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}..`,
   }))
   .build()
 
@@ -193,9 +193,9 @@ function makePerturbSeqrExtractNode<T>(
       )
     })
     .story(props => ({
-      abstract: `${perturbationType} ${direction.toLocaleLowerCase()} were extracted from the Perturb-Seqr enrichment results.`,
-      methods: `Rows whose dataset matched the ${perturbationType.toLowerCase()} perturbation libraries with p-value < 0.05 were selected.`,
-      tableLegend: `A set of ${perturbationType.toLocaleLowerCase()} ${direction.toLocaleLowerCase()} identified from the Perturb-Seqr enrichment results.`,
+      abstract: `${perturbationType} ${direction.toLocaleLowerCase()} were extracted from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}. enrichment results.`,
+      methods: `Rows whose dataset matched the ${perturbationType.toLowerCase()} perturbation libraries with p-value < 0.05 were selected from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}. enrichment results.`,
+      tableLegend: `A set of ${perturbationType.toLocaleLowerCase()} ${direction.toLocaleLowerCase()} identified from the Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}. enrichment results.`,
     }))
     .build()
 }

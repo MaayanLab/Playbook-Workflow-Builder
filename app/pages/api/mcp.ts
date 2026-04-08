@@ -1,5 +1,5 @@
-import handler, { RouteHandler } from '@/utils/next-rest'
-import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import handler from '@/utils/next-rest'
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import cache from '@/utils/global_cache';
 import krg from '@/app/krg';
@@ -9,15 +9,7 @@ import dedent from 'ts-dedent';
 import * as array from '@/utils/array'
 import { ProcessMetaNode } from '@/spec/metanode';
 import fpprg from '@/app/fpprg';
-import { Metapath } from '@/app/fragments/metapath';
 import { FPL } from '@/core/FPPRG';
-
-function count(start: number) {
-  const ctx = { id: start }
-  return {
-    next: () => ctx.id++
-  }
-}
 
 const server = cache('mcp', () => {
   const server = new McpServer({

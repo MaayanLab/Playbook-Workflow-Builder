@@ -137,7 +137,7 @@ const server = cache('mcp', () => {
       }).describe('What we do at this step'),
     },
     outputSchema: {
-      result: z.object({ workflow_id: z.string(), step_id: z.string() }).optional(),
+      result: z.object({ workflow_id: z.string(), step_id: z.string(), output: z.string() }).optional(),
       error: z.any().or(z.undefined()),
     },
   }, async (props) => {
@@ -146,18 +146,19 @@ const server = cache('mcp', () => {
         type: props.step.name,
         inputs: props.step.inputs,
       })
+      let fpl: FPL
       if (props.workflow_id === 'start') {
-        const fpl = await fpprg.upsertFPL(new FPL(process))
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ workflow_id: fpl.id, step_id: fpl.process.id }) }],
-          structuredContent: { workflow_id: fpl.id, step_id: fpl.process.id },
-        }
+        fpl = await fpprg.upsertFPL(new FPL(process))
+      } else {
+        const old_fpl = await fpprg.getFPL(props.workflow_id)
+        if (old_fpl === undefined) throw new Error('Workflow not found')
+        fpl = await fpprg.upsertFPL(old_fpl.extend(process))
       }
-      const old_fpl = await fpprg.getFPL(props.workflow_id)
-      if (old_fpl === undefined) throw new Error('Workflow not found')
-      const fpl = await fpprg.upsertFPL(old_fpl.extend(process))
+      const output = await fpl.process.output()
+      if (!output) throw new Error('Failed to resolve output')
+      const { type, value } =  output?.toJSON()
       return {
-        content: [{ type: 'text', text: JSON.stringify({ workflow_id: fpl.id, step_id: fpl.process.id }) }],
+        content: [{ type: 'text', text: JSON.stringify({ workflow_id: fpl.id, step_id: fpl.process.id, output: { type, value } }) }],
         structuredContent: { workflow_id: fpl.id, step_id: fpl.process.id },
       }
     } catch (error) {

@@ -1,4 +1,4 @@
-FROM maayanlab/base:1.3.0 AS base
+FROM maayanlab/base:1.4.0 AS base
 USER root
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 RUN echo "Installing system dependencies (git+puppeteer deps)..." \

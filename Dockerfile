@@ -49,6 +49,13 @@ RUN echo "Building app..." && cd app && LANDING_PAGE=/graph/extend PUBLIC_URL=ht
 
 # TARGET: app -- production server with dependencies to run everything
 FROM base AS app
+USER root
+RUN echo "Installing dev dependencies..." \
+  && apt-get update -y \
+  && apt-get install -y \
+    libcurl4-gnutls-dev \
+  && rm -rf /var/lib/apt/lists/*
+USER ubuntu
 RUN PYTHON_VERSION=3.11 R_VERSION=4.5.3 /install.sh
 COPY --chown=ubuntu cli/setup.R app/setup.R
 RUN echo "Running setup.R..." && R -e "source('app/setup.R')" && rm app/setup.R

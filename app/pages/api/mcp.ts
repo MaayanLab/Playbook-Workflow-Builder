@@ -6,10 +6,59 @@ import krg from '@/app/krg';
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
 import dedent from 'ts-dedent';
-import * as array from '@/utils/array'
-import { ProcessMetaNode } from '@/spec/metanode';
 import fpprg from '@/app/fpprg';
-import { FPL } from '@/core/FPPRG';
+import { FPL, Process } from '@/core/FPPRG';
+import type { ProcessMetaNode } from "@/spec/metanode"
+import type KRG from "@/core/KRG"
+import pluralize from "pluralize"
+
+function options(props: { krg: KRG, heads: FPL[], workflow: FPL[] }) {
+  let items: ProcessMetaNode[]
+  const processNode = props.heads[0] ? props.krg.getProcessNode(props.heads[0].process.type) : undefined
+  // we'll use leaf nodes of the metapath + the current selected node as the selections
+  const selections: Record<string, { process: Process, processNode: ProcessMetaNode }> = {}
+  if (props.heads.length <= 1) {
+    ;[...props.workflow, ...props.heads].forEach(item => {
+      if (item === undefined) return
+      // add this to the selections
+      selections[item.process.id] = { process: item.process, processNode: props.krg.getProcessNode(item.process.type) }
+      // if a selection previously registered is a parent of this selection, remove it from selections
+      dict.values(item.process.inputs).forEach(k => {
+        if (k.id in selections) delete selections[k.id]
+      })
+    })
+    items = props.krg.getNextProcess(processNode ? processNode.output.spec : '')
+  } else {
+    props.heads.forEach(item => {
+      if (item === undefined) return
+      selections[item.process.id] = { process: item.process, processNode: props.krg.getProcessNode(item.process.type) }
+    })
+    items = props.krg.getNextProcess(processNode ? processNode.output.spec : '')
+      .filter(proc => dict.values(proc.inputs).some(value => Array.isArray(value)))
+  }
+  items = items.filter(proc => proc.meta.hidden !== true)
+  items.forEach(item => {
+    // determine if multi-inputs are satisfiable, and record a reason if not
+    dict.items(item.inputs).map(({ key, value }) => {
+      if (Array.isArray(value)) {
+        return {
+          key,
+          value: dict.values(selections).filter(selection => selection.processNode.output.spec === value[0].spec).length <= 1 ? `Multiple ${pluralize(value[0].meta.label)} required` : undefined,
+        }
+      } else {
+        return {
+          key,
+          value: dict.values(selections).filter(selection => selection.processNode.output.spec === value.spec).length < 1 ? `${value.meta.label} required` : undefined,
+        }
+      }
+    }).forEach(({ key, value }) => {
+      if (value !== undefined) {
+        Object.assign(item.meta, { disabledBecause: value })
+      }
+    })
+  })
+  return { selections, items }
+}
 
 const server = cache('mcp', () => {
   const server = new McpServer({
@@ -29,7 +78,24 @@ const server = cache('mcp', () => {
 
       ## Usage Patterns
 
-      At each step, use the \`expand\` tool with the current workflow and choose from the next possible options with confirmation from the user.
+      At each step, use the 'options' tool with the current workflow and choose from the next possible options with confirmation from the user by using the 'expand' tool.
+      To start a workflow, use the 'options' without specifying any 'workflow_id' or 'step_id', and subsequently 'expand' with the relevant step without a 'workflow_id' or 'step_id'.
+      Step 'type' specified in 'extend' MUST appear in 'options'.
+      The workflow_id can be used to build a link for the user with: https://playbook-workflow-builder.cloud/report/{workflow_id}
+
+      ## Example
+
+      {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
+      {"type": "function_call", "name": "options", "arguments": {}}
+      {"type": "function_call_output", "output": {"result":[{"type":"Input[Gene]","derived_from":{},"label":"Gene Input","description":"The workflow starts with selecting a search term."}]}}
+      {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
+      {"type": "function_call", "name": "extend", "arguments": {"step":{"type":"Input[Gene]","derived_from":{},"value":"ACE2"}}}
+      {"type": "function_call_output", "output": {"result":{"workflow_id": "38b60ad6", "step_id": "2b976512", output: {"type": "Gene", "value": "ACE2"}}}
+      {"type": "function_call", "name": "options", "arguments": {"workflow_id":"38b60ad6", "step_id": "2b976512"}}
+      {"type": "function_call_output", "output": {"result":[{"type":"GetTissueExpressionOfGene","derived_from":{"gene": {"type":"Gene"}},"label":"Get expression of the gene", ...}]}}
+      {"type": "function_call", "name": "extend", "arguments": {"step":{"type":"GetTissueExpressionOfGene","derived_from":{"gene": {"id": "2b976512"}}}}}
+      {"type": "function_call_output", "output": {"result":{"workflow_id": "811b99c8", "step_id": "965ac0ed", output: {"type": "TissueGeneExpression", "value": "..."}}}
+      {"type": "agent_message", "content": "I've created the report for you at https://playbook-workflow-builder.cloud/report/811b99c8 , let me know what else you'd like to do."}
 
       ## Important Notes
 
@@ -39,78 +105,45 @@ const server = cache('mcp', () => {
   server.registerTool('options', {
     title: 'Options to start or expand a workflow with',
     inputSchema: {
-      workflow_id: z.string().optional().describe('The complete workflow we are building'),
-      step_id: z.string().optional().describe('A specific step in the workflow we wish to extend from'),
+      workflow_id: z.string().nullish().describe('The complete workflow we are building'),
+      step_id: z.string().nullish().describe('A specific step in the workflow we wish to extend from'),
     },
     outputSchema: {
-      result: z.object({ name: z.string(), inputs: z.record(z.string(), z.object({ id: z.string().describe('output of previous step_id') })) }).optional(),
+      result: z.object({ type: z.string(), label: z.string(), description: z.string(), derived_from: z.record(z.string(), z.object({ type: z.string(), description: z.string() }).describe('type of output this can be derived from')) }).array().optional(),
       error: z.any().or(z.undefined()),
     },
   }, async (props) => {
     try {
       const fpl = props.workflow_id ? await fpprg.getFPL(props.workflow_id) : undefined
-      if (props.workflow_id && !fpl) throw new Error('Workflow not found')
-      const head_id = props.step_id ? props.step_id : props.workflow_id
+      if (props.workflow_id && !fpl) throw new Error(`Workflow with id ${props.workflow_id} not found`)
       const workflow = fpl?.resolve() ?? []
       let head
-      for (const item of workflow ?? []) {
-        if (item.id === head_id) {
-          head = item
-          break
-        }
-      }
-      if (props.step_id && !head) throw new Error('Step not found')
-      
-      const selections: Record<string, { process: typeof workflow[0], processNode: ProcessMetaNode }> = {}
-      for (const item of workflow) {
-        if (item === undefined) continue
-        // add this to the selections
-        selections[item.id] = { process: item, processNode: krg.getProcessNode(item.process.type) }
-        // if a selection previously registered is a parent of this selection, remove it from selections
-        dict.values(await item.process.inputs__outputs()).forEach(k => {
-          if (!k) return
-          if (k.id in selections) delete selections[k.id]
-        })
-      }
-      const choices = krg.getNextProcess(head?.process.type)
-        .filter(item => item.meta.hidden !== true)
-        .filter(item => array.all(
-          dict.values(item.inputs).map((value) => {
-            if (Array.isArray(value)) {
-              return dict.values(selections).filter(selection => selection.processNode.output.spec === value[0].spec).length > 1
-            } else {
-              return dict.values(selections).filter(selection => selection.processNode.output.spec === value.spec).length >= 1
-            }
-          })
-        ))
-        .map(item => {
-          const inputs: Record<string, { id: string }> = {}
-          dict.items(item.inputs).forEach(({ key: arg, value: input }) => {
-            if (Array.isArray(input)) {
-              dict.values(selections)
-                .filter(selection => selection.processNode.output.spec === input[0].spec)
-                .forEach((selection, i) => {
-                  inputs[`${arg}:${i}`] = { id: selection.process.id }
-                })
-            } else {
-              const head = { process: workflow[workflow.length-1] }
-              const relevantSelections = dict.filter(selections, ({ value: selection }) => selection.processNode.output.spec === input.spec)
-              const selection = head.process.id in relevantSelections ? head : array.ensureOne(dict.values(relevantSelections))
-              inputs[arg] = { id: selection.process.id }
-            }
-          })
-          return {
-            name: item.spec, inputs,
-            type: 'prompt' in item ? 'prompt' : 'resolver',
-            label: item.meta.label,
-            description: item.story({}) ?? item.meta.description,
+      if (props.step_id) {
+        for (const item of workflow ?? []) {
+          if (item.process.id === props.step_id) {
+            head = item
+            break
           }
-        })
-      return {
-        content: [{ type: 'text', text: JSON.stringify({ result: choices }) }],
-        structuredContent: { result: choices },
+        }
+        if (!head) throw new Error(`Step with id ${props.step_id} not found`)
+      } else {
+        head = workflow[workflow.length-1]
       }
-    } catch (error) {
+      const { items } = options({ krg, heads: [head], workflow })
+      const result = items.map(proc => ({
+        type: proc.spec,
+        derived_from: dict.init(dict.items(proc.inputs).map(({ key, value }) => ({ key, value: Array.isArray(value) ? { type: value[0].spec, description: value[0].meta.description } : { type: value.spec, description: value.meta.description } }))),
+        label: proc.meta.label,
+        description: proc.story({}).abstract ?? proc.meta.description,
+      }))
+      console.log(JSON.stringify({ options: { result } }))
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ result }) }],
+        structuredContent: { result },
+      }
+    } catch (exc) {
+      const error = (exc as Error).message
+      console.error(JSON.stringify({ options: { error } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ error }) }],
         structuredContent: { error },
@@ -120,40 +153,48 @@ const server = cache('mcp', () => {
   server.registerTool('expand', {
     title: 'Expand Workflow',
     inputSchema: {
-      workflow_id: z.string().or(z.literal('start')).describe('The complete workflow we are building off of'),
-      step_id: z.string().optional().describe('A specific step in the workflow we wish to extend from'),
+      workflow_id: z.string().nullish().describe('The complete workflow we are building off of (undefined when building a new workflow)'),
+      step_id: z.string().nullish().describe('A specific step in the workflow we wish to extend from'),
       step: z.object({
-        name: z.string(),
-        value: z.string().optional(),
-        inputs: z.record(z.string(), z.object({ id: z.string() })),
-      }).describe('What we do at this step'),
+        type: z.string().describe('The type of operation as seen in `options`'),
+        derived_from: z.record(z.string(), z.object({ id: z.string() })).default({}).describe('output of previous step_id to provide as input for this step'),
+        value: z.string().nullish().describe('The input value for this step when not coming from a prior step'),
+      }).strict().describe('What we do at this step'),
     },
     outputSchema: {
-      result: z.object({ workflow_id: z.string(), step_id: z.string(), output: z.string() }).optional(),
+      result: z.object({ workflow_id: z.string(), step_id: z.string(), output: z.object({ type: z.string(), /*value: z.any()*/ }) }).optional(),
       error: z.any().or(z.undefined()),
     },
   }, async (props) => {
     try {
+      const processMetaNode = krg.getProcessNode(props.step.type)
+      if (!processMetaNode) throw new Error(`Unrecognized process type ${props.step.type}`)
       const process = await fpprg.resolveProcess({
-        type: props.step.name,
-        inputs: props.step.inputs,
+        type: props.step.type,
+        inputs: props.step.derived_from,
+        data: props.step.type ? { type: krg.getProcessNode(props.step.type).output.spec, value: props.step.value } : undefined,
       })
       let fpl: FPL
-      if (props.workflow_id === 'start') {
+      if (!props.workflow_id) {
         fpl = await fpprg.upsertFPL(new FPL(process))
       } else {
         const old_fpl = await fpprg.getFPL(props.workflow_id)
-        if (old_fpl === undefined) throw new Error('Workflow not found')
+        if (old_fpl === undefined) throw new Error(`Workflow with id ${props.workflow_id} not found`)
         fpl = await fpprg.upsertFPL(old_fpl.extend(process))
       }
-      const output = await fpl.process.output()
-      if (!output) throw new Error('Failed to resolve output')
-      const { type, value } =  output?.toJSON()
+      const type = processMetaNode.output.spec
+      // const output = await fpl.process.output()
+      // if (!output) throw new Error('Failed to resolve output')
+      // const { type, value } =  output.toJSON()
+      const result = { workflow_id: fpl.id, step_id: fpl.process.id, output: { type, /*value*/ } }
+      console.log(JSON.stringify({ extend: { result } }))
       return {
-        content: [{ type: 'text', text: JSON.stringify({ workflow_id: fpl.id, step_id: fpl.process.id, output: { type, value } }) }],
-        structuredContent: { workflow_id: fpl.id, step_id: fpl.process.id },
+        content: [{ type: 'text', text: JSON.stringify({ result }) }],
+        structuredContent: { result },
       }
-    } catch (error) {
+    } catch (exc) {
+      const error = (exc as Error).message
+      console.error(JSON.stringify({ extend: { error } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ error }) }],
         structuredContent: { error },

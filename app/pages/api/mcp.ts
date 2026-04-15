@@ -156,7 +156,7 @@ const server = cache('mcp', () => {
       step_id: z.string().nullish().describe('A specific step in the workflow we wish to extend from'),
       step: z.object({
         type: z.string().describe('The type of operation as seen in `options`'),
-        derived_from: z.record(z.string(), z.object({ id: z.string() })).default({}).describe('output of previous step_id to provide as input for this step'),
+        derived_from: z.record(z.string(), z.object({ id: z.string() }).strip()).default({}).describe('output of previous step_id to provide as input for this step'),
         value: z.string().nullish().describe('The input value for this step when not coming from a prior step'),
       }).strict().describe('What we do at this step'),
     },

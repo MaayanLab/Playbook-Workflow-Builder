@@ -136,14 +136,13 @@ const server = cache('mcp', () => {
         label: proc.meta.label,
         description: proc.story({}).abstract ?? proc.meta.description,
       }))
-      console.log(JSON.stringify({ options: { result } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ result }) }],
         structuredContent: { result },
       }
     } catch (exc) {
       const error = (exc as Error).message
-      console.error(JSON.stringify({ options: { error } }))
+      console.error(JSON.stringify({ options: { input: props, error } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ error }) }],
         structuredContent: { error },
@@ -187,14 +186,13 @@ const server = cache('mcp', () => {
       // if (!output) throw new Error('Failed to resolve output')
       // const { type, value } =  output.toJSON()
       const result = { workflow_id: fpl.id, step_id: fpl.process.id, output: { type, /*value*/ } }
-      console.log(JSON.stringify({ extend: { result } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ result }) }],
         structuredContent: { result },
       }
     } catch (exc) {
       const error = (exc as Error).message
-      console.error(JSON.stringify({ extend: { error } }))
+      console.error(JSON.stringify({ extend: { input: props, error } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ error }) }],
         structuredContent: { error },

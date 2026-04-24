@@ -1,14 +1,14 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { GPTAssistantMessage, GPTAssistantMessagesList } from "@/app/api/client"
+import { GPTAssistantCreate, GPTAssistantMessage, GPTAssistantMessagesList } from "@/app/api/client"
 import classNames from 'classnames'
 import usePublicUrl from '@/utils/next-public-url'
+import { z } from 'zod'
 
 import { useAPIMutation, useAPIQuery } from "@/core/api/client"
 import * as Auth from 'next-auth/react'
 
 import krg from '@/app/krg'
-import { AssembleState } from '@/app/api/v1/chat/utils'
 import { useRouter } from 'next/router'
 import * as dict from '@/utils/dict'
 import { useFPL } from '../metapath'
@@ -25,22 +25,31 @@ const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
-export default function Page({ thread_id, session_id, embedded = false }: { thread_id: string, session_id?: string, embedded?: boolean }) {
+export default function Page({ thread_id, session_id, graph_id, node_id, embedded = false }: { thread_id?: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
   const router = useRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
-  const [collapse, setCollapse] = React.useState(false)
+  const [collapse, setCollapse] = React.useState(thread_id === undefined)
   const { data: session } = Auth.useSession({ required: true })
-  const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, { thread_id })
-  const { trigger, isMutating } = useAPIMutation(GPTAssistantMessage, { thread_id })
-  // const { trigger: triggerDelete } = useAPIMutation(GPTAssistantDelete, { thread_id })
-  const playbookState = React.useMemo(() => messages ? AssembleState(messages, { with_value: true }) : undefined, [messages])
-  const submit = React.useCallback(async (body: { message: string } | { step: { id: number, value?: string } }) => {
-    await mutate((current) => ({ messages: [...current?.messages ?? [], { id: '', role: 'user', ...body }], fpl: current?.fpl ?? null }), { revalidate: false })
-    const res = await trigger({ body })
+  const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, () => thread_id ? { thread_id } : null)
+  const createMessage = useAPIMutation(GPTAssistantMessage, { thread_id })
+  const createChat = useAPIMutation(GPTAssistantCreate)
+  const submit = React.useCallback(async (body: { message: string, graph_id?: string, node_id?: string }) => {
+    let thread_id_: string
+    if (!thread_id) {
+      thread_id_ = z.string().parse(await createChat.trigger())
+    } else {
+      thread_id_ = thread_id
+    }
+    const query = { thread_id: thread_id_ }
+    await mutate((current) => ({ messages: [
+      ...current?.messages ?? [],
+      { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date(), thread: thread_id_, feedback: null },
+    ], fpl: graph_id ?? null }), { revalidate: false })
+    const res = await createMessage.trigger({ query, body })
     await mutate((current) => ({ messages: [...(current?.messages ?? []).slice(0, -1), ...res?.messages ?? []], fpl: res?.fpl ?? null }), { revalidate: false })
-    if (res?.fpl) router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.fpl}?thread=${thread_id}`, undefined, { shallow: true, scroll: false })
-  }, [trigger, session_id, thread_id])
+    if (res?.fpl) router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.fpl}?thread=${thread_id_}`, undefined, { shallow: thread_id === thread_id_, scroll: false })
+  }, [session_id, thread_id])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
     fpl_to_metapath: dict.init(metapath.map(h => ({ key: h.id, value: h }))),
@@ -181,7 +190,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                     <Message role="welcome" session={session}>
                       How can I help you today?
                     </Message>
-                    <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                    {!graph_id && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
                       {[
                         'Show me the expression of ACE2 in healthy human tissues from GTEx',
                         'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
@@ -190,52 +199,15 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                           <button
                             key={i}
                             className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
-                            onClick={evt => {submit({ message: suggestion })}}
+                            onClick={evt => {submit({ message: suggestion, graph_id, node_id })}}
                           >{suggestion}</button>
                         )
                       })}
-                    </div>
+                    </div>}
                     {messages?.map((message, i) => {
                       const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
-                      const chosenSuggestion = 'step' in message ? playbookState?.all_nodes[message.step.id] : undefined
-                      const chosenSuggestionNode = chosenSuggestion ? krg.getProcessNode(chosenSuggestion.name) : undefined
                       return (
                         <React.Fragment key={i}>
-                          {chosenSuggestionNode ?
-                            <Message
-                              thread_id={thread_id}
-                              message_id={message.id}
-                              role={message.role}
-                              session={session}
-                            >
-                              <div className="flex flex-col gap-2">
-                                <div className="flex flex-row items-center gap-2">
-                                  <Icon icon={chosenSuggestionNode.meta.icon || func_icon} title={chosenSuggestionNode.meta.label} className="fill-black dark:fill-white" />
-                                  {chosenSuggestionNode.meta.label}
-                                </div>
-                                {chosenSuggestion?.value ? <>Value: {chosenSuggestion.value}</> : null}
-                                <div className="ml-4">
-                                  {chosenSuggestion?.inputs ? dict.items(chosenSuggestion.inputs).map(({ key, value }) => {
-                                    const input = playbookState?.all_nodes[value.id]
-                                    if (!input) return null
-                                    const inputNode = krg.getProcessNode(input.name)
-                                    if (!inputNode) return null
-                                    return <div key={key} className="flex flex-row items-center gap-2">
-                                      <div className="flex flex-row items-center gap-2">
-                                        <Icon icon={inputNode.output.meta.icon || func_icon} title={inputNode.output.meta.label} className="fill-black dark:fill-white" />
-                                        {inputNode.output.meta.label}
-                                      </div>
-                                      From
-                                      <div className="flex flex-row items-center gap-2">
-                                        <Icon icon={inputNode.meta.icon || func_icon} title={inputNode.meta.label} className="fill-black dark:fill-white" />
-                                        {inputNode.meta.label}
-                                      </div>
-                                    </div>
-                                  }) : null}
-                                </div>
-                              </div>
-                            </Message>
-                            : null}
                           {head ?
                             <Cell
                               key={message.fpl}
@@ -247,35 +219,25 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                               setCellMetadata={() => {}}
                             />
                           : null}
-                          {'message' in message ?
-                            <Message
-                              thread_id={thread_id}
-                              message_id={message.id}
-                              role={message.role}
-                              session={session}
-                            >{message.message}</Message>
-                            : null}
-                          {message.role === 'assistant' && message.suggestions.length > 1 ?
-                            <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                              {message.suggestions.map((suggestion: any) => {
-                                const suggestionProcess = playbookState?.all_nodes[suggestion.id]
-                                const suggestionNode = suggestionProcess ? krg.getProcessNode(suggestionProcess.name) : undefined
-                                if (!suggestionNode) return null
-                                return (
-                                  <div key={suggestion.id} className="tooltip" data-tip={suggestionNode.meta.description}>
-                                    <button
-                                      className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
-                                      onClick={evt => {submit({ step: suggestion })}}
-                                    >{suggestionNode.meta.label}</button>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                            : null}
+                          <Message
+                            thread_id={thread_id}
+                            message_id={message.id}
+                            role={message.role}
+                            session={session}
+                          >
+                            {message.content}
+                          </Message>
+                          {message.fpl && <button
+                            key={i}
+                            className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
+                            onClick={evt => {
+                              router.push(`${session_id ? `/session/${session_id}` : ''}/report/${message.fpl}?thread=${thread_id}`, undefined, { shallow: true, scroll: false })
+                            }}
+                          >Go To Workflow</button>}
                         </React.Fragment>
                       )
                     })}
-                    {isMutating ?
+                    {createMessage.isMutating ?
                       <Message role="assistant" session={session}>
                         <span className="loading loading-dots loading-lg mt-2"></span>
                       </Message>
@@ -289,7 +251,7 @@ export default function Page({ thread_id, session_id, embedded = false }: { thre
                       evt.preventDefault()
                       const currentMessage = message
                       setMessage(() => '')
-                      await submit({ message: currentMessage })
+                      await submit({ message: currentMessage, graph_id, node_id })
                     }}
                   >
                     <input

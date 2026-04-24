@@ -59,7 +59,7 @@ export default function App({ fallback }: { fallback: any }) {
                 session_id={params?.session_id}
                 krg={krg}
                 id={params.id}
-                thread={params.thread}
+                thread_id={params.thread}
               />
               : <div className="alert alert-error">Page not found</div>}
           </main>

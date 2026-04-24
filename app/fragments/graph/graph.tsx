@@ -21,7 +21,7 @@ const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-butt
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const ReportButton = dynamic(() => import('@/app/fragments/graph/report-button'))
 const ShareButton = dynamic(() => import('@/app/fragments/share-button'))
-
+const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
 /**
  * Find the metapath to the current head, excluding irrelevant steps
@@ -41,7 +41,7 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
   return metapath.filter(({ id }) => relevant[id] === true)
 }
 
-export default function Graph({ session_id, graph_id, node_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, extend: boolean, suggest: boolean }) {
+export default function Graph({ session_id, graph_id, node_id, thread_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, thread_id?: string, extend: boolean, suggest: boolean }) {
   const router = useRouter()
   const krg = useKRG({ session_id })
   const { data: metapath = [] } = useFPL(graph_id)
@@ -52,6 +52,7 @@ export default function Graph({ session_id, graph_id, node_id, extend, suggest }
   const process_to_step = React.useMemo(() => dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))), [metapath])
   return (
     <>
+      <Chat thread_id={thread_id} session_id={session_id} graph_id={graph_id !== 'start' ? graph_id : undefined} node_id={node_id !== 'start' ? node_id : undefined} embedded />
       <SessionStatus session_id={session_id}>
         <div className="flex w-auto items-center justify-center">
           <Breadcrumbs>

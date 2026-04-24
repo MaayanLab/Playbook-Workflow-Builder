@@ -23,7 +23,7 @@ const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button
 const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
 const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
-export default function Cells({ session_id, thread, krg, id }: { session_id?: string, thread?: string, krg: KRG, id: string }) {
+export default function Cells({ session_id, thread_id, krg, id }: { session_id?: string, thread_id?: string, krg: KRG, id: string }) {
   const router = useRouter()
   const { data: metapath } = useFPL(id)
   const { data: userPlaybook, mutate: mutateUserPlaybook } = useAPIQuery(UserPlaybook, { id })
@@ -74,7 +74,7 @@ export default function Cells({ session_id, thread, krg, id }: { session_id?: st
   if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
-      {thread ? <Chat key={id} thread_id={thread} embedded /> : null}
+      <Chat key={id} thread_id={thread_id} graph_id={id !== 'start' ? id : undefined} node_id={head?.process.id} embedded />
       <SessionStatus session_id={session_id}>
         <StoryProvider krg={krg} metapath={data.metapath}>
           <Waypoint id="head" className="sticky top-0 left-0 z-20 bg-white dark:bg-current w-full flex flex-row place-items-center">

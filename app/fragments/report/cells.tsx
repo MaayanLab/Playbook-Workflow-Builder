@@ -74,7 +74,7 @@ export default function Cells({ session_id, thread_id, krg, id }: { session_id?:
   if (!data || !playbookMetadata || !metapath) return null
   return (
     <div className="flex flex-col py-4 gap-2">
-      <Chat key={id} thread_id={thread_id} graph_id={id} embedded />
+      <Chat mode="report" thread_id={thread_id} graph_id={id} embedded />
       <SessionStatus session_id={session_id}>
         <StoryProvider krg={krg} metapath={data.metapath}>
           <Waypoint id="head" className="sticky top-0 left-0 z-20 bg-white dark:bg-current w-full flex flex-row place-items-center">

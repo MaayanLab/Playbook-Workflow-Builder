@@ -25,7 +25,7 @@ const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
-export default function Page({ thread_id, session_id, graph_id, node_id, embedded = false }: { thread_id?: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
+export default function Page({ mode, thread_id, session_id, graph_id, node_id, embedded = false }: { mode: string, thread_id?: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
   const router = useRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
@@ -48,7 +48,7 @@ export default function Page({ thread_id, session_id, graph_id, node_id, embedde
     ], fpl: graph_id ?? null }), { revalidate: false })
     const res = await createMessage.trigger({ query, body })
     await mutate((current) => ({ messages: [...(current?.messages ?? []).slice(0, -1), ...res?.messages ?? []], fpl: res?.fpl ?? null }), { revalidate: false })
-    if (res?.fpl) router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.fpl}?thread_id=${thread_id_}`, undefined, { shallow: thread_id === thread_id_, scroll: false })
+    if (res?.fpl) router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}/${res.fpl}?thread_id=${thread_id_}`, undefined, { shallow: thread_id === thread_id_, scroll: false })
   }, [session_id, thread_id])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
@@ -170,7 +170,7 @@ export default function Page({ thread_id, session_id, graph_id, node_id, embedde
                       <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
                     </button>
                   </Link>
-                  <Link href={`/report/${fpl}`} shallow>
+                  <Link href={`/${mode}/${!!fpl ? fpl : 'extend'}`} shallow>
                     <button className="bg-red-500">
                       <Icon icon={close_icon} className="fill-black dark:fill-white" />
                     </button>
@@ -231,7 +231,7 @@ export default function Page({ thread_id, session_id, graph_id, node_id, embedde
                             key={i}
                             className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
                             onClick={evt => {
-                              router.push(`${session_id ? `/session/${session_id}` : ''}/report/${message.fpl}?thread_id=${thread_id}`, undefined, { shallow: true, scroll: false })
+                              router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}/${message.fpl}?thread_id=${thread_id}`, undefined, { shallow: true, scroll: false })
                             }}
                           >Go To Workflow</button>}
                         </React.Fragment>

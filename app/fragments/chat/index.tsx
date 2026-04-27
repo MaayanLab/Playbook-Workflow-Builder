@@ -19,7 +19,7 @@ export default function ChatThread() {
       <SWRConfig value={{ fetcher }}>
         <MetapathProvider>
           <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
-            {thread_id ? <Chat thread_id={thread_id} /> : null}
+            {thread_id ? <Chat mode="report" thread_id={thread_id} /> : null}
           </main>
         </MetapathProvider>
       </SWRConfig>

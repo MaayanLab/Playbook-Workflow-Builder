@@ -52,7 +52,7 @@ export default function Graph({ session_id, graph_id, node_id, thread_id, extend
   const process_to_step = React.useMemo(() => dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))), [metapath])
   return (
     <>
-      <Chat thread_id={thread_id} session_id={session_id} graph_id={graph_id !== 'start' ? graph_id : undefined} node_id={node_id !== 'start' ? node_id : undefined} embedded />
+      <Chat thread_id={thread_id} session_id={session_id} graph_id={graph_id} node_id={node_id} embedded />
       <SessionStatus session_id={session_id}>
         <div className="flex w-auto items-center justify-center">
           <Breadcrumbs>

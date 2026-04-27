@@ -78,22 +78,23 @@ const server = cache('mcp', () => {
 
       ## Usage Patterns
 
-      At each step, use the 'options' tool with the current workflow and choose from the next possible options with confirmation from the user by using the 'expand' tool.
-      To start a workflow, use the 'options' without specifying any 'workflow_id' or 'step_id', and subsequently 'expand' with the relevant step without a 'workflow_id' or 'step_id'.
-      Step 'type' specified in 'expand' MUST appear in 'options'.
+      At each step, use the 'options' tool with the current workflow and choose from the next possible options with confirmation from the user by using the 'expand' tool.  
+      To start a workflow, use the 'options' without specifying any 'workflow_id' or 'step_id', and subsequently 'expand' with the relevant step without a 'workflow_id' or 'step_id'.  
+      Step 'type' specified in 'expand' MUST appear in 'options'.  
+      Use the newest workflow id when branching from an earlier step id to include both branches in the final workflow.
       The workflow_id can be used to build a link for the user with: https://playbook-workflow-builder.cloud/report/{workflow_id}
 
       ## Example
 
       {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
       {"type": "function_call", "name": "options", "arguments": {}}
-      {"type": "function_call_output", "output": {"result":[{"type":"Input[Gene]","derived_from":{},"label":"Gene Input","description":"The workflow starts with selecting a search term."}]}}
+      {"type": "function_call_output", "output": {"result":[{"type":"Input[Gene]","arguments":{},"label":"Gene Input","description":"The workflow starts with selecting a search term."}]}}
       {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
-      {"type": "function_call", "name": "expand", "arguments": {"step":{"type":"Input[Gene]","derived_from":{},"value":"ACE2"}}}
+      {"type": "function_call", "name": "expand", "arguments": {"step":{"type":"Input[Gene]","arguments":{},"value":"ACE2"}}}
       {"type": "function_call_output", "output": {"result":{"workflow_id": "38b60ad6", "step_id": "2b976512", "type": "Gene"}}
       {"type": "function_call", "name": "options", "arguments": {"workflow_id":"38b60ad6", "step_id": "2b976512"}}
-      {"type": "function_call_output", "output": {"result":[{"type":"GetTissueExpressionOfGene","derived_from":{"gene": {"type":"Gene"}},"label":"Get expression of the gene", ...}]}}
-      {"type": "function_call", "name": "expand", "arguments": {"workflow_id":"38b60ad6", "step":{"type":"GetTissueExpressionOfGene","derived_from":{"gene": {"step_id": "2b976512"}}}}}
+      {"type": "function_call_output", "output": {"result":[{"type":"GetTissueExpressionOfGene","arguments":{"gene": {"type":"Gene"}},"label":"Get expression of the gene", ...}]}}
+      {"type": "function_call", "name": "expand", "arguments": {"workflow_id":"38b60ad6", "step":{"type":"GetTissueExpressionOfGene","arguments":{"gene": {"step_id": "2b976512"}}}}}
       {"type": "function_call_output", "output": {"result":{"workflow_id": "811b99c8", "step_id": "965ac0ed", "type": "TissueGeneExpression"}}
       {"type": "agent_message", "content": "I've created the report for you at https://playbook-workflow-builder.cloud/report/811b99c8 , let me know what else you'd like to do."}
 
@@ -103,17 +104,24 @@ const server = cache('mcp', () => {
     `,
   })
   server.registerTool('options', {
-    title: 'Options to start or expand a workflow with',
+    title: 'Options',
+    description: 'Next step types compatible with the current workflow step. See instructions for more information and an example.',
     inputSchema: {
-      workflow_id: z.string().nullish().describe('The complete workflow we are building'),
-      step_id: z.string().nullish().describe('A specific step in the workflow we wish to expand from'),
+      workflow_id: z.string().nullish().describe('Current workflow id (or otherwise null if no workflow yet present)'),
+      step_id: z.string().nullish().describe('Current step id in the workflow (or otherwise null if no workflow yet present)'),
     },
     outputSchema: {
-      result: z.object({ type: z.string(), label: z.string(), description: z.string(), derived_from: z.record(z.string(), z.object({ type: z.string(), description: z.string() }).describe('type of output this can be derived from')) }).array().optional(),
+      result: z.object({
+        type: z.string().describe('type to be used in extend'),
+        label: z.string(),
+        description: z.string(),
+        arguments: z.record(z.string(), z.object({ type: z.string(), description: z.string() }).describe('output types this step allows'))
+      }).array().optional(),
       error: z.any().or(z.undefined()),
     },
   }, async (props) => {
     try {
+      console.debug(JSON.stringify({ options: { input: props } }))
       if (props.workflow_id === 'start') props.workflow_id = undefined
       if (props.step_id === 'start') props.step_id = undefined
       const fpl = props.workflow_id ? await fpprg.getFPL(props.workflow_id) : undefined
@@ -127,17 +135,25 @@ const server = cache('mcp', () => {
             break
           }
         }
-        if (!head) throw new Error(`{"step_id":>"${props.workflow_id}" not found<}`)
+        if (!head) throw new Error(`{"step_id":>"${props.step_id}" not found<}`)
       } else {
         head = workflow[workflow.length-1]
       }
       const { items } = options({ krg, heads: [head], workflow })
       const result = items.map(proc => ({
         type: proc.spec,
-        derived_from: dict.init(dict.items(proc.inputs).map(({ key, value }) => ({ key, value: Array.isArray(value) ? { type: value[0].spec, description: value[0].meta.description } : { type: value.spec, description: value.meta.description } }))),
+        arguments: dict.init(dict.items(proc.inputs).map(({ key, value }) => ({
+          key,
+          value: Array.isArray(value) ? {
+            type: value[0].spec, description: value[0].meta.description
+          } : {
+            type: value.spec, description: value.meta.description
+          }
+        }))),
         label: proc.meta.label,
         description: proc.story({}).abstract ?? proc.meta.description,
       }))
+      console.debug(JSON.stringify({ options: { output: result } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ result }) }],
         structuredContent: { result },
@@ -152,14 +168,15 @@ const server = cache('mcp', () => {
     }
   })
   server.registerTool('expand', {
-    title: 'Expand Workflow',
+    title: 'Create or Expand Workflow',
+    description: 'Create new workflow or build off of current workflow. Use only after calling options first. See instructions for more information and an example.',
     inputSchema: {
-      workflow_id: z.string().nullish().describe('The complete workflow we are building off of (undefined when building a new workflow)'),
+      workflow_id: z.string().nullish().describe('Current workflow id (null for new workflow)'),
       step: z.object({
-        type: z.string().describe('The type of operation as seen in `options`'),
-        derived_from: z.record(z.string(), z.object({ step_id: z.string() }).strip()).default({}).describe('output of previous step_id to provide as input for this step'),
-        value: z.string().nullish().describe('The input value for this step when not coming from a prior step'),
-      }).strict().describe('What we do at this step'),
+        type: z.string().describe('step type as seen in options'),
+        arguments: z.record(z.string(), z.object({ step_id: z.string().describe('step_id which has a type the same as in options for this argument') }).strip()).describe('all arguments from options must be specified from a prior step').default({}),
+        value: z.string().nullish().describe('input value for user when arguments are empty'),
+      }).strict(),
     },
     outputSchema: {
       result: z.object({ workflow_id: z.string(), step_id: z.string(), type: z.string(), /*value: z.any()*/ }).optional(),
@@ -167,6 +184,7 @@ const server = cache('mcp', () => {
     },
   }, async (props) => {
     try {
+      console.debug(JSON.stringify({ options: { expand: props } }))
       let fpl = props.workflow_id ? await fpprg.getFPL(props.workflow_id) : undefined
       if (props.workflow_id && fpl === undefined) throw new Error(`{"workflow_id":>"${props.workflow_id}" not found<}`)
       // assemble lookup with current steps in the graph
@@ -175,29 +193,29 @@ const server = cache('mcp', () => {
       //  type should exist
       const processMetaNode = krg.getProcessNode(props.step.type)
       if (!processMetaNode) throw new Error(`{"step":{"type": >"${props.step.type}" is not from options< }}`)
-      //  all specified derived_froms should be valid
+      //  all specified argumentss should be valid
       const errors: string[] = [] // we will collect any errors as we go to hopefully speed up the LLM getting it right
-      for (const argName in props.step.derived_from) {
+      for (const argName in props.step.arguments) {
         const expectedArgType = processMetaNode.inputs[argName]
         if (expectedArgType === undefined) {
-          errors.push(`{"step":{"derived_from":{">${argName}< is not expected": ...}, ...}}`)
+          errors.push(`{"step":{"arguments":{">${argName}< is not expected": ...}, ...}}`)
           continue
         }
-        const arg = props.step.derived_from[argName]
+        const arg = props.step.arguments[argName]
         const argNode = stepNodes[arg.step_id]
         if (!argNode) {
-          errors.push(`{"step":{"derived_from":{"${argName}": {"step_id": >"${arg.step_id}" is not a valid step_id<, "type": "${expectedArgType.spec}" }, ...}, ...}}`)
+          errors.push(`{"step":{"arguments":{"${argName}": {"step_id": >"${arg.step_id}" is not a valid step_id<, "type": "${expectedArgType.spec}" }, ...}, ...}}`)
           continue
         }
         if (argNode.output.spec !== expectedArgType.spec) {
-          errors.push(`{"step":{"derived_from":{"${argName}":{"step_id": "${arg.step_id}", "type": >must be "${expectedArgType.spec}" got "${argNode.output.spec}"< }, ...}, ...}}`)
+          errors.push(`{"step":{"arguments":{"${argName}":{"step_id": "${arg.step_id}", "type": >must be "${expectedArgType.spec}" got "${argNode.output.spec}"< }, ...}, ...}}`)
           continue
         }
       }
-      //  all derived_froms should be specified
+      //  all argumentss should be specified
       for (const argName in processMetaNode.inputs) {
-        if (props.step.derived_from[argName] === undefined) {
-          errors.push(`{"step":{"derived_from": {"${argName}": {"step_id": >expected step_id<, "type": "${processMetaNode.inputs[argName].spec}" }, ...}, ...}}`)
+        if (props.step.arguments[argName] === undefined) {
+          errors.push(`{"step":{"arguments": {"${argName}": {"step_id": >expected step_id<, "type": "${processMetaNode.inputs[argName].spec}" }, ...}, ...}}`)
           continue
         }
       }
@@ -206,7 +224,7 @@ const server = cache('mcp', () => {
         try {
           processMetaNode.codec.decode(props.step.value)
         } catch (e: any) {
-          errors.push(e.toString())
+          errors.push(`{"step":{"value": >${e.toString()}<, ...}, ...}`)
         }
       } else {
         // ignore the value if provided when there is no codec
@@ -216,7 +234,7 @@ const server = cache('mcp', () => {
       // actually register the step
       const process = await fpprg.resolveProcess({
         type: props.step.type,
-        inputs: Object.fromEntries(Object.entries(props.step.derived_from).map(([key, value]) => [key, { id: value.step_id }])),
+        inputs: Object.fromEntries(Object.entries(props.step.arguments).map(([key, value]) => [key, { id: value.step_id }])),
         data: props.step.value ? { type: processMetaNode.output.spec, value: props.step.value } : undefined,
       })
       if (!fpl) {
@@ -229,6 +247,7 @@ const server = cache('mcp', () => {
       // if (!output) throw new Error('Failed to resolve output')
       // const { type, value } =  output.toJSON()
       const result = { workflow_id: fpl.id, step_id: fpl.process.id, type, /*value*/ }
+      console.debug(JSON.stringify({ expand: { output: result } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ result }) }],
         structuredContent: { result },

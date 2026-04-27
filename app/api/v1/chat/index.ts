@@ -55,13 +55,13 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
     })
     const newMessages: { role: string, content: string }[] = []
     const steps = currentMessages.flatMap(msg => msg.fpl ? [msg.fpl] : [])
-    if (inputs.body.graph_id && steps.includes(inputs.body.graph_id)) {
+    if (inputs.body.graph_id && !steps.includes(inputs.body.graph_id)) {
       const fpl = await fpprg.getFPL(inputs.body.graph_id)
       if (!fpl) throw new NotFoundError(inputs.body.graph_id)
       const graph_steps = fpl.resolve()
       for (const step of graph_steps.toReversed()) {
         if (steps.includes(step.id)) break
-        const metaProcess = krg.getProcessNode(fpl.process.id)
+        const metaProcess = krg.getProcessNode(fpl.process.type)
         const newMessage = {
           thread: pwb_thread.id,
           fpl: step.id,
@@ -93,7 +93,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
     }
     if (inputs.body.node_id && inputs.body.graph_id !== inputs.body.node_id) {
       const fpl = await fpprg.getFPL(inputs.body.node_id)
-      if (!fpl) throw new NotFoundError(inputs.body.graph_id)
+      if (!fpl) throw new NotFoundError(inputs.body.node_id)
       newMessages.push(
         { role: 'developer', content: `User is currently looking at step ${fpl.process.id}` }
       )

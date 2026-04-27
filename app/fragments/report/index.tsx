@@ -15,7 +15,7 @@ const Cells = dynamic(() => import('@/app/fragments/report/cells'))
 const QueryType = z.object({
   id: z.string().optional(),
   session_id: z.string().optional(),
-  thread: z.string().optional(),
+  thread_id: z.string().optional(),
 })
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
@@ -59,7 +59,7 @@ export default function App({ fallback }: { fallback: any }) {
                 session_id={params?.session_id}
                 krg={krg}
                 id={params.id}
-                thread_id={params.thread}
+                thread_id={params.thread_id}
               />
               : <div className="alert alert-error">Page not found</div>}
           </main>

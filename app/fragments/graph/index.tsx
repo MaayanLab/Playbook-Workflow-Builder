@@ -17,9 +17,9 @@ const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const ParamType = z.union([
-  z.object({ session_id: z.string().optional(), graph_id: z.string(), node_id: z.string(), thread: z.string().optional() }),
-  z.object({ session_id: z.string().optional(), graph_id: z.string(), thread: z.string().optional() }),
-  z.object({ session_id: z.string().optional(), thread: z.string().optional() }),
+  z.object({ session_id: z.string().optional(), graph_id: z.string(), node_id: z.string(), thread_id: z.string().optional() }),
+  z.object({ session_id: z.string().optional(), graph_id: z.string(), thread_id: z.string().optional() }),
+  z.object({ session_id: z.string().optional(), thread_id: z.string().optional() }),
   z.undefined(),
 ])
 
@@ -116,7 +116,7 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
           <main className="flex-grow container mx-auto py-4 flex flex-col">
             <Graph
               session_id={params?.session_id}
-              thread_id={params?.thread}
+              thread_id={params?.thread_id}
               graph_id={graph_id}
               node_id={node_id}
               extend={extend}

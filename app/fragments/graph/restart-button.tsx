@@ -1,5 +1,5 @@
 import React from 'react'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import dynamic from 'next/dynamic'
 import { start_icon, restart_icon } from '@/icons'
 
@@ -7,7 +7,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 export default function RestartButton({ session_id }: { session_id?: string }) {
-  const router = useRouter()
+  const router = useExRouter()
   const [isOpen, setIsOpen] = React.useState(false)
   const onConfirm = React.useCallback(() => {
     setIsOpen(false)

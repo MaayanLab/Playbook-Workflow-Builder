@@ -1,6 +1,6 @@
 import React from 'react'
 import { z } from 'zod'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { DataMetaNode, PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
@@ -10,7 +10,7 @@ import { useStory } from '@/app/fragments/story'
 import { Abstract, FigureCaption, References } from './story'
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, metapath, status }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, metapath: Metapath[], status: string | undefined }) {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
   const story = useStory()
   const astFiltered = React.useMemo(() => story.ast.filter(part => part.tags.some(tag => metapath.some(p => tag === p.id))), [story])

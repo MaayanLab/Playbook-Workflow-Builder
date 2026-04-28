@@ -1,6 +1,6 @@
 import React from 'react'
 import { z } from 'zod'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { DataMetaNode, PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
@@ -15,7 +15,7 @@ import { AbstractPart, FigureCaption } from './story'
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, status }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath, status: string | undefined }) {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
   const story = useStory()
   const data = React.useMemo(() => {

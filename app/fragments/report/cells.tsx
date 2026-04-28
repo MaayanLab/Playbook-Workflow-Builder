@@ -6,7 +6,7 @@ import { StoryProvider } from '@/app/fragments/story'
 import { useAPIMutation, useAPIQuery } from '@/core/api/client'
 import { UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook, UserPlaybook } from '@/app/api/client'
 import * as dict from '@/utils/dict'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
 import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
@@ -21,10 +21,9 @@ const ImportButton = dynamic(() => import('@/app/fragments/graph/import-button')
 const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-button'))
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
-const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
-export default function Cells({ session_id, thread_id, krg, id }: { session_id?: string, thread_id?: string, krg: KRG, id: string }) {
-  const router = useRouter()
+export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
+  const router = useExRouter()
   const { data: metapath } = useFPL(id)
   const { data: userPlaybook, mutate: mutateUserPlaybook } = useAPIQuery(UserPlaybook, { id })
   const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook }) : undefined, [metapath, userPlaybook])

@@ -3,7 +3,7 @@ import type KRG from '@/core/KRG'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { useStory } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
 import { Abstract, FigureCaption, Methods, References } from './story'
@@ -12,7 +12,7 @@ import { z } from 'zod'
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
 export default function Cell({ session_id, krg, id, head, metapath }: { session_id?: string, krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
-  const router = useRouter()
+  const router = useExRouter()
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { output, outputNode }, status, error: outputError, mutate } = useMetapathOutput({ krg, head })
   const story = useStory()

@@ -1,6 +1,6 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import Head from 'next/head'
 import { view_in_graph_icon, fork_icon, start_icon, share_icon, extend_icon, func_icon, variable_icon } from '@/icons'
 import { useStory } from '@/app/fragments/story'
@@ -106,16 +106,16 @@ export default function Introduction({
           </div>
         </div>
         <div className="border-t-secondary border-t-2 mt-2">
-          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`}>
+          <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`}>
             <button className="bp5-button bp5-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
-          </Link>
-          <Link href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
+          </ExLink>
+          <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`}>
             <button className="bp5-button bp5-minimal">
               <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
-          </Link>
+          </ExLink>
           <SaveButton
             toggleSave={toggleSave}
             userPlaybook={userPlaybook}

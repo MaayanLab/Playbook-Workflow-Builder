@@ -9,7 +9,7 @@ import { useAPIMutation, useAPIQuery } from "@/core/api/client"
 import * as Auth from 'next-auth/react'
 
 import krg from '@/app/krg'
-import { useRouter } from 'next/router'
+import { ExLink, useExRouter } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
 import { useFPL } from '../metapath'
 import { StoryProvider } from '../story'
@@ -18,15 +18,13 @@ import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
 import { close_icon, extend_icon, fullscreen_icon, func_icon, maximize_icon, minimize_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
-import Link from 'next/link'
 
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
-const Icon = dynamic(() => import('@/app/components/icon'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
 export default function Page({ mode, thread_id, session_id, graph_id, node_id, embedded = false }: { mode: string, thread_id?: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
-  const router = useRouter()
+  const router = useExRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
   const [collapse, setCollapse] = React.useState(thread_id === undefined)
@@ -165,16 +163,16 @@ export default function Page({ mode, thread_id, session_id, graph_id, node_id, e
                   <Icon icon={collapse ? maximize_icon : minimize_icon} className="fill-black dark:fill-white" />
                 </button>
                 {!collapse ? <>
-                  <Link href={`/chat/${thread_id}`}>
+                  <ExLink href={`/chat/${thread_id}`}>
                     <button>
                       <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
                     </button>
-                  </Link>
-                  <Link href={`/${mode}/${!!fpl ? fpl : 'extend'}`} shallow>
+                  </ExLink>
+                  <ExLink href={`/${mode}/${!!fpl ? fpl : 'extend'}`} shallow>
                     <button className="bg-red-500">
                       <Icon icon={close_icon} className="fill-black dark:fill-white" />
                     </button>
-                  </Link>
+                  </ExLink>
                 </> : null}
               </div>
               <div className={classNames('flex-grow flex flex-col overflow-hidden', {'bg-yellow-50': embedded, 'hidden': collapse })}>

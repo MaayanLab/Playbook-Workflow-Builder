@@ -4,12 +4,12 @@ import { connection_icon } from '@/icons'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import { useAPIMutation, useAPIQuery } from '@/core/api/client'
 import { UserIntegrationsCAVATICA, UserIntegrationsCAVATICADisconnect, UserIntegrationsCAVATICALaunch } from '@/app/api/client'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function CAVATICAButton({ session_id }: { session_id?: string }) {
-  const router = useRouter()
+  const router = useExRouter()
   const userSession = useSessionWithId()
   const { data: userIntegrations } = useAPIQuery(UserIntegrationsCAVATICA, {}, { shouldRetryOnError: false })
   const { trigger: launchCAVATICA } = useAPIMutation(UserIntegrationsCAVATICALaunch, {})

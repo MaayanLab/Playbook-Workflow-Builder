@@ -1,17 +1,17 @@
 import usePublicUrl from '@/utils/next-public-url'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 
 export default function Header() {
   const publicUrl = usePublicUrl()
 
   return (
     <div className="bg-primary">
-      <Link href="/">
+      <ExLink href="/">
         <img
           className="mx-3 py-2 w-52 cursor-pointer"
           src={`${publicUrl}/scg-logo.svg`}
         />
-      </Link>
+      </ExLink>
     </div>
   )
 }

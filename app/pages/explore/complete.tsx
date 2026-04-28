@@ -1,9 +1,9 @@
 import krg from '@/app/krg'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
 
 export default function Explore() {
-  const router = useRouter()
+  const router = useExRouter()
   React.useEffect(() => {
     router.push(`/explore/Start/${krg.getDataNodes().map(node=>node.spec).join('/')}`)
   }, [])

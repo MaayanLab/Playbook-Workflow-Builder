@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import dynamic from 'next/dynamic'
 import krg from "@/app/krg"
 import { func_icon, variable_icon } from '@/icons'
@@ -43,10 +43,10 @@ export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: 
                 <td><Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} /></td>
                 <td>{type ? type : metanodeType(metanode)}</td>
                 <th>
-                  <Link
+                  <ExLink
                     href={`/components/${encodeURIComponent(metanode.spec)}`}
                     className="link prose max-w-none whitespace-pre-wrap"
-                  >{metanode.meta.label}</Link>
+                  >{metanode.meta.label}</ExLink>
                 </th>
                 <td className="prose max-w-none whitespace-pre-wrap">
                   <Markdown components={{

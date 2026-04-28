@@ -1,6 +1,6 @@
 import React from 'react'
 import type { GetServerSidePropsContext } from 'next'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import fpprg from '@/app/fpprg'
 import krg from '@/app/krg'
 import { z } from 'zod'
@@ -47,7 +47,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
 }
 
 export default function App({ fallback }: { fallback: any }) {
-  const router = useRouter()
+  const router = useExRouter()
   const params = QueryType.parse(router.query)
   return (
     <Layout>

@@ -2,11 +2,11 @@ import { UserIntegrationsBioComputeAuth } from "@/app/api/client"
 import { useAPIQuery } from "@/core/api/client"
 import classNames from "classnames"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/router"
+import { useExRouter } from "@/app/fragments/ex-router"
 import React from "react"
 
 export default function BioCompute() {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: biocomputeAuth } = useAPIQuery(UserIntegrationsBioComputeAuth, {})
   React.useEffect(() => {
     if (biocomputeAuth?.orcid && biocomputeAuth.biocompute) {

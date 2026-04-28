@@ -6,7 +6,7 @@ import krg from '@/app/krg'
 import db from '@/app/db'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { SWRConfig } from 'swr'
 import { MetaNode } from '@/spec/metanode'
 import fetcher from '@/utils/next-rest-fetcher'
@@ -14,6 +14,7 @@ import { MetapathProvider } from '@/app/fragments/metapath'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Graph = dynamic(() => import('@/app/fragments/graph/graph'))
+const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const ParamType = z.union([
@@ -105,26 +106,33 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
 }
 
 export default function App({ fallback, extend, suggest }: { fallback: any, extend: boolean, suggest: boolean }) {
-  const router = useRouter()
+  const router = useExRouter()
   const params = ParamType.parse(router.query)
   const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
   const node_id = typeof params !== 'undefined' && 'node_id' in params && params.node_id ? params.node_id : graph_id
   return (
-    <Layout>
-      <SWRConfig value={{ fallback, fetcher }}>
-        <MetapathProvider session_id={params?.session_id}>
-          <main className="flex-grow container mx-auto py-4 flex flex-col">
-            <Graph
-              session_id={params?.session_id}
-              thread_id={params?.thread_id}
-              graph_id={graph_id}
-              node_id={node_id}
-              extend={extend}
-              suggest={suggest}
-            />
-          </main>
-        </MetapathProvider>
-      </SWRConfig>
-    </Layout>
+    <SWRConfig value={{ fallback, fetcher }}>
+      <MetapathProvider session_id={params?.session_id}>
+        <div className="h-screen w-screen flex flex-row justify-stretch">
+          <div className="w-80 shrink-0 overflow-x-auto resize-x border-r">
+            <Chat mode="graph" thread_id={params?.thread_id} graph_id={graph_id} node_id={node_id} embedded />
+          </div>
+          <div className="grow overflow-auto">
+            <Layout>
+              <main className="grow flex flex-col mx-4">
+                <Graph
+                  session_id={params?.session_id}
+                  thread_id={params?.thread_id}
+                  graph_id={graph_id}
+                  node_id={node_id}
+                  extend={extend}
+                  suggest={suggest}
+                />
+              </main>
+            </Layout>
+          </div>
+        </div>
+      </MetapathProvider>
+    </SWRConfig>
   )
 }

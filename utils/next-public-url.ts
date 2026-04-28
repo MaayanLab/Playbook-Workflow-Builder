@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useRouter } from "next/router"
+import { useExRouter } from "@/app/fragments/ex-router"
 import { useRuntimeConfig } from '@/app/fragments/config'
 
 /**
@@ -8,7 +8,7 @@ import { useRuntimeConfig } from '@/app/fragments/config'
  * Absolute if you need the origin as well, otherwise it'll be the absolute path relative to the page root.
  */
 export default function usePublicUrl({ absolute }: { absolute?: boolean } = {}) {
-  const router = useRouter()
+  const router = useExRouter()
   const runtimeConfig = useRuntimeConfig()
   const { asPath: serverLocation, isReady } = router
   const publicUrl = React.useMemo(() => {

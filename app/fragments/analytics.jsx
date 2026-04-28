@@ -1,10 +1,10 @@
 import React from 'react'
-import { useRouter } from "next/router";
+import { useExRouter } from "@/app/fragments/ex-router"
 import Script from "next/script"
 import { useRuntimeConfig } from '@/app/fragments/config';
 
 function GA({ id }) {
-  const router = useRouter()
+  const router = useExRouter()
   React.useEffect(() => {
     window.dataLayer = window.dataLayer || [];
     function gtag(){window.dataLayer.push(arguments);}
@@ -26,7 +26,7 @@ function GA({ id }) {
 }
 
 function Matomo({ url, siteId }) {
-  const router = useRouter()
+  const router = useExRouter()
   React.useEffect(() => {
     var _paq = window._paq = window._paq || [];
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */

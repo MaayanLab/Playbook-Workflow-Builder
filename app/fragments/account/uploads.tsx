@@ -1,7 +1,7 @@
 import React from 'react'
 import { z } from 'zod'
 import useSWRMutation from 'swr/mutation'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import dynamic from 'next/dynamic'
 import useSWR from 'swr'
 import fetcher, { fetcherPOST } from '@/utils/next-rest-fetcher'
@@ -30,7 +30,7 @@ function humanSize(size: number) {
 
 
 export default function Uploads() {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: uploads, isLoading, mutate } = useSWR<Array<TypedSchemaRecord<typeof schema.user_upload_complete>>>('/api/db/user/uploads', fetcher)
   const [uploadToDelete, setUploadToDelete] = React.useState<TypedSchemaRecord<typeof schema.user_upload_complete> | undefined>(undefined)
   const { trigger: deleteUpload, isMutating } = useSWRMutation(() => uploadToDelete ? `/api/db/user/uploads/${uploadToDelete.id}/delete` : null, fetcherPOST)

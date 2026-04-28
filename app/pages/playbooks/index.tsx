@@ -2,13 +2,13 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { view_report_icon } from '@/icons'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
 import krg from '@/app/krg'
 import { DataMetaNode } from '@/spec/metanode'
 import { PublicPlaybooks } from '@/app/api/client'
 import { useAPIQuery } from '@/core/api/client'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 
 import ARCHS4_icon from '@/app/public/logos/datasources/ARCHS4.png'
 import BioThings_icon from '@/app/public/logos/datasources/BioThings.png'
@@ -69,7 +69,7 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 
 export default function Playbooks() {
-  const router = useRouter()
+  const router = useExRouter()
   const [dataSourceFilters, setDataSourceFilters] = React.useState<Record<string, boolean>>({})
   const [inputFilters, setInputFilters] = React.useState<Record<string, boolean>>({})
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
@@ -345,7 +345,7 @@ export default function Playbooks() {
                       <p><b>Published</b>: {playbook.published}</p>
                       <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
                       <p><b>Description</b>: {playbook.description.split('\n')[0]}</p>
-                      <Link href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp5-button bp5-large">Launch</button></Link>
+                      <ExLink href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp5-button bp5-large">Launch</button></ExLink>
                     </div>
                   </div>
                   <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
@@ -356,11 +356,11 @@ export default function Playbooks() {
           </div>
           : null}
         </div>
-        <Link href="/playbooks/community" className="place-self-center">
+        <ExLink href="/playbooks/community" className="place-self-center">
           <button className="btn btn-primary w-min whitespace-nowrap">
             Click for Additional Playbooks Contributed by Other Users
           </button>
-        </Link>
+        </ExLink>
       </main>
     </Layout>
   )

@@ -1,7 +1,7 @@
 import React from 'react'
 import { start_icon, func_icon, variable_icon, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import useKRG from '@/app/fragments/graph/krg'
 import { StoryProvider } from '@/app/fragments/story'
@@ -42,7 +42,7 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
 }
 
 export default function Graph({ session_id, graph_id, node_id, thread_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, thread_id?: string, extend: boolean, suggest: boolean }) {
-  const router = useRouter()
+  const router = useExRouter()
   const krg = useKRG({ session_id })
   const { data: metapath = [] } = useFPL(graph_id)
   const node_ids = React.useMemo(() => Set(node_id.split(',')), [node_id])

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import * as Auth from 'next-auth/react'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
@@ -25,20 +25,20 @@ export default function Layout({ children }: React.PropsWithChildren) {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-black dark:stroke-white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               </label>
             </div>
-            <Link href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE} className="flex flex-row items-center">
+            <ExLink href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE} className="flex flex-row items-center">
               <img
                 className="p-2 w-16 cursor-pointer dark:stroke-white"
                 src={`${publicUrl}/PWB-logo.svg`}
               />
               <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
-            </Link>
+            </ExLink>
           </div>
           <div className="navbar-end hidden md:flex">
             <div className="hidden xl:flex">
-              <Link href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></Link>
-              <Link href="/chat"><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></Link>
-              <Link href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></Link>
-              <Link href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></Link>
+              <ExLink href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></ExLink>
+              <ExLink href="/chat"><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></ExLink>
+              <ExLink href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></ExLink>
+              <ExLink href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></ExLink>
               <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
             </div>
             {session && session.user ?
@@ -50,12 +50,12 @@ export default function Layout({ children }: React.PropsWithChildren) {
                 </label>
                 <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
                   <li className="menu-title prose"><span>Data</span></li>
-                  <li><Link href="/account/uploads">Uploads</Link></li>
-                  <li><Link href="/account/playbooks">Playbooks</Link></li>
-                  <li><Link href="/account/suggestions">Suggestions</Link></li>
+                  <li><ExLink href="/account/uploads">Uploads</ExLink></li>
+                  <li><ExLink href="/account/playbooks">Playbooks</ExLink></li>
+                  <li><ExLink href="/account/suggestions">Suggestions</ExLink></li>
                   <li className="menu-title prose"><span>Account</span></li>
-                  <li><Link href="/account">Settings</Link></li>
-                  <li><Link href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</Link></li>
+                  <li><ExLink href="/account">Settings</ExLink></li>
+                  <li><ExLink href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
                 </ul>
               </div>
               : <button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white" onClick={() => {Auth.signIn()}}>Sign in</button>}
@@ -64,9 +64,9 @@ export default function Layout({ children }: React.PropsWithChildren) {
 
         <div className="container mx-auto my-2 flex flex-col gap-2">
           <DismissableAlert id="plos" style={{ backgroundColor: '#d4fb79' }}>
-            <Link href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">
+            <ExLink href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">
               An article that describes the Playbook Workflow Builder project is now published in PLOS Computational Biology!
-            </Link>
+            </ExLink>
           </DismissableAlert>
         </div>
 
@@ -111,31 +111,31 @@ export default function Layout({ children }: React.PropsWithChildren) {
           <li className="menu-title prose">
             <span>Playbook</span>
           </li>
-          <li><Link href="/playbooks">Published Playbooks</Link></li>
-          <li><Link href="/chat">Text to Workflow</Link></li>
-          <li><Link href="/components">Component Catalog</Link></li>
-          <li><Link href="/explore">Component Graph</Link></li>
+          <li><ExLink href="/playbooks">Published Playbooks</ExLink></li>
+          <li><ExLink href="/chat">Text to Workflow</ExLink></li>
+          <li><ExLink href="/components">Component Catalog</ExLink></li>
+          <li><ExLink href="/explore">Component Graph</ExLink></li>
           <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>
           {session && session.user ?
               <>
                     <li className="menu-title prose">
                       <span>Data</span>
                     </li>
-                    <li><Link href="/account/uploads">Uploads</Link></li>
-                    <li><Link href="/account/playbooks">Playbooks</Link></li>
-                    <li><Link href="/account/suggestions">Suggestions</Link></li>
+                    <li><ExLink href="/account/uploads">Uploads</ExLink></li>
+                    <li><ExLink href="/account/playbooks">Playbooks</ExLink></li>
+                    <li><ExLink href="/account/suggestions">Suggestions</ExLink></li>
                     <li className="menu-title prose">
                       <span>Account</span>
                     </li>
-                    <li><Link href="/account">Settings</Link></li>
-                    <li><Link href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</Link></li>
+                    <li><ExLink href="/account">Settings</ExLink></li>
+                    <li><ExLink href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
               </>
               :
               <>
                 <li className="menu-title prose">
                   <span>Account</span>
                 </li>
-                <li><Link href="/api/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</Link></li>
+                <li><ExLink href="/api/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</ExLink></li>
               </>}
         </ul>
       </div>

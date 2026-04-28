@@ -1,6 +1,6 @@
 import * as schema from '@/db'
 import type { TypedSchemaRecord } from '@/spec/sql'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
@@ -8,14 +8,14 @@ import { delete_icon, fork_icon } from '@/icons'
 import { z } from 'zod'
 import fetcher, { fetcherPOST } from '@/utils/next-rest-fetcher'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import classNames from 'classnames'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 export default function Suggestions() {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: suggestions, isLoading, mutate } = useSWR<Array<TypedSchemaRecord<typeof schema.suggestion>>>('/api/db/user/suggestions', fetcher)
   const [suggestionToDelete, setSuggestionToDelete] = React.useState<TypedSchemaRecord<typeof schema.suggestion> | undefined>(undefined)
   const { trigger: deleteSuggestion, isMutating } = useSWRMutation(() => suggestionToDelete ? `/api/db/user/suggestions/${suggestionToDelete.id}/delete` : null, fetcherPOST)
@@ -73,7 +73,7 @@ export default function Suggestions() {
                 </tr>
               ))}
               <tr><td colSpan={7} align="center">
-                <Link href="/graph/start/node/start/suggest"><button className="btn btn-primary btn-sm">Suggest a core data type</button></Link>
+                <ExLink href="/graph/start/node/start/suggest"><button className="btn btn-primary btn-sm">Suggest a core data type</button></ExLink>
               </td></tr>
             </tbody>
           </table>

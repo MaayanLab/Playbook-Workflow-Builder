@@ -1,6 +1,6 @@
 import React from 'react'
 import type KRG from '@/core/KRG'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import { status_awaiting_input_icon, status_complete_icon, status_waiting_icon, status_alert_icon, view_in_graph_icon, fork_icon, func_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
@@ -9,12 +9,14 @@ import { useStory } from '@/app/fragments/story'
 import { Waypoint } from '@/app/components/waypoint'
 import SafeRender from '@/utils/saferender'
 import { AbstractPart, FigureCaption, Methods } from './story'
+import { useExRouter } from '@/app/fragments/ex-router'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
+  const router = useExRouter()
   const { data: { outputNode = undefined, output = undefined } = {}, status, isLoading } = useMetapathOutput({ krg, head })
   const story = useStory()
   const processNode = krg.getProcessNode(head.process.type)
@@ -45,11 +47,11 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             </div>
           </div>
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !currentCellMetadata.process_visible })}>
-            <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
+            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
               <button className="bp5-button bp5-minimal">
                 <Icon icon={view_in_graph_icon} />
               </button>
-            </Link>
+            </ExLink>
           </div>
         </div> : null}
       </Waypoint>
@@ -96,16 +98,16 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             </div>
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !currentCellMetadata.data_visible })}>
-            <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
+            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`}>
               <button className="bp5-button bp5-minimal">
                 <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
               </button>
-            </Link>
-            <Link href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}/extend`}>
+            </ExLink>
+            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}/extend`}>
               <button className="bp5-button bp5-minimal">
                 <Icon icon={fork_icon} className="fill-black dark:fill-white" />
               </button>
-            </Link>
+            </ExLink>
             <button className="bp5-button bp5-minimal" disabled>
               {isLoading ?
                 <Icon icon={status_waiting_icon} className="fill-yellow-500" />

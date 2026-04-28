@@ -2,11 +2,11 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { view_report_icon } from '@/icons'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
 import krg from '@/app/krg'
 import { DataMetaNode } from '@/spec/metanode'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 
 import classNames from 'classnames'
 import { PublicUserPlaybooks } from '@/app/api/client'
@@ -17,7 +17,7 @@ const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 export default function CommunityPlaybooks() {
-  const router = useRouter()
+  const router = useExRouter()
   const [inputFilters, setInputFilters] = React.useState<Record<string, boolean>>({})
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
   const [details, setDetails] = React.useState<Record<string, boolean>>({})
@@ -226,7 +226,7 @@ export default function CommunityPlaybooks() {
                   <p><b>Published</b>: {playbook.created.toString()}</p>
                   <p><b>Authors</b>:<br /><UserIdentity user={playbook.user} /></p>
                   {playbook.description ? <p><b>Description</b>: {playbook.description.split('\n')[0]}</p> : null}
-                  <Link href={`/report/${playbook.playbook}`}><button className="bp5-button bp5-large">Launch</button></Link>
+                  <ExLink href={`/report/${playbook.playbook}`}><button className="bp5-button bp5-large">Launch</button></ExLink>
                 </div>
               </div>
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
@@ -237,11 +237,11 @@ export default function CommunityPlaybooks() {
           </div>
           : null}
         </div>
-        <Link href="/playbooks" className="place-self-center">
+        <ExLink href="/playbooks" className="place-self-center">
           <button className="btn btn-primary w-min whitespace-nowrap">
             Click for Playbooks Curated by the Playbook Partnership
           </button>
-        </Link>
+        </ExLink>
       </main>
     </Layout>
   )

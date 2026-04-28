@@ -1,5 +1,5 @@
 import * as Auth from 'next-auth/react'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
 import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 import dynamic from 'next/dynamic'
@@ -16,7 +16,7 @@ const AccountBioCompute = dynamic(() => import('@/app/fragments/account/biocompu
 const AccountCAVATICA = dynamic(() => import('@/app/fragments/account/cavatica'))
 
 export default function Layout({ session }: { session: SessionWithId }) {
-  const router = useRouter()
+  const router = useExRouter()
   const tab = (router.query.tab as string) || 'profile'
   return (
     <Bp5Tabs

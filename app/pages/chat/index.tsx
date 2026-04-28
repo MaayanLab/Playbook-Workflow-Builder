@@ -1,7 +1,7 @@
 import React from 'react'
 import { GPTAssistantCreate } from "@/app/api/client"
 import { useAPIMutation } from "@/core/api/client"
-import { useRouter } from "next/router"
+import { useExRouter } from "@/app/fragments/ex-router"
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import * as Auth from 'next-auth/react'
 import classNames from 'classnames'
@@ -12,7 +12,7 @@ import Message from '@/app/fragments/chat/message'
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 
 export default function ChatThread() {
-  const router = useRouter()
+  const router = useExRouter()
   const publicUrl = usePublicUrl()
   const auth = useSessionWithId()
   const {trigger, error, isMutating} = useAPIMutation(GPTAssistantCreate)

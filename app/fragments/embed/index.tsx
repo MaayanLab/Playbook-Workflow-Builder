@@ -6,7 +6,7 @@ import krg from '@/app/krg'
 import db from '@/app/db'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { SWRConfig } from 'swr'
 import { MetaNode } from '@/spec/metanode'
 import fetcher from '@/utils/next-rest-fetcher'
@@ -124,7 +124,7 @@ function Main({ session_id, graph_id, node_id }: { session_id?: string, graph_id
 }
 
 export default function App({ fallback }: { fallback: any }) {
-  const router = useRouter()
+  const router = useExRouter()
   const params = ParamType.parse(router.query)
   const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
   const node_id = typeof params !== 'undefined' && 'node_id' in params && params.node_id ? params.node_id : graph_id

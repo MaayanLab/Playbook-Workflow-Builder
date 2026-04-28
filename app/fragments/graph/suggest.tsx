@@ -1,4 +1,5 @@
-import { NextRouter, useRouter } from 'next/router'
+import { NextRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import type { Metapath } from '@/app/fragments/metapath'
 import React from 'react'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
@@ -106,7 +107,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
 }
 
 export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: userSession } = useSessionWithId()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
   const input = processNode ? processNode.output : undefined

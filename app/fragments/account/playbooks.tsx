@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import { delete_icon, view_in_graph_icon, view_report_icon } from '@/icons'
 import { useAPIQuery, useAPIMutation } from '@/core/api/client'
 import { DeleteUserPlaybook, UserPlaybooks } from '@/app/api/client'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -39,16 +39,16 @@ export default function Playbooks() {
                 <td>{playbook.public ? 'Yes' : 'No'}</td>
                 <td>{playbook.clicks}</td>
                 <td className="flex flex-row gap-2">
-                  <Link href={`/report/${playbook.playbook}`}>
+                  <ExLink href={`/report/${playbook.playbook}`}>
                     <button>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" />
                     </button>
-                  </Link>
-                  <Link href={`/graph/${playbook.playbook}`}>
+                  </ExLink>
+                  <ExLink href={`/graph/${playbook.playbook}`}>
                     <button>
                       <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
                     </button>
-                  </Link>
+                  </ExLink>
                   <button onClick={() => {
                     deleteUserPlaybook({ query: { id: playbook.playbook }, body: {} })
                       .then(() => {
@@ -64,11 +64,11 @@ export default function Playbooks() {
             <tr>
               <td></td>
               <td colSpan={7} align="center">
-                <Link href="/graph/extend">
+                <ExLink href="/graph/extend">
                   <button className="btn btn-primary btn-sm">
                     Create a new playbook
                   </button>
-                </Link>
+                </ExLink>
               </td>
               <td></td>
             </tr>

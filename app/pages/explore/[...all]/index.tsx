@@ -1,5 +1,5 @@
 import krg from '@/app/krg'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
 import Icon from '@/app/components/icon'
 import * as d3 from 'd3'
@@ -162,7 +162,7 @@ function Graph<
 }
 
 export default function Explore() {
-  const router = useRouter()
+  const router = useExRouter()
   const [instructionsOpen, setInstructionsOpen] = React.useState(true)
   const path = [...array.ensureArray(router.query.all)]
   if (path.length === 0) path.push('Start')

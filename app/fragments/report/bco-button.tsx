@@ -5,7 +5,7 @@ import { biocompute_icon } from '@/icons'
 import { fetcherPOST } from '@/utils/next-rest-fetcher'
 import { ResponseCodedError } from '@/spec/error'
 import { signIn, signOut } from 'next-auth/react'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import { useAPIQuery } from '@/core/api/client'
 import { UserIntegrationsBioComputePublishedBCO } from '@/app/api/client'
 
@@ -17,7 +17,7 @@ const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => A
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function BCOButton({ session_id, id, metadata, disabled }: { session_id?: string, id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
-  const router = useRouter()
+  const router = useExRouter()
   const { data: publishedBCO } = useAPIQuery(UserIntegrationsBioComputePublishedBCO, () => id ? { fpl_id: id } : null, { shouldRetryOnError: false })
   const { trigger, isMutating, error } = useSWRMutation(id ? `${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}/draft` : null, fetcherPOST<undefined, { object_id: string }>)
   const [showError, setShowError] = React.useState(false)

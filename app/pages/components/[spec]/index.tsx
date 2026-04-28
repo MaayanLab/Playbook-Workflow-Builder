@@ -1,8 +1,8 @@
 import React from 'react'
 import krg from "@/app/krg"
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
+import { ExLink } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
 import { func_icon, variable_icon } from '@/icons'
 import MetaNodeListing, { metanodeType } from '@/app/fragments/components/listing'
@@ -23,7 +23,7 @@ export function getServerSideProps({ query }: { query: { spec: string } }) {
 }
 
 export default function ComponentPage({ spec, kind }: { spec: string, kind: 'data' | 'process' }) {
-  const router = useRouter()
+  const router = useExRouter()
   const { metanode, prevMetanodes, nextMetanodes, inputMetanodes, outputMetanode } = React.useMemo(() => {
     const dataMetanode = typeof router.query.spec === 'string' ? krg.getDataNode(spec) : undefined
     const processMetanode = typeof router.query.spec === 'string' ? krg.getProcessNode(spec) : undefined
@@ -68,7 +68,7 @@ export default function ComponentPage({ spec, kind }: { spec: string, kind: 'dat
               ...nextMetanodes ? nextMetanodes.map(metanode => ({ metanode, type: `Next ${metanodeType(metanode)}` })) : [],
             ]}
           />
-        <div className="justify-self-end"><Link href="/components" className="btn btn-sm">&lt;- All Components</Link></div>
+        <div className="justify-self-end"><ExLink href="/components" className="btn btn-sm">&lt;- All Components</ExLink></div>
       </div>
     </Layout>
   )

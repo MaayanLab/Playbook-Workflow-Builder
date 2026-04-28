@@ -1,12 +1,12 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import { import_icon } from '@/icons'
-import { useRouter } from 'next/router'
+import { useExRouter } from '@/app/fragments/ex-router'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function ImportButton({ session_id }: { session_id?: string }) {
-  const router = useRouter()
+  const router = useExRouter()
   // TODO: error dialog on failure
   return (
     <>

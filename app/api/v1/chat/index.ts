@@ -202,7 +202,7 @@ export const GPTAssistantMessagesList = API.get('/api/v1/chat/[thread_id]/messag
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
     const pwb_thread_messages = await db.objects.thread_message.findMany({ where: { thread: inputs.query.thread_id }, orderBy: { created: 'asc' } })
-    return { messages: pwb_thread_messages.filter(msg => msg.role !== 'developer'), fpl: pwb_thread_messages[pwb_thread_messages.length-1]?.fpl ?? null }
+    return { messages: pwb_thread_messages/*.filter(msg => msg.role !== 'developer')*/, fpl: pwb_thread_messages[pwb_thread_messages.length-1]?.fpl ?? null }
   })
   .build()
 

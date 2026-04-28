@@ -126,7 +126,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
           onChange={evt => setSearch(evt.currentTarget.value)}
         />
       </FormGroup>
-      <div className="flex-grow flex flex-row flex-wrap sm:flex-nowrap">
+      <div className="flex-grow flex flex-row flex-wrap md:flex-nowrap gap-2">
         <div className="flex-none">
           {dict.keys(group_values)
             .filter(group => dict.keys(group_values[group]).length > 1)
@@ -175,7 +175,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
             )
           )}
         </div>
-        <div className="flex-grow">
+        <div className="grow overflow-hidden">
           <Masonry
             breakpointCols={{
               // note these breakpoints match the bootstrap breakpoints
@@ -185,7 +185,7 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
               1023: 2,
               767: 1,
             }}
-            className="flex flex-row gap-2"
+            className="flex flex-row items-stretch gap-2"
             columnClassName="flex-grow flex flex-col gap-2"
           >
             {items_filtered_searched.map(item => children(item))}

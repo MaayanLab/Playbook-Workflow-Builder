@@ -9,27 +9,27 @@ import { useAPIMutation, useAPIQuery } from "@/core/api/client"
 import * as Auth from 'next-auth/react'
 
 import krg from '@/app/krg'
-import { ExLink, useExRouter } from '@/app/fragments/ex-router'
+import { useExRouter } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
 import { useFPL } from '../metapath'
 import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
-import { close_icon, extend_icon, fullscreen_icon, func_icon, maximize_icon, minimize_icon, start_icon, variable_icon } from '@/icons'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
 
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
-export default function Page({ mode, thread_id, session_id, graph_id, node_id, embedded = false }: { mode: string, thread_id?: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
+export default function Page({ mode, session_id, graph_id, node_id, embedded = false }: { mode: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
   const router = useExRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
-  const [collapse, setCollapse] = React.useState(thread_id === undefined)
   const { data: session } = Auth.useSession({ required: true })
-  const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, () => thread_id ? { thread_id } : null)
+  const thread_id = React.useMemo(() => router.query.thread_id as string | undefined, [router.query.thread_id])
+  const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, () => thread_id ? { thread_id } : null, { refreshInterval: 1000 })
   const createMessage = useAPIMutation(GPTAssistantMessage, { thread_id })
   const createChat = useAPIMutation(GPTAssistantCreate)
   const submit = React.useCallback(async (body: { message: string, graph_id?: string, node_id?: string }) => {
@@ -150,120 +150,92 @@ export default function Page({ mode, thread_id, session_id, graph_id, node_id, e
                 }}
               />
             </Breadcrumbs>
-            <ReportButton session_id={session_id} graph_id={fpl ?? 'start'} thread_id={thread_id} />
+            <ReportButton session_id={session_id} graph_id={fpl ?? 'start'} />
             </Waypoint>
             </>
             : null}
-          <div className={classNames('flex flex-col', {"absolute top-0 left-1/2 w-1/2 z-30 h-screen max-h-screen mb-5 mr-5 pr-10 bg-transparent justify-end overflow-hidden pointer-events-none": embedded})}>
-            <div className={classNames('flex flex-col px-2 bg-white dark:bg-current', { 'border rounded-xl border-black mt-48 pointer-events-auto overflow-hidden': embedded})}>
-              <div className={classNames('flex-grow flex flex-row my-1 gap-2 bg-white dark:bg-current p-2', {'hidden': !embedded})}>
-                <div className="prose"><h3>Text to Workflow</h3></div>
-                <div className="flex-grow">&nbsp;</div>
-                <button onClick={() => {setCollapse(c => !c)}}>
-                  <Icon icon={collapse ? maximize_icon : minimize_icon} className="fill-black dark:fill-white" />
-                </button>
-                {!collapse ? <>
-                  <ExLink href={`/chat/${thread_id}`}>
-                    <button>
-                      <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
-                    </button>
-                  </ExLink>
-                  <ExLink href={`/${mode}/${!!fpl ? fpl : 'extend'}`} shallow>
-                    <button className="bg-red-500">
-                      <Icon icon={close_icon} className="fill-black dark:fill-white" />
-                    </button>
-                  </ExLink>
-                </> : null}
-              </div>
-              <div className={classNames('flex-grow flex flex-col overflow-hidden', {'bg-yellow-50': embedded, 'hidden': collapse })}>
-                <div className='flex-grow flex flex-col-reverse overflow-y-auto overflow-x-hidden'>
-                  <div>
-                    <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
-                      <img
-                        className="w-32"
-                        src={`${publicUrl}/PWB-logo.svg`}
-                      />
-                      <div className="prose"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
-                    </div>
-                    <Message role="welcome" session={session}>
-                      How can I help you today?
-                    </Message>
-                    {!graph_id && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                      {[
-                        'Show me the expression of ACE2 in healthy human tissues from GTEx',
-                        'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
-                      ].map((suggestion, i) => {
-                        return (
-                          <button
-                            key={i}
-                            className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
-                            onClick={evt => {submit({ message: suggestion, graph_id, node_id })}}
-                          >{suggestion}</button>
-                        )
-                      })}
-                    </div>}
-                    {messages?.map((message, i) => {
-                      const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
+          <div className={classNames("flex flex-col overflow-hidden h-full", { 'hidden': !embedded})}>
+            <div className={classNames('flex flex-col px-2 bg-white dark:bg-current overflow-auto')}>
+              <div className='flex-grow flex flex-col-reverse overflow-y-auto overflow-x-hidden'>
+                <div>
+                  <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
+                    <img
+                      className="w-32"
+                      src={`${publicUrl}/PWB-logo.svg`}
+                    />
+                    <div className="prose"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
+                  </div>
+                  <Message role="welcome" session={session}>
+                    How can I help you today?
+                  </Message>
+                  {(graph_id === 'start') && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                    {[
+                      'Show me the expression of ACE2 in healthy human tissues from GTEx',
+                      'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
+                    ].map((suggestion, i) => {
                       return (
-                        <React.Fragment key={i}>
-                          {head ?
-                            <Cell
-                              key={message.fpl}
-                              session_id={session_id}
-                              krg={krg}
-                              id={fpl ?? ''}
-                              head={head}
-                              cellMetadata={{ [head.id]: head.cell_metadata ?? { id: head.id, label: '', description: '', data_visible: true, process_visible: true } }}
-                              setCellMetadata={() => {}}
-                            />
-                          : null}
-                          <Message
-                            thread_id={thread_id}
-                            message_id={message.id}
-                            role={message.role}
-                            session={session}
-                          >
-                            {message.content}
-                          </Message>
-                          {message.fpl && <button
-                            key={i}
-                            className="btn btn-ghost border border-primary btn-rounded rounded-lg btn-sm bg-white"
-                            onClick={evt => {
-                              router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}/${message.fpl}?thread_id=${thread_id}`, undefined, { shallow: true, scroll: false })
-                            }}
-                          >Go To Workflow</button>}
-                        </React.Fragment>
+                        <button
+                          key={i}
+                          className="border border-primary btn-rounded rounded-lg bg-white"
+                          onClick={evt => {submit({ message: suggestion, graph_id, node_id })}}
+                        >{suggestion}</button>
                       )
                     })}
-                    {createMessage.isMutating ?
-                      <Message role="assistant" session={session}>
-                        <span className="loading loading-dots loading-lg mt-2"></span>
-                      </Message>
-                      : null}
-                  </div>
+                  </div>}
+                  {messages?.map((message, i) => {
+                    const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
+                    return (
+                      <React.Fragment key={i}>
+                        {head ?
+                          <Cell
+                            session_id={session_id}
+                            krg={krg}
+                            id={fpl ?? ''}
+                            head={head}
+                            cellMetadata={{ [head.id]: head.cell_metadata ?? { id: head.id, label: '', description: '', data_visible: true, process_visible: true } }}
+                            setCellMetadata={() => {}}
+                          />
+                        : null}
+                        <Message
+                          thread_id={thread_id}
+                          message_id={message.id}
+                          role={message.role}
+                          session={session}
+                        >
+                          {message.content}
+                        </Message>
+                      </React.Fragment>
+                    )
+                  })}
+                  {createMessage.isMutating ?
+                    <Message role="assistant" session={session}>
+                      <span className="loading loading-dots loading-lg mt-2"></span>
+                    </Message>
+                    : null}
                 </div>
-                <Message role="user" session={session}>
-                  <form
-                    className="flex flex-row items-center"
-                    onSubmit={async (evt) => {
-                      evt.preventDefault()
-                      const currentMessage = message
-                      setMessage(() => '')
-                      await submit({ message: currentMessage, graph_id, node_id })
-                    }}
-                  >
-                    <input
-                      type="text"
-                      className="input w-full bg-transparent rounded-full"
-                      placeholder="Type your questions here"
-                      value={message}
-                      onChange={evt => setMessage(() => evt.target.value)}
-                    />
-                    <button type="submit" className="btn btn-sm" disabled={!message}>Send</button>
-                  </form>
-                </Message>
               </div>
+              <div className="grow">&nbsp;</div>
             </div>
+            <Message role="user" session={session}>
+              <form
+                className="flex flex-row items-center"
+                onSubmit={async (evt) => {
+                  evt.preventDefault()
+                  const currentMessage = message
+                  setMessage(() => '')
+                  await submit({ message: currentMessage, graph_id, node_id })
+                }}
+              >
+                <input
+                  type="text"
+                  className="input w-full bg-transparent"
+                  placeholder="Type your questions here"
+                  value={message}
+                  onChange={evt => setMessage(() => evt.target.value)}
+                />
+                <button type="submit" className="btn btn-sm" disabled={!message}>Send</button>
+              </form>
+            </Message>
           </div>
         </StoryProvider>
       </SessionStatus>

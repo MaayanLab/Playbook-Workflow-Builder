@@ -19,7 +19,7 @@ export function useAPIQuery<Q extends {}, O>(route: APIRouteInterface<Q, O>, que
       else searchParams.append(key as string, typeof value === 'string' ? value : JSON.stringify(value))
     })
     const params = searchParams.toString()
-    const key = params ? path + '?' + params : path
+    const key = params ? (path + '?' + params) : path
     return `${base ?? ''}${key}`
   }, fetcherGET<O>, opts)
 }

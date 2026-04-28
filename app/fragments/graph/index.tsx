@@ -115,7 +115,7 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
       <MetapathProvider session_id={params?.session_id}>
         <div className="h-screen w-screen flex flex-row justify-stretch">
           <div className="w-80 shrink-0 overflow-x-auto resize-x border-r">
-            <Chat mode="graph" thread_id={params?.thread_id} graph_id={graph_id} node_id={node_id} embedded />
+            <Chat mode="graph" graph_id={graph_id} node_id={node_id} embedded />
           </div>
           <div className="grow overflow-auto">
             <Layout>

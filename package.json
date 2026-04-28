@@ -48,7 +48,7 @@
     "json-canonicalize": "^1.0.6",
     "jsonld": "^8.3.3",
     "jszip": "^3.10.1",
-    "openai": "^4.47.1",
+    "openai": "^6.35.0",
     "pg": "^8.11.5",
     "pg-boss": "^9.0.3",
     "pg-listen": "^1.7.0",

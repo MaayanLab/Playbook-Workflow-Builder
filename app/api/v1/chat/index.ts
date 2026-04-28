@@ -41,6 +41,8 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
     message: z.string(),
   }))
   .call(async (inputs, req, res) => {
+    if (inputs.body.graph_id === 'start') delete inputs.body.graph_id
+    if (inputs.body.node_id === 'start') delete inputs.body.node_id
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) throw new UnauthorizedError()
     if (req.method === 'HEAD') {
@@ -72,7 +74,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
               arguments: {
                 step: {
                   type: step.process.type,
-                  derived_from: Object.fromEntries(Object.entries(step.process.inputs).map(([key, value]) => [key, { id: value.id }])),
+                  arguments: Object.fromEntries(Object.entries(step.process.inputs).map(([key, value]) => [key, { id: value.id }])),
                   value: step.process.data,
                 },
               },
@@ -88,7 +90,11 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
             },
           })}`
         }
-        newMessages.push(await db.objects.thread_message.create({ data: newMessage }))
+        newMessages.push(newMessage)
+      }
+      newMessages.reverse()
+      for (const newMessage of newMessages) {
+        Object.assign(newMessage, await db.objects.thread_message.create({ data: newMessage }))
       }
     }
     if (inputs.body.node_id && inputs.body.graph_id !== inputs.body.node_id) {
@@ -116,7 +122,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
           require_approval: 'never',
         }
       ],
-      instructions: 'You are an assistant that builds workflows with the playbook worfklow builder on behalf of the user using the PWBMCP server tools. Do NOT propose workflows without calling the PWB options tool. Do NOT interpret output. Only provide the constructed report for the user. The user can see when you `expand`, so do NOT include specific workflow/step IDs in the output.',
+      instructions: 'You are an assistant that builds workflows with the playbook workflow builder on behalf of the user using the PWBMCP server tools. Do NOT propose workflows without calling the PWB options tool. Do NOT interpret output. Only provide the constructed report for the user. The user can see when you `expand`, so do NOT include specific workflow/step IDs in the output. Do NOT assume capabilities, only what can be found with options for a given step is possible.',
       input: [
         ...currentMessages,
         ...newMessages,

@@ -25,10 +25,14 @@ export function arange(n: number) {
   return R
 }
 
-export function unique<T>(array: T[]) {
-  const set = new Set<T>()
-  array.forEach(element => set.add(element))
-  return Array.from(set)
+export function unique<T, K extends string | number | symbol>(array: T[], keyfn = (x: T) => x as unknown as K): T[] {
+  const set = {} as Record<K, T>
+  array.forEach(element => {
+    if (!(keyfn(element) in set)) {
+      set[keyfn(element)] = element
+    }
+  })
+  return Object.values(set)
 }
 
 export function intersection<T>(As: T[], Bs: T[]) {

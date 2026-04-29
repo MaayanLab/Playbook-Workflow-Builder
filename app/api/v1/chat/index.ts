@@ -55,17 +55,17 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       where: { thread: pwb_thread.id },
       orderBy: { created: 'asc' },
     })
-    const newMessages: { role: string, content: string }[] = []
+    const newMessages: typeof currentMessages = []
     const steps = currentMessages.flatMap(msg => msg.fpl ? [msg.fpl] : [])
     if (inputs.body.graph_id && !steps.includes(inputs.body.graph_id)) {
       const fpl = await fpprg.getFPL(inputs.body.graph_id)
       if (!fpl) throw new NotFoundError(inputs.body.graph_id)
       const graph_steps = fpl.resolve()
+      const newMessageQueue: { fpl: string, role: string, content: string }[] = []
       for (const step of graph_steps.toReversed()) {
         if (steps.includes(step.id)) break
         const metaProcess = krg.getProcessNode(fpl.process.type)
-        const newMessage = {
-          thread: pwb_thread.id,
+        newMessageQueue.push({
           fpl: step.id,
           role: 'developer',
           content: `triggered\n${JSON.stringify({
@@ -89,30 +89,29 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
               },
             },
           })}`
-        }
-        newMessages.push(newMessage)
+        })
       }
-      newMessages.reverse()
-      for (const newMessage of newMessages) {
-        Object.assign(newMessage, await db.objects.thread_message.create({ data: newMessage }))
+      for (const newMessage of newMessageQueue.toReversed()) {
+        newMessages.push(await db.objects.thread_message.create({ data: { thread: pwb_thread.id, ...newMessage } }))
       }
     }
+    const focusMessages: { role: string, content: string }[] = []
     if (inputs.body.node_id && inputs.body.graph_id !== inputs.body.node_id) {
       const fpl = await fpprg.getFPL(inputs.body.node_id)
       if (!fpl) throw new NotFoundError(inputs.body.node_id)
-      newMessages.push(
+      focusMessages.push(
         { role: 'developer', content: `User is currently looking at step ${fpl.process.id}` }
       )
     }
-    const userMessage = await db.objects.thread_message.create({
+    newMessages.push(await db.objects.thread_message.create({
       data: {
         thread: pwb_thread.id,
         role: 'user',
         content: inputs.body.message,
         fpl: inputs.body.graph_id,
       }
-    })
-    const response = await (await openai).responses.create({
+    }))
+    const stream = await (await openai).responses.create({
       model: 'gpt-5-mini',
       tools: [
         {
@@ -126,51 +125,56 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       input: [
         ...currentMessages,
         ...newMessages,
-        userMessage,
+        ...focusMessages,
       ].map(({ role, content }) => ({ role, content })) as OpenAI.Responses.ResponseInput,
+      stream: true,
     })
     let fpl: string | undefined
-    for (const output of response.output) {
-      if (output.type === 'mcp_call' && output.name === 'expand' && output.output) {
-        try {
-          const outputParsed = z.object({
-            result: z.object({
-              workflow_id: z.string(),
-              step_id: z.string(),
-              type: z.string(),
-            }),
-          }).parse(JSON.parse(output.output))
-          fpl = outputParsed.result.workflow_id
-          await db.objects.thread_message.create({ data: {
-            thread: pwb_thread.id,
-            fpl: outputParsed.result.workflow_id,
-            role: 'developer',
-            content: `${JSON.stringify({
-              function_call: {
-                name: 'extend',
-                arguments: output.arguments,
-              },
-              function_call_output: {
-                output: output.output,
-              },
-            })}`
-          } })
-        } catch (e: any) {}
+    for await (const event of stream) {
+      console.log(JSON.stringify(event))
+      if (event.type === 'response.output_item.done') {
+        if (event.item.type === 'mcp_call') {
+          const output = event.item
+          if (output.name === 'expand' && output.output) {
+            try {
+              const outputParsed = z.object({
+                result: z.object({
+                  workflow_id: z.string(),
+                  step_id: z.string(),
+                  type: z.string(),
+                }),
+              }).parse(JSON.parse(output.output))
+              fpl = outputParsed.result.workflow_id
+              newMessages.push(await db.objects.thread_message.create({ data: {
+                thread: pwb_thread.id,
+                fpl: outputParsed.result.workflow_id,
+                role: 'developer',
+                content: `${JSON.stringify({
+                  function_call: {
+                    name: 'extend',
+                    arguments: output.arguments,
+                  },
+                  function_call_output: {
+                    output: output.output,
+                  },
+                })}`
+              } }))
+            } catch (e: any) {}
+          }
+        } else if (event.item.type === 'message') {
+          newMessages.push(await db.objects.thread_message.create({
+            data: {
+              thread: pwb_thread.id,
+              role: 'assistant',
+              content: event.item.content[0].type === 'output_text' ? event.item.content[0].text : event.item.content[0].refusal,
+              fpl,
+            }
+          }))
+        }
       }
     }
-    const assistantMessage = await db.objects.thread_message.create({
-      data: {
-        thread: pwb_thread.id,
-        role: 'assistant',
-        content: response.output_text,
-        fpl,
-      }
-    })
     return {
-      messages: [
-        userMessage,
-        assistantMessage,
-      ],
+      messages: newMessages,
       fpl,
     }
   })
@@ -202,7 +206,7 @@ export const GPTAssistantMessagesList = API.get('/api/v1/chat/[thread_id]/messag
     const pwb_thread = await db.objects.thread.findUnique({ where: { id: inputs.query.thread_id } })
     if (!pwb_thread) throw new NotFoundError(inputs.query.thread_id)
     const pwb_thread_messages = await db.objects.thread_message.findMany({ where: { thread: inputs.query.thread_id }, orderBy: { created: 'asc' } })
-    return { messages: pwb_thread_messages/*.filter(msg => msg.role !== 'developer')*/, fpl: pwb_thread_messages[pwb_thread_messages.length-1]?.fpl ?? null }
+    return { messages: pwb_thread_messages, fpl: pwb_thread_messages[pwb_thread_messages.length-1]?.fpl ?? null }
   })
   .build()
 

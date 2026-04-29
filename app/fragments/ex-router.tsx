@@ -5,13 +5,15 @@ import React from "react";
 export function useExRouter() {
   const router = useRouter()
   const push = React.useCallback((url: string, as_url?: string, options?: { shallow?: boolean, scroll?: boolean }) => {
-    const qs = new URLSearchParams(window.location.search)
     const newUrl = new URL(as_url ?? url, window.location.origin)
-    qs.entries()
-      .filter(([key, _value]) => !newUrl.searchParams.has(key))
-      .forEach(([key, value]) => {
-        newUrl.searchParams.set(key, value)
-      })
+    if (options?.shallow) {
+      new URLSearchParams(window.location.search)
+        .entries()
+        .filter(([key, _value]) => !newUrl.searchParams.has(key))
+        .forEach(([key, value]) => {
+          newUrl.searchParams.set(key, value)
+        })
+    }
     if (as_url) {
       return router.push(url, newUrl.toString(), options)
     } else {
@@ -21,17 +23,19 @@ export function useExRouter() {
   return { ...router, push }
 }
 
-export function ExLink({ href, ...props }: React.ComponentProps<typeof Link> & { href: string }) {
+export function ExLink({ href, shallow, ...props }: React.ComponentProps<typeof Link> & { href: string }) {
   const router = useExRouter()
   const newUrl = React.useMemo(() => {
-    const qs = new URLSearchParams(window.location.search)
     const newUrl = new URL(href, window.location.origin)
-    qs.entries()
-      .filter(([key, _value]) => !newUrl.searchParams.has(key))
-      .forEach(([key, value]) => {
-        newUrl.searchParams.set(key, value)
-      })
+    if (shallow) {
+      new URLSearchParams(window.location.search)
+        .entries()
+        .filter(([key, _value]) => !newUrl.searchParams.has(key))
+        .forEach(([key, value]) => {
+          newUrl.searchParams.set(key, value)
+        })
+    }
     return newUrl.toString()
-  }, [href, router.query])
+  }, [href, shallow, router.query])
   return <Link href={newUrl} {...props} />
 }

@@ -62,9 +62,9 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
                     if ((error as ResponseCodedError).message === 'ORCID Expired') {
                       signOut().then(() => signIn('orcid'))
                     } else if ((error as ResponseCodedError).message === 'ORCID Required') {
-                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
+                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`, undefined, { shallow: true })
                     } else if((error as ResponseCodedError).message === 'BCO Unauthorization') {
-                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`)
+                      router.push(`/account/biocompute?callback=${decodeURIComponent(window.location.href)}`, undefined, { shallow: true })
                     }
                   })
                 }}

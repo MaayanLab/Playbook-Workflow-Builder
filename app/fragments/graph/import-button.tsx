@@ -33,7 +33,7 @@ export default function ImportButton({ session_id }: { session_id?: string }) {
           })
           const res = await req.json()
           if (req.ok) {
-            router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res}`)
+            router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res}`, undefined, { shallow: true })
           } else {
             console.error(res)
           }

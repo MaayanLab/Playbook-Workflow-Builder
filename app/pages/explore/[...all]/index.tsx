@@ -198,12 +198,7 @@ export default function Explore() {
         nodes={nodes}
         links={links}
         onClick={(node, evt) => {
-          router.push({
-            pathname: '/explore/[...all]',
-            query: {
-              all: array.unique([...path, node.id])
-            },
-          }, `/explore/${array.unique([...path, node.id]).join('/')}`, { shallow: true })
+          router.push(`/explore/${array.unique([...path, node.id]).join('/')}`, undefined, { shallow: true })
         }}
       />
       <Bp5Alert

@@ -137,7 +137,7 @@ export default function Extend({ session_id, krg, id, heads, metapath }: { sessi
                     })
                   })
                   const res = z.string().parse(await req.json())
-                  router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res}`)
+                  router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res}`, undefined, { shallow: true })
                 }
               }}
             >

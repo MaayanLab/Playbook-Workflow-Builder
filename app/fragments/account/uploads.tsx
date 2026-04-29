@@ -85,7 +85,7 @@ export default function Uploads() {
                         })
                       })
                       const res = z.string().parse(await req.json())
-                      router.push(`/graph/${res}/extend`)
+                      router.push(`/graph/${res}/extend`, undefined, { shallow: true })
                     }}>
                       <Icon icon={fork_icon} className="fill-black dark:fill-white" />
                     </button>
@@ -115,7 +115,7 @@ export default function Uploads() {
                     })
                   })
                   const res = z.string().parse(await req.json())
-                  router.push(`/graph/${res}`)
+                  router.push(`/graph/${res}`, undefined, { shallow: true })
                 }}>Upload a new file</button>
               </td></tr>
             </tbody>

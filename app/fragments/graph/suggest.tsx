@@ -101,7 +101,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
   return suggestion_edges.map(element => ({
     ...element,
     onClick: ({ router, id, head }: { router: NextRouter, id: string, head: Metapath }) => {
-      router.push(`/graph/${id}${head ? head.id !== id ? `/node/${head.id}` : '' : '/node/start'}/suggest`)
+      router.push(`/graph/${id}${head ? head.id !== id ? `/node/${head.id}` : '' : '/node/start'}/suggest`, undefined, { shallow: true })
     }
   }))
 }
@@ -287,7 +287,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
             })
           })
           const extendRes = z.string().parse(await extendReq.json())
-          router.push(`/graph/${extendRes}`)
+          router.push(`/graph/${extendRes}`, undefined, { shallow: true })
         }}
       />
     </div>

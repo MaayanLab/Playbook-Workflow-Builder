@@ -59,7 +59,7 @@ export default function Suggestions() {
                         })
                       })
                       const res = z.string().parse(await req.json())
-                      router.push(`/graph/${res}/extend`)
+                      router.push(`/graph/${res}/extend`, undefined, { shallow: true })
                     }}>
                       <Icon icon={fork_icon} className="fill-black dark:fill-white" />
                     </button>
@@ -73,7 +73,7 @@ export default function Suggestions() {
                 </tr>
               ))}
               <tr><td colSpan={7} align="center">
-                <ExLink href="/graph/start/node/start/suggest"><button className="btn btn-primary btn-sm">Suggest a core data type</button></ExLink>
+                <ExLink href="/graph/start/node/start/suggest" shallow><button className="btn btn-primary btn-sm">Suggest a core data type</button></ExLink>
               </td></tr>
             </tbody>
           </table>

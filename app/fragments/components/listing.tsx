@@ -44,6 +44,7 @@ export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: 
                 <td>{type ? type : metanodeType(metanode)}</td>
                 <th>
                   <ExLink
+                    shallow
                     href={`/components/${encodeURIComponent(metanode.spec)}`}
                     className="link prose max-w-none whitespace-pre-wrap"
                   >{metanode.meta.label}</ExLink>

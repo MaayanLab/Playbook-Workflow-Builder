@@ -68,7 +68,7 @@ export default function ComponentPage({ spec, kind }: { spec: string, kind: 'dat
               ...nextMetanodes ? nextMetanodes.map(metanode => ({ metanode, type: `Next ${metanodeType(metanode)}` })) : [],
             ]}
           />
-        <div className="justify-self-end"><ExLink href="/components" className="btn btn-sm">&lt;- All Components</ExLink></div>
+        <div className="justify-self-end"><ExLink href="/components" className="btn btn-sm" shallow>&lt;- All Components</ExLink></div>
       </div>
     </Layout>
   )

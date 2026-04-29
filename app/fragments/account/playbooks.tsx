@@ -39,12 +39,12 @@ export default function Playbooks() {
                 <td>{playbook.public ? 'Yes' : 'No'}</td>
                 <td>{playbook.clicks}</td>
                 <td className="flex flex-row gap-2">
-                  <ExLink href={`/report/${playbook.playbook}`}>
+                  <ExLink href={`/report/${playbook.playbook}`} shallow>
                     <button>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" />
                     </button>
                   </ExLink>
-                  <ExLink href={`/graph/${playbook.playbook}`}>
+                  <ExLink href={`/graph/${playbook.playbook}`} shallow>
                     <button>
                       <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
                     </button>
@@ -64,7 +64,7 @@ export default function Playbooks() {
             <tr>
               <td></td>
               <td colSpan={7} align="center">
-                <ExLink href="/graph/extend">
+                <ExLink href="/graph/extend" shallow>
                   <button className="btn btn-primary btn-sm">
                     Create a new playbook
                   </button>

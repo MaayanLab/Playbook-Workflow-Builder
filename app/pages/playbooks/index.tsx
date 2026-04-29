@@ -322,7 +322,7 @@ export default function Playbooks() {
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="flex flex-row gap-2 justify-center">
                       <button disabled={playbook.disabled} onClick={() => {
-                        router.push(`/report/${playbook.id}`)
+                        if (!playbook.disabled) router.push(`/report/${playbook.id}`)
                       }}>
                         <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
                       </button>

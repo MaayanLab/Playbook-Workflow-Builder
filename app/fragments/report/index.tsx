@@ -53,24 +53,19 @@ export default function App({ fallback }: { fallback: any }) {
   return (
     <SWRConfig value={{ fallback, fetcher }}>
       <MetapathProvider session_id={params?.session_id}>
-        <div className="h-screen w-screen flex flex-row justify-stretch">
-          <div className="w-80 shrink-0 overflow-x-auto resize-x border-r">
-            <Chat mode="report" graph_id={params.id} embedded />
-          </div>
-          <div className="grow overflow-auto">
-            <Layout>
-              <main className="grow flex flex-col mx-4">
-                {params.id ? 
-                  <Cells
-                    session_id={params?.session_id}
-                    krg={krg}
-                    id={params.id}
-                  />
-                  : <div className="alert alert-error">Page not found</div>}
-              </main>
-            </Layout>
-          </div>
-        </div>
+        <Layout
+          sidebar={<Chat mode="report" graph_id={params.id} embedded />}
+        >
+          <main className="grow flex flex-col mx-4">
+            {params.id ? 
+              <Cells
+                session_id={params?.session_id}
+                krg={krg}
+                id={params.id}
+              />
+              : <div className="alert alert-error">Page not found</div>}
+          </main>
+        </Layout>
       </MetapathProvider>
     </SWRConfig>
   )

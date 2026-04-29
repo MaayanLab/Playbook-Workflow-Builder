@@ -113,25 +113,20 @@ export default function App({ fallback, extend, suggest }: { fallback: any, exte
   return (
     <SWRConfig value={{ fallback, fetcher }}>
       <MetapathProvider session_id={params?.session_id}>
-        <div className="h-screen w-screen flex flex-row justify-stretch">
-          <div className="w-80 shrink-0 overflow-x-auto resize-x border-r">
-            <Chat mode="graph" graph_id={graph_id} node_id={node_id} embedded />
-          </div>
-          <div className="grow overflow-auto">
-            <Layout>
-              <main className="grow flex flex-col mx-4">
-                <Graph
-                  session_id={params?.session_id}
-                  thread_id={params?.thread_id}
-                  graph_id={graph_id}
-                  node_id={node_id}
-                  extend={extend}
-                  suggest={suggest}
-                />
-              </main>
-            </Layout>
-          </div>
-        </div>
+        <Layout
+          sidebar={<Chat mode="graph" graph_id={graph_id} node_id={node_id} embedded />}
+        >
+          <main className="grow flex flex-col mx-4">
+            <Graph
+              session_id={params?.session_id}
+              thread_id={params?.thread_id}
+              graph_id={graph_id}
+              node_id={node_id}
+              extend={extend}
+              suggest={suggest}
+            />
+          </main>
+        </Layout>
       </MetapathProvider>
     </SWRConfig>
   )

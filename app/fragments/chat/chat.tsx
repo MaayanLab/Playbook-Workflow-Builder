@@ -154,67 +154,62 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
             </Waypoint>
             </>
             : null}
-          <div className={classNames("flex flex-col overflow-hidden h-full", { 'hidden': !embedded})}>
+          <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             <div className={classNames('flex flex-col px-2 bg-white dark:bg-current overflow-auto')}>
-              <div className='flex-grow flex flex-col-reverse overflow-y-auto overflow-x-hidden'>
-                <div>
-                  <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
-                    <img
-                      className="w-32"
-                      src={`${publicUrl}/PWB-logo.svg`}
-                    />
-                    <div className="prose"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
-                  </div>
-                  <Message role="welcome" session={session}>
-                    How can I help you today?
-                  </Message>
-                  {(graph_id === 'start') && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                    {[
-                      'Show me the expression of ACE2 in healthy human tissues from GTEx',
-                      'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
-                    ].map((suggestion, i) => {
-                      return (
-                        <button
-                          key={i}
-                          className="border border-primary btn-rounded rounded-lg bg-white"
-                          onClick={evt => {submit({ message: suggestion, graph_id, node_id })}}
-                        >{suggestion}</button>
-                      )
-                    })}
-                  </div>}
-                  {messages?.map((message, i) => {
-                    const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
-                    return (
-                      <React.Fragment key={i}>
-                        {head ?
-                          <Cell
-                            session_id={session_id}
-                            krg={krg}
-                            id={fpl ?? ''}
-                            head={head}
-                            cellMetadata={{ [head.id]: head.cell_metadata ?? { id: head.id, label: '', description: '', data_visible: true, process_visible: true } }}
-                            setCellMetadata={() => {}}
-                          />
-                        : null}
-                        <Message
-                          thread_id={thread_id}
-                          message_id={message.id}
-                          role={message.role}
-                          session={session}
-                        >
-                          {message.content}
-                        </Message>
-                      </React.Fragment>
-                    )
-                  })}
-                  {createMessage.isMutating ?
-                    <Message role="assistant" session={session}>
-                      <span className="loading loading-dots loading-lg mt-2"></span>
-                    </Message>
-                    : null}
-                </div>
+              <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
+                <img
+                  className="w-32"
+                  src={`${publicUrl}/PWB-logo.svg`}
+                />
+                <div className="prose text-center"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
               </div>
-              <div className="grow">&nbsp;</div>
+              <Message role="welcome" session={session}>
+                How can I help you today?
+              </Message>
+              {(!graph_id || graph_id === 'start') && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                {[
+                  'Show me the expression of ACE2 in healthy human tissues from GTEx',
+                  'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
+                ].map((suggestion, i) => {
+                  return (
+                    <button
+                      key={i}
+                      className="border border-primary btn-rounded rounded-lg bg-white"
+                      onClick={evt => {submit({ message: suggestion, graph_id, node_id })}}
+                    >{suggestion}</button>
+                  )
+                })}
+              </div>}
+              {messages?.map((message, i) => {
+                const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
+                return (
+                  <React.Fragment key={i}>
+                    {head ?
+                      <Cell
+                        session_id={session_id}
+                        krg={krg}
+                        id={fpl ?? ''}
+                        head={head}
+                        cellMetadata={{ [head.id]: head.cell_metadata ?? { id: head.id, label: '', description: '', data_visible: true, process_visible: true } }}
+                        setCellMetadata={() => {}}
+                      />
+                    : null}
+                    <Message
+                      thread_id={thread_id}
+                      message_id={message.id}
+                      role={message.role}
+                      session={session}
+                    >
+                      {message.content}
+                    </Message>
+                  </React.Fragment>
+                )
+              })}
+              {createMessage.isMutating ?
+                <Message role="assistant" session={session}>
+                  <span className="loading loading-dots loading-lg mt-2"></span>
+                </Message>
+                : null}
             </div>
             <Message role="user" session={session}>
               <form

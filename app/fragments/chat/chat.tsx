@@ -19,6 +19,7 @@ import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
 import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
+import { UnauthorizedError } from '@/spec/error'
 
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
@@ -28,39 +29,47 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   const router = useExRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
-  const { data: session } = Auth.useSession({ required: true })
+  const { data: session } = Auth.useSession()
   const [thread_id, setThread_id] = React.useState<string | undefined>()
   const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, () => thread_id ? { thread_id } : null, {
     refreshInterval: 1000,
     onSuccess(data) {
       if (data?.fpl && fpl !== data.fpl) {
-        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}/${data.fpl}?thread_id=${thread_id}`, undefined, { shallow: true, scroll: false })
+        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}/${data.fpl}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
       }
     }
   })
   const createMessage = useAPIMutation(GPTAssistantMessage, { thread_id })
   const createChat = useAPIMutation(GPTAssistantCreate)
   const submit = React.useCallback(async (body: { message: string, graph_id?: string, node_id?: string }) => {
-    let thread_id_: string
-    if (!thread_id) {
-      thread_id_ = z.string().parse(await createChat.trigger())
-      setThread_id(thread_id_)
-    } else {
-      thread_id_ = thread_id
+    try {
+      let thread_id_: string
+      if (!thread_id) {
+        thread_id_ = z.string().parse(await createChat.trigger())
+        setThread_id(thread_id_)
+      } else {
+        thread_id_ = thread_id
+      }
+      const query = { thread_id: thread_id_ }
+      await mutate((current) => ({ messages: [
+        ...current?.messages ?? [],
+        { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date(), thread: thread_id_, feedback: null },
+      ], fpl: graph_id ?? null }), { revalidate: false })
+      const res = await createMessage.trigger({ query, body })
+      await mutate((current) => ({
+        messages: array.unique([
+          ...(current?.messages ?? []).slice(0, -1),
+          ...res?.messages ?? [],
+        ], x => x.id),
+        fpl: res?.fpl ?? null,
+      }), { revalidate: false })
+    } catch (e: any) {
+      if (UnauthorizedError.isinstance(e)) {
+        const qs = new URLSearchParams(window.location.search)
+        qs.set('message', body.message)
+        Auth.signIn(undefined, { callbackUrl: `${window.location.pathname}?${qs.toString()}` })
+      }
     }
-    const query = { thread_id: thread_id_ }
-    await mutate((current) => ({ messages: [
-      ...current?.messages ?? [],
-      { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date(), thread: thread_id_, feedback: null },
-    ], fpl: graph_id ?? null }), { revalidate: false })
-    const res = await createMessage.trigger({ query, body })
-    await mutate((current) => ({
-      messages: array.unique([
-        ...(current?.messages ?? []).slice(0, -1),
-        ...res?.messages ?? [],
-      ], x => x.id),
-      fpl: res?.fpl ?? null,
-    }), { revalidate: false })
   }, [session_id, thread_id])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
@@ -75,6 +84,11 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   React.useEffect(() => {
     setThread_id(router.query.thread_id as string | undefined)
   }, [router.query.thread_id])
+  React.useEffect(() => {
+    if (typeof router.query.message === 'string') {
+      submit({ message: router.query.message, graph_id, node_id })
+    }
+  }, [router.query.message])
   return (
     <>
       <style jsx>{`

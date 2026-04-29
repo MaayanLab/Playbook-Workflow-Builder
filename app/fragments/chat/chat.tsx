@@ -41,7 +41,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   })
   const createMessage = useAPIMutation(GPTAssistantMessage, { thread_id })
   const createChat = useAPIMutation(GPTAssistantCreate)
-  const submit = React.useCallback(async (body: { message: string, graph_id?: string, node_id?: string }) => {
+  const submit = React.useCallback(async ({ thread_id, ...body }: { message: string, graph_id?: string, node_id?: string, thread_id?: string }) => {
     try {
       let thread_id_: string
       if (!thread_id) {
@@ -70,7 +70,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
         Auth.signIn(undefined, { callbackUrl: `${window.location.pathname}?${qs.toString()}` })
       }
     }
-  }, [session_id, thread_id])
+  }, [])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
     fpl_to_metapath: dict.init(metapath.map(h => ({ key: h.id, value: h }))),
@@ -186,32 +186,14 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
             </>
             : null}
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
-            <div className={classNames('flex flex-col px-2 bg-white dark:bg-current overflow-auto')}>
-              <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
-                <img
-                  className="w-32"
-                  src={`${publicUrl}/PWB-logo.svg`}
-                />
-                <div className="prose text-center"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
-              </div>
-              <Message role="welcome" session={session}>
-                How can I help you today?
-              </Message>
-              {(!graph_id || graph_id === 'start') && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
-                {[
-                  'Show me the expression of ACE2 in healthy human tissues from GTEx',
-                  'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
-                ].map((suggestion, i) => {
-                  return (
-                    <button
-                      key={i}
-                      className="border border-primary btn-rounded rounded-lg bg-white"
-                      onClick={evt => {submit({ message: suggestion, graph_id, node_id })}}
-                    >{suggestion}</button>
-                  )
-                })}
-              </div>}
-              {messages?.map((message, i) => {
+            {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
+            <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>
+              {createMessage.isMutating ?
+                <Message role="assistant" session={session}>
+                  <span className="loading loading-dots loading-lg mt-2"></span>
+                </Message>
+                : null}
+              {messages?.toReversed().map((message, i) => {
                 const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
                 return (
                   <React.Fragment key={i}>
@@ -236,30 +218,56 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                   </React.Fragment>
                 )
               })}
-              {createMessage.isMutating ?
-                <Message role="assistant" session={session}>
-                  <span className="loading loading-dots loading-lg mt-2"></span>
-                </Message>
-                : null}
+              {(!graph_id || graph_id === 'start') && <div className="flex flex-row flex-wrap justify-center gap-2 place-self-center">
+                {[
+                  'Show me the expression of ACE2 in healthy human tissues from GTEx',
+                  'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
+                ].map((suggestion, i) => {
+                  return (
+                    <button
+                      key={i}
+                      className="border border-primary btn-rounded rounded-lg bg-white"
+                      onClick={evt => {submit({ message: suggestion, graph_id, node_id, thread_id })}}
+                    >{suggestion}</button>
+                  )
+                })}
+              </div>}
+              <Message role="welcome" session={session}>
+                How can I help you today?
+              </Message>
+              <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
+                <img
+                  className="w-32"
+                  src={`${publicUrl}/PWB-logo.svg`}
+                />
+                <div className="prose text-center"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
+              </div>
             </div>
             <Message role="user" session={session}>
               <form
-                className="flex flex-row items-center"
+                className="flex flex-col"
                 onSubmit={async (evt) => {
                   evt.preventDefault()
                   const currentMessage = message
                   setMessage(() => '')
-                  await submit({ message: currentMessage, graph_id, node_id })
+                  await submit({ message: currentMessage, graph_id, node_id, thread_id })
                 }}
               >
-                <input
-                  type="text"
-                  className="input w-full bg-transparent"
+                <textarea
+                  className="textarea w-full bg-white"
+                  rows={5}
                   placeholder="Type your questions here"
                   value={message}
                   onChange={evt => setMessage(() => evt.target.value)}
+                  onKeyDown={async (evt) => {
+                    if (evt.shiftKey && evt.key === 'Enter') {
+                      const currentMessage = message
+                      setMessage(() => '')
+                      await submit({ message: currentMessage, graph_id, node_id, thread_id })
+                    }
+                  }}
                 />
-                <button type="submit" className="btn btn-sm" disabled={!message}>Send</button>
+                <button type="submit" className="btn btn-sm place-self-end" disabled={!message}>Send</button>
               </form>
             </Message>
           </div>

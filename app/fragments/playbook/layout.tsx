@@ -66,11 +66,8 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           </div>
         </div>
 
-        <div className="grow flex flex-row justify-stretch overflow-hidden">
-          {sidebar && <div className="w-80 shrink-0 overflow-x-auto resize-x border-r flex flex-col overflow-hidden">
-            {sidebar}
-          </div>}
-          <div className="grow flex flex-col min-h-full overflow-auto">
+        <div className="grow flex flex-col sm:flex-row-reverse justify-stretch overflow-hidden">
+          <div className="grow flex flex-col sm:h-full overflow-auto">
             <div className="container mx-auto my-2 flex flex-col gap-2">
               <DismissableAlert id="plos" style={{ backgroundColor: '#d4fb79' }}>
                 <ExLink href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">
@@ -114,6 +111,9 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
             </div>
             <Waypoint id="bottom" />
           </div>
+          {sidebar && <div className="w-full h-[40vh] sm:h-full sm:w-[max(33vw,20em)] shrink-0 overflow-x-auto resize-x border-r flex flex-col overflow-hidden">
+            {sidebar}
+          </div>}
         </div>
 
       </Waypoints>

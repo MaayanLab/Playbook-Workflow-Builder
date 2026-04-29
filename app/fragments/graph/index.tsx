@@ -27,11 +27,9 @@ const ParamType = z.union([
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   // we expect a uri of the form /[graph_id][/node_id]
   const params = ParamType.parse(ctx.params)
-  const extend = ctx.resolvedUrl.endsWith('extend')
-  const suggest = ctx.resolvedUrl.endsWith('suggest')
   if (params === undefined || !('graph_id' in params) || params.graph_id === 'start' || params.session_id !== undefined) {
     return {
-      props: { fallback: {}, extend, suggest }
+      props: { fallback: {} }
     }
   }
   const fpl = await fpprg.getFPL(params.graph_id)
@@ -99,17 +97,22 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   return {
     props: {
       fallback: JSON.parse(JSON.stringify(fallback)),
-      extend,
-      suggest,
     }
   }
 }
 
-export default function App({ fallback, extend, suggest }: { fallback: any, extend: boolean, suggest: boolean }) {
+export default function App({ fallback }: { fallback: any }) {
   const router = useExRouter()
-  const params = ParamType.parse(router.query)
-  const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
-  const node_id = typeof params !== 'undefined' && 'node_id' in params && params.node_id ? params.node_id : graph_id
+  const { params, graph_id, node_id } = React.useMemo(() => {
+    const params = ParamType.parse(router.query)
+    const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
+    const node_id = typeof params !== 'undefined' && 'node_id' in params && params.node_id ? params.node_id : graph_id
+    return { params, graph_id, node_id }
+  }, [router.query])
+  const { extend, suggest } = React.useMemo(() => ({
+    extend: router.pathname.endsWith('/extend'),
+    suggest: router.pathname.endsWith('/suggest'),
+  }), [router.pathname])
   return (
     <SWRConfig value={{ fallback, fetcher }}>
       <MetapathProvider session_id={params?.session_id}>

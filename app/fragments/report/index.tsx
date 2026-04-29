@@ -49,7 +49,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
 
 export default function App({ fallback }: { fallback: any }) {
   const router = useExRouter()
-  const params = QueryType.parse(router.query)
+  const params = React.useMemo(() => QueryType.parse(router.query), [router.query])
   return (
     <SWRConfig value={{ fallback, fetcher }}>
       <MetapathProvider session_id={params?.session_id}>

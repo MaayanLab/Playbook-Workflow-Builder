@@ -10,15 +10,15 @@ const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
 export default function ChatThread() {
   return (
-    <Layout>
+    <SWRConfig value={{ fetcher }}>
+      <MetapathProvider>
       <Head><title>Text to Workflow</title></Head>
-      <SWRConfig value={{ fetcher }}>
-        <MetapathProvider>
+        <Layout>
           <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
-            <Chat mode="report" />
+            <Chat mode="chat" />
           </main>
-        </MetapathProvider>
-      </SWRConfig>
-    </Layout>
+        </Layout>
+      </MetapathProvider>
+    </SWRConfig>
   )
 }

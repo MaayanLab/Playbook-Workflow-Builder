@@ -35,7 +35,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
     refreshInterval: 1000,
     onSuccess(data) {
       if (data?.fpl && fpl !== data.fpl) {
-        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}/${data.fpl}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
+        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}${mode !== 'chat' ? `/${data.fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
       }
     }
   })
@@ -212,6 +212,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                       message_id={message.id}
                       role={message.role}
                       session={session}
+                      embedded={embedded}
                     >
                       {message.content}
                     </Message>

@@ -5,7 +5,6 @@ import classNames from "classnames"
 import dynamic from "next/dynamic"
 import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
 import type { Session } from 'next-auth'
-import { ExLink } from "../ex-router"
 
 const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })
 const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then(({ UserDisplay }) => UserDisplay))
@@ -14,13 +13,20 @@ export default function Message({ thread_id, message_id, session, role, children
   const [feedback, setFeedback] = React.useState('')
   const { trigger } = useAPIMutation(GPTAssistantMessageFeedback, { thread_id, message_id })
   if (role === 'developer' && typeof children === 'string') {
-    const data = JSON.parse(children)
-    if (data.function_call.name === 'extend') {
-      const output = JSON.parse(data.function_call_output.output)
-      return <div>Added step to workflow to get {output.result.type}</div>
-    } else {
+    try {
+      const data = JSON.parse(children)
+      if (data.function_call.name === 'extend') {
+        const output = JSON.parse(data.function_call_output.output)
+        return <div>Added step to workflow to get {output.result.type}</div>
+      } else {
+        return null
+      }
+    } catch (error: any) {
+      console.error({ children, error })
       return null
     }
+  } else if (role === 'reasoning' && typeof children === 'string') {
+    return <div><i>{children}</i></div>
   }
   return (
     <>

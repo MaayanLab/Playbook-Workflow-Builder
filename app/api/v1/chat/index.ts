@@ -68,7 +68,7 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
         newMessageQueue.push({
           fpl: step.id,
           role: 'developer',
-          content: `triggered\n${JSON.stringify({
+          content: `${JSON.stringify({
             function_call: {
               name: 'extend',
               arguments: {

@@ -31,10 +31,10 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
               className="flex flex-row items-center"
             >
               <img
-                className="p-2 w-16 cursor-pointer dark:stroke-white"
+                className="p-2 max-w-16 cursor-pointer dark:stroke-white"
                 src={`${publicUrl}/PWB-logo.svg`}
               />
-              <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
+              <h1 className="text-black dark:text-white text-lg sm:text-2xl md:text-4xl font-bold p-2 cursor-pointer"><span className="text-[140%]">P</span>laybook <span className="text-[140%]">W</span>orkflow <span className="text-[140%]">B</span>uilder</h1>
             </ExLink>
           </div>
           <div className="navbar-end hidden md:flex">
@@ -111,7 +111,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
             </div>
             <Waypoint id="bottom" />
           </div>
-          {sidebar && <div className="w-full h-[40vh] sm:h-full sm:w-[max(33vw,20em)] shrink-0 overflow-x-auto resize-x border-r flex flex-col overflow-hidden">
+          {sidebar && <div className="w-full h-[50vh] sm:h-full sm:w-[max(33vw,20em)] shrink-0 overflow-x-auto resize-x border-r flex flex-col overflow-hidden">
             {sidebar}
           </div>}
         </div>

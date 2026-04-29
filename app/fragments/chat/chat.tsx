@@ -256,7 +256,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
               >
                 <textarea
                   className="textarea w-full bg-white"
-                  rows={5}
+                  rows={3}
                   placeholder="Type your questions here"
                   value={message}
                   onChange={evt => setMessage(() => evt.target.value)}

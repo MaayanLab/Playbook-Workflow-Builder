@@ -10,9 +10,11 @@ export function useExRouter() {
       new URLSearchParams(window.location.search)
         .entries()
         .filter(([key, _value]) => !newUrl.searchParams.has(key))
-        .forEach(([key, value]) => {
-          newUrl.searchParams.set(key, value)
-        })
+        .forEach(([key, value]) => newUrl.searchParams.set(key, value))
+      newUrl.searchParams
+        .entries()
+        .filter(([_key, value]) => value === '')
+        .forEach(([key, _value]) => newUrl.searchParams.delete(key))
     }
     if (as_url) {
       return router.push(url, newUrl.toString(), options)
@@ -31,9 +33,11 @@ export function ExLink({ href, shallow, ...props }: React.ComponentProps<typeof 
       new URLSearchParams(window.location.search)
         .entries()
         .filter(([key, _value]) => !newUrl.searchParams.has(key))
-        .forEach(([key, value]) => {
-          newUrl.searchParams.set(key, value)
-        })
+        .forEach(([key, value]) => newUrl.searchParams.set(key, value))
+      newUrl.searchParams
+        .entries()
+        .filter(([_key, value]) => value === '')
+        .forEach(([key, _value]) => newUrl.searchParams.delete(key))
     }
     return newUrl.toString()
   }, [href, shallow, router.query])

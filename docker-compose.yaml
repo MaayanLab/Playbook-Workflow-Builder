@@ -156,11 +156,12 @@ services:
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
-    image: maayanlab/playbook-partnership:0.77.9-dev
+    image: maayanlab/playbook-partnership:0.78.0-dev
     build:
       context: .
       dockerfile: Dockerfile
       target: dev
+    platform: linux/amd64
     x-kubernetes:
       exclude: true
     ports:

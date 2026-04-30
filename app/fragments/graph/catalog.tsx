@@ -126,17 +126,17 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
           onChange={evt => setSearch(evt.currentTarget.value)}
         />
       </FormGroup>
-      <div className="flex-grow flex flex-row flex-wrap md:flex-nowrap gap-2">
-        <div className="flex-none">
+      <div className="flex-grow flex flex-row flex-wrap md:flex-nowrap gap-1">
+        <div className="flex-none w-44 grid grid-cols-[1fr_auto] place-items-start items-start gap-x-1 gap-y-1 self-start">
           {dict.keys(group_values)
             .filter(group => dict.keys(group_values[group]).length > 1)
             .map(group => (
-              <fieldset key={group} className="pr-2">
-                <legend>{group}</legend>
-                <div className="ml-2 mb-4">
-                  {dict.keys(group_values[group])
-                    .map(value => (
-                      <label key={value} className="bp5-control bp5-switch prose prose-sm max-w-none whitespace-nowrap">
+              <React.Fragment key={group}>
+                <div className="col-span-2">{group}</div>
+                {dict.keys(group_values[group])
+                  .map(value => (
+                    <label key={value} className="contents">
+                      <label className="bp5-control bp5-switch">
                         <input
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
@@ -162,16 +162,12 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                           }}
                         />
                         <span className="bp5-control-indicator"></span>
-                        {value} ({
-                        (group_values_filtered[group]||{})[value] === group_values[group][value] ? (
-                          group_values[group][value]
-                        ) : (
-                          `${(group_values_filtered[group]||{})[value]||0} / ${group_values[group][value]}`
-                        )})
+                        <span>{value}</span>
                       </label>
-                  ))}
-                </div>
-              </fieldset>
+                      <span>({(group_values_filtered[group]||{})[value]||0} / {group_values[group][value]})</span>
+                    </label>
+                ))}
+              </React.Fragment>
             )
           )}
         </div>

@@ -6,7 +6,7 @@ import { json_safe_timestamp_codec, z_uuid } from '@/utils/zod'
 export const thread = Table.create('thread')
   .field('id', 'uuid', 'default uuid_generate_v4()', z_uuid(), { primaryKey: true, default: uuidv4 })
   .field('user', 'uuid', 'references "user" ("id") on delete cascade', z_uuid())
-  .field('openai_thread', 'varchar', 'not null', z.string())
+  .field('openai_thread', 'varchar', '', z.string().nullable(), { default: () => null })
   .field('created', 'timestamp without time zone', 'not null default now()', json_safe_timestamp_codec(), { default: () => new Date() })
   .build()
 

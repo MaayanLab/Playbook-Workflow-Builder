@@ -227,9 +227,9 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                   return (
                     <button
                       key={i}
-                      className="border border-primary btn-rounded rounded-lg bg-white"
+                      className="btn btn-primary btn-sm border border-primary btn-rounded rounded-lg"
                       onClick={evt => {submit({ message: suggestion, graph_id, node_id, thread_id })}}
-                    >{suggestion}</button>
+                    >Example {i+1}</button>
                   )
                 })}
               </div>}

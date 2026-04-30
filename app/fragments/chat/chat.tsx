@@ -188,6 +188,11 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
             <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>
+              {createMessage.error ?
+                <Message role="assistant" session={session}>
+                  I experienced an error: {createMessage.error instanceof Error ? createMessage.error.message : 'unknown error'}
+                </Message>
+                : null}
               {createMessage.isMutating ?
                 <Message role="assistant" session={session}>
                   <span className="loading loading-dots loading-lg mt-2"></span>

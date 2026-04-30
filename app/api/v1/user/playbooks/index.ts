@@ -41,7 +41,7 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
     skip: z.number().optional(),
     limit: z.number().optional(),
   }))
-  .call(async (props, req, res) => {
+  .call(async (props) => {
     const search = props.query.search
     const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
     const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined

@@ -5,29 +5,50 @@ import classNames from "classnames"
 import dynamic from "next/dynamic"
 import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
 import type { Session } from 'next-auth'
+import { ExLink } from "@/app/fragments/ex-router"
 
 const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })
 const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then(({ UserDisplay }) => UserDisplay))
 
-export default function Message({ thread_id, message_id, session, role, children, embedded }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string, embedded?: boolean }>) {
+export default function Message({ thread_id, message_id, session, role, children }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string, embedded?: boolean }>) {
   const [feedback, setFeedback] = React.useState('')
   const { trigger } = useAPIMutation(GPTAssistantMessageFeedback, { thread_id, message_id })
-  if (embedded) {
-    if (role === 'developer' && typeof children === 'string') {
-      try {
-        const data = JSON.parse(children)
-        if (data.function_call.name === 'extend') {
-          const output = JSON.parse(data.function_call_output.output)
-          return <div>Added step to workflow to get {output.result.type}</div>
+  if (role === 'developer' && typeof children === 'string') {
+    try {
+      const data = JSON.parse(children)
+      if (data.function_call.name === 'options') {
+        const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
+        if (args.workflow_id) {
+          return <div className="p-1 my-1 italic">Checked possibilities from <ExLink href={`/graph/${args.workflow_id}/expand`}>here</ExLink></div>
         } else {
-          return null
+          return <div className="p-1 my-1 italic">Checking input possibilities</div>
         }
-      } catch (error: any) {
-        console.error({ children, error })
-        return null
+      } else if (data.function_call.name === 'search_published') {
+        const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
+        if (args.search) {
+          return <div className="p-1 my-1 italic">Searched for published workflows about "{args?.search}"</div>
+        } else {
+          return <div className="p-1 my-1 italic">Searching for published workflows</div>
+        }
+      } else if (data.function_call.name === 'expand') {
+        const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
+        if (output.error) {
+          return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
+        } else if (output.result.type) {
+          return <div className="p-1 my-1 italic">Added step to workflow to get {output.result.type}</div>
+        } else {
+          return <div className="p-1 my-1 italic">Adding step to workflow</div>
+        }
+      } else if (data.function_call.name === 'view') {
+        const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
+        if (args.workflow_id) {
+          return <div className="p-1 my-1 italic">Viewing <ExLink href={`/report/${args.workflow_id}`}>{args.workflow}</ExLink></div>
+        } else {
+          return <div className="p-1 my-1 italic">Attempting to view workflow</div>
+        }
       }
-    } else if (role === 'reasoning' && typeof children === 'string') {
-      return <div><i>{children}</i></div>
+    } catch (error: any) {
+      return <div className="p-1 my-1 italic">Agent produced a malformed request</div>
     }
   }
   return (

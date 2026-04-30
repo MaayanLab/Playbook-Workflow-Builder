@@ -7,6 +7,7 @@ import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import { NotFoundError, UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
 import cache from '@/utils/global_cache'
 import fpprg from '@/app/fpprg'
+import dedent from 'ts-dedent'
 
 const openai = cache('openai', async () => {
   if (!process.env.OPENAI_API_KEY) {
@@ -15,6 +16,14 @@ const openai = cache('openai', async () => {
   }
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 })
+
+function JSONTryParse(str: string) {
+  try {
+    return JSON.parse(str)
+  } catch (e) {
+    return undefined
+  }
+}
 
 export const GPTAssistantCreate = API.post('/api/v1/chat')
   .query(z.object({}))
@@ -121,7 +130,15 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
           require_approval: 'never',
         }
       ],
-      instructions: 'You are an assistant that builds workflows with the playbook workflow builder on behalf of the user using the PWBMCP server tools. Do NOT propose workflows without calling the PWB options tool. Do NOT interpret output. Only provide the constructed report for the user. The user can see when you `expand`, so do NOT include specific workflow/step IDs in the output. Do NOT assume capabilities, only what can be found with options for a given step is possible.',
+      instructions: dedent`
+        You are an assistant that builds workflows with the playbook workflow builder on behalf of the user using the PWBMCP server tools.
+        Check for applicable published workflows before building a new one, if so 'view' them and respond to the user.
+        Otherwise, iteratively build the workflow with the user. See the MCP server instructions for more information.
+        The user sees the workflow, you do not, so there is nothing for you to directly interpret, analyze, or provide for the user.
+        The user can see when you 'view' or 'extend', so do NOT include specific workflow/step IDs in the output.
+        Do NOT offer to provide results/exports, the user can do this from the UI.
+        Do NOT assume capabilities, only what can be found with options for a given step is possible.
+      `,
       input: [
         ...currentMessages,
         ...newMessages,
@@ -130,46 +147,110 @@ export const GPTAssistantMessage = API.post('/api/v1/chat/[thread_id]/messages')
       stream: true,
     })
     let fpl: string | undefined
+    const partialMessages: Record<number, any> = {}
     for await (const event of stream) {
-      console.log(JSON.stringify(event))
-      if (event.type === 'response.output_item.done') {
+      console.debug(JSON.stringify(event))
+      if (event.type === 'response.output_item.added') {
         if (event.item.type === 'mcp_call') {
           const output = event.item
-          if (output.name === 'expand' && output.output) {
-            try {
-              const outputParsed = z.object({
+          partialMessages[event.output_index] = await db.objects.thread_message.create({
+            data: {
+              thread: pwb_thread.id,
+              role: 'developer',
+              content: `${JSON.stringify({
+                function_call: {
+                  name: output.name,
+                  arguments: output.arguments,
+                },
+                function_call_output: {
+                  output: output.output,
+                },
+              })}`
+            }
+          })
+          newMessages.push(partialMessages[event.output_index])
+        } else if (event.item.type === 'message') {
+          partialMessages[event.output_index] = await db.objects.thread_message.create({
+            data: {
+              thread: pwb_thread.id,
+              role: 'assistant',
+              content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
+              fpl,
+            }
+          })
+          newMessages.push(partialMessages[event.output_index])
+        }
+      }
+      else if (event.type === 'response.output_text.delta') {
+        partialMessages[event.output_index] = await db.objects.thread_message.update({
+          where: { id: partialMessages[event.output_index].id },
+          data: {
+            fpl,
+            content: partialMessages[event.output_index].content + event.delta,
+          }
+        })
+      } else if (event.type === 'response.output_item.done') {
+        if (event.item.type === 'mcp_call') {
+          const output = event.item
+          // TODO: derive this from the mcp server definition somehow
+          const outputParsed = z.union([
+            z.object({
+              name: z.literal('options'),
+              arguments: z.object({
+                workflow_id: z.string().nullish().transform(val => val === null ? undefined : val),
+                step_id: z.string().nullish(),
+              })
+            }).strip(),
+            z.object({
+              name: z.literal('expand'),
+              output: z.object({
                 result: z.object({
                   workflow_id: z.string(),
                   step_id: z.string(),
                   type: z.string(),
                 }),
-              }).parse(JSON.parse(output.output))
-              fpl = outputParsed.result.workflow_id
-              newMessages.push(await db.objects.thread_message.create({ data: {
-                thread: pwb_thread.id,
-                fpl: outputParsed.result.workflow_id,
-                role: 'developer',
+              })
+            }).strip(),
+            z.object({
+              name: z.literal('view'),
+              arguments: z.object({
+                workflow_id: z.string().nullish().transform(val => val === null ? undefined : val),
+              })
+            }).strip(),
+          ] ).safeParse({
+            name: output.name,
+            arguments: JSONTryParse(output.arguments),
+            output: output.output ? JSONTryParse(output.output) : undefined,
+          })
+          fpl = outputParsed.data?.name === 'expand' ? outputParsed.data?.output.result.workflow_id
+            : outputParsed.data?.name === 'options' ? outputParsed.data?.arguments.workflow_id
+            : outputParsed.data?.name === 'view' ? outputParsed.data?.arguments.workflow_id
+            : undefined
+          if (event.output_index in partialMessages) {
+            partialMessages[event.output_index] = await db.objects.thread_message.update({
+              where: { id: partialMessages[event.output_index].id },
+              data: {
+                fpl,
                 content: `${JSON.stringify({
                   function_call: {
-                    name: 'extend',
+                    name: output.name,
                     arguments: output.arguments,
                   },
                   function_call_output: {
                     output: output.output,
                   },
                 })}`
-              } }))
-            } catch (e: any) {}
+              }
+            })
           }
         } else if (event.item.type === 'message') {
-          newMessages.push(await db.objects.thread_message.create({
+          partialMessages[event.output_index] = await db.objects.thread_message.update({
+            where: { id: partialMessages[event.output_index].id },
             data: {
-              thread: pwb_thread.id,
-              role: 'assistant',
-              content: event.item.content[0].type === 'output_text' ? event.item.content[0].text : event.item.content[0].refusal,
               fpl,
+              content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
             }
-          }))
+          })
         }
       }
     }

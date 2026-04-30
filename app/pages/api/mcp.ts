@@ -11,6 +11,8 @@ import { FPL, Process } from '@/core/FPPRG';
 import type { ProcessMetaNode } from "@/spec/metanode"
 import type KRG from "@/core/KRG"
 import pluralize from "pluralize"
+import { PublicPlaybooks } from '@/app/api/server'
+import { fpl_expand } from '@/core/common';
 
 function options(props: { krg: KRG, heads: FPL[], workflow: FPL[] }) {
   let items: ProcessMetaNode[]
@@ -78,15 +80,19 @@ const server = cache('mcp', () => {
 
       ## Usage Patterns
 
-      At each step, use the 'options' tool with the current workflow and choose from the next possible options with confirmation from the user by using the 'expand' tool.  
+      Before creating a workflow, check to see if published workflows can be found with 'search_published' which already does what the user wants, otherwise proceed with the other tools.
+      When building a workflow, use the 'options' tool with the most recent workflow and relevant step and choose from the next possible options using the 'expand' tool.  
       To start a workflow, use the 'options' without specifying any 'workflow_id' or 'step_id', and subsequently 'expand' with the relevant step without a 'workflow_id' or 'step_id'.  
-      Step 'type' specified in 'expand' MUST appear in 'options'.  
-      Use the newest workflow id when branching from an earlier step id to include both branches in the final workflow.
+      Step 'type' specified in 'expand' MUST appear in 'options' from the same workflow/step.
+      Always use the latest workflow id, re-use prior step_ids when applicable.
       The workflow_id can be used to build a link for the user with: https://playbook-workflow-builder.cloud/report/{workflow_id}
 
       ## Example
 
+      \`\`\`
       {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
+      {"type": "function_call", "name": "search_published", "arguments": {""search":"Gene expression"}}
+      {"type": "function_call_output", "output": {"result":[]}}
       {"type": "function_call", "name": "options", "arguments": {}}
       {"type": "function_call_output", "output": {"result":[{"type":"Input[Gene]","arguments":{},"label":"Gene Input","description":"The workflow starts with selecting a search term."}]}}
       {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
@@ -96,7 +102,8 @@ const server = cache('mcp', () => {
       {"type": "function_call_output", "output": {"result":[{"type":"GetTissueExpressionOfGene","arguments":{"gene": {"type":"Gene"}},"label":"Get expression of the gene", ...}]}}
       {"type": "function_call", "name": "expand", "arguments": {"workflow_id":"38b60ad6", "step":{"type":"GetTissueExpressionOfGene","arguments":{"gene": {"step_id": "2b976512"}}}}}
       {"type": "function_call_output", "output": {"result":{"workflow_id": "811b99c8", "step_id": "965ac0ed", "type": "TissueGeneExpression"}}
-      {"type": "agent_message", "content": "I've created the report for you at https://playbook-workflow-builder.cloud/report/811b99c8 , let me know what else you'd like to do."}
+      {"type": "agent_message", "content": "I've created the report for you at <https://playbook-workflow-builder.cloud/report/811b99c8>, let me know what else you'd like to do."}
+      \`\`\`
 
       ## Important Notes
 
@@ -107,8 +114,8 @@ const server = cache('mcp', () => {
     title: 'Options',
     description: 'Next step types compatible with the current workflow step. See instructions for more information and an example.',
     inputSchema: {
-      workflow_id: z.string().nullish().describe('Current workflow id (or otherwise null if no workflow yet present)'),
-      step_id: z.string().nullish().describe('Current step id in the workflow (or otherwise null if no workflow yet present)'),
+      workflow_id: z.string().nullish().describe('Most recent workflow id (or otherwise null if no workflow yet present)'),
+      step_id: z.string().nullish().describe('Step id in the workflow we intend to expand from (or otherwise null if no workflow yet present)'),
     },
     outputSchema: {
       result: z.object({
@@ -179,7 +186,7 @@ const server = cache('mcp', () => {
       }).strict(),
     },
     outputSchema: {
-      result: z.object({ workflow_id: z.string(), step_id: z.string(), type: z.string(), /*value: z.any()*/ }).optional(),
+      result: z.object({ workflow_id: z.string(), step_id: z.string(), type: z.string(), description: z.string() /*value: z.any()*/ }).optional(),
       error: z.any().or(z.undefined()),
     },
   }, async (props) => {
@@ -246,7 +253,11 @@ const server = cache('mcp', () => {
       // const output = await fpl.process.output()
       // if (!output) throw new Error('Failed to resolve output')
       // const { type, value } =  output.toJSON()
-      const result = { workflow_id: fpl.id, step_id: fpl.process.id, type, /*value*/ }
+      const description = processMetaNode.story({
+        data: process.data,
+        inputs: await process.inputs__outputs(),
+      }).abstract ?? processMetaNode.meta.description ?? ''
+      const result = { workflow_id: fpl.id, step_id: fpl.process.id, type, description, /*value*/ }
       console.debug(JSON.stringify({ expand: { output: result } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ result }) }],
@@ -255,6 +266,80 @@ const server = cache('mcp', () => {
     } catch (exc) {
       const error = (exc as Error).message
       console.error(JSON.stringify({ expand: { input: props, error } }))
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error }) }],
+        structuredContent: { error },
+      }
+    }
+  })
+  server.registerTool('search_published', {
+    title: 'Search Published Workflow Apps',
+    description: 'Find a published workflow that already does what the user wants. Use view to load the workflow and get more details.',
+    inputSchema: {
+      search: z.string().describe('A search that will identify relevant workflows, structure of the workflow like tools, databases, input/output types are relevant, specific biological entities are NOT.'),
+    },
+    outputSchema: {
+      result: z.object({ workflow_id: z.string(), label: z.string(), description: z.string(), dataSources: z.string(), inputs: z.string(), outputs: z.string() }).array().optional(),
+      error: z.any().or(z.undefined()),
+    },
+  }, async (props) => {
+    try {
+      const matchingPlaybooks = await PublicPlaybooks.call({ query: { search: props.search, limit: 10 }, body: undefined }, undefined as any, undefined as any) // none of these undefined params matter, maybe in the future we can fix the typing..
+      const result = matchingPlaybooks.map(({ id: workflow_id, label, description, dataSources, inputs, outputs }) => ({ workflow_id, label, description, dataSources, inputs, outputs }))
+      console.debug(JSON.stringify({ search_published: { output: result } }))
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ result }) }],
+        structuredContent: { result },
+      }
+    } catch (exc) {
+      const error = (exc as Error).message
+      console.error(JSON.stringify({ search_published: { input: props, error } }))
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error }) }],
+        structuredContent: { error },
+      }
+    }
+  })
+  server.registerTool('view', {
+    title: 'View a workflow by id',
+    description: 'Load and view a workflow by its id.',
+    inputSchema: {
+      workflow_id: z.string(),
+    },
+    outputSchema: {
+      result: z.object({
+        workflow_id: z.string(),
+        step_id: z.string(),
+        arguments: z.record(z.string(), z.object({ step_id: z.string() })),
+        type: z.string(),
+        description: z.string(),
+      }).array().optional(),
+      error: z.any().or(z.undefined()),
+    },
+  }, async (props) => {
+    try {
+      const fpl = await fpprg.getFPL(props.workflow_id)
+      if (!fpl) throw new Error(`{"workflow_id":>"${props.workflow_id}" not found<}`)
+      const { fullFPL, processLookup } = await fpl_expand({ krg, fpl })
+      const result = fullFPL
+        .map((step) => {
+          const { metanode, story } = processLookup[step.process.id]
+          return {
+            workflow_id: step.id,
+            step_id: step.process.id,
+            arguments: dict.init(dict.items(step.process.inputs).map(({ key, value }) => ({ key, value: { step_id: value.id } }))),
+            type: metanode.output.spec,
+            description: story.abstract ?? metanode.meta.description ?? '',
+          }
+        })
+      console.debug(JSON.stringify({ view: { output: result } }))
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ result }) }],
+        structuredContent: { result },
+      }
+    } catch (exc) {
+      const error = (exc as Error).message
+      console.error(JSON.stringify({ view: { input: props, error } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ error }) }],
         structuredContent: { error },

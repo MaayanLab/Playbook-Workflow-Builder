@@ -246,7 +246,9 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                   className="w-32"
                   src={`${publicUrl}/PWB-logo.svg`}
                 />
-                <div className="prose text-center"><h4>Playbook Workflow Builder Text to Workflow</h4></div>
+                <div className="prose text-center">
+                  <h4>Text to Workflow</h4>
+                </div>
               </div>
             </div>
             <Message role="user" session={session}>

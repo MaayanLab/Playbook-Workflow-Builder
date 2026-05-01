@@ -1,9 +1,7 @@
 import type { Session } from 'next-auth'
 
 export function UserDisplay({ session }: { session: Session | null }) {
-  if (typeof session?.user?.image === 'string') {
-    return <img src={session.user.image} />
-  } else if (session?.user?.name) {
+  if (session?.user?.name) {
     return <>{session?.user?.name}</>
   } else if (session?.user?.email) {
     return <>{session.user.email}</>

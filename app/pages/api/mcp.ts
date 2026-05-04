@@ -11,7 +11,7 @@ import { FPL, Process } from '@/core/FPPRG';
 import type { ProcessMetaNode } from "@/spec/metanode"
 import type KRG from "@/core/KRG"
 import pluralize from "pluralize"
-import { PublicPlaybooks } from '@/app/api/server'
+import { PublicPlaybooks, PublicUserPlaybooks } from '@/app/api/server'
 import { fpl_expand } from '@/core/common';
 
 function options(props: { krg: KRG, heads: FPL[], workflow: FPL[] }) {
@@ -279,13 +279,16 @@ const server = cache('mcp', () => {
       search: z.string().describe('A search that will identify relevant workflows, structure of the workflow like tools, databases, input/output types are relevant, specific biological entities are NOT.'),
     },
     outputSchema: {
-      result: z.object({ workflow_id: z.string(), label: z.string(), description: z.string(), dataSources: z.string(), inputs: z.string(), outputs: z.string() }).array().optional(),
+      result: z.object({ workflow_id: z.string(), title: z.string(), description: z.string().optional(), dataSources: z.string().optional(), inputs: z.string().optional(), outputs: z.string().optional() }).array().optional(),
       error: z.any().or(z.undefined()),
     },
   }, async (props) => {
     try {
-      const matchingPlaybooks = await PublicPlaybooks.call({ query: { search: props.search, limit: 10 }, body: undefined }, undefined as any, undefined as any) // none of these undefined params matter, maybe in the future we can fix the typing..
-      const result = matchingPlaybooks.map(({ id: workflow_id, label, description, dataSources, inputs, outputs }) => ({ workflow_id, label, description, dataSources, inputs, outputs }))
+      const matchingPlaybooks = [
+        ...(await PublicPlaybooks.call({ query: { search: props.search, limit: 10 }, body: undefined }, undefined as any, undefined as any)), // none of these undefined params matter, maybe in the future we can fix the typing..
+        ...(await PublicUserPlaybooks.call({ query: { search: props.search, limit: 10 }, body: undefined }, undefined as any, undefined as any)), // none of these undefined params matter, maybe in the future we can fix the typing..
+      ]
+      const result = matchingPlaybooks.map((p) => ({ workflow_id: 'playbook' in p ? p.playbook : p.id, title: 'label' in p ? p.label : 'title' in p ? p.title : 'Untitled', description: p.description, inputs: p.inputs, outputs: p.outputs }))
       console.debug(JSON.stringify({ search_published: { output: result } }))
       return {
         content: [{ type: 'text', text: JSON.stringify({ result }) }],

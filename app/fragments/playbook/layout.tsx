@@ -116,7 +116,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           {sidebar && <>
             <div className="flex flex-col sm:flex-row-reverse">
               <div className={classNames("self-center relative")}>
-                <button className={classNames("absolute btn btn-xs sm:rotate-90 sm:active:focus:rotate-90 whitespace-nowrap sm:-left-8 left-[25vw]", { "-top-4 sm:top-0 sm:-left-9": !isSidebarCollapsed,  "-top-6 sm:top-0 sm:-left-2": isSidebarCollapsed })}  onClick={evt => {setIsSidebarCollapsed(!isSidebarCollapsed)}}>
+                <button className={classNames("absolute btn btn-xs sm:rotate-90 sm:active:focus:rotate-90 whitespace-nowrap sm:-left-2 left-[25vw]", { "-top-4 sm:top-0 sm:-left-9": !isSidebarCollapsed,  "-top-6 sm:top-0 sm:-left-2": isSidebarCollapsed })}  onClick={evt => {setIsSidebarCollapsed(!isSidebarCollapsed)}}>
                   {isSidebarCollapsed ? 'Chat' : 'Hide Chat'}
                 </button>
               </div>

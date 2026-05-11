@@ -244,6 +244,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                 {[
                   'Show me the expression of ACE2 in healthy human tissues from GTEx',
                   'Find drugs from the LINCS L1000 Chemical Perturbations that up regulate STAT3',
+                  `I'd like to analyze the GEO study GSE301503`,
                 ].map((suggestion, i) => {
                   return (
                     <button

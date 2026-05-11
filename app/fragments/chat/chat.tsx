@@ -269,6 +269,8 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                   onChange={evt => setMessage(() => evt.target.value)}
                   onKeyDown={async (evt) => {
                     if (evt.shiftKey && evt.key === 'Enter') {
+                      evt.preventDefault()
+                      evt.stopPropagation()
                       const currentMessage = message
                       setMessage(() => '')
                       await submit({ message: currentMessage, graph_id, node_id, thread_id })

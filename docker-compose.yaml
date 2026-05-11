@@ -117,7 +117,7 @@ services:
     logging: *default-logging
   # app-dev serves a dev version of the app
   app-dev:
-    image: maayanlab/playbook-partnership:0.78.1-dev
+    image: maayanlab/playbook-partnership:0.78.2-dev
     build:
       context: .
       dockerfile: Dockerfile

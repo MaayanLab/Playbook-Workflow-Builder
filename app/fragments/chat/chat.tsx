@@ -17,10 +17,12 @@ import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
-import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
+import { close_icon, extend_icon, fullscreen_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
 import { UnauthorizedError } from '@/spec/error'
+import Link from 'next/link'
 
+const Icon = dynamic(() => import('@/app/components/icon'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
@@ -185,6 +187,20 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
             </Waypoint>
             </>
             : null}
+          <div className={classNames('flex flex-row my-1 gap-2 bg-white dark:bg-current p-2 items-start', {'hidden': !embedded})}>
+            <div className="prose self-center"><h4>Text to Workflow</h4></div>
+            <div className="grow">&nbsp;</div>
+            <Link href={`/chat${thread_id ? `/${thread_id}` : ''}`}>
+              <button>
+                <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
+              </button>
+            </Link>
+            <Link href={`/${mode}${fpl ? `/${fpl}?` : ''}`} shallow>
+              <button className="bg-red-500">
+                <Icon icon={close_icon} className="fill-black dark:fill-white" />
+              </button>
+            </Link>
+          </div>
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
             <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>

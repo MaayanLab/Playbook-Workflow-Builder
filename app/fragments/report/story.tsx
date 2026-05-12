@@ -90,11 +90,11 @@ export function References() {
             References
           </h2>
         </div>
-        <div className="prose max-w-none">
-          <p className="text-sm text-justify whitespace-pre-line my-2 flex flex-col">{story.ast.map((part, i) =>
-            part.type === 'bibitem' ? <a key={i} id={part.ref} className="no-underline text-neutral-focus hover:text-neutral hover:no-underline hover:cursor-text"><Linkify>{part.text}</Linkify></a>
+        <div className="prose max-w-none text-sm text-justify whitespace-pre-line my-2 flex flex-col">
+          {story.ast.map((part, i) =>
+            part.type === 'bibitem' ? <React.Fragment key={i}><a key={i} id={part.ref} /><Linkify>{part.text}</Linkify></React.Fragment>
               : null
-          )}</p>
+          )}
         </div>
       </div>
     </div>

@@ -17,10 +17,9 @@ import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
-import { close_icon, extend_icon, fullscreen_icon, func_icon, start_icon, variable_icon } from '@/icons'
+import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
 import { UnauthorizedError } from '@/spec/error'
-import Link from 'next/link'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -37,7 +36,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
     refreshInterval: 1000,
     onSuccess(data) {
       if (data?.fpl && fpl !== data.fpl) {
-        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}${mode !== 'chat' ? `/${data.fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
+        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${data.fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
       }
     }
   })

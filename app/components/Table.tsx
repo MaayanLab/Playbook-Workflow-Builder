@@ -24,11 +24,15 @@ export function Table({ children, height, shape: shape_, downloads, ...props }: 
     <>
       <div className="hidden print:block">
         <table>
-          <thead>{React.Children.map(children, el => el?.props.name ? <th>{el.props.name}</th> : null)}</thead>
+          <thead>
+            <tr>
+              {React.Children.map(children, (el, i) => el?.props.name ? <th key={i}>{el.props.name}</th> : null)}
+            </tr>
+          </thead>
           <tbody>
             {array.arange(props.numRows ?? 0).map((rowIndex) =>
-              <tr>{React.Children.map(children, (el, columnIndex) =>
-                el?.props.cellRenderer ? <td>{el.props.cellRenderer(rowIndex, columnIndex)?.props.children}</td> : null
+              <tr key={rowIndex}>{React.Children.map(children, (el, columnIndex) =>
+                el?.props.cellRenderer ? <td key={columnIndex}>{el.props.cellRenderer(rowIndex, columnIndex)?.props.children}</td> : null
               )}</tr>
             )}
           </tbody>

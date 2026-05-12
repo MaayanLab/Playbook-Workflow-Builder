@@ -19,6 +19,7 @@ def deseq2(anndata):
   case_ids = anndata.obs[anndata.obs[col] == grp_ids[1]].index.tolist()
   case_mask = [x in case_ids for x in anndata.obs_names]
 
+  anndata.var_names_make_unique()
   ctrl_df = pd.DataFrame(
     data = anndata.X[ctrl_mask, :],
     index = anndata.obs_names[ctrl_mask],

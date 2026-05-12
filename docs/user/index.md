@@ -19,6 +19,7 @@ This user guide is broken up into several documents describing different aspects
 ## Workshops
 
 ### June 2024
+
 The 2024 workshop demonstrated how to use the platform via interactive sessions (Part 1), as well as, introduced ways the community can contribute to the project (Part 2).
 
 #### Part 1
@@ -27,6 +28,16 @@ The 2024 workshop demonstrated how to use the platform via interactive sessions 
 #### Part 2
 [![Part 1](https://img.youtube.com/vi/hUkOfLWUTPM/0.jpg)](https://www.youtube.com/watch?v=hUkOfLWUTPM)
 
+## Acknowledgements
+
+The PWB wouldn't be possible without these key contributors:
+
+[<img height="80px" src="../../app/public/logos/CFDE.png" />](https://cfde.cloud/)
+[<img height="80px" src="../../app/public/logos/exRNA.png" />](https://exrna.org/)
+[<img height="80px" src="../../app/public/logos/glygen.svg" />](https://www.glygen.org/)
+[<img height="80px" src="../../app/public/logos/LINCS-DCIC.png" />](https://lincs-dcic.org/)
+[<img height="80px" src="../../app/public/logos/KidsFirst.png" />](https://kidsfirstdrc.org/)
+[<img height="80px" src="../../app/public/logos/Metabolomics.png" />](https://www.metabolomicsworkbench.org/)
 
 ## Developer Guide
 

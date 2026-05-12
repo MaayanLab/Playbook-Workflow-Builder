@@ -186,21 +186,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
             <ReportButton session_id={session_id} graph_id={fpl ?? 'start'} />
             </Waypoint>
             </>
-            : null}
-          <div className={classNames('flex flex-row my-1 gap-2 bg-white dark:bg-current p-2 items-start', {'hidden': !embedded})}>
-            <div className="prose self-center"><h4>Text to Workflow</h4></div>
-            <div className="grow">&nbsp;</div>
-            <Link href={`/chat${thread_id ? `/${thread_id}` : ''}`}>
-              <button>
-                <Icon icon={fullscreen_icon} className="fill-black dark:fill-white" />
-              </button>
-            </Link>
-            <Link href={`/${mode}${fpl ? `/${fpl}?` : ''}`} shallow>
-              <button className="bg-red-500">
-                <Icon icon={close_icon} className="fill-black dark:fill-white" />
-              </button>
-            </Link>
-          </div>
+          : null}
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
             <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>
@@ -256,7 +242,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                 })}
               </div>}
               <Message role="welcome" session={session}>
-                How can I help you today?
+                Hi! What would you like to build? Describe your idea and I'll generate the workflow for you.
               </Message>
               <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
                 <img

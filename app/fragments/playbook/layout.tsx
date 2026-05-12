@@ -30,19 +30,19 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
             </div>
             <ExLink
               href={runtimeConfig.NEXT_PUBLIC_LANDING_PAGE}
-              className="flex flex-row items-center"
+              className="flex flex-row items-center hover:no-underline"
             >
               <img
                 className="p-2 max-w-16 cursor-pointer dark:stroke-white"
                 src={`${publicUrl}/PWB-logo.svg`}
               />
-              <h1 className="text-black dark:text-white text-lg sm:text-2xl md:text-4xl font-bold p-2 cursor-pointer"><span className="text-[140%]">P</span>laybook <span className="text-[140%]">W</span>orkflow <span className="text-[140%]">B</span>uilder</h1>
+              <h1 className="text-black dark:text-white text-lg sm:text-2xl md:text-4xl font-bold p-2 cursor-pointer "><span className="text-[140%]">P</span>laybook <span className="text-[140%]">W</span>orkflow <span className="text-[140%]">B</span>uilder</h1>
             </ExLink>
           </div>
           <div className="navbar-end hidden md:flex">
             <div className="hidden xl:flex">
               <ExLink href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></ExLink>
-              <ExLink href="/chat"><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></ExLink>
+              <ExLink href="/chat" shallow><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></ExLink>
               <ExLink href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></ExLink>
               <ExLink href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></ExLink>
               <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
@@ -133,7 +133,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
             <span>Playbook</span>
           </li>
           <li><ExLink href="/playbooks">Published Playbooks</ExLink></li>
-          <li><ExLink href="/chat">Text to Workflow</ExLink></li>
+          <li><ExLink href="/chat" shallow>Text to Workflow</ExLink></li>
           <li><ExLink href="/components">Component Catalog</ExLink></li>
           <li><ExLink href="/explore">Component Graph</ExLink></li>
           <li><a href="https://github.com/MaayanLab/Playbook-Workflow-Builder/blob/main/docs/user/index.md" target="_blank">User Guide</a></li>

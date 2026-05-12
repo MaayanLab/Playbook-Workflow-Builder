@@ -21,8 +21,6 @@ export default function Home() {
           To completely start over rather than expanding from Home, click the logo.
         </p>
       </div>
-      <h2 className="text-2xl font-bold mb-2 prose max-w-none">Contributors</h2>
-      <Contributors />
     </>
   )
 }

@@ -66,6 +66,45 @@ def createpcanometa(gene_count_matrix):
     return json.loads(fig.to_json())
 
 
+def plotnometa2d(pca):
+    fig = go.Figure(data=[go.Scatter(
+        x=pca.components_[0],
+        y=pca.components_[1],
+        mode='markers'
+    )])
+
+    # Set square aspect ratio
+    fig.update_layout(
+        yaxis=dict(
+            scaleanchor="x",
+            scaleratio=1
+        )
+    )
+
+    # Set the axis labels with variance explained and font size for readability
+    fig.update_layout(
+        scene=dict(
+            width=1000,
+            height=1000,
+            xaxis_title=pca.variance_explained[0],
+            yaxis_title=pca.variance_explained[1],
+            xaxis_title_font=dict(size=20),
+            yaxis_title_font=dict(size=20)
+        )
+    )
+
+    return fig
+
+
+def createpcanometa2d(gene_count_matrix):
+    dataset = anndata_from_file(gene_count_matrix)
+    dataset = dataset.to_df()
+    dataset = pd.DataFrame(dataset.values)
+    data = run(dataset)
+    fig = plotnometa(data)
+
+    return json.loads(fig.to_json())
+
 
 # Code for making PCA with metadata
 
@@ -137,5 +176,80 @@ def createmetapcagraph(anndata):
             )
         ]
     )
+
+    return json.loads(fig.to_json())
+
+
+def createmetapcagraph2d(anndata):
+    dataset = anndata_from_file(anndata)
+    
+    # Extract the relevant columns from .obs
+    if 'Type: Control or Perturbation' in dataset.obs.columns:
+        col = 'Type: Control or Perturbation'
+        grp_ids = ['Control', 'Perturbation']
+    else:
+        col = dataset.obs.columns[-1]
+        grp_ids = dataset.obs[col].unique()
+        assert len(grp_ids) == 2, "Expected two possible groups"
+
+    ctrl_ids = dataset.obs[dataset.obs[col] == grp_ids[0]].index.tolist()
+    case_ids = dataset.obs[dataset.obs[col] == grp_ids[1]].index.tolist()
+    
+    # Get PCA data
+    pca = run(dataset.to_df().transpose())
+    
+    # Assign colors based on control and case masks
+    colors = ['blue' if x in ctrl_ids else ('red' if x in case_ids else 'grey') for x in dataset.obs_names]
+    
+    # Create the scatter plot with colored points
+    fig = go.Figure(data=[go.Scatter(
+        x=pca.components_[0],
+        y=pca.components_[1],
+        mode='markers',
+        marker=dict(
+            color=colors,
+            size=18
+        )
+    )])
+
+    # Add legend/key that labels colors as control or perturbation
+    # Set the axis labels with variance explained and font size for readability
+    fig.update_layout(
+        width=1250,
+        height=1250,
+        margin=dict(b=200),
+        xaxis=dict(
+            title=pca.variance_explained[0],
+            title_font=dict(size=20),
+            tickfont=dict(size=16)
+        ),
+        yaxis=dict(
+            title=pca.variance_explained[1],
+            title_font=dict(size=20),
+            tickfont=dict(size=16)
+        ),
+        annotations=[
+            go.layout.Annotation(
+                x=0.25,
+                y=-0.1,
+                showarrow=False,
+                text='Control (Blue)',
+                xref='paper',
+                yref='paper',
+                font=dict(color='blue', size=16)
+            ),
+            go.layout.Annotation(
+                x=0.6,
+                y=-0.1,
+                showarrow=False,
+                text='Perturbation (Red)',
+                xref='paper',
+                yref='paper',
+                font=dict(color='red', size=16)
+            )
+        ]
+    )
+    
+    
 
     return json.loads(fig.to_json())

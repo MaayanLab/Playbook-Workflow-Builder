@@ -329,7 +329,7 @@ export const EnrichrEnrichmentAnalysis = MetaNode('EnrichrEnrichmentAnalysis')
     })
   ]))
   .view(userlist => (
-    <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
+    <div className="flex-grow flex flex-row m-0" style={{ minHeight: 745 }}>
       {'empty' in userlist ? 
         <div className="prose max-w-none">Enrichment Analysis Cannot be Performed on Empty Set</div>
         : <iframe
@@ -471,7 +471,7 @@ export const EnrichrGeneSearchResults = MetaNode(`EnrichrGeneSearchResults`)
   .codec(z.string())
   .view(gene => {
     return (
-      <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
+      <div className="flex-grow flex flex-row m-0" style={{ minHeight: 745 }}>
         <iframe
           className="flex-grow border-0"
           src={`${enrichr_url}/#find!gene=${encodeURIComponent(gene)}`}
@@ -565,7 +565,7 @@ export const EnrichrTermSearchResults = MetaNode(`EnrichrTermSearchResults`)
   .codec(z.string())
   .view(term => {
     return (
-      <div className="flex-grow flex flex-row m-0" style={{ minHeight: 500 }}>
+      <div className="flex-grow flex flex-row m-0" style={{ minHeight: 745 }}>
         <iframe
           className="flex-grow border-0"
           src={`${enrichr_url}/#meta!meta=${encodeURIComponent(term)}`}

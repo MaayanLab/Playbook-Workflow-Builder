@@ -134,19 +134,19 @@ const server = cache('mcp', () => {
       const fpl = props.workflow_id ? await fpprg.getFPL(props.workflow_id) : undefined
       if (props.workflow_id && !fpl) throw new Error(`{"workflow_id":>"${props.workflow_id}" not found<}`)
       const workflow = fpl?.resolve() ?? []
-      let head
+      let heads: FPL[] = []
       if (props.step_id) {
         for (const item of workflow ?? []) {
           if (item.process.id === props.step_id) {
-            head = item
+            heads = [item]
             break
           }
         }
-        if (!head) throw new Error(`{"step_id":>"${props.step_id}" not found<}`)
-      } else {
-        head = workflow[workflow.length-1]
+        if (heads.length === 0) throw new Error(`{"step_id":>"${props.step_id}" not found<}`)
+      } else if (workflow.length > 0) {
+        heads = [workflow[workflow.length-1]]
       }
-      const { items } = options({ krg, heads: [head], workflow })
+      const { items } = options({ krg, heads, workflow })
       const result = items.map(proc => ({
         type: proc.spec,
         arguments: dict.init(dict.items(proc.inputs).map(({ key, value }) => ({

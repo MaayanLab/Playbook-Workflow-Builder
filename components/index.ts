@@ -339,3 +339,7 @@ import * as data_gene_biotype_filter from "./data/gene_biotype_filter"
 import data_gene_biotype_filter_packageJson from "./data/gene_biotype_filter/package.json"
 metanodes.push(...MetaNodesFromExports(data_gene_biotype_filter, data_gene_biotype_filter_packageJson))
 components.push("data/gene_biotype_filter")
+import * as service_ncbi from "./service/ncbi"
+import service_ncbi_packageJson from "./service/ncbi/package.json"
+metanodes.push(...MetaNodesFromExports(service_ncbi, service_ncbi_packageJson))
+components.push("service/ncbi")

@@ -14,6 +14,7 @@ import {
   RegulatoryElement,
   Tissue,
   Variant,
+  PMCAccession,
 } from '@/components/core/primitives'
 import { Table, Cell, Column } from '@/app/components/Table'
 import { input_icon, set_icon } from '@/icons'
@@ -73,6 +74,7 @@ export const VariantSet = Set_T(Variant)
 export const RegulatoryElementSet = Set_T(RegulatoryElement)
 export const PathwaySet = Set_T(Pathway)
 export const PhenotypeSet = Set_T(Phenotype)
+export const PMCAccessionSet = Set_T(PMCAccession)
 export const TissueSet = Set_T(Tissue)
 export const MetaboliteSet = Set_T(Metabolite)
 

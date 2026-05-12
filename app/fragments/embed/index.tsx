@@ -101,13 +101,9 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
 
 function Cell({ krg, head }: { krg: KRG, head: Metapath }) {
   const { data: { output, outputNode }, status, error: outputError, mutate } = useMetapathOutput({ krg, head })
-  return (
-
-    !outputNode ? <div>Loading...</div>
-      : !outputNode?.view || output === undefined ? <div className="prose">Loading...</div>
-      : output === null ? <div className="prose max-w-none">Waiting for input</div>
-      : <SafeRender component={outputNode.view} props={output} />
-  )
+  if (!outputNode || !outputNode?.view || output === undefined) return <div className="prose">Loading...</div>
+  if (output === null) return <div className="prose max-w-none">Waiting for input</div>
+  return <><SafeRender component={outputNode.view} props={output} /><div className="embed-ready hidden"></div></>
 }
 
 function Main({ session_id, graph_id, node_id }: { session_id?: string, graph_id: string, node_id: string }) {

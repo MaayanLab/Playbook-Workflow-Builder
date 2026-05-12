@@ -14,10 +14,12 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
   const browser = await puppeteerSingleton
   const ctx = await browser.createBrowserContext()
   const page = await ctx.newPage()
-  await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`, { waitUntil: 'networkidle0' })
-  const body = await page.$('main')
+  await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`)
+  await page.waitForSelector('div.embed-ready')
+  await page.waitForNetworkIdle({ idleTime: 500 })
+  const body = await page.$('body')
   const boundingBox = await body?.boundingBox()
-  const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height } : { format: 'letter' })
+  const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height, format: 'letter' } : { width: 2551, height: 3295, format: 'letter' })
   await ctx.close()
   return pdf
 }
@@ -34,20 +36,20 @@ async function extras() {
     'extras',
   )
   return {
-    'extras/a0poster.cls': await new Promise<Buffer>((resolve, reject) =>
+    'extras/a0poster.cls': new Promise<ArrayBuffer>((resolve, reject) =>
       fs.readFile(path.resolve(extrasRootPath, 'a0poster.cls'), (err, data) => {
-        if (err) { reject(err) } else { resolve(data) }
+        if (err) { reject(err) } else { resolve(new Uint8Array(data).buffer) }
       })
     ),
-    'extras/a0size.sty': await new Promise<Buffer>((resolve, reject) =>
+    'extras/a0size.sty': new Promise<ArrayBuffer>((resolve, reject) =>
       fs.readFile(path.resolve(extrasRootPath, 'a0size.sty'), (err, data) => {
-        if (err) { reject(err) } else { resolve(data) }
+        if (err) { reject(err) } else { resolve(new Uint8Array(data).buffer) }
       })
     ),
   }
 }
 
-export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>> {
+export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, Promise<string | ArrayBuffer>>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
   const title = props.metadata?.title ? latexEscape(props.metadata.title) : 'Playbook'
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :
@@ -87,7 +89,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
       id: head.id,
       kind: figure.kind,
       files: {
-        [`${figure.kind}s/${figure_num}.pdf`]: await screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
+        [`${figure.kind}s/${figure_num}.pdf`]: screenshotOf({ graph_id: fullFPL[fullFPL.length-1].id, node_id: head.id }),
       },
       label: `fig:${figure_num}`,
       filename: `${figure.kind}s/${figure_num}.pdf`,
@@ -107,7 +109,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
   return {
     ...(await extras()),
     ...dict.init(figures.flatMap((fig) => dict.items(fig.files))),
-    'paper.tex': `
+    'paper.tex': Promise.resolve(`
 \\documentclass{article}
 \\usepackage[T1]{fontenc}
 \\usepackage{authblk}
@@ -173,8 +175,8 @@ ${figures.filter(fig => fig.kind === 'figure').flatMap((fig) => fig ? [
 \\printbibliography
 
 \\end{document}
-`,
-    'presentation.tex': `
+`),
+    'presentation.tex': Promise.resolve(`
 \\documentclass[11pt]{beamer}
 \\usepackage[T1]{fontenc}
 \\usepackage{booktabs}
@@ -293,8 +295,8 @@ ${fullFPL.flatMap(head => {
 \\end{frame}
 
 \\end{document}
-`,
-    'poster.tex': `
+`),
+    'poster.tex': Promise.resolve(`
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % a0poster Portrait Poster
 % LaTeX Template
@@ -403,9 +405,9 @@ ${figures.filter(fig => fig.kind === 'figure').map(fig => `
 
 \\end{multicols}
 \\end{document}
-`,
-    'references.bib': `
+`),
+    'references.bib': Promise.resolve(`
 ${story.ast.flatMap(part => part.type === 'bibitem' ? part.bibtex ? [`@${part.bibtex.type}{${story.bibitems.get(part.ref)},${part.bibtex.record}}`] : [`@misc{${story.bibitems.get(part.ref)},title={${latexEscape(part.text.slice(part.text.indexOf('.')+2))}}}`] : []).join('\n\n')}
-`,
+`),
   }
 }

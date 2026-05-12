@@ -46,7 +46,10 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
       dict.items(tex_files).forEach(({ key, value }) => {
         zip.file(key, value)
       })
-      zip.generateNodeStream().pipe(res)
+      zip.generateNodeStream({
+        type: 'nodebuffer',
+        streamFiles: true,
+      }).pipe(res)
     }
   })
   .build()

@@ -343,3 +343,7 @@ import * as service_ncbi from "./service/ncbi"
 import service_ncbi_packageJson from "./service/ncbi/package.json"
 metanodes.push(...MetaNodesFromExports(service_ncbi, service_ncbi_packageJson))
 components.push("service/ncbi")
+import * as export_reports from "./export/reports"
+import export_reports_packageJson from "./export/reports/package.json"
+metanodes.push(...MetaNodesFromExports(export_reports, export_reports_packageJson))
+components.push("export/reports")

@@ -3,33 +3,50 @@ import { API } from '@/spec/api'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import { NotFoundError, UnauthorizedError } from '@/spec/error'
 import db from '@/app/db'
+import * as schema from "@/db"
 import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
 import { tsvector, tsvector_intersect } from '@/utils/tsvector'
 import cache from '@/utils/global_cache'
+import { indexSoon } from '@/core/semantic-search'
 
 import publicPlaybooks from '@/app/public/playbooksDemo'
-const playbook_tsvectors = cache('playbook_tsvectors', () => {
-  const playbook_tsvectors: Record<string, Set<string>> = {}
-  publicPlaybooks.forEach(playbook => {
-    playbook.workflow.workflow[playbook.workflow.workflow.length-1].id = playbook.id
-    playbook_tsvectors[playbook.id] = tsvector([
-      playbook.label,
-      playbook.description,
-      ...playbook.inputs.flatMap(input => [
-        input.meta.label,
-        input.meta.description,
-      ]),
-      ...playbook.outputs.flatMap(output => [
-        output.meta.label,
-        output.meta.description,
-      ]),
-      ...playbook.dataSources,
-    ].join(' '))
-  })
-  return playbook_tsvectors
+import { fpl_expand } from '@/core/common'
+import { PgDatabase } from '@/utils/orm/pg'
+const with_public_playbooks = cache('with_public_playbooks', async () => {
+  await Promise.all(publicPlaybooks.map(async (playbook) => {
+    try {
+      const fpl = await fpprg.upsertFPL(await fpprg.resolveFPL(playbook.workflow as any))
+      const { story } = await fpl_expand({ krg, fpl })
+      const storyText = story.ast.flatMap(part => part.tags.includes('abstract') ? [part.type === 'bibitem' ? '\n' : '', part.text] : []).join('')
+      const playbookToInsert = {
+        id: playbook.id,
+        label: playbook.label,
+        authors: playbook.authors.join('\t'),
+        data_sources: playbook.dataSources.join('\t'),
+        story: storyText,
+        description: playbook.description,
+        gpt_summary: playbook.gpt_summary,
+        inputs: playbook.inputs.map(inp => inp.spec).join('\t'),
+        outputs: playbook.outputs.map(inp => inp.spec).join('\t'),
+        license: playbook.license,
+        licenseUrl: playbook.licenseUrl,
+        playbook: fpl.id,
+        published: new Date(playbook.published),
+        version: playbook.version,
+      }
+      await db.objects.published_playbook.upsert({
+        where: { id: playbook.id },
+        create: playbookToInsert,
+        update: playbookToInsert,
+      })
+      await indexSoon({ db, fpl_id: fpl.id })
+    } catch (e) {
+      console.error(e)
+    }
+  }))
 })
 
 export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
@@ -42,69 +59,52 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
     limit: z.number().optional(),
   }))
   .call(async (props) => {
+    await with_public_playbooks
     const search = props.query.search
-    const inputs = props.query.inputs ? props.query.inputs.split(', ') : undefined
-    const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
-    const dataSources = props.query.dataSources ? props.query.dataSources.split(', ') : undefined
+    const inputs = props.query.inputs ? props.query.inputs.split('\t') : undefined
+    const outputs = props.query.outputs ? props.query.outputs.split('\t') : undefined
+    const dataSources = props.query.dataSources ? props.query.dataSources.split('\t') : undefined
     const skip = props.query.skip ?? 0
     const limit = props.query.limit ?? 50
-    let playbooks = publicPlaybooks
-    if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !playbook.inputs.map(t=>t.spec as string).includes(spec)))
-    if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !playbook.outputs.map(t=>t.spec as string).includes(spec)))
-    if (dataSources) playbooks = playbooks.filter(playbook => !dataSources.some(dataSource => !playbook.dataSources.includes(dataSource)))
-    if (search) {
-      const search_tsvector = tsvector(search)
-      const search_scores: Record<string, number> = {}
-      playbooks.forEach(playbook => {
-        search_scores[playbook.id] = tsvector_intersect(playbook_tsvectors[playbook.id], search_tsvector).size
-      })
-      playbooks = playbooks.filter(playbook => search_scores[playbook.id] > 0)
-      playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
-    }
-    playbooks = playbooks.slice(skip, limit)
-    const userPlaybooks = await db.objects.user_playbook.findMany({
-      where: {
-        playbook: {
-          in: playbooks.map(({ id }) => id),
+    if ('db' in db && db.db instanceof PgDatabase) {
+      const playbooks = (await db.db.raw(subst => `
+        select "published_playbook".*
+        from "published_playbook"
+        ${search ? `left join fpl_embedding on "published_playbook".playbook = fpl_embedding.id` : ''}
+        ${inputs || outputs || dataSources ? `where ${[
+          inputs && `"published_playbook".inputs like any(${subst(inputs.map(s => `%${s}%`))})`,
+          outputs && `"published_playbook".outputs like any(${subst(outputs.map(s => `%${s}%`))})`,
+          dataSources && `"published_playbook".data_sources like any(${subst(dataSources.map(s => `%${s}%`))})`,
+        ].filter(v => !!v).join(' and ')}` : ''}
+        ${search ? `order by "fpl_embedding".embedding <-> ${subst(search)}` : `order by "clicks" desc`}
+        offset ${subst(skip)}
+        limit ${subst(limit)}
+      `)).rows.map(row => schema.published_playbook.codec.decode(row))
+      return playbooks
+    } else {
+      let playbooks = await db.objects.published_playbook.findMany({
+        orderBy: {
+          clicks: 'desc',
         },
-      },
-      orderBy: {
-        created: 'desc',
-      },
-    })
-    const userPlaybookLookup = dict.init(userPlaybooks.map((playbook) => ({ key: playbook.playbook, value: playbook })))
-    const results = await Promise.all(playbooks.map(async ({ inputs, outputs, dataSources, ...playbook }) => {
-      if (userPlaybookLookup[playbook.id] === undefined) {
-        try {
-          const fpl = await fpprg.resolveFPL(playbook.workflow as any)
-          fpl.id = playbook.id
-          await fpprg.upsertFPL(fpl)
-          userPlaybookLookup[playbook.id] = await db.objects.user_playbook.upsert({
-            create: {
-              playbook: playbook.id,
-              title: playbook.label,
-              description: playbook.description,
-              public: true,
-            },
-            where: {
-              id: playbook.id
-            },
-          })
-        } catch (e) {
-          console.error(e)
-        }
+        skip,
+        take: limit,
+      })
+      if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !playbook.inputs.split('\t').includes(spec)))
+      if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !playbook.outputs.split('\t').includes(spec)))
+      if (dataSources) playbooks = playbooks.filter(playbook => !dataSources.some(spec => !playbook.data_sources?.split('\t').includes(spec)))
+      if (search) {
+        const search_tsvector = tsvector(search)
+        const search_scores = dict.init(playbooks.map(playbook => {
+          const playbook_tsvector = tsvector([
+            playbook.label || '',
+            playbook.description || '',
+          ].join(' '))
+          return { key: playbook.id, value: tsvector_intersect(search_tsvector, playbook_tsvector).size }
+        }))
+        playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
       }
-      return {
-        ...playbook,
-        inputs: inputs.map(t => t.spec as string).join(', '),
-        outputs: outputs.map(t => t.spec as string).join(', '),
-        dataSources: dataSources.join(', '),
-        clicks: userPlaybookLookup[playbook.id]?.clicks || 0,
-        disabled: userPlaybookLookup[playbook.id] === undefined,
-      }
-    }))
-    if (!search) results.sort((a, b) => b.clicks - a.clicks)
-    return results
+      return playbooks
+    }
   })
   .build()
 
@@ -122,31 +122,43 @@ export const PublicUserPlaybooks = API.get('/api/v1/public/user/playbooks')
     const outputs = props.query.outputs ? props.query.outputs.split(', ') : undefined
     const skip = props.query.skip ?? 0
     const limit = props.query.limit ?? 50
-    // TODO: filter in DB
-    let playbooks = await db.objects.user_playbook.findMany({
-      where: {
-        public: true,
-      },
-      orderBy: {
-        clicks: 'desc',
-      },
-      skip,
-      take: limit,
-    })
-    if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
-    if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
-    if (search) {
-      const search_tsvector = tsvector(search)
-      const search_scores = dict.init(playbooks.map(playbook => {
-        const playbook_tsvector = tsvector([
-          playbook.title || '',
-          playbook.description || '',
-        ].join(' '))
-        return { key: playbook.id, value: tsvector_intersect(search_tsvector, playbook_tsvector).size }
-      }))
-      playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
+    if ('db' in db && db.db instanceof PgDatabase) {
+      const playbooks = (await db.db.raw(subst => `
+        select "published_playbook".*
+        from "published_playbook"
+        ${search ? `left join fpl_embedding on "published_playbook".playbook = fpl_embedding.id` : ''}
+        ${inputs || outputs ? `where ${[
+          inputs && `"published_playbook".inputs like any(${subst(inputs.map(s => `%${s}%`))})`,
+          outputs && `"published_playbook".outputs like any(${subst(outputs.map(s => `%${s}%`))})`,
+        ].filter(v => !!v).join(' and ')}` : ''}
+        ${search ? `order by "fpl_embedding".embedding <-> ${subst(search)}` : `order by "clicks" desc`}
+        offset ${subst(skip)}
+        limit ${subst(limit)}
+      `)).rows.map(row => schema.published_playbook.codec.decode(row))
+      return playbooks
+    } else {
+      let playbooks = await db.objects.published_playbook.findMany({
+        orderBy: {
+          clicks: 'desc',
+        },
+        skip,
+        take: limit,
+      })
+      if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !playbook.inputs.split('\t').includes(spec)))
+      if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !playbook.outputs.split('\t').includes(spec)))
+      if (search) {
+        const search_tsvector = tsvector(search)
+        const search_scores = dict.init(playbooks.map(playbook => {
+          const playbook_tsvector = tsvector([
+            playbook.label || '',
+            playbook.description || '',
+          ].join(' '))
+          return { key: playbook.id, value: tsvector_intersect(search_tsvector, playbook_tsvector).size }
+        }))
+        playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
+      }
+      return playbooks
     }
-    return playbooks
   })
   .build()
 
@@ -162,6 +174,8 @@ export const UserPlaybooks = API.get('/api/v1/user/playbooks')
       where: {
         user: session.user.id,
       },
+      skip: inputs.query.skip,
+      take: inputs.query.limit,
     })
     return playbooks
   })
@@ -266,6 +280,10 @@ export const UpdateUserPlaybook = API.post('/api/v1/user/playbooks/[id]/update')
         outputs: playbookOutputs,
       },
     })
+    if (inputs.body.user_playbook.public) {
+      // ensure published playbooks get an embedding computed
+      await indexSoon({ db, fpl_id: fpl.id })
+    }
     return fpl.id
   })
   .build()
@@ -280,6 +298,9 @@ export const PublishUserPlaybook = API.post('/api/v1/user/playbooks/[id]/publish
   .call(async (inputs, req, res) => {
     const session = await getServerSessionWithId(req, res)
     if (!session || !session.user) throw new UnauthorizedError()
+    if (inputs.body.public) {
+      await indexSoon({ db, fpl_id: inputs.query.id })
+    }
     return await db.objects.user_playbook.update({
       where: {
         user: session.user.id,

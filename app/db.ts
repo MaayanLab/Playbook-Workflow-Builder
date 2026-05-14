@@ -26,5 +26,6 @@ export default cache('db', () => create_database({
     user_playbook: schema.user_playbook,
     thread: schema.thread,
     thread_message: schema.thread_message,
+    fpl_embedding: schema.fpl_embedding,
   },
 }))

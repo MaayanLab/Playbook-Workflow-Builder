@@ -3,19 +3,11 @@ import { z } from 'zod'
 import db from '@/app/db'
 import krg from '@/app/krg'
 import OpenAI from 'openai'
+import openai from '@/app/extensions/openai'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
-import { NotFoundError, UnauthorizedError, UnsupportedMethodError } from '@/spec/error'
-import cache from '@/utils/global_cache'
+import { NotFoundError, UnauthorizedError } from '@/spec/error'
 import fpprg from '@/app/fpprg'
 import dedent from 'ts-dedent'
-
-const openai = cache('openai', async () => {
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn(`OPENAI_API_KEY not defined`)
-    throw new UnsupportedMethodError()
-  }
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-})
 
 function JSONTryParse(str: string) {
   try {

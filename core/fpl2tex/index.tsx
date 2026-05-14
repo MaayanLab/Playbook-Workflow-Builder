@@ -45,7 +45,8 @@ type ReanalysisReport = {
     perturbseqrMimickers: ReportFile,
     perturbseqrReversers: ReportFile
   },
-  references: string[]
+  references: string[],
+  model: string
 }
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
@@ -105,7 +106,7 @@ export async function constructGEOReportReferences( references:string[] ): Promi
   return references.join('\n\n')
 }
 
-export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,references }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {
+export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,references,model }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {
   async function GEOextras() {
     const extrasRootPath = path.resolve(
       process.env.APP_ROOT as string,
@@ -314,7 +315,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
   \\section*{Acknowledgements}\\label{Acknowledgements}
   This project was funded by the NIH grant \\href{https://reporter.nih.gov/search/SdeFoZSP2U2zRTjMZKFHlQ/project-details/11080094}{OT2OD036435}.
   The workflow was constructed using the \\href{https://playbook-workflow-builder.cloud/}{Playbook Workflow Builder} and full details about the site and its development are available in its PLOS Computational Biology \\href{https://doi.org/10.1371/journal.pcbi.1012901}{publication}.
-  The OpenAI gpt-5-mini LLM was used to assist in writing the introduction.
+  The OpenAI ${model} LLM was used to assist in writing the introduction.
   
   {\\small
     \\printbibliography

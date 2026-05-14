@@ -45,7 +45,8 @@ export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
         perturbseqrMimickers: FileC,
         perturbseqrReversers: FileC
     }),
-    references: z.string().array()
+    references: z.string().array(),
+    model: z.string()
   }))
   .view(props => (
     <div className="flex-grow flex flex-col m-0">

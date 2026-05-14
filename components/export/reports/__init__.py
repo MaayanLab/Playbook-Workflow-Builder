@@ -835,7 +835,8 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
         "discussion":discussion,
         "figures":figures,
         "tables":tables,
-        "references":references
+        "references":references,
+        "model":model
     }
 
 

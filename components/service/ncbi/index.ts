@@ -13,7 +13,7 @@ const esummary_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcg
 const pmcconverter_url = 'https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles'
 
 
-export const GEOStudyLinkedPublicationFetch = MetaNode(`Perturb-GEOStudyLinkedPublicationFetch`)
+export const GEOStudyLinkedPublicationFetch = MetaNode(`GEOStudyLinkedPublicationFetch`)
   .meta({
     label: 'Fetch GEO Study Linked Publication',
     description: 'Retrieve the PMC ID(s) of publications linked to a GEO study, if any exist.',

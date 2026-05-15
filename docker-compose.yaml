@@ -105,7 +105,7 @@ services:
   # the database is used by everything it can be provisioned with
   #  dbmate (`dbmate up`)
   pwb-pg:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     environment:
     - POSTGRES_DB
     - POSTGRES_USER

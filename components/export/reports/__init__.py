@@ -88,7 +88,7 @@ async def generate_section(client: AsyncOpenAI, model:str, prompt:str, data:str)
 
     )
 
-    return format_citations(response.output_text.replace("%","\\%"))
+    return format_citations(response.output_text.replace("%","\\%")).encode('ascii', errors='ignore').decode('ascii')
     
 
 async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:str, introduction:dict[str,str], methods:str, results:str, discussion:dict[str,str]):
@@ -111,6 +111,7 @@ async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:st
 
     abstract = await generate_section(client, model, prompt, data)
     abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
+    abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract)
 
     log("Abstract complete.")
     return abstract
@@ -778,6 +779,7 @@ def make_references(pmc_articles):
     for article in pmc_articles:
         refs.extend(article['references'])
 
+    refs = [ref.encode('ascii', errors='ignore').decode('ascii') for ref in refs]
     return refs
 
 

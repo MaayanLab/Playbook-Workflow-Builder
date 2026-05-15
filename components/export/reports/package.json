@@ -1,6 +1,6 @@
 {
     "name": "geo-reanalysis-report",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "license": "CC-BY-4.0",
     "author": "Ido Diamant <ido.diamant@mssm.edu>",
     "private": true,

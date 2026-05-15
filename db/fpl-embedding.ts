@@ -8,6 +8,6 @@ export const pg_vector = SQL.create()
   .build()
 
 export const fpl_embedding = Table.create('fpl_embedding')
-  .field('id', 'uuid', 'primary key references "fpl" ("id") on delete cascade', z_uuid())
+  .field('id', 'uuid', 'references "fpl" ("id") on delete cascade', z_uuid(), { primaryKey: true })
   .field('embedding', 'vector(1536)', 'not null', z.number().array())
   .build()

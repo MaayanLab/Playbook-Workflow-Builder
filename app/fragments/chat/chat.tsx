@@ -236,6 +236,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                       key={i}
                       className="btn btn-primary btn-sm border border-primary btn-rounded rounded-lg"
                       onClick={evt => {submit({ message: suggestion, graph_id, node_id, thread_id })}}
+                      title={suggestion}
                     >Example {i+1}</button>
                   )
                 })}

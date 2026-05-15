@@ -10,11 +10,12 @@ import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
 import { tsvector, tsvector_intersect } from '@/utils/tsvector'
 import cache from '@/utils/global_cache'
-import { indexSoon } from '@/core/semantic-search'
+import { embed, indexSoon } from '@/core/semantic-search'
 
 import publicPlaybooks from '@/app/public/playbooksDemo'
 import { fpl_expand } from '@/core/common'
 import { PgDatabase } from '@/utils/orm/pg'
+import openai from '@/app/extensions/openai'
 const with_public_playbooks = cache('with_public_playbooks', async () => {
   await Promise.all(publicPlaybooks.map(async (playbook) => {
     try {
@@ -67,6 +68,7 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
     const skip = props.query.skip ?? 0
     const limit = props.query.limit ?? 50
     if ('db' in db && db.db instanceof PgDatabase) {
+      const embedding = search ? await embed({ openai: await openai, content: search }) : undefined
       const playbooks = (await db.db.raw(subst => `
         select "published_playbook".*
         from "published_playbook"
@@ -76,7 +78,7 @@ export const PublicPlaybooks = API.get('/api/v1/public/playbooks')
           outputs && `"published_playbook".outputs like any(${subst(outputs.map(s => `%${s}%`))})`,
           dataSources && `"published_playbook".data_sources like any(${subst(dataSources.map(s => `%${s}%`))})`,
         ].filter(v => !!v).join(' and ')}` : ''}
-        ${search ? `order by "fpl_embedding".embedding <-> ${subst(search)}` : `order by "clicks" desc`}
+        ${search ? `order by "fpl_embedding".embedding <-> ${subst(embedding)}` : `order by "clicks" desc`}
         offset ${subst(skip)}
         limit ${subst(limit)}
       `)).rows.map(row => schema.published_playbook.codec.decode(row))
@@ -123,6 +125,7 @@ export const PublicUserPlaybooks = API.get('/api/v1/public/user/playbooks')
     const skip = props.query.skip ?? 0
     const limit = props.query.limit ?? 50
     if ('db' in db && db.db instanceof PgDatabase) {
+      const embedding = search ? await embed({ openai: await openai, content: search }) : undefined
       const playbooks = (await db.db.raw(subst => `
         select "published_playbook".*
         from "published_playbook"
@@ -131,7 +134,7 @@ export const PublicUserPlaybooks = API.get('/api/v1/public/user/playbooks')
           inputs && `"published_playbook".inputs like any(${subst(inputs.map(s => `%${s}%`))})`,
           outputs && `"published_playbook".outputs like any(${subst(outputs.map(s => `%${s}%`))})`,
         ].filter(v => !!v).join(' and ')}` : ''}
-        ${search ? `order by "fpl_embedding".embedding <-> ${subst(search)}` : `order by "clicks" desc`}
+        ${search ? `order by "fpl_embedding".embedding <-> ${subst(embedding)}` : `order by "clicks" desc`}
         offset ${subst(skip)}
         limit ${subst(limit)}
       `)).rows.map(row => schema.published_playbook.codec.decode(row))

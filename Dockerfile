@@ -4,16 +4,15 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get update \
   && apt-get -y install \
+    biber \
     curl \
     git \
     gnupg \
+    latexmk \
+    texlive-bibtex-extra \
+    texlive-fonts-extra \
     texlive-latex-extra \
     texlive-luatex \
-    texlive-bibtex-extra \
-    latexmk \
-    biber \
-  && tlmgr init-usertree \
-  && tlmgr --usermode --repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2023/tlnet-final install sourcesanspro \
   && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
   && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
   && apt-get update \

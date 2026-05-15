@@ -102,6 +102,8 @@ services:
     - ELYSIUM_USERNAME
     - ELYSIUM_PASSWORD
     - N_WORKERS=5
+    - OPENAI_API_KEY
+    - OPENAI_MODEL
     logging: *default-logging
   # the database is used by everything it can be provisioned with
   #  dbmate (`dbmate up`)

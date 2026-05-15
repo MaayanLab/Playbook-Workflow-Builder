@@ -21,7 +21,7 @@ def run(signature, signature_label='', pvalue_threshold=0.05, logfc_threshold=1.
         else:
             color.append('black')
     # Results
-    volcano_plot_results = {'x': signature['LogFC'], 'y': -np.log10(signature['Pval']), 'text':text, 'color': color, 'signature_label': signature_label, 'plot_type': plot_type}
+    volcano_plot_results = {'x': signature['LogFC'], 'y': -np.log10(signature['Pval']), 'text':text, 'color': color, 'size':25, 'signature_label': signature_label, 'plot_type': plot_type}
     return volcano_plot_results
 
 def plot(volcano_plot_results):
@@ -34,11 +34,20 @@ def plot(volcano_plot_results):
         hovertext=volcano_plot_results['text'],
     ))
     fig.update_layout(
-        xaxis_title='log2FC',
-        yaxis_title='-log10P',
+        width=1250,
+        height=1250,
+        xaxis = dict(
+            title='log2FC',
+            title_font=dict(size=20),
+            tickfont=dict(size=16)
+        ),
+        yaxis = dict(
+            title='-log10P',
+            title_font=dict(size=20),
+            tickfont=dict(size=16)
+        ),
         title_text='Volcano Plot',
-        title_font=dict(family='Arial', size=16),
-        
+        title_font=dict(family='Arial', size=28),
     )
     # Add annotation
     fig.add_annotation(
@@ -46,7 +55,7 @@ def plot(volcano_plot_results):
         y=1.0,  
         text='Red: Upregulated<br>Blue: Downregulated',
         showarrow=False,
-        font=dict(family='Arial', size=12),
+        font=dict(family='Arial', size=18),
         xref='paper',
         yref='paper'
     )

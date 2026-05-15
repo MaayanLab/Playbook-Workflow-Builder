@@ -52,7 +52,7 @@ def fetch_samples_meta(samples, species):
   req.raise_for_status()
   df = pd.read_json(io.BytesIO(req.content), dtype='string').T
   control_terms = {'wt', 'wildtype', 'control', 'cntrl', 'ctrl', 'uninfected', 'normal', 'untreated', 'unstimulated', 'shctrl', 'ctl', 'healthy', 'sictrl', 'sicontrol', 'ctr', 'wild', 'dmso', 'sint'}
-  condition = df['characteristics'].map(lambda x: 'Control' if any(term in x.lower() for term in control_terms) else 'Perturbation')
+  condition = (df['title']+df['source']+df['characteristics']).map(lambda x: 'Control' if any(term in x.lower() for term in control_terms) else 'Perturbation')
   backup = (['Control']*(df.shape[0]//2))+(['Perturbation']*((df.shape[0])-(df.shape[0]//2)))
   df['Suggested Condition'] = condition if condition.nunique()==2 else backup
   # register anndata

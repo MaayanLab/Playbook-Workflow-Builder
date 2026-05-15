@@ -12,6 +12,14 @@ import { tsvector, tsvector_intersect } from '@/utils/tsvector'
 import cache from '@/utils/global_cache'
 import { embed, indexSoon } from '@/core/semantic-search'
 
+import { start_semantic_search_worker } from '@/core/semantic-search/worker'
+export default cache('semantic_search_worker', () => {
+  const n_workers = +(process.env.N_WORKERS||'1')
+  if (n_workers > 0) {
+    start_semantic_search_worker(db)
+  }
+})
+
 import publicPlaybooks from '@/app/public/playbooksDemo'
 import { fpl_expand } from '@/core/common'
 import { PgDatabase } from '@/utils/orm/pg'

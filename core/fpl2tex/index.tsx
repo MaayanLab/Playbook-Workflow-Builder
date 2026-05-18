@@ -67,6 +67,20 @@ function latexEscape(s: string) {
   return s.replace(/(\\|_|\{|\}|\$|&)/g, '\\$1')
 }
 
+function sanitizeBibRecord(record: string): string {
+  return record
+    .replace(/,?\s*abstractNote=\{[\s\S]*?\}(?=\s*[,}])/g, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/author=\{\s*,\s*/g, 'author={')   // ← fix leading comma in author
+    .replace(/\\+(#)/g, "\\$1").replace(/\\+(_)/g, "\\$1")
+    .replace(/((?:url|DOI|doi)=\{[^}]*\})|(?<!\\)([#$%&])/g, (m, u, c) => u ?? `\\${c}`)
+    .replace(/((?:url|DOI|doi)=\{[^}]*\})|(?<!\\)(_)/g, (m, u, c) => u ?? `\\_`)
+    .replace(/[""]/g, '"').replace(/['']/g, "'").replace(/[–—]/g, "--")
+    .replace(/[\x00-\x08\x0B-\x1F\x7F]/g, "")
+    .replace(/[\p{Cc}\p{Cf}]/gu, "")
+}
+
 async function extras() {
   const extrasRootPath = path.resolve(
     process.env.APP_ROOT as string,
@@ -414,7 +428,7 @@ export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Me
 
 \\title{${title}}
 
-${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${latexEscape(props.author.name)}}` : ''}${props.author?.email ? ` \\\\ ${latexEscape(props.author.email)}` : ''}
+${props.author ? `\\author${props.author.affiliation ? `[1]` : ''}{${latexEscape(props.author.name)}${props.author.email ? ` \\\\ ${latexEscape(props.author.email)}` : ''}}` : ''}
 ${props.author?.affiliation ? `\\affil[1]{${latexEscape(props.author.affiliation)}}` : ''}
 
 \\abstract{${abstract}}
@@ -691,9 +705,11 @@ ${figures.filter(fig => fig.kind === 'figure').map(fig => `
 
 \\end{multicols}
 \\end{document}
-`),
-    'references.bib': Promise.resolve(`
-${story.ast.flatMap(part => part.type === 'bibitem' ? part.bibtex ? [`@${part.bibtex.type}{${story.bibitems.get(part.ref)},${part.bibtex.record}}`] : [`@misc{${story.bibitems.get(part.ref)},title={${latexEscape(part.text.slice(part.text.indexOf('.')+2))}}}`] : []).join('\n\n')}
-`),
+`), 
+  'references.bib': Promise.resolve(
+      `${
+        story.ast.flatMap(part => { if (part.type !== 'bibitem') return []; const key = story.bibitems.get(part.ref); if (!key) return []; if (part.bibtex) { const record = sanitizeBibRecord(part.bibtex.record); return [`@${part.bibtex.type}{${key},\n${record}\n}`]; } return [`@misc{${key},\n  title={${sanitizeBibRecord(latexEscape(part.text.slice(part.text.indexOf('.') + 2)))}}\n}`]; }).join('\n\n')
+      }`
+    ),
   }
 }

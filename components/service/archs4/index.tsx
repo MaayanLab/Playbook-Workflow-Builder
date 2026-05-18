@@ -252,7 +252,7 @@ export const ARCHS4SignatureTermSearchT = [
   {T: GEOAccession, TermT: GEOAccessionTerm}
 ].map(({ T, TermT }) => MetaNode(`ARCHS4SignatureTermSearch[${species}, ${T.name}]`)
     .meta({
-      label: `ARCHS4 Signature ${T.label} Search`,
+      label: `ARCHS4 ${species} Signature ${T.label} Search`,
       description: `Query ARCHS4 ${species} Signatures by term`,
       icon: [archs4_icon],
       external: true,

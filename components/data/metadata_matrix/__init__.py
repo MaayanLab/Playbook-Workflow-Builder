@@ -47,7 +47,7 @@ def metadata_matrix(file: File) -> MetadataMatrix:
     raise Exception("Metadata file should contain at least one column the last of which \
                     indicates the class to which each sample belongs.")
   col = d.columns[-1]
-  if d[col].dropna().nunique() != 2:
+  if d[col].dropna().nunique() != 2 and not d[col].isna().all():
     raise Exception("Sample class column (last column) should only have \
                      two unique values, identifying the control group and perturbation group.")
 

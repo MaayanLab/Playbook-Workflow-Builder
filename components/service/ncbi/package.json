@@ -1,0 +1,9 @@
+{
+  "name": "@playbook-partnership/ncbi",
+  "version": "1.0.0",
+  "license": "CC-BY-4.0",
+  "author": "Ido Diamant <ido.diamant@mssm.edu>",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {}
+}

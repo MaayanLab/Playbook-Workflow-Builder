@@ -6,6 +6,7 @@ from components.core.file import upsert_file
 from components.data.gene_count_matrix import gene_count_matrix
 from components.data.metadata_matrix import metadata_matrix
 from time import sleep
+import sys
 
 def fetch_samples(samples, species):
   if len(samples) > 100: raise RuntimeError('Too many samples, please select a smaller subset of samples')
@@ -51,10 +52,10 @@ def fetch_samples_meta(samples, species):
   )
   req.raise_for_status()
   df = pd.read_json(io.BytesIO(req.content), dtype='string').T
-  control_terms = {'wt', 'wildtype', 'control', 'cntrl', 'ctrl', 'uninfected', 'normal', 'untreated', 'unstimulated', 'shctrl', 'ctl', 'healthy', 'sictrl', 'sicontrol', 'ctr', 'wild', 'dmso', 'sint'}
-  condition = df['characteristics'].map(lambda x: 'Control' if any(term in x.lower() for term in control_terms) else 'Perturbation')
-  backup = (['Control']*(df.shape[0]//2))+(['Perturbation']*((df.shape[0])-(df.shape[0]//2)))
-  df['Suggested Condition'] = condition if condition.nunique()==2 else backup
+  control_terms = {'wt', 'wildtype', 'control', 'cntrl', 'ctrl', 'uninfected', 'normal', 'untreated', 'unstimulated', 'shctrl', 'ctl', 'healthy', 'sictrl', 'sicontrol', 'ctr', 'wild', 'dmso', 'sint', 'mock'}
+  condition = (df['title']+df['source']+df['characteristics']).map(lambda x: 'Control' if any(term in x.lower() for term in control_terms) else 'Perturbation')
+  df['Suggested Condition'] = condition if condition.nunique()==2 else 'Unknown'
+  df['Type: Control or Perturbation'] = pd.NA
   # register anndata
   with upsert_file('.tsv') as f:
     df.to_csv(f.file, sep='\t')

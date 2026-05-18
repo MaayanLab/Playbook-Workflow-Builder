@@ -79,7 +79,18 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               href={`https://www.overleaf.com/docs?snip_uri=${encodeURIComponent(`${publicUrl}/${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`)}`}
               target='_blank'
             />
-          </div> : null}
+          </div>
+          : null}
+          <div>
+            <div className="tooltip block text-left" data-tip="Download a PDF rendering of the playbook report. This feature is in early BETA and is currently incomplete.">
+              <Bp5MenuItem
+                icon="document"
+                text="Report PDF (BETA)"
+                href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=pdf&metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
+                download={`${id}.pdf`}
+              />
+            </div>
+          </div>
           </Bp5Menu>
       }
       placement="bottom"

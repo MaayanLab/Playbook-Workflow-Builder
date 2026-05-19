@@ -9,6 +9,7 @@ import pandas as pd
 import re
 import requests
 import sys
+from textwrap import dedent
 
 import asyncio
 from openai import AsyncOpenAI
@@ -71,13 +72,14 @@ async def generate_section(client: AsyncOpenAI, model:str, prompt:str, data:str)
             {"role": "assistant", "content": response.output_text},
             {
                 "role": "user",
-                "content": '''Review the paragraph above against the instructions given earlier in this conversation.
+                "content": dedent('''
+                    Review the paragraph above against the instructions given earlier in this conversation.
                     Check and correct each of the following:
                         1. All citations use the exact format [[[key]]] with no variations. You must use triple-brackets for formatting purposes.
                         2. No citation keys have been added that were not present in the source material or allowed reference lists.
                         3. The output is plain prose only with no markdown, bullet points, or headings.
                         4. No claims are made that go beyond the scope of the provided data or source material.
-                    Return only the corrected paragraph. Do not explain your changes.''',
+                    Return only the corrected paragraph. Do not explain your changes.''').strip(),
             },
         )
     )
@@ -88,12 +90,18 @@ async def generate_section(client: AsyncOpenAI, model:str, prompt:str, data:str)
 
     )
 
-    return format_citations(response.output_text.replace("%","\\%")).encode('ascii', errors='ignore').decode('ascii')
+    return format_citations(response.output_text
+                            .replace("%","\\%")
+                            .replace("$","\\$")
+                            .replace("&","\\&")
+                            .replace("_","\\_")
+                            ).encode('ascii', errors='ignore').decode('ascii')
     
 
 async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:str, introduction:dict[str,str], methods:str, results:str, discussion:dict[str,str]):
     log("Writing abstract...")
-    prompt = '''Write a single plain text paragraph abstract of approximately 200 words for a re-analysis report.
+    prompt = dedent('''
+    Write a single plain text paragraph abstract of approximately 200 words for a re-analysis report.
 
     Cover the following points in order, briefly:
     1. The biological or clinical problem the original study addressed.
@@ -102,12 +110,13 @@ async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:st
     4. One or two specific findings from the discussion that best represent the re-analysis results.
 
     Do not copy sentences verbatim from the provided sections.
-    You MUST NOT include citations or reference keys of any kind.'''
-    data = f'''GEO Accession:{geo_accession}
+    You MUST NOT include citations or reference keys of any kind.''').strip()
+    data = dedent(f'''
+    GEO Accession:{geo_accession}
     Introduction:{introduction}
     Methods: {methods}
     Results: {results}
-    Discussion: {discussion}'''
+    Discussion: {discussion}''').strip()
 
     abstract = await generate_section(client, model, prompt, data)
     abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
@@ -121,23 +130,26 @@ async def write_report_introduction(client: AsyncOpenAI, model:str, geo_accessio
     log("Writing introduction...")
     pmc_articles = str(pmc_articles)
 
-    problem_prompt = '''Write a plain text paragraph introducing the biological or clinical problem  investigated in the GEO study.
+    problem_prompt = dedent('''
+    Write a plain text paragraph introducing the biological or clinical problem  investigated in the GEO study.
     Use only the titles, abstracts, and introductions of the provided PMC articles as your source.
     Describe the problem being studied and why it is relevant. Do not describe the methods used in the original study.
     Do not mention the re-analysis. 
-    Include inline citations for any claims you make using references that appear in the articles.'''
+    Include inline citations for any claims you make using references that appear in the articles.''').strip()
 
-    background_prompt = '''Write a plain text paragraph providing biological background that contextualizes the problem introduced in the GEO study.
+    background_prompt = dedent('''
+    Write a plain text paragraph providing biological background that contextualizes the problem introduced in the GEO study.
     Use only the titles, abstracts, and introductions of the provided PMC articles as your source.
     Focus on established biology, prior work, or relevant context that motivates the study.
     Expand on the previous problem paragraph, but avoid repeating information or abbreviations that have already been introduced.
     Do not describe any analysis methods from the original study or the re-analysis.
     Do not repeat the specific problem statement - assume that has already been introduced.
-    Include inline citations for any claims you make using references that appear in the articles.'''
+    Include inline citations for any claims you make using references that appear in the articles.''').strip()
 
-    signature_prompt = '''Create a short name for the signature being re-analyzed by identifying the condition(s)
+    signature_prompt = dedent('''
+    Create a short name for the signature being re-analyzed by identifying the condition(s)
     that are being used as perturbations in the labelled samples. Return only the name of the signature. For example:
-    "metformin signature" or "melanoma cell line signature". Avoid acronyms and be as concise as possible.'''
+    "metformin signature" or "melanoma cell line signature". Avoid acronyms and be as concise as possible.''').strip()
 
 
     introduction_problem, SIGNATURE_NAME= await asyncio.gather(
@@ -146,9 +158,10 @@ async def write_report_introduction(client: AsyncOpenAI, model:str, geo_accessio
     )
     introduction_background = await generate_section(client, model, background_prompt, f"Articles:{pmc_articles}\nIntroduction Problem:{introduction_problem}")
 
-    introduction_motivation = f'''In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {geo_accession} ~\\cite{{{geo_accession}}}
+    introduction_motivation = dedent(f'''
+    In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {geo_accession} ~\\cite{{{geo_accession}}}
     to create a workflow analyzing the {SIGNATURE_NAME} signature utillizing bioinformatics tools. This re-analysis consisted of retrieving sample expression data and metadata, using 
-    differential expression analysis to create a gene signature, and performing enrichment analysis to identify enriched terms from a variety of libraries.'''.replace('\n','').replace('\t','')
+    differential expression analysis to create a gene signature, and performing enrichment analysis to identify enriched terms from a variety of libraries.''').strip().replace('\n', ' ')
     log("Introduction complete.")
 
     return {
@@ -159,7 +172,7 @@ async def write_report_introduction(client: AsyncOpenAI, model:str, geo_accessio
 
 
 def write_report_methods(geo_accession:str, labelld_samples:pd.DataFrame):
-    template = f'''The workflow starts with selecting {geo_accession} as the search term. GEO studies were identified matching {geo_accession} using 
+    return dedent(f'''The workflow starts with selecting {geo_accession} as the search term. GEO studies were identified matching {geo_accession} using 
     ARCHS4 ~\\cite{{ARCHS4}} term search. The GEO study accession was used to fetch the linked publication accession from PMC. Gene expression counts and sample 
     metadata for published samples were obtained from ARCHS4 ~\\cite{{ARCHS4}}. An AnnData file was prepared from the input data and metadata ~\\cite{{AnnData}}. Genes from the 
     anndata matrix were filtered to include protein-coding genes. The samples were then labeled as either control or perturbation to allow for 
@@ -174,54 +187,53 @@ def write_report_methods(geo_accession:str, labelld_samples:pd.DataFrame):
     the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{{KOMP2}} libraries to identify statistically 
     significant enriched biological processes, pathways, transcription factors and phenotypes. Significant genes were extracted from the gene signature 
     and submitted to Perturb-Seqr [Perturb-Seqr] to identify small molecules and single gene CRISPR KOs producing gene expression profiles similar or opposite to 
-    the signature.'''
-
-    return template.replace('\n','').replace('\t','')
+    the signature.''').strip().replace('\n',' ')
 
 
 def write_report_results(geo_accession:str, labelld_samples:pd.DataFrame, enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
-    text = f'''
+    return dedent(f'''
     Library size analysis was also performed to document the number of reads included in each sample. Library sizes of each sample were plotted using a bar plot (Figure \\ref{{fig:Libraries}}).
     The first two principal components (PCs) were used to generate a scatter plot (Figure \\ref{{fig:PCA}}). The plot highlights the control and perturbation samples used and displays unused samples from the study.
     Following differential expression analysis with limma-voom, logFC and p-value scores were used to construct a volcano plot (Figure \\ref{{fig:Volcano}}).
     This plot shows the relative change in expression of up- and down-regulated genes, as well as highlighting specific genes with highly significant scores.
-    '''
-
-    return text.replace('\n','').replace('\t','')
+    ''').strip().replace('\n',' ')
 
 
 async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:str, pmc_articles:list, labelled_samples:pd.DataFrame, enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
     log("Writing discussion...")
     pmc_articles = str(pmc_articles)
 
-    enrichr_prompt = '''Write a plain text paragraph analyzing the Enrichr enrichment results provided for the up-regulated and down-regulated gene sets from this re-analysis.
+    enrichr_prompt = dedent('''
+    Write a plain text paragraph analyzing the Enrichr enrichment results provided for the up-regulated and down-regulated gene sets from this re-analysis.
     Focus on: terms that appear or are consistent across multiple libraries, and any complementary or contrasting patterns between the up and down gene sets.
     Only discuss terms that are present in the results provided.
     Do not introduce terms or biological processes not present in the data.
     Cite only the libraries whose results you are directly referencing, choosing from: 
-    [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[KOMP2]]].'''
+    [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[KOMP2]]].''').strip()
 
-    perturbseqr_prompt = '''Write a plain text paragraph analyzing the Perturb-Seqr results provided for the gene signature from this re-analysis.
+    perturbseqr_prompt = dedent('''
+    Write a plain text paragraph analyzing the Perturb-Seqr results provided for the gene signature from this re-analysis.
     Focus on: small molecules or genetic perturbations that appear in each mimicker and reverser result table and what those patterns suggest about the biology of the signature.
     Highlight similarities in perturbations within each result table.
     Only discuss entries that are present in the results provided.
     Do not introduce perturbations or mechanisms not present in the data.
     When you reference a mimicker or reverser signature, you MUST cite the associated resource (found in Dataset field), choosing from:
     [[[CMap]]], [[[CM4AI]]], [[[CREEDS]]], [[[DeepCoverMoA]]], [[[Ginkgo]]], [[[LINCS]]], [[[NIBR]]], 
-    [[[PerturbAtlas]]], [[[RummaGEO]]], [[[Replogle]]], [[[SciPlex]]], [[[Tahoe]]].'''
+    [[[PerturbAtlas]]], [[[RummaGEO]]], [[[Replogle]]], [[[SciPlex]]], [[[Tahoe]]].''').strip()
 
     discussion_enrichr, discussion_perturbseqr = await asyncio.gather(
         generate_section(client, model, enrichr_prompt, str(enrichr_results)),
         generate_section(client, model, perturbseqr_prompt, str(perturbseqr_results)),
     )
 
-    conclusion_prompt = '''Write a plain text concluding paragraph for a re-analysis report.
+    conclusion_prompt = dedent('''
+    Write a plain text concluding paragraph for a re-analysis report.
     Summarize the most notable findings from the Enrichr and Perturb-Seqr analyses provided.
     Focus on findings that are consistent with or directly relevant to the biology of the samples.
     Where a finding is unexpected relative to the sample context, note it briefly.
     Do not propose mechanisms unless they are directly supported by the enrichment results provided.
     Connect the findings back to the research question described in the Enrichr and Perturb-Seqr paragraphs.
-    Do not include citations.'''
+    Do not include citations.''').strip()
 
     conclusion_data = f'''Samples: {labelled_samples}\nEnrichr Results:{discussion_enrichr}\nPerturb-Seqr Results:{discussion_perturbseqr}'''
     discussion_conclusion = await generate_section(client, model, conclusion_prompt, conclusion_data)

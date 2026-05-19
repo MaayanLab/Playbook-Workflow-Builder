@@ -211,19 +211,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   \\section{Methods}\\label{methods}
 
-  The workflow starts with selecting ${geo_accession} as the search term.
   
-  GEO studies were identified matching ${geo_accession} using  ARCHS4 ~\\cite{ARCHS4} term search.
-  
-  The GEO study accession was used to fetch the linked publication accession from PMC.
-  
-  Gene expression counts and sample metadata for published samples were obtained from ARCHS4 ~\\cite{ARCHS4}.
-  
-  An AnnData file was prepared from the input data and metadata ~\\cite{AnnData}.
-  
-  Genes from the anndata matrix were filtered to include protein-coding genes.
-  
-  The samples were then labeled as either control or perturbation to allow for further analysis.
 
   \\begin{figure}[!htbp]
     \\centering
@@ -231,10 +219,6 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
     \\caption{A bar plot representing library sizes.}
     \\label{fig:Libraries}
   \\end{figure}
-  
-  The AnnData file was then visualized as a bar plot representing library sizes (Figure \\ref{fig:Libraries}).
-  
-  Dimensionality reduction of the data was performed using PCA with the normalization set to log-counts-per-million (logCPM).
 
   \\begin{figure}[htbp]
     \\centering
@@ -242,10 +226,6 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
     \\caption{A scatterplot showing the first two principal components of the AnnData.}
     \\label{fig:PCA}
   \\end{figure}
-  
-  The first two principal components (PCs) were used to generate a scatter plot (Figure \\ref{fig:PCA}).
-  
-  The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{limma, voom} to create a gene signature using the selected conditions. 
 
   \\begin{figure}[!htbp]
     \\centering
@@ -253,12 +233,6 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
     \\caption{A volcano plot showing the log2-fold-changes and statistical significance of each gene.}
     \\label{fig:Volcano}
   \\end{figure}
-  
-  The data in the differential expression table was then visualized as a volcano plot (Figure \\ref{fig:Volcano}).
-  
-  The up-regulated genes were extracted from the gene signature computed by the Limma-Voom analysis from the file.
-  
-  The gene set containing significant up genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
 
   \\begin{figure*}[!htbp]
     \\centering
@@ -266,11 +240,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
     \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for down-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
     \\label{fig:Enrichr_up}
   \\end{figure*}
-  
-  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_up}). 
-  
-  The gene set containing significant down genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
-  
+
   \\begin{figure*}[!htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/DownEnrichrBars.pdf}
@@ -278,8 +248,6 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
     \\label{fig:Enrichr_down}
   \\end{figure*}
 
-  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_down}).
-  
   \\catcode\`\\#=12
   \\pgfplotstableset{
     every column/.style={string type, column type=l},
@@ -294,7 +262,6 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   \\begin{table*}[!htbp]
     \\centering
-    \\caption{A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles similar to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
     \\adjustbox{max width=\\textwidth}{
       \\large
       \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrMimickers.csv}
@@ -304,7 +271,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   \\begin{table*}[!htbp]
     \\centering
-    \\caption{A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles opposite to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
+    \\caption{A listing of drug and gene perturbations that produce gene expression profiles opposite to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
     \\adjustbox{max width=\\textwidth}{
       \\large
       \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrReversers.csv}
@@ -312,8 +279,25 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
     \\label{table:PerturbSeqrReverse}
   \\end{table*}
   \\catcode\`\\#=6
-
-  Significant genes were extracted from the gene signature  and submitted to Perturb-Seqr ~\\cite{Perturb-Seqr} to identify small molecules and single gene CRISPR KOs producing gene expression profiles similar (Table ~\\ref{table:PerturbSeqrMimic}) or opposite (Table ~\\ref{table:PerturbSeqrReverse}) to the signature.
+  
+  The workflow starts with selecting ${geo_accession} as the search term.
+  GEO studies were identified matching ${geo_accession} using  ARCHS4 ~\\cite{ARCHS4} term search.
+  The GEO study accession was used to fetch the linked publication accession from PMC.
+  Gene expression counts and sample metadata for published samples were obtained from ARCHS4 ~\\cite{ARCHS4}.
+  An AnnData file was prepared from the input data and metadata ~\\cite{AnnData}.
+  Genes from the anndata matrix were filtered to include protein-coding genes.
+  The samples were then labeled as either control or perturbation to allow for further analysis.
+  The AnnData file was then visualized as a bar plot representing library sizes (Figure \\ref{fig:Libraries}).
+  Dimensionality reduction of the data was performed using PCA with the normalization set to log-counts-per-million (logCPM).
+  The first two principal components (PCs) were used to generate a scatter plot (Figure \\ref{fig:PCA}).
+  The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{limma, voom} to create a gene signature using the selected conditions. 
+  The data in the differential expression table was then visualized as a volcano plot (Figure \\ref{fig:Volcano}).
+  The up-regulated genes were extracted from the gene signature computed by the Limma-Voom analysis from the file.
+  The gene set containing significant up genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
+  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_up}).
+  The gene set containing significant down genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.f
+  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_down}).
+  Significant genes were extracted from the gene signature  and submitted to Perturb-Seqr ~\\cite{Perturb-Seqr} to identify drug and single gene perturbations producing gene expression profiles similar (Table ~\\ref{table:PerturbSeqrMimic}) or opposite (Table ~\\ref{table:PerturbSeqrReverse}) to the signature.
   
   \\section{Results}\\label{results}
 

@@ -9,7 +9,7 @@ import * as dict from '@/utils/dict'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import db from '@/app/db'
 import { exec,spawn } from 'child_process'
-import fs from 'fs'
+import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
@@ -55,26 +55,24 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
         streamFiles: true,
       }).pipe(res)
     } else if (inputs.query.format === 'pdf') {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tex-'))
+      const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tex-'))
       try {
-        for (const { key, value } of dict.items(tex_files)) {
+        await Promise.allSettled(dict.items(tex_files).map(async ({ key, value }) => {
           const filePath = path.join(tmpDir, key)
-          fs.mkdirSync(path.dirname(filePath), { recursive: true })
+          await fs.mkdir(path.dirname(filePath), { recursive: true })
           const fileValue = await value
-          fs.writeFileSync(filePath,typeof fileValue === 'string' ? fileValue : Buffer.from(fileValue))
-        
-        }
+          await fs.writeFile(filePath,typeof fileValue === 'string' ? fileValue : new DataView(fileValue))
+        }))
         const mainTex = dict.keys(tex_files).find(k => k.endsWith('.tex') && !k.includes('/'))
         if (!mainTex) {
           res.status(500).send('No main .tex file found in generated files')
           return
         }
         const mainTexPath = path.join(tmpDir, mainTex)
-        const files = fs.readdirSync(tmpDir)
         await new Promise<void>((resolve, reject) => {
           const proc = spawn(
             'latexmk',
-            ['-pdf', '-cd', '-lualatex', '-interaction=nonstopmode', '-halt-on-error', mainTexPath],
+            ['-pdf', '-cd', '-lualatex', '-interaction=nonstopmode', '-f', mainTexPath],
             { cwd: tmpDir }
           )
         
@@ -92,12 +90,12 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
         })
     
         const pdfPath = mainTexPath.replace(/\.tex$/, '.pdf')
-        const pdfBuffer = fs.readFileSync(pdfPath)
+        const pdfBuffer = await fs.readFile(pdfPath)
         res.setHeader('Content-Type', 'application/pdf')
         res.setHeader('Content-Disposition', `attachment; filename="${mainTex.replace(/\.tex$/, '.pdf')}"`)
         res.send(pdfBuffer)
       } finally {
-        fs.rmSync(tmpDir, { recursive: true, force: true })
+        await fs.rm(tmpDir, { recursive: true, force: true })
       }
     }
   })

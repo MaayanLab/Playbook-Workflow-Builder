@@ -237,7 +237,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
   \\begin{figure*}[!htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/UpEnrichrBars.pdf}
-    \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for down-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
+    \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for up-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
     \\label{fig:Enrichr_up}
   \\end{figure*}
 
@@ -262,6 +262,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   \\begin{table*}[!htbp]
     \\centering
+    \\caption{A listing of drug and gene perturbations that produce gene expression profiles similar to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
     \\adjustbox{max width=\\textwidth}{
       \\large
       \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrMimickers.csv}
@@ -295,9 +296,9 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
   The up-regulated genes were extracted from the gene signature computed by the Limma-Voom analysis from the file.
   The gene set containing significant up genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
   The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_up}).
-  The gene set containing significant down genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.f
+  The gene set containing significant down genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
   The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_down}).
-  Significant genes were extracted from the gene signature  and submitted to Perturb-Seqr ~\\cite{Perturb-Seqr} to identify drug and single gene perturbations producing gene expression profiles similar (Table ~\\ref{table:PerturbSeqrMimic}) or opposite (Table ~\\ref{table:PerturbSeqrReverse}) to the signature.
+  Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{Perturb-Seqr} to identify drug and single gene perturbations producing gene expression profiles similar (Table ~\\ref{table:PerturbSeqrMimic}) or opposite (Table ~\\ref{table:PerturbSeqrReverse}) to the signature.
   
   \\section{Results}\\label{results}
 

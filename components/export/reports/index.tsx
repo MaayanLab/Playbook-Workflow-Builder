@@ -133,7 +133,7 @@ export const GEOReanalysisAgentReport = MetaNode(`GEOReanalysisAgentReport`)
             enrichr_gobp_down: props.inputs.enrichrGOBPDown,
             enrichr_kegg_down: props.inputs.enrichrKEGGDown,
             enrichr_chea_down: props.inputs.enrichrChEADown,
-            enrichr_komp_own: props.inputs.enrichrKOMPDown
+            enrichr_komp_down: props.inputs.enrichrKOMPDown
         },
         perturbseqr: props.inputs.perturbseqr
       }},

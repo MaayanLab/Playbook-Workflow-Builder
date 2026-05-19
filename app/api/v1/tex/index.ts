@@ -72,27 +72,36 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
         const mainTexPath = path.join(tmpDir, mainTex)
         const pdfPath = mainTexPath.replace(/\.tex$/, '.pdf')
         res.setHeader('Content-Disposition', `attachment; filename="${mainTex.replace(/\.tex$/, '.pdf')}"`)
-        await new Promise<void>((resolve, reject) => {
-          const proc = spawn(
-            'latexmk',
-            ['-pdf', '-cd', '-lualatex', '-interaction=nonstopmode', '-f', mainTexPath],
-            { cwd: tmpDir }
-          )
-        
-          let stderr = ''
-          proc.stdout.on('data', (data) => process.stdout.write(`[latexmk] ${data}`))
-          proc.stderr.on('data', (data) => {
-            process.stderr.write(`[latexmk] ${data}`)
-            stderr += data
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const proc = spawn(
+              'latexmk',
+              ['-pdf', '-cd', '-lualatex', '-interaction=nonstopmode', '-f', mainTexPath],
+              { cwd: tmpDir }
+            )
+          
+            let stderr = ''
+            proc.stdout.on('data', (data) => process.stdout.write(`[latexmk] ${data}`))
+            proc.stderr.on('data', (data) => {
+              process.stderr.write(`[latexmk] ${data}`)
+              stderr += data
+            })
+          
+            proc.on('close', (code) => {
+              if (code !== 0) reject(new Error(stderr || `latexmk exited with code ${code}`))
+              else resolve()
+            })
           })
-        
-          proc.on('close', (code) => {
-            if (code !== 0) reject(new Error(stderr || `latexmk exited with code ${code}`))
-            else resolve()
-          })
-        })
-        const pdfBuffer = await fs.open(pdfPath)
-        pdfBuffer.createReadStream({ autoClose: true }).pipe(res)
+        } catch (e) {
+          console.error(e)
+        } finally {
+          const pdfBuffer = await fs.open(pdfPath)
+          pdfBuffer.createReadStream({ autoClose: true }).pipe(res)
+        }
+      } catch (e) {
+        console.error(e)
+        res.status(500)
+        res.end()
       } finally {
         await fs.rm(tmpDir, { recursive: true, force: true })
       }

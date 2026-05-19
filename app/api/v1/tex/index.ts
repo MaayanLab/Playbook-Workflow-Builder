@@ -57,6 +57,7 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
     } else if (inputs.query.format === 'pdf') {
       const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tex-'))
       try {
+        res.setHeader('Content-Type', 'application/pdf')
         await Promise.allSettled(dict.items(tex_files).map(async ({ key, value }) => {
           const filePath = path.join(tmpDir, key)
           await fs.mkdir(path.dirname(filePath), { recursive: true })
@@ -69,6 +70,8 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
           return
         }
         const mainTexPath = path.join(tmpDir, mainTex)
+        const pdfPath = mainTexPath.replace(/\.tex$/, '.pdf')
+        res.setHeader('Content-Disposition', `attachment; filename="${mainTex.replace(/\.tex$/, '.pdf')}"`)
         await new Promise<void>((resolve, reject) => {
           const proc = spawn(
             'latexmk',
@@ -88,12 +91,8 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
             else resolve()
           })
         })
-    
-        const pdfPath = mainTexPath.replace(/\.tex$/, '.pdf')
-        const pdfBuffer = await fs.readFile(pdfPath)
-        res.setHeader('Content-Type', 'application/pdf')
-        res.setHeader('Content-Disposition', `attachment; filename="${mainTex.replace(/\.tex$/, '.pdf')}"`)
-        res.send(pdfBuffer)
+        const pdfBuffer = await fs.open(pdfPath)
+        pdfBuffer.createReadStream({ autoClose: true }).pipe(res)
       } finally {
         await fs.rm(tmpDir, { recursive: true, force: true })
       }

@@ -1,3 +1,4 @@
+import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { variable_icon } from '@/icons'
 import { z } from 'zod'
@@ -9,6 +10,7 @@ import { PerturbSeqrGeneSignature } from '@/components/service/perturbseqr'
 import python from '@/utils/python'
 import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
+import { useExRouter } from "@/app/fragments/ex-router"
 
 
 export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
@@ -48,43 +50,24 @@ export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
     references: z.string().array(),
     model: z.string()
   }))
-  .view(props => (
-    <div className="flex-grow flex flex-col m-0">
-      <h2><b>{props.title}</b></h2>
-      <h2>Abstract</h2>
-      <p>{props.abstract}</p>
-      <h2>Introduction</h2>
-      <p>{props.introduction.problem}</p>
-      <p>{props.introduction.background}</p>
-      <p>{props.introduction.motivation}</p>
-      <h2>Methods</h2>
-      <p>{props.methods}</p>
-      <h2>Results</h2>
-      <p>{props.results}</p>
-      <h2>Discussion</h2>
-      <p>{props.discussion.enrichr}</p>
-      <p>{props.discussion.perturbseqr}</p>
-      <p>{props.discussion.conclusion}</p>
-      <h2>Figures</h2>
-      <ul>
-        {Object.entries(props.figures).map(([key,fig]) => (
-            <li>Name:{fig.filename}, URL:{fig.url}, {fig.size}B</li>
-        ))}
-      </ul>
-      <h2>Tables</h2>
-      <ul>
-        {Object.entries(props.tables).map(([key,table]) => (
-            <li>Name:{table.filename}, URL:{table.url}, {table.size}B</li>
-        ))}
-      </ul>
-      <h2>References</h2>
-      <ul>
-        {Object.entries(props.references).map(([key,ref]) => (
-            <li>{ref}</li>
-        ))}
-      </ul>
-    </div>
-  ))
+  .view(props => {
+    const router = useExRouter()
+    const fpl_id = React.useMemo(() => {
+      const m = /^\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
+      if (m !== null) return m[1]
+    }, [router.asPath])
+    return (
+      <div className="flex-grow flex flex-col m-0">
+        <h2><b>{props.title}</b></h2>
+        <h2>Abstract</h2>
+        <p>{props.abstract}</p>
+        {fpl_id && <>
+          <a href={`/api/v1/tex/${fpl_id}?format=pdf`}><button>Download Full Report</button></a>
+          <p><i>Can take over a minute to start downloading, please be patient</i></p>
+          </>}
+      </div>
+    )
+  })
   .build()
 
 export const GEOReanalysisAgentReport = MetaNode(`GEOReanalysisAgentReport`)

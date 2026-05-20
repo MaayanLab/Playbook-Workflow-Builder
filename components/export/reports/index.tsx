@@ -54,15 +54,15 @@ export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
     const router = useExRouter()
     const fpl_id = React.useMemo(() => {
       const m = /^\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
-      if (m !== null) return m[1]
+      if (m !== null) return m[2]
     }, [router.asPath])
     return (
-      <div className="flex-grow flex flex-col m-0">
+      <div className="flex-grow flex flex-col m-0 prose">
         <h2><b>{props.title}</b></h2>
         <h2>Abstract</h2>
         <p>{props.abstract}</p>
         {fpl_id && <>
-          <a href={`/api/v1/tex/${fpl_id}?format=pdf`}><button>Download Full Report</button></a>
+          <a href={`/api/v1/tex/${fpl_id}?format=pdf`}><button className="btn btn-success">Download Full Report</button></a>
           <p><i>Can take over a minute to start downloading, please be patient</i></p>
           </>}
       </div>

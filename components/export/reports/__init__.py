@@ -302,6 +302,7 @@ async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:
 
     enrichr_prompt = dedent('''
     Write a plain text paragraph analyzing the Enrichr enrichment results provided for the up-regulated and down-regulated gene sets from this re-analysis.
+    Do not list the terms to introduce them, assume this has already been done.
     Focus on: terms that appear or are consistent across multiple libraries, and any complementary or contrasting patterns between the up and down gene sets.
     Only discuss terms that are present in the results provided.
     Do not introduce terms or biological processes not present in the data.
@@ -311,6 +312,7 @@ async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:
     perturbseqr_prompt = dedent('''
     Write a plain text paragraph analyzing the Perturb-Seqr results provided for the gene signature from this re-analysis.
     Focus on: small molecules or genetic perturbations that appear in each mimicker and reverser result table and what those patterns suggest about the biology of the signature.
+    Do not list the terms to introduce them, assume this has already been done.
     Highlight similarities in perturbations within each result table.
     Only discuss entries that are present in the results provided.
     Do not introduce perturbations or mechanisms not present in the data.

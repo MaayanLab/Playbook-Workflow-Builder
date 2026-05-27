@@ -180,7 +180,7 @@ def write_report_methods(geo_accession:str, labelld_samples:pd.DataFrame):
     Enrichr ~\\cite{{Enrichr}}. The gene sets were enriched against the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 
     2022 ~\\cite{{KOMP2}} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes. 
     Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{{Perturb-Seqr}} to identify small molecules and single
-    gene CRISPR KOs producing gene expression profiles similar or opposite to the signature.''').strip().replace('\n',' ')
+    gene perturbations producing gene expression profiles similar or opposite to the signature.''').strip().replace('\n',' ')
 
 
 def write_report_results(geo_accession:str, labelld_samples:pd.DataFrame, signature:dict[str,str|float], enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
@@ -292,7 +292,7 @@ def write_report_results(geo_accession:str, labelld_samples:pd.DataFrame, signat
     Functional enrichment analysis of the up-regulated gene set identified associations with {format_enrichr_section(enrichr_results['enrichr_up'])} (Figure \\ref{{fig:upEnrichrBars}}). 
     Analysis of the down-regulated gene set identified enrichment for {format_enrichr_section(enrichr_results['enrichr_down'])} (Figure \\ref{{fig:downEnrichrBars}}).
     Signature search revealed gene perturbations including {format_perturbseqr_section(perturbseqr_results['mimic_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneMimickers}}) and drug perturbations including {format_perturbseqr_section(perturbseqr_results['mimic_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugMimickers}}) as mimickers.
-    Top reversers includeded genes knockouts {format_perturbseqr_section(perturbseqr_results['reverse_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneReversers}}) and drugs including {format_perturbseqr_section(perturbseqr_results['reverse_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugReversers}}).
+    Top reversers includeded genes perturbations {format_perturbseqr_section(perturbseqr_results['reverse_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneReversers}}) and drugs including {format_perturbseqr_section(perturbseqr_results['reverse_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugReversers}}).
     ''').strip().replace('\n',' ')
 
 
@@ -869,22 +869,25 @@ def make_table(table_data:pd.DataFrame):
 
 
 def make_tables(perturbseqr_results, supplement:dict[str,str]):
+    gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
+    drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
+    perturbseqr_url = f'https://perturbseqr.maayanlab.cloud/enrichpair?dataset={supplement["perturbseqrUpGenes"]}&dataset={supplement["perturbseqrDownGenes"]}'
     return {
         "perturbseqrGeneMimickers": {
             "file":make_table(perturbseqr_results["mimic_gene_signatures"]),
-            "caption":"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+            "caption":f"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={gene_libraries}}}{{Perturb-Seqr}}."
         },
         "perturbseqrDrugMimickers": {
             "file":make_table(perturbseqr_results["mimic_drug_signatures"]),
-            "caption":"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+            "caption":f"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={drug_libraries}}}{{Perturb-Seqr}}."
         },
         "perturbseqrGeneReversers": {
             "file":make_table(perturbseqr_results["reverse_gene_signatures"]),
-            "caption":"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+            "caption":f"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={gene_libraries}}}{{Perturb-Seqr}}."
         },
         "perturbseqrDrugReversers": {
             "file":make_table(perturbseqr_results["reverse_drug_signatures"]),
-            "caption":"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+            "caption":f"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={drug_libraries}}}{{Perturb-Seqr}}."
         },
     }
 
@@ -1054,7 +1057,7 @@ def _find_unresolved_bare_brackets(text: str, valid_keys: set[str]):
     for match in pat.finditer(text):
         key = match.group(1)
         if key in valid_keys:
-            log.warning('Bare bracket citation found for known key: %s', key)
+            log(f'Bare bracket citation found for known key: {key}')
             found.append(key)
     return found
 
@@ -1071,11 +1074,7 @@ def _validate_and_repair_citations(
         bad  = [k for k in keys if k not in valid_keys]
 
         if bad:
-            log.warning(
-                'Unknown citation key(s) in %s: %s',
-                section_name or 'unknown section',
-                ', '.join(bad),
-            )
+            log(f'Unknown citation key(s) in {section_name or "unknown section"}: {"", "".join(bad)}')
 
         kept = good if strip_unknown else keys
         return f'[[[{",".join(kept)}]]]' if kept else ''

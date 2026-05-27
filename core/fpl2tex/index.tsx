@@ -10,12 +10,23 @@ import cache from '@/utils/global_cache'
 
 const puppeteerSingleton = cache('puppeteer', () => puppeteer.launch())
 
-type ReportFile = {
+type File = {
   url: string,
   filename: string,
   description?: string,
   size: number,
   sha256: string
+}
+
+type ReportFigure = {
+  pdf: File,
+  png: File,
+  caption: string
+}
+
+type ReportTable = {
+  file: File,
+  caption: string
 } 
 
 type ReanalysisReport = {
@@ -35,17 +46,25 @@ type ReanalysisReport = {
     conclusion: string
   },
   figures : {
-    librarySizes: ReportFile,
-    PCAScatter: ReportFile,
-    volcanoScatter: ReportFile,
-    upEnrichrBars: ReportFile,
-    downEnrichrBars: ReportFile
+    librarySizes: ReportFigure,
+    PCAScatter: ReportFigure,
+    volcanoScatter: ReportFigure,
+    upEnrichrBars: ReportFigure,
+    downEnrichrBars: ReportFigure
   },
   tables: {
-    perturbseqrMimickers: ReportFile,
-    perturbseqrReversers: ReportFile
+    perturbseqrGeneMimickers: ReportTable,
+    perturbseqrDrugMimickers: ReportTable,
+    perturbseqrGeneReversers: ReportTable,
+    perturbseqrDrugReversers: ReportTable,
   },
   references: string[],
+  supplement: {
+    enrichrUp: string,
+    enrichrDown: string,
+    perturbseqrUpGenes: string,
+    perturbseqrDownGenes: string
+  },
   model: string
 }
 
@@ -120,7 +139,7 @@ export async function constructGEOReportReferences( references:string[] ): Promi
   return references.join('\n\n')
 }
 
-export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,references,model }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {
+export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,supplement,references,model }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {
   async function GEOextras() {
     const extrasRootPath = path.resolve(
       process.env.APP_ROOT as string,
@@ -146,13 +165,15 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   const files:Record<string, Promise<string | ArrayBuffer>> = {
     ...(await GEOextras()),
-    'figures/librarySizeBars.pdf': fetchGEOReportFile(figures.librarySizes.url),
-    'figures/PCAScatter.pdf': fetchGEOReportFile(figures.PCAScatter.url),
-    'figures/VolcanoScatter.pdf': fetchGEOReportFile(figures.volcanoScatter.url),
-    'figures/UpEnrichrBars.pdf': fetchGEOReportFile(figures.upEnrichrBars.url),
-    'figures/DownEnrichrBars.pdf': fetchGEOReportFile(figures.downEnrichrBars.url),
-    'tables/PerturbseqrMimickers.csv': fetchGEOReportFile(tables.perturbseqrMimickers.url),
-    'tables/PerturbseqrReversers.csv': fetchGEOReportFile(tables.perturbseqrReversers.url),
+    'figures/librarySizeBars.pdf': fetchGEOReportFile(figures.librarySizes.pdf.url),
+    'figures/PCAScatter.pdf': fetchGEOReportFile(figures.PCAScatter.pdf.url),
+    'figures/VolcanoScatter.pdf': fetchGEOReportFile(figures.volcanoScatter.pdf.url),
+    'figures/UpEnrichrBars.pdf': fetchGEOReportFile(figures.upEnrichrBars.pdf.url),
+    'figures/DownEnrichrBars.pdf': fetchGEOReportFile(figures.downEnrichrBars.pdf.url),
+    'tables/PerturbseqrGeneMimickers.tsv': fetchGEOReportFile(tables.perturbseqrGeneMimickers.file.url),
+    'tables/PerturbseqrDrugMimickers.tsv': fetchGEOReportFile(tables.perturbseqrDrugMimickers.file.url),
+    'tables/PerturbseqrGeneReversers.tsv': fetchGEOReportFile(tables.perturbseqrGeneReversers.file.url),
+    'tables/PerturbseqrDrugReversers.tsv': fetchGEOReportFile(tables.perturbseqrDrugReversers.file.url),
     [ texFile ]: Promise.resolve(`
   \\documentclass{ExcelAtFIT}
   \\ExcelFinalCopy
@@ -211,41 +232,43 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   \\section{Methods}\\label{methods}
 
+  ${methods}
   
+  \\section{Results}\\label{results}
 
   \\begin{figure}[!htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/librarySizeBars.pdf}
-    \\caption{A bar plot representing library sizes.}
-    \\label{fig:Libraries}
+    \\caption{${figures.librarySizes.caption}}
+    \\label{fig:librarySizes}
   \\end{figure}
 
   \\begin{figure}[htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/PCAScatter.pdf}
-    \\caption{A scatterplot showing the first two principal components of the AnnData.}
-    \\label{fig:PCA}
+    \\caption{${figures.PCAScatter.caption}}}
+    \\label{fig:PCAScatter}
   \\end{figure}
 
   \\begin{figure}[!htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/VolcanoScatter.pdf}
-    \\caption{A volcano plot showing the log2-fold-changes and statistical significance of each gene.}
-    \\label{fig:Volcano}
+    \\caption{${figures.volcanoScatter.caption}}}
+    \\label{fig:volcanoScatter}
   \\end{figure}
 
   \\begin{figure*}[!htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/UpEnrichrBars.pdf}
-    \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for up-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
-    \\label{fig:Enrichr_up}
+    \\caption{${figures.upEnrichrBars.caption}}}
+    \\label{fig:upEnrichrBars}
   \\end{figure*}
 
   \\begin{figure*}[!htbp]
     \\centering
     \\includegraphics[width=\\linewidth]{figures/DownEnrichrBars.pdf}
-    \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for down-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
-    \\label{fig:Enrichr_down}
+    \\caption{${figures.downEnrichrBars.caption}}}
+    \\label{fig:downEnrichrBars}
   \\end{figure*}
 
   \\catcode\`\\#=12
@@ -262,45 +285,44 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
 
   \\begin{table*}[!htbp]
     \\centering
-    \\caption{A listing of drug and gene perturbations that produce gene expression profiles similar to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
+    \\caption{${tables.perturbseqrGeneMimickers.caption}}}
     \\adjustbox{max width=\\textwidth}{
       \\large
-      \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrMimickers.csv}
+      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrGeneMimickers.tsv}
     }
-    \\label{table:PerturbSeqrMimic}
+    \\label{table:perturbseqrGeneMimickers}
   \\end{table*}
 
   \\begin{table*}[!htbp]
     \\centering
-    \\caption{A listing of drug and gene perturbations that produce gene expression profiles opposite to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
+    \\caption{${tables.perturbseqrDrugMimickers.caption}}}
     \\adjustbox{max width=\\textwidth}{
       \\large
-      \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrReversers.csv}
+      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrDrugMimickers.tsv}
     }
-    \\label{table:PerturbSeqrReverse}
+    \\label{table:perturbseqrDrugMimickers}
+  \\end{table*}
+
+  \\begin{table*}[!htbp]
+    \\centering
+    \\caption{${tables.perturbseqrGeneReversers.caption}}}
+    \\adjustbox{max width=\\textwidth}{
+      \\large
+      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrGeneReversers.tsv}
+    }
+    \\label{table:perturbseqrGeneReversers}
+  \\end{table*}
+
+  \\begin{table*}[!htbp]
+    \\centering
+    \\caption{${tables.perturbseqrDrugReversers.caption}}}
+    \\adjustbox{max width=\\textwidth}{
+      \\large
+      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrDrugReversers.tsv}
+    }
+    \\label{table:perturbseqrDrugReversers}
   \\end{table*}
   \\catcode\`\\#=6
-  
-  The workflow starts with selecting ${geo_accession} as the search term.
-  GEO studies were identified matching ${geo_accession} using  ARCHS4 ~\\cite{ARCHS4} term search.
-  The GEO study accession was used to fetch the linked publication accession from PMC.
-  Gene expression counts and sample metadata for published samples were obtained from ARCHS4 ~\\cite{ARCHS4}.
-  An AnnData file was prepared from the input data and metadata ~\\cite{AnnData}.
-  Genes from the anndata matrix were filtered to include protein-coding genes.
-  The samples were then labeled as either control or perturbation to allow for further analysis.
-  The AnnData file was then visualized as a bar plot representing library sizes (Figure \\ref{fig:Libraries}).
-  Dimensionality reduction of the data was performed using PCA with the normalization set to log-counts-per-million (logCPM).
-  The first two principal components (PCs) were used to generate a scatter plot (Figure \\ref{fig:PCA}).
-  The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{limma, voom} to create a gene signature using the selected conditions. 
-  The data in the differential expression table was then visualized as a volcano plot (Figure \\ref{fig:Volcano}).
-  The up-regulated genes were extracted from the gene signature computed by the Limma-Voom analysis from the file.
-  The gene set containing significant up genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
-  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_up}).
-  The gene set containing significant down genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
-  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_down}).
-  Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{Perturb-Seqr} to identify drug and single gene perturbations producing gene expression profiles similar (Table ~\\ref{table:PerturbSeqrMimic}) or opposite (Table ~\\ref{table:PerturbSeqrReverse}) to the signature.
-  
-  \\section{Results}\\label{results}
 
   ${results}
   
@@ -327,7 +349,7 @@ export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title,
   return files
 }
 
-//export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>>
+
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, Promise<string | ArrayBuffer>>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
   // Use GEO report, if exists

@@ -180,22 +180,123 @@ def write_report_methods(geo_accession:str, labelld_samples:pd.DataFrame):
     using PCA with the normalization set to log-counts-per-million (logCPM). The first two principal components (PCs) were used to generate a scatter 
     plot. The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{{limma, voom}} to create a gene signature using the selected conditions. 
     The data in the differential expression table was then visualized as a volcano plot. The up-regulated genes were extracted from the gene signature 
-    computed by the Limma-Voom analysis from the file. The gene set containing significant up genes was extracted from the gene signatureand submitted to 
-    Enrichr ~\\\{{Enrichr}}. The gene set was enriched against the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 
+    computed by the Limma-Voom analysis from the file. The gene sets containing significant up and down genes were extracted from the gene signatureand submitted to 
+    Enrichr ~\\cite{{Enrichr}}. The gene sets were enriched against the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 
     2022 ~\\cite{{KOMP2}} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes. 
-    The gene set containing significant down genes was extracted from the gene signatureand submitted to Enrichr ~\\cite{{Enrichr}}. The gene set was enriched against 
-    the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{{KOMP2}} libraries to identify statistically 
-    significant enriched biological processes, pathways, transcription factors and phenotypes. Significant genes were extracted from the gene signature 
-    and submitted to Perturb-Seqr [Perturb-Seqr] to identify small molecules and single gene CRISPR KOs producing gene expression profiles similar or opposite to 
-    the signature.''').strip().replace('\n',' ')
+    Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{{Perturb-Seqr}} to identify small molecules and single
+    gene CRISPR KOs producing gene expression profiles similar or opposite to the signature.''').strip().replace('\n',' ')
 
 
-def write_report_results(geo_accession:str, labelld_samples:pd.DataFrame, enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
+def write_report_results(geo_accession:str, labelld_samples:pd.DataFrame, signature:dict[str,str|float], enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
+    def clean_term(term: str):
+        return term.split('(')[0].strip()
+
+    def natural_join(items):
+        """
+        Oxford comma join:
+        A
+        A and B
+        A, B, and C
+        """
+        if len(items) == 0:
+            return ""
+        if len(items) == 1:
+            return items[0]
+        if len(items) == 2:
+            return f"{items[0]} and {items[1]}"
+
+        return f"{', '.join(items[:-1])}, and {items[-1]}"
+
+    def summarize_library(library: str, terms, n_terms: int = 2):
+        cleaned_terms = []
+        seen = set()
+
+        for term in terms:
+            cleaned = clean_term(term)
+            normalized = cleaned.lower()
+
+            if normalized not in seen:
+                seen.add(normalized)
+                cleaned_terms.append(cleaned)
+
+            if len(cleaned_terms) >= n_terms:
+                break
+
+        joined_terms = natural_join(cleaned_terms)
+        lib_lower = library.lower()
+
+        standard_rules = [
+            ("go", lambda: f"GO Biological Process terms related to {joined_terms.lower()} ~\\cite{{GO}}"),
+            ("kegg", lambda: f"KEGG pathways involving {joined_terms.lower()} ~\\cite{{KEGG}}"),
+            ("chea", lambda: f"ChEA transcription factors including {joined_terms} ~\\cite{{ChEA}}"),
+            ("komp", lambda: f"KOMP2 mouse phenotypes associated with {joined_terms.lower()} ~\\cite{{KOMP2}}"),
+        ]
+
+        perturbseqr_citations = {
+            "lincs l1000 xpr": "LINCS",
+            "lincs l1000 cp": "LINCS",
+            "perturb atlas human": "PerturbAtlas",
+            "perturb atlas mouse": "PerturbAtlas",
+            "creeds gene": "CREEDS",
+            "creeds chem": "CREEDS",
+            "rummageo gene": "RummaGEO",
+            "rummageo chem": "RummaGEO",
+            "replogle et al.": "Replogle",
+            "cm4ai": "CM4AI",
+            "tahoe-100m": "Tahoe",
+            "microarrays cmap": "CMap",
+            "nibr drug-seq": "NIBR",
+            "sciplex": "SciPlex",
+            "deepcover moa": "DeepCoverMoA",
+            "ginkgo bioworks": "Ginkgo",
+        }
+
+        for pattern, formatter in standard_rules:
+            if pattern in lib_lower:
+                return formatter()
+
+        if lib_lower in perturbseqr_citations:
+            return f"{joined_terms} from {library} ~\\cite{{{perturbseqr_citations[lib_lower]}}}"
+
+        return f"{joined_terms} from {library}"
+
+
+    def format_enrichr_section(results, n_terms=2):
+        library_summaries = [
+            summarize_library(lib.rsplit("_", 1)[0], terms_df["term"], n_terms=n_terms)
+            for lib, terms_df in results.items()
+        ]
+
+        return natural_join(library_summaries)
+    
+
+    def format_perturbseqr_section(df, n_terms_per_dataset: int = 2):
+        summaries = [
+            summarize_library(dataset_name,dataset_df["Perturbation"],n_terms=n_terms_per_dataset)
+            for dataset_name, dataset_df in df.groupby("Dataset")
+        ]
+
+        return natural_join(summaries)
+
+    up_genes,down_genes = [],[]
+    for gene in signature:
+        symbol = gene['term']
+        score = float(gene['zscore'])
+        if score and score > 0:
+            up_genes.append(symbol)
+        elif score and score < 0:
+            down_genes.append(symbol)
+    down_genes = down_genes[::-1]
+
     return dedent(f'''
-    Library size analysis was also performed to document the number of reads included in each sample. Library sizes of each sample were plotted using a bar plot (Figure \\ref{{fig:Libraries}}).
-    The first two principal components (PCs) were used to generate a scatter plot (Figure \\ref{{fig:PCA}}). The plot highlights the control and perturbation samples used and displays unused samples from the study.
-    Following differential expression analysis with limma-voom, logFC and p-value scores were used to construct a volcano plot (Figure \\ref{{fig:Volcano}}).
-    This plot shows the relative change in expression of up- and down-regulated genes, as well as highlighting specific genes with highly significant scores.
+    Library size distributions across samples were visualized to assess sequencing depth and sample consistency (Figure \\ref{{fig:librarySizes}}).
+    PCA of normalized expression profiles revealed the relationship between control and perturbation samples, while also displaying additional study samples not included in the differential expression analysis (Figure \\ref{{fig:PCAScatter}}).
+    Differential expression analysis identified {len(up_genes)} significantly up-regulated genes and {len(down_genes)} significantly down-regulated genes after logFC and adjusted p-value filtering (Figure \\ref{{fig:volcanoScatter}}).
+    Among the most strongly up-regulated genes were {', '.join(up_genes[:4])}, and {up_genes[4]}, whereas prominent down-regulated genes included {', '.join(down_genes[:4])}, and {down_genes[4]}.
+    Functional enrichment analysis of the up-regulated gene set identified associations with {format_enrichr_section(enrichr_results['enrichr_up'])} (Figure \\ref{{fig:upEnrichrBars}}). 
+    Analysis of the down-regulated gene set identified enrichment for {format_enrichr_section(enrichr_results['enrichr_down'])} (Figure \\ref{{fig:downEnrichrBars}}).
+    Signature search revealed gene perturbations including {format_perturbseqr_section(perturbseqr_results['mimic_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneMimickers}}) and drug perturbations including {format_perturbseqr_section(perturbseqr_results['mimic_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugMimickers}}) as mimickers.
+    Top reversers includeded genes knockouts {format_perturbseqr_section(perturbseqr_results['reverse_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneReversers}}) and drugs including {format_perturbseqr_section(perturbseqr_results['reverse_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugReversers}}).
     ''').strip().replace('\n',' ')
 
 
@@ -415,45 +516,65 @@ def extract_labelled_samples(anndata_file):
 
 
 def extract_enrichr_results(up_enrichment, down_enrichment):
+    up_id = up_enrichment.pop("enrichr_up_id")["shortId"]
     up_result = {
         library:pd.DataFrame(results["scored"]).head(10) for library,results in up_enrichment.items()
     }
+    down_id = down_enrichment.pop("enrichr_down_id")["shortId"]
     down_result = {
         library:pd.DataFrame(results["scored"]).head(10) for library,results in down_enrichment.items()
     }
-    return {"enrichr_up":up_result, "enrichr_down":down_result}
+    return {"enrichrUp":up_id,"enrichrDown":down_id},{"enrichr_up":up_result, "enrichr_down":down_result}
 
 
 def extract_perturbseqr_results(perturbseqr_ids:dict[str,str], n:int=20):
+    def clean_df(df:pd.DataFrame, dir:str, pert:str):
+        if dir=="mimic":
+            or_col="oddsRatioMimic"
+            pval_col = "pvalueMimic"
+            apval_col = "adjPvalueMimic"
+            drop_cols = ["signatureCount", "nReverseOverlap", "oddsRatioReverse", "pvalueReverse", "adjPvalueReverse"]
+        else:
+            or_col="oddsRatioReverse"
+            pval_col = "pvalueReverse"
+            apval_col = "adjPvalueReverse"
+            drop_cols = ["signatureCount", "nReverseOverlap", "oddsRatioMimic", "pvalueMimic", "adjPvalueMimic"]
+        colnames = ["Dataset", "Perturbation", "Perturbation ID", "Cell Line", "Timepoint", "Concentration", "MoA", "FDA Approved", "Gene Set Size Up", "Gene Set Size Down", "n Overlap", "Odds Ratio", "p-value", "Adjusted p-value"]
+        df = df.head(n).drop(columns=drop_cols).rename_axis("Rank", inplace=False)
+        df[or_col] = df[or_col].astype(float).map(lambda x: np.format_float_positional(x, precision=5))
+        df[pval_col] = df[pval_col].astype(float).map(lambda x: np.format_float_scientific(x, precision=5))
+        df[apval_col] = df[apval_col].astype(float).map(lambda x: np.format_float_scientific(x, precision=5))
+        df.index = df.index.astype(int) + 1
+        df.columns=colnames
+        if pert=='gene':
+            df = df.drop(columns=['Concentration','MoA'])
+        return df
+
     up_id = perturbseqr_ids['up_id']
     down_id = perturbseqr_ids['down_id']
+    gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
+    drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
     perturbseqr_url = 'https://perturbseqr.maayanlab.cloud/enrichpair/download'
-    colnames = ["Dataset", "Perturbation", "Perturbation ID", "Cell Line", "Timepoint", "Concentration", "MoA", "FDA Approved", "Gene Set Size Up", "Gene Set Size Down", "n Overlap", "Odds Ratio", "p-value", "Adjusted p-value"]
-    mimic_req = requests.get(
-            perturbseqr_url,
-            headers={'Accept': 'text/tab-separated-values'},
-            params={"datasetup":up_id,"datasetdown":down_id,"sort":"pvalue_mimic","maxTotal":n}
-        )
-    mimic_req.raise_for_status()
-    mimic_df = pd.read_csv(io.BytesIO(mimic_req.content), sep='\t').head(n).drop(columns=["signatureCount", "nReverseOverlap", "oddsRatioReverse", "pvalueReverse", "adjPvalueReverse"]).rename_axis("Rank", inplace=False)
-    mimic_df["oddsRatioMimic"] = mimic_df["oddsRatioMimic"].astype(float).map(lambda x: np.format_float_positional(x, precision=5))
-    mimic_df["pvalueMimic"] = mimic_df["pvalueMimic"].astype(float).map(lambda x: np.format_float_scientific(x, precision=5))
-    mimic_df["adjPvalueMimic"] = mimic_df["adjPvalueMimic"].astype(float).map(lambda x: np.format_float_scientific(x, precision=5))
-    mimic_df.index = mimic_df.index.astype(int) + 1
-    mimic_df.columns=colnames
-    reverse_req = requests.get(
-            perturbseqr_url,
-            headers={'Accept': 'text/tab-separated-values'},
-            params={"datasetup":up_id,"datasetdown":down_id,"sort":"pvalue_reverse","maxTotal":n}
-        )
-    reverse_req.raise_for_status()
-    reverse_df = pd.read_csv(io.BytesIO(reverse_req.content), sep='\t').head(n).drop(columns=["signatureCount", "nMimicOverlap", "oddsRatioMimic", "pvalueMimic", "adjPvalueMimic"]).rename_axis("Rank", inplace=False)
-    reverse_df["oddsRatioReverse"] = reverse_df["oddsRatioReverse"].astype(float).map(lambda x: np.format_float_positional(x, precision=5))
-    reverse_df["pvalueReverse"] = reverse_df["pvalueReverse"].astype(float).map(lambda x: np.format_float_scientific(x, precision=5))
-    reverse_df["adjPvalueReverse"] = reverse_df["adjPvalueReverse"].astype(float).map(lambda x: np.format_float_scientific(x, precision=5))
-    reverse_df.index = reverse_df.index.astype(int) + 1
-    reverse_df.columns=colnames
-    return {"mimic_signatures":mimic_df, "reverse_signatures":reverse_df}
+    s = requests.Session()
+    s.headers.update({'Accept': 'text/tab-separated-values'})
+    
+    mimic_gene_req = s.get(url=perturbseqr_url, params={"datasetup":up_id,"datasetdown":down_id,"sort":"pvalue_mimic","maxTotal":n, "libraries":gene_libraries})
+    mimic_gene_req.raise_for_status()
+    mimic_gene_df = clean_df(pd.read_csv(io.BytesIO(mimic_gene_req.content), sep='\t'),'mimic', 'gene')
+
+    mimic_drug_req = s.get(url=perturbseqr_url, params={"datasetup":up_id,"datasetdown":down_id,"sort":"pvalue_mimic","maxTotal":n, "libraries":drug_libraries})
+    mimic_drug_req.raise_for_status()
+    mimic_drug_df = clean_df(pd.read_csv(io.BytesIO(mimic_drug_req.content), sep='\t'),'mimic', 'drug')
+
+    reverse_gene_req = s.get(url=perturbseqr_url, params={"datasetup":up_id,"datasetdown":down_id,"sort":"pvalue_reverse","maxTotal":n, "libraries":gene_libraries})
+    reverse_gene_req.raise_for_status()
+    reverse_gene_df = clean_df(pd.read_csv(io.BytesIO(reverse_gene_req.content), sep='\t'),'reverse', 'gene')
+
+    reverse_drug_req = s.get(url=perturbseqr_url, params={"datasetup":up_id,"datasetdown":down_id,"sort":"pvalue_reverse","maxTotal":n, "libraries":drug_libraries})
+    reverse_drug_req.raise_for_status()
+    reverse_drug_df = clean_df(pd.read_csv(io.BytesIO(reverse_drug_req.content), sep='\t'),'reverse', 'drug')
+
+    return {"mimic_gene_signatures":mimic_gene_df, "mimic_drug_signatures":mimic_drug_df, "reverse_gene_signatures":reverse_gene_df, "reverse_drug_signatures":reverse_drug_df}
 
 
 # Figure utility functions
@@ -519,9 +640,10 @@ def make_library_size_barplot(library_size_plotly):
         ax.spines[spine].set_visible(False)
 
     plt.tight_layout()
-    with upsert_file('.pdf') as f:
+    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-    return f
+        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
+    return f,f1
 
 
 def make_pca_scatter(pca_scatter_plotly):
@@ -566,9 +688,10 @@ def make_pca_scatter(pca_scatter_plotly):
     ax.set_ylabel(plotly_scene['yaxis']['title']['text'], fontsize=24, labelpad=10)
     ax.legend(handles=legend_elements, bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=16)
     ax.tick_params(axis='both', labelsize=16)
-    with upsert_file('.pdf') as f:
+    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-    return f
+        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
+    return f,f1
 
 
 def make_volcano_scatter(volcano_scatter_plotly):
@@ -668,9 +791,10 @@ def make_volcano_scatter(volcano_scatter_plotly):
     ax.grid(True, alpha=0.2)
 
     plt.tight_layout()
-    with upsert_file('.pdf') as f:
+    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-    return f
+        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
+    return f,f1
 
 
 def make_enrichr_barplot(scored_enrichr_libraries: dict[str,pd.DataFrame]):
@@ -710,32 +834,74 @@ def make_enrichr_barplot(scored_enrichr_libraries: dict[str,pd.DataFrame]):
         ax.text(-0.02, 1.05, label, transform=ax.transAxes,fontsize=16, fontweight='bold', va='top', ha='right')
 
     plt.tight_layout()
-    with upsert_file('.pdf') as f:
+    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-    return f
+        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
+    return f,f1
 
 
-def make_figures(plots, enrichr_results:dict[str,dict[str,pd.DataFrame]]):
+def make_figures(plots, enrichr_results:dict[str,dict[str,pd.DataFrame]], supplement:dict[str,str]):
+    library_pdf, librar_png = make_library_size_barplot(plots["library_sizes_plot"])
+    pca_pdf, pca_png = make_pca_scatter(plots["pca_plot"])
+    volcano_pdf, volcano_png = make_volcano_scatter(plots["volcano_plot"])
+    enrichr_up_pdf, enrichr_up_png = make_enrichr_barplot(enrichr_results["enrichr_up"])
+    enrichr_down_pdf, enrichr_down_png = make_enrichr_barplot(enrichr_results["enrichr_down"])
+    enrichr_up_id = supplement["enrichrUp"]
+    enrichr_down_id = supplement["enrichrDown"]
     return {
-        "librarySizes": make_library_size_barplot(plots["library_sizes_plot"]),
-        "PCAScatter": make_pca_scatter(plots["pca_plot"]),
-        "volcanoScatter": make_volcano_scatter(plots["volcano_plot"]),
-        "upEnrichrBars": make_enrichr_barplot(enrichr_results["enrichr_up"]),
-        "downEnrichrBars": make_enrichr_barplot(enrichr_results["enrichr_down"])
+        "librarySizes": {
+            "pdf":library_pdf,
+            "png":librar_png,
+            "caption":"Library sizes for each sample in the dataset, shown as total mapped read counts per sample. Samples are labeled by their GEO accession identifier (GSM). Consistent library sizes across samples indicate uniform sequencing depth suitable for differential expression analysis."
+        },
+        "PCAScatter": {
+            "pdf":pca_pdf,
+            "png":pca_png,
+            "caption":"Principal component analysis (PCA) of normalized gene expression profiles across all samples. Each point represents one sample, colored by experimental condition: control (blue), perturbation (red), and additional study samples not included in the differential expression analysis (gray). Axes indicate the percentage of total variance explained by each principal component. Normalization was performed using log-counts-per-million (logCPM)."
+        },
+        "volcanoScatter": {
+            "pdf":volcano_pdf,
+            "png":volcano_png,
+            "caption":"Volcano plot of differential expression results comparing perturbation to control samples. Each point represents one protein-coding gene; the x-axis shows the log2 fold-change and the y-axis shows statistical significance as -log10(adjusted p-value). Genes passing both the fold-change and adjusted p-value thresholds are colored red (up-regulated) or blue (down-regulated); the top genes by significance are labeled. Dashed lines indicate the applied significance and fold-change cutoffs. Insignificant points are randomly downsampled by a factor of 0.5.",
+        },
+        "upEnrichrBars": {
+            "pdf":enrichr_up_pdf,
+            "png":enrichr_up_png,
+            "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_up_id}}}{{Enrichr}}.",
+        },
+        "downEnrichrBars": {
+            "pdf":enrichr_down_pdf,
+            "png":enrichr_down_png,
+            "caption":f"Enrichment analysis of the down-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_down_id}}}{{Enrichr}}."
+        }
     }
 
 
 # Table utility functions
 def make_table(table_data:pd.DataFrame):
-    with upsert_file('.csv') as f:
-        table_data.to_csv(f.file)
+    with upsert_file('.tsv') as f:
+        table_data.to_csv(f.file, sep='\t')
     return f
 
 
-def make_tables(perturbseqr_results):
+def make_tables(perturbseqr_results, supplement:dict[str,str]):
     return {
-        "perturbseqrMimickers": make_table(perturbseqr_results["mimic_signatures"]),
-        "perturbseqrReversers": make_table(perturbseqr_results["reverse_signatures"])
+        "perturbseqrGeneMimickers": {
+            "file":make_table(perturbseqr_results["mimic_gene_signatures"]),
+            "caption":"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+        },
+        "perturbseqrDrugMimickers": {
+            "file":make_table(perturbseqr_results["mimic_drug_signatures"]),
+            "caption":"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+        },
+        "perturbseqrGeneReversers": {
+            "file":make_table(perturbseqr_results["reverse_gene_signatures"]),
+            "caption":"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+        },
+        "perturbseqrDrugReversers": {
+            "file":make_table(perturbseqr_results["reverse_drug_signatures"]),
+            "caption":"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{Perturb-Seqr}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value."
+        },
     }
 
 
@@ -816,28 +982,30 @@ async def stage_sections(client: AsyncOpenAI, model:str, geo_accession:str, pmc_
     return REPORT_TITLE,abstract,introduction,discussion
 
 
-def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_anndata, plots, enrichr_up, enrichr_down, perturbseqr):
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_MODEL", "gpt-5-nano")
+
+def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_anndata, signature, plots, enrichr_up, enrichr_down, perturbseqr):
     labelled_samples = extract_labelled_samples(labelled_samples_anndata).to_json()
-    enrichr_results = extract_enrichr_results(enrichr_up,enrichr_down)
+    supplement,enrichr_results = extract_enrichr_results(enrichr_up,enrichr_down)
     perturbseqr_results = extract_perturbseqr_results(perturbseqr)
     pmc_articles = parse_pmc_xml(geo_accession,pmc_set)
+    supplement['perturbseqrUpGenes'] = perturbseqr['up_id']
+    supplement['perturbseqrDownGenes'] = perturbseqr['down_id']
     log("PMC articles retrieved.")
-    
+
     log("Generating sections...")
     methods = write_report_methods(geo_accession, labelled_samples)
-    results = write_report_results(geo_accession, labelled_samples, enrichr_results, perturbseqr_results)
+    results = write_report_results(geo_accession, labelled_samples, signature, enrichr_results, perturbseqr_results)
     title,abstract,introduction,discussion = asyncio.run(stage_sections(client, model, geo_accession, pmc_articles, labelled_samples, enrichr_results, perturbseqr_results, methods, results))
     log("Sections complete.")
 
     log("Collecting references...")
     references = make_references(pmc_articles)
     log("References complete.")
-    
-    figures = make_figures(plots, enrichr_results)
+    figures = make_figures(plots, enrichr_results, supplement)
     log("Figures complete.")
-    tables = make_tables(perturbseqr_results)
+    tables = make_tables(perturbseqr_results, supplement)
 
     return {
         "geo_accession":geo_accession, 
@@ -852,5 +1020,3 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
         "references":references,
         "model":model
     }
-
-

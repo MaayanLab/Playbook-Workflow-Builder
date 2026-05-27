@@ -4,11 +4,23 @@ import { z } from 'zod'
 import { PMCAccessionSet } from '@/components/core/set'
 import { GEOAccessionTerm } from '@/components/core/term'
 import { PlotlyPlot } from '@/components/viz/plotly'
-import { EnrichrScoredGenes, EnrichrScoredPathways, EnrichrScoredPhenotypes } from '@/components/service/enrichr'
+import { EnrichrEnrichmentAnalysis, EnrichrScoredGenes, EnrichrScoredPathways, EnrichrScoredPhenotypes } from '@/components/service/enrichr'
 import { PerturbSeqrGeneSignature } from '@/components/service/perturbseqr'
 import python from '@/utils/python'
 import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
+import { ScoredGenes } from '@/components/core/scored'
+
+const ReportFigure = z.object({
+  pdf: FileC,
+  png: FileC,
+  caption: z.string()
+})
+
+const ReportTable = z.object({
+  file: FileC,
+  caption: z.string()
+})
 
 
 export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
@@ -35,17 +47,25 @@ export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
         conclusion: z.string()
     }),
     figures: z.object({
-        librarySizes: FileC,
-        PCAScatter: FileC,
-        volcanoScatter: FileC,
-        upEnrichrBars: FileC,
-        downEnrichrBars: FileC
+        librarySizes: ReportFigure,
+        PCAScatter: ReportFigure,
+        volcanoScatter: ReportFigure,
+        upEnrichrBars: ReportFigure,
+        downEnrichrBars: ReportFigure
     }),
     tables: z.object({
-        perturbseqrMimickers: FileC,
-        perturbseqrReversers: FileC
+        perturbseqrGeneMimickers: ReportTable,
+        perturbseqrDrugMimickers: ReportTable,
+        perturbseqrGeneReversers: ReportTable,
+        perturbseqrDrugReversers: ReportTable
     }),
     references: z.string().array(),
+    supplement: z.object({
+      enrichrUp: z.string(),
+      enrichrDown: z.string(),
+      perturbseqrUpGenes: z.string(),
+      perturbseqrDownGenes: z.string()
+    }),
     model: z.string()
   }))
   .view(props => (
@@ -100,10 +120,13 @@ export const GEOReanalysisAgentReport = MetaNode(`GEOReanalysisAgentReport`)
     librarySizesPlot: PlotlyPlot,
     PCAPlot: PlotlyPlot,
     volcanoPlot: PlotlyPlot,
+    geneSignature: ScoredGenes,
+    enrichrUp: EnrichrEnrichmentAnalysis,
     enrichrGOBPUp: EnrichrScoredPathways,
     enrichrKEGGUp: EnrichrScoredPathways,
     enrichrChEAUp: EnrichrScoredGenes,
     enrichrKOMPUp: EnrichrScoredPhenotypes,
+    enrichrDown: EnrichrEnrichmentAnalysis,
     enrichrGOBPDown: EnrichrScoredPathways,
     enrichrKEGGDown: EnrichrScoredPathways,
     enrichrChEADown: EnrichrScoredGenes,
@@ -118,18 +141,21 @@ export const GEOReanalysisAgentReport = MetaNode(`GEOReanalysisAgentReport`)
         geo_accession: props.inputs.geoAccession,
         pmc_set: props.inputs.pmcSet.set,
         labelled_samples_anndata: props.inputs.labelledSamples,
+        signature: props.inputs.geneSignature,
         plots:{
             library_sizes_plot: props.inputs.librarySizesPlot,
             pca_plot: props.inputs.PCAPlot,
             volcano_plot: props.inputs.volcanoPlot
         },
         enrichr_up:{
+            enrichr_up_id: props.inputs.enrichrUp,
             enrichr_gobp_up: props.inputs.enrichrGOBPUp,
             enrichr_kegg_up: props.inputs.enrichrKEGGUp,
             enrichr_chea_up: props.inputs.enrichrChEAUp,
             enrichr_komp_up: props.inputs.enrichrKOMPUp
         },
         enrichr_down:{
+            enrichr_down_id: props.inputs.enrichrDown,
             enrichr_gobp_down: props.inputs.enrichrGOBPDown,
             enrichr_kegg_down: props.inputs.enrichrKEGGDown,
             enrichr_chea_down: props.inputs.enrichrChEADown,

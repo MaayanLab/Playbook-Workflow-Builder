@@ -90,12 +90,8 @@ async def generate_section(client: AsyncOpenAI, model:str, prompt:str, data:str)
 
     )
 
-    return format_citations(response.output_text
-                            .replace("%","\\%")
-                            .replace("$","\\$")
-                            .replace("&","\\&")
-                            .replace("_","\\_")
-                            ).encode('ascii', errors='ignore').decode('ascii')
+    return response.output_text.encode('ascii', errors='ignore').decode('ascii')
+                            
     
 
 async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:str, introduction:dict[str,str], methods:str, results:str, discussion:dict[str,str]):
@@ -120,7 +116,7 @@ async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:st
 
     abstract = await generate_section(client, model, prompt, data)
     abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
-    abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract)
+    abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
 
     log("Abstract complete.")
     return abstract
@@ -350,160 +346,144 @@ async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:
 
 # Data extraction utility functions
 def retrieve_pmc_articles(pmc_set: set[str]):
-    req = requests.get(
-        'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi',
-        params={
-            "id":{",".join(pmc_set).replace("PMC","")},
-            "db":"pmc"
-        }
+    ids = ",".join(pid.replace("PMC", "") for pid in pmc_set)
+    resp = requests.get(
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+        params={"id": ids, "db": "pmc"},
     )
-    req.raise_for_status()
-    return req.text
+    resp.raise_for_status()
+    return resp.text
 
+def _page_range(el, fpage_tag="fpage", lpage_tag="lpage"):
+    fpage = el.findtext(fpage_tag, "").strip()
+    lpage = el.findtext(lpage_tag, "").strip()
+    return f"{fpage}--{lpage}" if fpage else ""
+
+def _names_to_author_list(name_els) -> list[str]:
+    authors = []
+    for name in name_els:
+        surname = name.findtext("surname", "").strip()
+        given = name.findtext("given-names", "").strip()
+        if surname:
+            authors.append(f"{surname}, {given}" if given else surname)
+    return authors
+
+def _extract_citation_author_list(cit) -> list[str]:
+    person_group = cit.find("person-group[@person-group-type='author']")
+    if person_group is not None:
+        name_els = person_group.findall("name") + person_group.findall("string-name")
+        if name_els:
+            return _names_to_author_list(name_els)
+    name_els = cit.findall("name") + cit.findall("string-name")
+    return _names_to_author_list(name_els)
+
+def _ref_dict(entry_type: str, key: str, fields: dict) -> dict:
+    clean = {"id": key, "type": entry_type}
+    for k, v in fields.items():
+        if isinstance(v, list):
+            if v:
+                clean[k] = v
+        else:
+            v = str(v).strip()
+            if v and v != "--":
+                clean[k] = html.unescape(v)
+    return clean
 
 def extract_text_with_citations(elem):
     parts = []
-
     if elem.text:
         parts.append(elem.text)
-
     for child in elem:
         if child.tag == "xref" and child.attrib.get("ref-type") == "bibr":
-            label = child.get("rid")
-            parts.append(f"[{label}]")
+            parts.append(f"[{child.get('rid')}]")
         else:
             parts.append(extract_text_with_citations(child))
-
         if child.tail:
             parts.append(child.tail)
-
     return "".join(parts)
 
-
 def parse_section(sec):
-    sec_title_el = sec.find("title")
-    sec_title = "".join(sec_title_el.itertext()).strip() if sec_title_el is not None else None
+    title_el = sec.find("title")
+    title = "".join(title_el.itertext()).strip() if title_el is not None else ""
+    paragraphs = [
+        extract_text_with_citations(p).strip()
+        for p in sec.findall("p")
+    ]
+    text = "\n\n".join(p for p in paragraphs if p)
+    blocks = [{"title": title, "text": text}]
+    for subsec in sec.findall("sec"):
+        blocks.extend(parse_section(subsec))
+    return blocks
 
-    content_blocks = []
+def _parse_article_bib(geo_accession: str, front) -> dict:
+    doi = front.findtext(".//article-id[@pub-id-type='doi']", "").strip()
+    return _ref_dict("article", geo_accession, {
+        "title":   front.findtext(".//article-title", "").strip(),
+        "authors": _names_to_author_list(front.findall(".//contrib-group//name")),
+        "journal": front.findtext(".//journal-id[@journal-id-type='nlm-ta']", ""),
+        "year":    front.findtext(".//year", ""),
+        "volume":  front.findtext(".//volume", ""),
+        "pages":   _page_range(front),
+        "doi":     doi,
+        "pmid":    front.findtext(".//article-id[@pub-id-type='pmid']", ""),
+        **({"url": f"https://doi.org/{doi}"} if doi else {}),
+    })
 
-    for p in sec.findall("./p"):
-        text = extract_text_with_citations(p).strip()
-        if text:
-            content_blocks.append(text)
+def _parse_reference_bib(ref) -> dict | None:
+    ref_id = ref.attrib.get("id", "ref_unknown")
+    cit = ref.find("element-citation") or ref.find("mixed-citation")
+    if cit is None:
+        return None
 
-    for subsec in sec.findall("./sec"):
-        content_blocks.extend(str(parse_section(subsec)))
+    pub_type = cit.attrib.get("publication-type", "")
+    entry_type = "article" if pub_type == "journal" else "misc"
+    doi = cit.findtext(".//pub-id[@pub-id-type='doi']", "").strip()
 
-    return [{
-        "title": sec_title,
-        "text": "".join(content_blocks)
-    }]
+    return _ref_dict(entry_type, ref_id, {
+        "title":   (cit.findtext("article-title") or "").strip(),
+        "authors": _extract_citation_author_list(cit),
+        "journal": (cit.findtext("source") or "").strip(),
+        "year":    cit.findtext("year", ""),
+        "volume":  cit.findtext("volume", ""),
+        "pages":   _page_range(cit),
+        "doi":     doi,
+        "pmid":    cit.findtext(".//pub-id[@pub-id-type='pmid']", ""),
+        **({"url": f"https://doi.org/{doi}"} if doi else {}),
+    })
 
+def parse_pmc_xml(geo_accession: str, pmc_set: set[str]):
+    root = ET.fromstring(retrieve_pmc_articles(pmc_set))
 
-def parse_pmc_xml(geo_accession:str, pmc_set: set[str]):
-    xml_string = retrieve_pmc_articles(pmc_set)
-    root = ET.fromstring(xml_string)
     articles = []
-
     for article in root:
-        article_title = article.find('.//article-title').text
-        front = article.find('.//front')
-        abstract_el = article.find('.//abstract')
+        front = article.find(".//front")
+        abstract_el = article.find(".//abstract")
+
         abstract = " ".join(
             "".join(p.itertext()).strip()
             for p in abstract_el.findall(".//p")
         ) if abstract_el is not None else ""
 
-        sections = []
         body = article.find(".//body")
+        sections = []
         if body is not None:
-            # Top-level bare paragraphs (not inside a sec)
             for child in body:
                 if child.tag == "p":
                     if text := extract_text_with_citations(child).strip():
                         sections.append({"title": "", "text": text})
+                elif child.tag == "sec":
+                    sections.extend(parse_section(child))
 
-            for sec in body.findall("./sec"):
-                sections.extend(parse_section(sec))
-
-        references = []
-        authors = []
-        contrib_group = front.find(".//contrib-group")
-        if contrib_group is not None:
-            for name in contrib_group.findall('.//name'):
-                surname = name.findtext('surname', '')
-                given = name.findtext('given-names', '')
-                if surname:
-                    authors.append(f"{surname}, {given}")
-        author_str = " and ".join(authors)
-
-        doi = front.findtext(".//article-id[@pub-id-type='doi']", "")
-        pmid = front.findtext(".//article-id[@pub-id-type='pmid']", "")
-        fields = {
-            "author": author_str,
-            "title": article_title,
-            "journal": front.findtext(".//journal-id[@journal-id-type='nlm-ta']", ""),
-            "year": front.findtext('.//year', ''),
-            "volume": front.findtext('.//volume', ''),
-            "pages": f"{front.findtext('.//fpage', '')}--{front.findtext('.//lpage', '')}" if front.find('.//fpage') is not None else "",
-            "doi": doi,
-            "pmid": pmid,
-            "url": f"https://doi.org/{doi}" if doi else ""
-        }
-
-        bib_lines = [f"@article{{{geo_accession},"]
-        for key, value in fields.items():
-            if value and value.strip() not in ("", "--"):
-                clean_val = html.unescape(str(value)).replace('&', '\\&')
-                bib_lines.append(f"  {key} = {{{clean_val}}},")
-        bib_lines.append("}")
-        references.append("\n".join(bib_lines))
-
+        references = [_parse_article_bib(geo_accession, front)]
         for ref in article.findall(".//ref"):
-            ref_id = ref.attrib.get('id', 'ref_unknown')
-            cit = ref.find('.//element-citation') or ref.find('.//mixed-citation')
-            if cit is None:
-                continue
-            pub_type = cit.attrib.get('publication-type', 'article')
-            bib_type = "article" if pub_type == "journal" else "misc"
-
-            authors = []
-            person_group = cit.find("person-group[@person-group-type='author']")
-            if person_group is not None:
-                for name in person_group.findall('name')+person_group.findall('string-name'):
-                    surname = name.findtext('surname', '')
-                    given = name.findtext('given-names', '')
-                    if surname:
-                        authors.append(f"{surname}, {given}")
-            author_str = " and ".join(authors)
-
-            doi = cit.findtext(".//pub-id[@pub-id-type='doi']", "")
-            pmid = cit.findtext(".//pub-id[@pub-id-type='pmid']", "")
-            fields = {
-                "author": author_str,
-                "title": cit.findtext('article-title', '').strip(),
-                "journal": cit.findtext('source', ''),
-                "year": cit.findtext('year', ''),
-                "volume": cit.findtext('volume', ''),
-                "pages": f"{cit.findtext('fpage', '')}--{cit.findtext('lpage', '')}" if cit.find('fpage') is not None else "",
-                "doi": doi,
-                "pmid": pmid,
-                "url": f"https://doi.org/{doi}" if doi else ""
-            }
-
-            bib_lines = [f"@{bib_type}{{{ref_id},"]
-            for key, value in fields.items():
-                if value and value.strip() not in ("", "--"):
-                    clean_val = html.unescape(str(value)).replace('&', '\\&')
-                    bib_lines.append(f"  {key} = {{{clean_val}}},")
-            bib_lines.append("}")
-            references.append("\n".join(bib_lines))
+            if entry := _parse_reference_bib(ref):
+                references.append(entry)
 
         articles.append({
-            "title": article_title,
-            "abstract": abstract,
-            "body": sections,
-            "references": references
+            "title":      article.findtext(".//article-title", "").strip(),
+            "abstract":   abstract,
+            "body":       sections,
+            "references": references,
         })
 
     return articles
@@ -906,58 +886,34 @@ def make_tables(perturbseqr_results, supplement:dict[str,str]):
 
 
 def make_references(pmc_articles):
-    refs = '''@article{AnnData, title={anndata: Annotated data}, url={https://doi.org/10.1101/2021.12.16.473007}, doi={10.1101/2021.12.16.473007}, abstractNote={<jats:title>Summary</jats:title><jats:p>anndata is a Python package for handling annotated data matrices in memory and on disk (<jats:ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri" xlink:href="http://github.com/theislab/anndata">github.com/theislab/anndata</jats:ext-link>), positioned between pandas and xarray. anndata offers a broad range of computationally efficient features including, among others, sparse data support, lazy operations, and a PyTorch interface.</jats:p><jats:sec><jats:title>Statement of need</jats:title><jats:p>Generating insight from high-dimensional data matrices typically works through training models that annotate observations and variables via low-dimensional representations. In exploratory data analysis, this involves<jats:italic>iterative</jats:italic>training and analysis using original and learned annotations and task-associated representations. anndata offers a canonical data structure for book-keeping these, which is neither addressed by pandas (McKinney, 2010), nor xarray (Hoyer &amp; Hamman, 2017), nor commonly-used modeling packages like scikit-learn (Pedregosa et al., 2011).</jats:p></jats:sec>}, publisher={Cold Spring Harbor Laboratory}, author={Virshup, Isaac and Rybakov, Sergei and Theis, Fabian J. and Angerer, Philipp and Wolf, F. Alexander}, year={2021}, month=dec }
-
-@article{ARCHS4, title={Massive mining of publicly available RNA-seq data from human and mouse}, volume={9}, url={https://doi.org/10.1038/s41467-018-03751-6}, doi={10.1038/s41467-018-03751-6}, abstractNote={<jats:title>Abstract</jats:title><jats:p>RNA sequencing (RNA-seq) is the leading technology for genome-wide transcript quantification. However, publicly available RNA-seq data is currently provided mostly in raw form, a significant barrier for global and integrative retrospective analyses. ARCHS4 is a web resource that makes the majority of published RNA-seq data from human and mouse available at the gene and transcript levels. For developing ARCHS4, available FASTQ files from RNA-seq experiments from the Gene Expression Omnibus (GEO) were aligned using a cloud-based infrastructure. In total 187,946 samples are accessible through ARCHS4 with 103,083 mouse and 84,863 human. Additionally, the ARCHS4 web interface provides intuitive exploration of the processed data through querying tools, interactive visualization, and gene pages that provide average expression across cell lines and tissues, top co-expressed genes for each gene, and predicted biological functions and protein–protein interactions for each gene based on prior knowledge combined with co-expression.</jats:p>}, number={1}, journal={Nature Communications}, publisher={Springer Science and Business Media LLC}, author={Lachmann, Alexander and Torre, Denis and Keenan, Alexandra B. and Jagodnik, Kathleen M. and Lee, Hoyjin J. and Wang, Lily and Silverstein, Moshe C. and Ma’ayan, Avi}, year={2018}, month=apr, language={en} }
-
-@article{voom, title={voom: precision weights unlock linear model analysis tools for RNA-seq read counts}, volume={15}, url={https://doi.org/10.1186/gb-2014-15-2-r29}, doi={10.1186/gb-2014-15-2-r29}, number={2}, journal={Genome Biology}, publisher={Springer Science and Business Media LLC}, author={Law, Charity W and Chen, Yunshun and Shi, Wei and Smyth, Gordon K}, year={2014}, pages={R29}, language={en} }
-
-@article{limma, title={limma powers differential expression analyses for RNA-sequencing and microarray studies}, volume={43}, url={https://doi.org/10.1093/nar/gkv007}, doi={10.1093/nar/gkv007}, number={7}, journal={Nucleic Acids Research}, publisher={Oxford University Press (OUP)}, author={Ritchie, Matthew E. and Phipson, Belinda and Wu, Di and Hu, Yifang and Law, Charity W. and Shi, Wei and Smyth, Gordon K.}, year={2015}, month=jan, pages={e47–e47}, language={en} }
-
-@article{DEA, title={Comprehensive evaluation of differential gene expression analysis methods for RNA-seq data}, volume={14}, url={https://doi.org/10.1186/gb-2013-14-9-r95}, doi={10.1186/gb-2013-14-9-r95}, number={9}, journal={Genome Biology}, publisher={Springer Science and Business Media LLC}, author={Rapaport, Franck and Khanin, Raya and Liang, Yupu and Pirun, Mono and Krek, Azra and Zumbo, Paul and Mason, Christopher E and Socci, Nicholas D and Betel, Doron}, year={2013}, pages={R95}, language={en} }
-
-@article{Enrichr, title={Gene Set Knowledge Discovery with Enrichr}, volume={1}, url={https://doi.org/10.1002/cpz1.90}, doi={10.1002/cpz1.90}, abstractNote={<jats:title>Abstract</jats:title><jats:p>Profiling samples from patients, tissues, and cells with genomics, transcriptomics, epigenomics, proteomics, and metabolomics ultimately produces lists of genes and proteins that need to be further analyzed and integrated in the context of known biology. Enrichr (Chen et al., 2013; Kuleshov et al., 2016) is a gene set search engine that enables the querying of hundreds of thousands of annotated gene sets. Enrichr uniquely integrates knowledge from many high‐profile projects to provide synthesized information about mammalian genes and gene sets. The platform provides various methods to compute gene set enrichment, and the results are visualized in several interactive ways. This protocol provides a summary of the key features of Enrichr, which include using Enrichr programmatically and embedding an Enrichr button on any website. © 2021 Wiley Periodicals LLC.</jats:p><jats:p><jats:bold>Basic Protocol 1</jats:bold>: Analyzing lists of differentially expressed genes from transcriptomics, proteomics and phosphoproteomics, GWAS studies, or other experimental studies</jats:p><jats:p><jats:bold>Basic Protocol 2</jats:bold>: Searching Enrichr by a single gene or key search term</jats:p><jats:p><jats:bold>Basic Protocol 3</jats:bold>: Preparing raw or processed RNA‐seq data through BioJupies in preparation for Enrichr analysis</jats:p><jats:p><jats:bold>Basic Protocol 4</jats:bold>: Analyzing gene sets for model organisms using modEnrichr</jats:p><jats:p><jats:bold>Basic Protocol 5</jats:bold>: Using Enrichr in Geneshot</jats:p><jats:p><jats:bold>Basic Protocol 6</jats:bold>: Using Enrichr in ARCHS4</jats:p><jats:p><jats:bold>Basic Protocol 7</jats:bold>: Using the enrichment analysis visualization Appyter to visualize Enrichr results</jats:p><jats:p><jats:bold>Basic Protocol 8</jats:bold>: Using the Enrichr API</jats:p><jats:p><jats:bold>Basic Protocol 9</jats:bold>: Adding an Enrichr button to a website</jats:p>}, number={3}, journal={Current Protocols}, publisher={Wiley}, author={Xie, Zhuorui and Bailey, Allison and Kuleshov, Maxim V. and Clarke, Daniel J. B. and Evangelista, John E. and Jenkins, Sherry L. and Lachmann, Alexander and Wojciechowicz, Megan L. and Kropiwnicki, Eryk and Jagodnik, Kathleen M. and Jeon, Minji and Ma'ayan, Avi}, year={2021}, month=mar, language={en} }
-
-@article{GO, title={Gene Ontology: tool for the unification of biology}, volume={25}, url={https://doi.org/10.1038/75556}, doi={10.1038/75556}, number={1}, journal={Nature Genetics}, publisher={Springer Science and Business Media LLC}, author={Ashburner, Michael and Ball, Catherine A. and Blake, Judith A. and Botstein, David and Butler, Heather and Cherry, J. Michael and Davis, Allan P. and Dolinski, Kara and Dwight, Selina S. and Eppig, Janan T. and Harris, Midori A. and Hill, David P. and Issel-Tarver, Laurie and Kasarskis, Andrew and Lewis, Suzanna and Matese, John C. and Richardson, Joel E. and Ringwald, Martin and Rubin, Gerald M. and Sherlock, Gavin}, year={2000}, month=may, pages={25-29}, language={en} }
-
-@article{KEGG, title={KEGG for taxonomy-based analysis of pathways and genomes}, volume={51}, url={https://doi.org/10.1093/nar/gkac963}, doi={10.1093/nar/gkac963}, abstractNote={<jats:title>Abstract</jats:title>
-               <jats:p>KEGG (https://www.kegg.jp) is a manually curated database resource integrating various biological objects categorized into systems, genomic, chemical and health information. Each object (database entry) is identified by the KEGG identifier (kid), which generally takes the form of a prefix followed by a five-digit number, and can be retrieved by appending /entry/kid in the URL. The KEGG pathway map viewer, the Brite hierarchy viewer and the newly released KEGG genome browser can be launched by appending /pathway/kid, /brite/kid and /genome/kid, respectively, in the URL. Together with an improved annotation procedure for KO (KEGG Orthology) assignment, an increasing number of eukaryotic genomes have been included in KEGG for better representation of organisms in the taxonomic tree. Multiple taxonomy files are generated for classification of KEGG organisms and viruses, and the Brite hierarchy viewer is used for taxonomy mapping, a variant of Brite mapping in the new KEGG Mapper suite. The taxonomy mapping enables analysis of, for example, how functional links of genes in the pathway and physical links of genes on the chromosome are conserved among organism groups.</jats:p>}, number={D1}, journal={Nucleic Acids Research}, publisher={Oxford University Press (OUP)}, author={Kanehisa, Minoru and Furumichi, Miho and Sato, Yoko and Kawashima, Masayuki and Ishiguro-Watanabe, Mari}, year={2022}, month=oct, pages={D587–D592}, language={en} }
-
-@article{ChEA, title={ChEA3: transcription factor enrichment analysis by orthogonal omics integration}, volume={47}, url={https://doi.org/10.1093/nar/gkz446}, doi={10.1093/nar/gkz446}, abstractNote={<jats:title>Abstract</jats:title><jats:p>Identifying the transcription factors (TFs) responsible for observed changes in gene expression is an important step in understanding gene regulatory networks. ChIP-X Enrichment Analysis 3 (ChEA3) is a transcription factor enrichment analysis tool that ranks TFs associated with user-submitted gene sets. The ChEA3 background database contains a collection of gene set libraries generated from multiple sources including TF–gene co-expression from RNA-seq studies, TF-target associations from ChIP-seq experiments, and TF-gene co-occurrence computed from crowd-submitted gene lists. Enrichment results from these distinct sources are integrated to generate a composite rank that improves the prediction of the correct upstream TF compared to ranks produced by individual libraries. We compare ChEA3 with existing TF prediction tools and show that ChEA3 performs better. By integrating the ChEA3 libraries, we illuminate general transcription factor properties such as whether the TF behaves as an activator or a repressor. The ChEA3 web-server is available from https://amp.pharm.mssm.edu/ChEA3.</jats:p>}, number={W1}, journal={Nucleic Acids Research}, publisher={Oxford University Press (OUP)}, author={Keenan, Alexandra B and Torre, Denis and Lachmann, Alexander and Leong, Ariel K and Wojciechowicz, Megan L and Utti, Vivian and Jagodnik, Kathleen M and Kropiwnicki, Eryk and Wang, Zichen and Ma'ayan, Avi}, year={2019}, month=may, pages={W212-W224}, language={en} }
-
-@article{KOMP2, title={The International Mouse Phenotyping Consortium: comprehensive knockout phenotyping underpinning the study of human disease}, volume={51}, url={https://doi.org/10.1093/nar/gkac972}, doi={10.1093/nar/gkac972}, abstractNote={<jats:title>Abstract</jats:title>
-               <jats:p>The International Mouse Phenotyping Consortium (IMPC; https://www.mousephenotype.org/) web portal makes available curated, integrated and analysed knockout mouse phenotyping data generated by the IMPC project consisting of 85M data points and over 95,000 statistically significant phenotype hits mapped to human diseases. The IMPC portal delivers a substantial reference dataset that supports the enrichment of various domain-specific projects and databases, as well as the wider research and clinical community, where the IMPC genotype–phenotype knowledge contributes to the molecular diagnosis of patients affected by rare disorders. Data from 9,000 mouse lines and 750 000 images provides vital resources enabling the interpretation of the ignorome, and advancing our knowledge on mammalian gene function and the mechanisms underlying phenotypes associated with human diseases. The resource is widely integrated and the lines have been used in over 4,600 publications indicating the value of the data and the materials.</jats:p>}, number={D1}, journal={Nucleic Acids Research}, publisher={Oxford University Press (OUP)}, author={Groza, Tudor and Gomez, Federico Lopez and Mashhadi, Hamed Haseli and Muñoz-Fuentes, Violeta and Gunes, Osman and Wilson, Robert and Cacheiro, Pilar and Frost, Anthony and Keskivali-Bond, Piia and Vardal, Bora and McCoy, Aaron and Cheng, Tsz Kwan and Santos, Luis and Wells, Sara and Smedley, Damian and Mallon, Ann-Marie and Parkinson, Helen}, year={2022}, month=oct, pages={D1038–D1045}, language={en} }
-
-@article{CMap, title={The Connectivity Map: Using Gene-Expression Signatures to Connect Small Molecules, Genes, and Disease}, volume={313}, ISSN={1095-9203}, url={https://doi.org/10.1126/science.1132939}, doi={10.1126/science.1132939}, number={5795}, journal={Science}, publisher={American Association for the Advancement of Science (AAAS)}, author={Lamb, Justin and Crawford, Emily D. and Peck, David and Modell, Joshua W. and Blat, Irene C. and Wrobel, Matthew J. and Lerner, Jim and Brunet, Jean-Philippe and Subramanian, Aravind and Ross, Kenneth N. and Reich, Michael and Hieronymus, Haley and Wei, Guo and Armstrong, Scott A. and Haggarty, Stephen J. and Clemons, Paul A. and Wei, Ru and Carr, Steven A. and Lander, Eric S. and Golub, Todd R.}, year={2006}, month=sep, pages={1929-1935} }
-
-@article{CM4AI, title={A Perturbation Cell Atlas of Human Induced Pluripotent Stem Cells}, url={https://doi.org/10.1101/2024.11.03.621734}, doi={10.1101/2024.11.03.621734}, publisher={openRxiv}, author={Nourreddine, Sami and Doctor, Yesh and Dailamy, Amir and Forget, Antoine and Lee, Yi-Hung and Chinn, Becky and Khaliq, Hammza and Polacco, Benjamin and Muralidharan, Monita and Pan, Emily and Zhang, Yifan and Sigaeva, Alina and Hansen, Jan Niklas and Gao, Jiahao and Parker, Jillian A. and Obernier, Kirsten and Clark, Timothy and Chen, Jake Y. and Metallo, Christian and Lundberg, Emma and Ideker, Trey and Krogan, Nevan and Mali, Prashant}, year={2024}, month=nov }
-
-@article{CREEDS, title={Extraction and analysis of signatures from the Gene Expression Omnibus by the crowd}, volume={7}, ISSN={2041-1723}, url={https://doi.org/10.1038/ncomms12846}, doi={10.1038/ncomms12846}, number={1}, journal={Nature Communications}, publisher={Springer Science and Business Media LLC}, author={Wang, Zichen and Monteiro, Caroline D. and Jagodnik, Kathleen M. and Fernandez, Nicolas F. and Gundersen, Gregory W. and Rouillard, Andrew D. and Jenkins, Sherry L. and Feldmann, Axel S. and Hu, Kevin S. and McDermott, Michael G. and Duan, Qiaonan and Clark, Neil R. and Jones, Matthew R. and Kou, Yan and Goff, Troy and Woodland, Holly and Amaral, Fabio M R. and Szeto, Gregory L. and Fuchs, Oliver and Schüssler-Fiorenza Rose, Sophia M. and Sharma, Shvetank and Schwartz, Uwe and Bausela, Xabier Bengoetxea and Szymkiewicz, Maciej and Maroulis, Vasileios and Salykin, Anton and Barra, Carolina M. and Kruth, Candice D. and Bongio, Nicholas J. and Mathur, Vaibhav and Todoric, Radmila D and Rubin, Udi E. and Malatras, Apostolos and Fulp, Carl T. and Galindo, John A. and Motiejunaite, Ruta and Jüschke, Christoph and Dishuck, Philip C. and Lahl, Katharina and Jafari, Mohieddin and Aibar, Sara and Zaravinos, Apostolos and Steenhuizen, Linda H. and Allison, Lindsey R. and Gamallo, Pablo and de Andres Segura, Fernando and Dae Devlin, Tyler and Pérez-García, Vicente and Ma’ayan, Avi}, year={2016}, month=sep }
-
-@article{DeepCoverMOA, title={A proteome-wide atlas of drug mechanism of action}, volume={41}, ISSN={1546-1696}, url={https://doi.org/10.1038/s41587-022-01539-0}, doi={10.1038/s41587-022-01539-0}, number={6}, journal={Nature Biotechnology}, publisher={Springer Science and Business Media LLC}, author={Mitchell, Dylan C. and Kuljanin, Miljan and Li, Jiaming and Van Vranken, Jonathan G. and Bulloch, Nathan and Schweppe, Devin K. and Huttlin, Edward L. and Gygi, Steven P.}, year={2023}, month=jan, pages={845–857} }
-
-@article{Ginkgo, title={Ginkgo Bioworks}, url={https://www.ginkgo.bio/} }
-
-@article{LINCS, title={SigCom LINCS: data and metadata search engine for a million gene expression signatures}, volume={50}, ISSN={1362-4962}, url={https://doi.org/10.1093/nar/gkac328}, doi={10.1093/nar/gkac328}, number={W1}, journal={Nucleic Acids Research}, publisher={Oxford University Press (OUP)}, author={Evangelista, John Erol and Clarke, Daniel J B and Xie, Zhuorui and Lachmann, Alexander and Jeon, Minji and Chen, Kerwin and Jagodnik, Kathleen M and Jenkins, Sherry L and Kuleshov, Maxim V and Wojciechowicz, Megan L and Schürer, Stephan C and Medvedovic, Mario and Ma’ayan, Avi}, year={2022}, month=may, pages={W697-W709} }
-
-@article{NIBR, title={DRUG-seq Provides Unbiased Biological Activity Readouts for Neuroscience Drug Discovery}, volume={17}, ISSN={1554-8937}, url={https://doi.org/10.1021/acschembio.1c00920}, doi={10.1021/acschembio.1c00920}, number={6}, journal={ACS Chemical Biology}, publisher={American Chemical Society (ACS)}, author={Li, Jingyao and Ho, Daniel J. and Henault, Martin and Yang, Chian and Neri, Marilisa and Ge, Robin and Renner, Steffen and Mansur, Leandra and Lindeman, Alicia and Kelly, Brian and Tumkaya, Tayfun and Ke, Xiaoling and Soler-Llavina, Gilberto and Shanker, Gopi and Russ, Carsten and Hild, Marc and Gubser Keller, Caroline and Jenkins, Jeremy L. and Worringer, Kathleen A. and Sigoillot, Frederic D. and Ihry, Robert J.}, year={2022}, month=may, pages={1401–1414} }
-
-@article{PerturbAtlas, title={PerturbAtlas: a comprehensive atlas of public genetic perturbation bulk RNA-seq datasets}, volume={53}, ISSN={1362-4962}, url={https://doi.org/10.1093/nar/gkae851}, doi={10.1093/nar/gkae851}, number={D1}, journal={Nucleic Acids Research}, publisher={Oxford University Press (OUP)}, author={Zhang, Yiming and Zhang, Ting and Yang, Gaoxia and Pan, Zhenzhong and Tang, Min and Wen, Yue and He, Ping and Wang, Yuan and Zhou, Ran}, year={2024}, month=oct, pages={D1112–D1119} }
-
-@online{Perturb-Seqr, title={Perturb-Seqr}, year=2026, url={https://perturbseqr.maayanlab.cloud}} }
-
-@article{Replogle, title={Mapping information-rich genotype-phenotype landscapes with genome-scale Perturb-seq}, volume={185}, ISSN={0092-8674}, url={https://doi.org/10.1016/j.cell.2022.05.013}, doi={10.1016/j.cell.2022.05.013}, number={14}, journal={Cell}, publisher={Elsevier BV}, author={Replogle, Joseph M. and Saunders, Reuben A. and Pogson, Angela N. and Hussmann, Jeffrey A. and Lenail, Alexander and Guna, Alina and Mascibroda, Lauren and Wagner, Eric J. and Adelman, Karen and Lithwick-Yanai, Gila and Iremadze, Nika and Oberstrass, Florian and Lipson, Doron and Bonnar, Jessica L. and Jost, Marco and Norman, Thomas M. and Weissman, Jonathan S.}, year={2022}, month=july, pages={2559-2575.e28} }
-
-@article{RummaGEO, title={RummaGEO: Automatic mining of human and mouse gene sets from GEO}, volume={5}, ISSN={2666-3899}, url={https://doi.org/10.1016/j.patter.2024.101072}, doi={10.1016/j.patter.2024.101072}, number={10}, journal={Patterns}, publisher={Elsevier BV}, author={Marino, Giacomo B. and Clarke, Daniel J.B. and Lachmann, Alexander and Deng, Eden Z. and Ma'ayan, Avi}, year={2024}, month=oct, pages={101072} }
-
-@article{SciPlex, title={Massively multiplex chemical transcriptomics at single-cell resolution}, volume={367}, ISSN={1095-9203}, url={https://doi.org/10.1126/science.aax6234}, doi={10.1126/science.aax6234}, number={6473}, journal={Science}, publisher={American Association for the Advancement of Science (AAAS)}, author={Srivatsan, Sanjay R. and McFaline-Figueroa, José L. and Ramani, Vijay and Saunders, Lauren and Cao, Junyue and Packer, Jonathan and Pliner, Hannah A. and Jackson, Dana L. and Daza, Riza M. and Christiansen, Lena and Zhang, Fan and Steemers, Frank and Shendure, Jay and Trapnell, Cole}, year={2020}, month=jan, pages={45-51} }
-
-@article{Tahoe, title={Tahoe-100M: A Giga-Scale Single-Cell Perturbation Atlas for Context-Dependent Gene Function and Cellular Modeling}, url={https://doi.org/10.1101/2025.02.20.639398}, doi={10.1101/2025.02.20.639398}, publisher={openRxiv}, author={Zhang, Jesse and Ubas, Airol A and de Borja, Richard and Svensson, Valentine and Thomas, Nicole and Thakar, Neha and Lai, Ian and Winters, Aidan and Khan, Umair and Jones, Matthew G. and Thompson, John D. and Tran, Vuong and Pangallo, Joseph and Papalexi, Efthymia and Sapre, Ajay and Nguyen, Hoai and Sanderson, Oliver and Nigos, Maria and Kaplan, Olivia and Schroeder, Sarah and Hariadi, Bryan and Marrujo, Simone and Salvino, Crina Curca Alec and Gallareta Olivares, Guillermo and Koehler, Ryan and Geiss, Gary and Rosenberg, Alexander and Roco, Charles and Merico, Daniele and Alidoust, Nima and Goodarzi, Hani and Yu, Johnny}, year={2025}, month=feb }'''.split('\n\n')
+    refs = [
+        {"id":"AnnData","type":"article","title":"anndata: Access and store annotated data matrices","authors":["Virshup, Isaac","Rybakov, Sergei","Theis, Fabian J.","Angerer, Philipp","Wolf, F. Alexander"],"year":"2024","journal":"Journal of Open Source Software","volume":"9","pages":"4371","doi":"10.1101/2021.12.16.473007","url":"https://doi.org/10.1101/2021.12.16.473007"},
+        {"id":"ARCHS4","type":"article","title":"Massive mining of publicly available RNA-seq data from human and mouse","authors":["Lachmann, Alexander","Torre, Denis","Keenan, Alexandra B.","Jagodnik, Kathleen M.","Lee, Hoyjin J.","Wang, Lily","Silverstein, Moshe C.","Ma'ayan, Avi"],"year":"2018","journal":"Nature Communications","volume":"9","pages":"1366","doi":"10.1038/s41467-018-03751-6","url":"https://doi.org/10.1038/s41467-018-03751-6"},
+        {"id":"voom","type":"article","title":"voom: precision weights unlock linear model analysis tools for RNA-seq read counts","authors":["Law, Charity W","Chen, Yunshun","Shi, Wei","Smyth, Gordon K"], "year":"2014","journal":"Genome Biology","volume":"15","pages":"R29","doi":"10.1186/gb-2014-15-2-r29","url":"https://doi.org/10.1186/gb-2014-15-2-r29"},
+        {"id":"limma","type":"article","title":"limma powers differential expression analyses for RNA-sequencing and microarray studies","authors":["Ritchie, Matthew E.","Phipson, Belinda","Wu, Di","Hu, Yifang","Law, Charity W.","Shi, Wei","Smyth, Gordon K."], "year":"2015","journal":"Nucleic Acids Research","volume":"43","pages":"e47","doi":"10.1093/nar/gkv007","url":"https://doi.org/10.1093/nar/gkv007"},
+        {"id":"Enrichr","type":"article","title":"Gene Set Knowledge Discovery with Enrichr","authors":["Xie, Zhuorui","Bailey, Allison","Kuleshov, Maxim V.","Clarke, Daniel J. B.","Evangelista, John E.","Jenkins, Sherry L.","Lachmann, Alexander","Wojciechowicz, Megan L.","Kropiwnicki, Eryk","Jagodnik, Kathleen M.","Jeon, Minji","Ma'ayan, Avi"],"year":"2021","journal":"Current Protocols","volume":"1","pages":"e90","doi":"10.1002/cpz1.90","url":"https://doi.org/10.1002/cpz1.90"},
+        {"id":"GO","type":"article","title":"Gene Ontology: tool for the unification of biology","authors":["Ashburner, Michael","Ball, Catherine A.","Blake, Judith A.","Botstein, David","Butler, Heather","Cherry, J. Michael","Davis, Allan P.","Dolinski, Kara","Dwight, Selina S.","Eppig, Janan T.","Harris, Midori A.","Hill, David P.","Issel-Tarver, Laurie","Kasarskis, Andrew","Lewis, Suzanna","Matese, John C.","Richardson, Joel E.","Ringwald, Martin","Rubin, Gerald M.","Sherlock, Gavin"],"year":"2000","journal":"Nature Genetics","volume":"25","pages":"25--29","doi":"10.1038/75556","url":"https://doi.org/10.1038/75556"},
+        {"id":"KEGG","type":"article","title":"KEGG for taxonomy-based analysis of pathways and genomes","authors":["Kanehisa, Minoru","Furumichi, Miho","Sato, Yoko","Kawashima, Masayuki","Ishiguro-Watanabe, Mari"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D587--D592","doi":"10.1093/nar/gkac963","url":"https://doi.org/10.1093/nar/gkac963"},
+        {"id":"ChEA","type":"article","title":"ChEA3: transcription factor enrichment analysis by orthogonal omics integration","authors":["Keenan, Alexandra B","Torre, Denis","Lachmann, Alexander","Leong, Ariel K","Wojciechowicz, Megan L","Utti, Vivian","Jagodnik, Kathleen M","Kropiwnicki, Eryk","Wang, Zichen","Ma'ayan, Avi"],"year":"2019","journal":"Nucleic Acids Research","volume":"47","pages":"W212--W224","doi":"10.1093/nar/gkz446","url":"https://doi.org/10.1093/nar/gkz446"},
+        {"id":"KOMP2","type":"article","title":"The International Mouse Phenotyping Consortium: comprehensive knockout phenotyping underpinning the study of human disease","authors":["Groza, Tudor","Gomez, Federico Lopez","Mashhadi, Hamed Haseli","Muñoz-Fuentes, Violeta","Gunes, Osman","Wilson, Robert","Cacheiro, Pilar","Frost, Anthony","Keskivali-Bond, Piia","Vardal, Bora","McCoy, Aaron","Cheng, Tsz Kwan","Santos, Luis","Wells, Sara","Smedley, Damian","Mallon, Ann-Marie","Parkinson, Helen"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D1038--D1045","doi":"10.1093/nar/gkac972","url":"https://doi.org/10.1093/nar/gkac972"},
+        {"id":"CMap","type":"article","title":"The Connectivity Map: Using Gene-Expression Signatures to Connect Small Molecules, Genes, and Disease","authors":["Lamb, Justin","Crawford, Emily D.","Peck, David","Modell, Joshua W.","Blat, Irene C.","Wrobel, Matthew J.","Lerner, Jim","Brunet, Jean-Philippe","Subramanian, Aravind","Ross, Kenneth N.","Reich, Michael","Hieronymus, Haley","Wei, Guo","Armstrong, Scott A.","Haggarty, Stephen J.","Clemons, Paul A.","Wei, Ru","Carr, Steven A.","Lander, Eric S.","Golub, Todd R."],"year":"2006","journal":"Science","volume":"313","pages":"1929--1935","doi":"10.1126/science.1132939","url":"https://doi.org/10.1126/science.1132939"},
+        {"id":"CM4AI","type":"article","title":"A Perturbation Cell Atlas of Human Induced Pluripotent Stem Cells","authors":["Nourreddine, Sami","Doctor, Yesh","Dailamy, Amir","Forget, Antoine","Lee, Yi-Hung","Chinn, Becky","Khaliq, Hammza","Polacco, Benjamin","Muralidharan, Monita","Pan, Emily","Zhang, Yifan","Sigaeva, Alina","Hansen, Jan Niklas","Gao, Jiahao","Parker, Jillian A.","Obernier, Kirsten","Clark, Timothy","Chen, Jake Y.","Metallo, Christian","Lundberg, Emma","Ideker, Trey","Krogan, Nevan","Mali, Prashant"],"year":"2024","journal":"bioRxiv","doi":"10.1101/2024.11.03.621734","url":"https://doi.org/10.1101/2024.11.03.621734"},
+        {"id":"CREEDS","type":"article","title":"Extraction and analysis of signatures from the Gene Expression Omnibus by the crowd","authors":["Wang, Zichen","Monteiro, Caroline D.","Jagodnik, Kathleen M.","Fernandez, Nicolas F.","Gundersen, Gregory W.","Rouillard, Andrew D.","Jenkins, Sherry L.","Feldmann, Axel S.","Hu, Kevin S.","McDermott, Michael G.","Duan, Qiaonan","Clark, Neil R.","Jones, Matthew R.","Kou, Yan","Goff, Troy","Woodland, Holly","Amaral, Fabio M R.","Szeto, Gregory L.","Fuchs, Oliver","Schüssler-Fiorenza Rose, Sophia M.","Sharma, Shvetank","Schwartz, Uwe","Bausela, Xabier Bengoetxea","Szymkiewicz, Maciej","Maroulis, Vasileios","Salykin, Anton","Barra, Carolina M.","Kruth, Candice D.","Bongio, Nicholas J.","Mathur, Vaibhav","Todoric, Radmila D","Rubin, Udi E.","Malatras, Apostolos","Fulp, Carl T.","Galindo, John A.","Motiejunaite, Ruta","Jüschke, Christoph","Dishuck, Philip C.","Lahl, Katharina","Jafari, Mohieddin","Aibar, Sara","Zaravinos, Apostolos","Steenhuizen, Linda H.","Allison, Lindsey R.","Gamallo, Pablo","de Andres Segura, Fernando","Dae Devlin, Tyler","Pérez-García, Vicente","Ma'ayan, Avi"],"year":"2016","journal":"Nature Communications","volume":"7","pages":"12846","doi":"10.1038/ncomms12846","url":"https://doi.org/10.1038/ncomms12846"},
+        {"id":"DeepCoverMOA","type":"article","title":"A proteome-wide atlas of drug mechanism of action","authors":["Mitchell, Dylan C.","Kuljanin, Miljan","Li, Jiaming","Van Vranken, Jonathan G.","Bulloch, Nathan","Schweppe, Devin K.","Huttlin, Edward L.","Gygi, Steven P."],"year":"2023","journal":"Nature Biotechnology","volume":"41","pages":"845--857","doi":"10.1038/s41587-022-01539-0","url":"https://doi.org/10.1038/s41587-022-01539-0"},
+        {"id":"Ginkgo","type":"online","title":"Ginkgo Bioworks","url":"https://www.ginkgo.bio/"},
+        {"id":"LINCS","type":"article","title":"SigCom LINCS: data and metadata search engine for a million gene expression signatures","authors":["Evangelista, John Erol","Clarke, Daniel J B","Xie, Zhuorui","Lachmann, Alexander","Jeon, Minji","Chen, Kerwin","Jagodnik, Kathleen M","Jenkins, Sherry L","Kuleshov, Maxim V","Wojciechowicz, Megan L","Schürer, Stephan C","Medvedovic, Mario","Ma'ayan, Avi"],"year":"2022","journal":"Nucleic Acids Research","volume":"50","pages":"W697--W709","doi":"10.1093/nar/gkac328","url":"https://doi.org/10.1093/nar/gkac328"},
+        {"id":"NIBR","type":"article","title":"DRUG-seq Provides Unbiased Biological Activity Readouts for Neuroscience Drug Discovery","authors":["Li, Jingyao","Ho, Daniel J.","Henault, Martin","Yang, Chian","Neri, Marilisa","Ge, Robin","Renner, Steffen","Mansur, Leandra","Lindeman, Alicia","Kelly, Brian","Tumkaya, Tayfun","Ke, Xiaoling","Soler-Llavina, Gilberto","Shanker, Gopi","Russ, Carsten","Hild, Marc","Gubser Keller, Caroline","Jenkins, Jeremy L.","Worringer, Kathleen A.","Sigoillot, Frederic D.","Ihry, Robert J."],"year":"2022","journal":"ACS Chemical Biology","volume":"17","pages":"1401--1414","doi":"10.1021/acschembio.1c00920","url":"https://doi.org/10.1021/acschembio.1c00920"},
+        {"id":"PerturbAtlas","type":"article","title":"PerturbAtlas: a comprehensive atlas of public genetic perturbation bulk RNA-seq datasets","authors":["Zhang, Yiming","Zhang, Ting","Yang, Gaoxia","Pan, Zhenzhong","Tang, Min","Wen, Yue","He, Ping","Wang, Yuan","Zhou, Ran"],"year":"2024","journal":"Nucleic Acids Research","volume":"53","pages":"D1112--D1119","doi":"10.1093/nar/gkae851","url":"https://doi.org/10.1093/nar/gkae851"},
+        {"id":"Perturb-Seqr","type":"online","title":"Perturb-Seqr","url":"https://perturbseqr.maayanlab.cloud"},
+        {"id":"Replogle","type":"article","title":"Mapping information-rich genotype-phenotype landscapes with genome-scale Perturb-seq","authors":["Replogle, Joseph M.","Saunders, Reuben A.","Pogson, Angela N.","Hussmann, Jeffrey A.","Lenail, Alexander","Guna, Alina","Mascibroda, Lauren","Wagner, Eric J.","Adelman, Karen","Lithwick-Yanai, Gila","Iremadze, Nika","Oberstrass, Florian","Lipson, Doron","Bonnar, Jessica L.","Jost, Marco","Norman, Thomas M.","Weissman, Jonathan S."],"year":"2022","journal":"Cell","volume":"185","pages":"2559--2575.e28","doi":"10.1016/j.cell.2022.05.013","url":"https://doi.org/10.1016/j.cell.2022.05.013"},
+        {"id":"RummaGEO","type":"article","title":"RummaGEO: Automatic mining of human and mouse gene sets from GEO","authors":["Marino, Giacomo B.","Clarke, Daniel J.B.","Lachmann, Alexander","Deng, Eden Z.","Ma'ayan, Avi"],"year":"2024","journal":"Patterns","volume":"5","pages":"101072","doi":"10.1016/j.patter.2024.101072","url":"https://doi.org/10.1016/j.patter.2024.101072"},
+        {"id":"SciPlex","type":"article","title":"Massively multiplex chemical transcriptomics at single-cell resolution","authors":["Srivatsan, Sanjay R.","McFaline-Figueroa, José L.","Ramani, Vijay","Saunders, Lauren","Cao, Junyue","Packer, Jonathan","Pliner, Hannah A.","Jackson, Dana L.","Daza, Riza M.","Christiansen, Lena","Zhang, Fan","Steemers, Frank","Shendure, Jay","Trapnell, Cole"],"year":"2020","journal":"Science","volume":"367","pages":"45--51","doi":"10.1126/science.aax6234","url":"https://doi.org/10.1126/science.aax6234"},
+        {"id":"Tahoe","type":"article","title":"Tahoe-100M: A Giga-Scale Single-Cell Perturbation Atlas for Context-Dependent Gene Function and Cellular Modeling","authors":["Zhang, Jesse","Ubas, Airol A","de Borja, Richard","Svensson, Valentine","Thomas, Nicole","Thakar, Neha","Lai, Ian","Winters, Aidan","Khan, Umair","Jones, Matthew G.","Thompson, John D.","Tran, Vuong","Pangallo, Joseph","Papalexi, Efthymia","Sapre, Ajay","Nguyen, Hoai","Sanderson, Oliver","Nigos, Maria","Kaplan, Olivia","Schroeder, Sarah","Hariadi, Bryan","Marrujo, Simone","Salvino, Crina Curca Alec","Gallareta Olivares, Guillermo","Koehler, Ryan","Geiss, Gary","Rosenberg, Alexander","Roco, Charles","Merico, Daniele","Alidoust, Nima","Goodarzi, Hani","Yu, Johnny"],"year":"2025","journal":"bioRxiv","doi":"10.1101/2025.02.20.639398","url":"https://doi.org/10.1101/2025.02.20.639398"}
+    ]
 
     for article in pmc_articles:
         refs.extend(article['references'])
 
-    refs = [ref.encode('ascii', errors='ignore').decode('ascii') for ref in refs]
     return refs
 
 
@@ -982,6 +938,239 @@ async def stage_sections(client: AsyncOpenAI, model:str, geo_accession:str, pmc_
     return REPORT_TITLE,abstract,introduction,discussion
 
 
+# LaTex cleanup helper functions
+def _repair_unbalanced_brackets(text: str):
+    """
+        [[[key]]   → [[[key]]]
+        [[key]]]   → [[[key]]]
+        [[[key]]]  → [[[key]]]
+    """
+    result = []
+    i = 0
+    n = len(text)
+
+    while i < n:
+        if text[i] != '[':
+            result.append(text[i])
+            i += 1
+            continue
+
+        open_start = i
+        open_count = 0
+        while i < n and text[i] == '[':
+            open_count += 1
+            i += 1
+
+        content_start = i
+        while i < n and text[i] not in '[]':
+            i += 1
+        content = text[content_start:i]
+
+        close_count = 0
+        while i < n and text[i] == ']':
+            close_count += 1
+            i += 1
+
+        if close_count == 0:
+            result.extend((text[open_start:content_start], content))
+            continue
+
+        # Balance both sides to whichever count is larger, capped at 3.
+        balanced = min(max(open_count, close_count), 3)
+        result.append('[' * balanced + content + ']' * balanced)
+
+    return ''.join(result)
+
+
+def _normalise_brackets(text: str):
+    text = re.sub(r'\[{4,}([^\[\]]+)\]{4,}', r'[[[\1]]]', text)
+    text = re.sub(r'(?<!\[)\[\[([^\[\]]+)\]\](?!\])', r'[[[\1]]]', text)
+    text = re.sub(r'(?<!\[)\[([A-Za-z][A-Za-z0-9.\-_]{1,40})\](?!\])', r'[[[\1]]]', text)
+
+    return text
+
+_CITE_TOKEN = re.compile(r'\[\[\[([^\[\]]+)\]\]\]')
+
+def _emit_cite(keys: list[str]):
+    seen: set[str] = set()
+    deduped = [k for k in keys if not (k in seen or seen.add(k))]
+    return f'[[[{",".join(deduped)}]]]'
+
+def _merge_adjacent_citations(text: str):
+    """[[[a]]][[[b]]] → [[[a,b]]]"""
+    tokens = _CITE_TOKEN.split(text)
+    out_parts: list[str] = []
+    pending_keys: list[str] = []
+    pending_gap: str = ''
+
+    i = 0
+    while i < len(tokens):
+        if i % 2 == 0:
+            segment = tokens[i]
+            if pending_keys:
+                if segment.strip() == '':
+                    pending_gap += segment
+                else:
+                    out_parts.append(_emit_cite(pending_keys))
+                    pending_keys = []
+                    out_parts.append(pending_gap)
+                    pending_gap = ''
+                    out_parts.append(segment)
+            else:
+                out_parts.append(segment)
+        else:
+            new_keys = [k.strip() for k in tokens[i].split(',') if k.strip()]
+            if pending_keys:
+                pending_keys.extend(new_keys)
+            else:
+                pending_keys = new_keys
+                pending_gap = ''
+        i += 1
+
+    if pending_keys:
+        out_parts.append(_emit_cite(pending_keys))
+
+    return ''.join(out_parts)
+
+def _split_comma_citations(text: str):
+    """Strip stray spaces around keys inside [[[...]]]."""
+    def _clean_keys(match: re.Match) -> str:
+        keys = [k.strip() for k in match[1].split(',') if k.strip()]
+        return f'[[[{",".join(keys)}]]]' if keys else ''
+
+    return _CITE_TOKEN.sub(_clean_keys, text)
+
+def _extract_reference_keys(references: list[dict]):
+    return {ref["id"] for ref in references if "id" in ref}
+
+def _find_unresolved_bare_brackets(text: str, valid_keys: set[str]):
+    """Find [key] patterns that survived normalisation and match a valid key."""
+    found: list[str] = []
+    pat = re.compile(r'(?<!\[)\[([A-Za-z][A-Za-z0-9.\-_]{1,40})\](?!\])')
+    for match in pat.finditer(text):
+        key = match.group(1)
+        if key in valid_keys:
+            log.warning('Bare bracket citation found for known key: %s', key)
+            found.append(key)
+    return found
+
+def _validate_and_repair_citations(
+    text: str,
+    valid_keys: set[str],
+    section_name: str = '',
+    strip_unknown: bool = False,
+):
+    """Warn on unknown keys; optionally remove them."""
+    def _check(match: re.Match) -> str:
+        keys = [k.strip() for k in match[1].split(',')]
+        good = [k for k in keys if k in valid_keys]
+        bad  = [k for k in keys if k not in valid_keys]
+
+        if bad:
+            log.warning(
+                'Unknown citation key(s) in %s: %s',
+                section_name or 'unknown section',
+                ', '.join(bad),
+            )
+
+        kept = good if strip_unknown else keys
+        return f'[[[{",".join(kept)}]]]' if kept else ''
+
+    text = _CITE_TOKEN.sub(_check, text)
+    text = re.sub(r'~\s*$', '', text, flags=re.MULTILINE)
+    return text
+
+
+def _escape_latex_segment(segment: str) -> str:
+    LATEX_ESCAPES = str.maketrans({
+        '%': r'\%',
+        '$': r'\$',
+        '&': r'\&',
+    })
+
+    SUPER_SUB = re.compile(r'([_^])([^{\\])')
+    segment = segment.translate(LATEX_ESCAPES)
+    segment = SUPER_SUB.sub(r'\1{\2}', segment)
+    return segment.encode('ascii', errors='ignore').decode('ascii')
+
+def _to_latex_cite_and_escape(text: str):
+    """
+    Single-pass conversion: split on [[[key]]] tokens, escape the literal
+    segments, and replace citation tokens with ~\\cite{keys}.
+
+    Doing both in one pass guarantees that BibTeX keys are never fed through
+    the LaTeX escaper.
+    """
+    parts = _CITE_TOKEN.split(text)
+    out: list[str] = []
+    for i, part in enumerate(parts):
+        if i % 2 == 0:
+            out.append(_escape_latex_segment(part))
+        elif keys := [k.strip() for k in part.split(',') if k.strip()]:
+            out.append(f'~\\cite{{{",".join(keys)}}}')
+    return ''.join(out)
+
+def repair_and_validate_report(
+    report: dict,
+    references: list[str],
+    strip_unknown: bool = False,
+):
+    valid_keys = _extract_reference_keys(references)
+
+    _TEXT_PATHS: list[tuple[str, ...]] = [
+        ('abstract',),
+        ('introduction', 'problem'),
+        ('introduction', 'background'),
+        ('introduction', 'motivation'),
+        ('discussion', 'enrichr'),
+        ('discussion', 'perturbseqr'),
+        ('discussion', 'conclusion'),
+    ]
+
+
+    def _get(d: dict, path: tuple) -> str:
+        for key in path:
+            d = d[key]
+        return d  # type: ignore[return-value]
+
+
+    def _set(d: dict, path: tuple, value: str) -> None:
+        for key in path[:-1]:
+            d = d[key]
+        d[path[-1]] = value
+
+    for path in _TEXT_PATHS:
+        raw: str = _get(report, path)
+        section_name = '.'.join(path)
+
+        # 1. Balance and normalise bracket variants → [[[key]]]
+        fixed = _repair_unbalanced_brackets(raw)
+        fixed = _normalise_brackets(fixed)
+
+        # 2. Merge adjacent citations and clean key whitespace
+        fixed = _merge_adjacent_citations(fixed)
+        fixed = _split_comma_citations(fixed)
+
+        # 3. Validate keys (and optionally strip unknown ones)
+        fixed = _validate_and_repair_citations(fixed, valid_keys, section_name, strip_unknown)
+
+        # 4. Catch any bare [key] that survived normalisation
+        bare = _find_unresolved_bare_brackets(fixed, valid_keys)
+        for key in bare:
+            fixed = re.sub(
+                r'(?<!\[)\[' + re.escape(key) + r'\](?!\])',
+                f'[[[{key}]]]',
+                fixed,
+            )
+            fixed = _validate_and_repair_citations(fixed, valid_keys, section_name, strip_unknown)
+
+        # 5. Emit \cite{} and escape LaTeX specials in ONE pass (prevents escaper from mangling BibTeX keys like Smith_2020)
+        fixed = _to_latex_cite_and_escape(fixed)
+
+        _set(report, path, fixed)
+
+    return report['abstract'], report['introduction'], report['discussion']
+
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_MODEL", "gpt-5-nano")
 
@@ -1003,6 +1192,18 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
     log("Collecting references...")
     references = make_references(pmc_articles)
     log("References complete.")
+
+    abstract, introduction, discussion = repair_and_validate_report(
+        dict(
+            abstract=abstract,
+            introduction=introduction,
+            discussion=discussion
+        ),
+        references,
+        strip_unknown=False
+    )
+
+    log("Formatting validated.")
     figures = make_figures(plots, enrichr_results, supplement)
     log("Figures complete.")
     tables = make_tables(perturbseqr_results, supplement)

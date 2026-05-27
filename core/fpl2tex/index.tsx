@@ -29,6 +29,19 @@ type ReportTable = {
   caption: string
 } 
 
+type Reference = {
+  id: string,
+  type: string,
+  title: string,
+  authors?: string[],
+  year?: string,
+  journal?: string,
+  volume?: string,
+  pages?: string,
+  doi?: string,
+  url?: string
+}
+
 type ReanalysisReport = {
   geo_accession: string,
   title: string,
@@ -58,13 +71,13 @@ type ReanalysisReport = {
     perturbseqrGeneReversers: ReportTable,
     perturbseqrDrugReversers: ReportTable,
   },
-  references: string[],
   supplement: {
     enrichrUp: string,
     enrichrDown: string,
     perturbseqrUpGenes: string,
     perturbseqrDownGenes: string
   },
+  references: Reference[],
   model: string
 }
 
@@ -135,8 +148,21 @@ export async function fetchGEOReportFile( url:string ): Promise<string | ArrayBu
   return response.arrayBuffer();
 }
 
-export async function constructGEOReportReferences( references:string[] ): Promise<string> {
-  return references.join('\n\n')
+export async function constructGEOReportReferences(references: Reference[]): Promise<string> {
+  return references.map((ref) => {
+    const fields: string[] = [
+      `  title     = {${ref.title}}`,
+      ref.authors  && `  author    = {${ref.authors.join(' and ')}}`,
+      ref.year     && `  year      = {${ref.year}}`,
+      ref.journal  && `  journal   = {${ref.journal}}`,
+      ref.volume   && `  volume    = {${ref.volume}}`,
+      ref.pages    && `  pages     = {${ref.pages}}`,
+      ref.doi      && `  doi       = {${ref.doi}}`,
+      ref.url      && `  url       = {${ref.url}}`,
+    ].filter(Boolean) as string[]
+
+    return `@${ref.type}{${ref.id}, ${fields.join(', ')} }`
+  }).join('\n\n')
 }
 
 export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,supplement,references,model }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {

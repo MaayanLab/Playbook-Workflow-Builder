@@ -711,21 +711,23 @@ def make_volcano_scatter(volcano_scatter_plotly):
 
     label_indices = np.concatenate([up_indices, down_indices])
 
+    nonsig_idx = np.where(~sig)[0]
+    keep_fraction = 0.5
+    sampled_nonsig_idx = np.random.choice(nonsig_idx,size=int(len(nonsig_idx) * keep_fraction),replace=False)
+    keep_idx = np.concatenate([np.where(sig)[0],sampled_nonsig_idx])
 
     fig, ax = plt.subplots(figsize=(10, 10), dpi=300)
 
-    ax.scatter(x, y, c=mpl_colors, s=20, alpha=0.7, linewidths=0)
+    ax.scatter(x[keep_idx], y[keep_idx], c=mpl_colors[keep_idx], s=20, alpha=0.7, linewidths=0)
 
-    ax.axvline(0, linestyle="--", linewidth=1, alpha=0.4)
+    ax.axvline(-1.5, linestyle="--", linewidth=1, alpha=0.4)
+    ax.axvline(1.5, linestyle="--", linewidth=1, alpha=0.4)
     ax.axhline(-np.log10(p_thresh), linestyle="--", linewidth=1, alpha=0.4)
 
     xpad = (x.max() - x.min()) * 0.05
     ypad = (y.max() - y.min()) * 0.08
     ax.set_xlim(x.min() - xpad, x.max() + xpad)
     ax.set_ylim(y.min() - ypad, y.max() + ypad)
-
-    xmin, xmax = ax.get_xlim()
-    ymin, ymax = ax.get_ylim()
 
     texts = [
         ax.text(

@@ -95,7 +95,6 @@ const server = cache('mcp', () => {
       {"type": "function_call_output", "output": {"result":[]}}
       {"type": "function_call", "name": "options", "arguments": {}}
       {"type": "function_call_output", "output": {"result":[{"type":"Input[Gene]","arguments":{},"label":"Gene Input","description":"The workflow starts with selecting a search term."}]}}
-      {"type": "user_message", "content": "I'd like to get the expression of ACE2."}
       {"type": "function_call", "name": "expand", "arguments": {"step":{"type":"Input[Gene]","arguments":{},"value":"ACE2"}}}
       {"type": "function_call_output", "output": {"result":{"workflow_id": "38b60ad6", "step_id": "2b976512", "type": "Gene"}}
       {"type": "function_call", "name": "options", "arguments": {"workflow_id":"38b60ad6", "step_id": "2b976512"}}

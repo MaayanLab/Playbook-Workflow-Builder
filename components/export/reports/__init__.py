@@ -1,5 +1,5 @@
 from components.data.gene_count_matrix import anndata_from_file
-from components.core.file import upsert_file
+from components.core.file import upsert_file,file_as_path
 
 import html
 import io
@@ -20,6 +20,11 @@ import base64
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+from tempfile import gettempdir,TemporaryDirectory
+import subprocess
+import shutil
+import jinja2
+import pypdf
 
 def log(message: str):
     print(message, file=sys.stderr, flush=True)
@@ -1236,3 +1241,92 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
         "references":references,
         "model":model
     }
+
+def resolve_drs_url(url:str) -> str:
+
+    return url
+
+
+def construct_geo_report_references(references: list[dict]) -> str:
+    entries = []
+    for ref in references:
+        fields = [
+            f"  title     = {{{ref['title']}}}" if ref.get('title') else None,
+            f"  author    = {{{' and '.join(ref['authors'])}}}" if ref.get('authors') else None,
+            f"  year      = {{{ref['year']}}}"    if ref.get('year')    else None,
+            f"  journal   = {{{ref['journal']}}}" if ref.get('journal') else None,
+            f"  volume    = {{{ref['volume']}}}"  if ref.get('volume')  else None,
+            f"  pages     = {{{ref['pages']}}}"   if ref.get('pages')   else None,
+            f"  doi       = {{{ref['doi']}}}"     if ref.get('doi')     else None,
+            f"  url       = {{{ref['url']}}}"     if ref.get('url')     else None,
+        ]
+        fields = [f for f in fields if f is not None]
+        entries.append(f"@{ref['type']}{{{ref['id']}, {', '.join(fields)} }}")
+
+    return '\n\n'.join(entries)
+
+def render_georeanalysis_report(report):
+    log('Preparing LaTeX bundle...')
+    geo_accession = report["geo_accession"]
+    with TemporaryDirectory() as texdir:
+        shutil.copy("public/geo-report/geo_report.tex", f"{texdir}/geo_report.tex")
+        shutil.copy("public/geo-report/ExcelAtFIT.cls", f"{texdir}/ExcelAtFIT.cls")
+        shutil.copy("public/geo-report/maayan-lab-logo.png", f"{texdir}/maayan-lab-logo.png")
+        os.makedirs(f"{texdir}/figures", exist_ok=True)
+        for figure,figurefile in report["figures"].items():
+            with file_as_path(figurefile["file"]) as path:
+                shutil.copy(path, f"{texdir}/figures/{figure}.pdf")
+        os.makedirs(f"{texdir}/tables", exist_ok=True)
+        for table,tablefile in report["tables"].items():
+            with file_as_path(tablefile["file"]) as path:
+                shutil.copy(path, f"{texdir}/tables/{table}.tsv")
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(texdir),
+            variable_start_string='(((',
+            variable_end_string=')))',
+        )
+        template = env.get_template("geo_report.tex").render(
+            title=report['title'],
+            abstract=report['abstract'],
+            introduction = report['introduction'],
+            methods = report['methods'],
+            results = report['results'],
+            discussion = report['discussion'],
+            figures = report['figures'],
+            tables = report['tables'],
+            model = report['model'],
+        )
+        log('Rendering LaTeX template...')
+        with open(f"{texdir}/{geo_accession}.tex", "w") as texfile:
+            texfile.write(template)
+        with open(f"{texdir}/references.bib", "w") as bibfile:
+            bibfile.write(construct_geo_report_references(report["references"]))
+        
+        with upsert_file('.zip') as zipfile:
+            base = zipfile.file.rsplit('.', 1)[0]
+            shutil.make_archive(base, "zip", texdir)
+        log('Bundle complete.')
+        log('Beginning PDF compilation...')
+            
+        with subprocess.Popen(
+            ['latexmk', '-pdf', '-lualatex', '-f', '-cd', f"{texdir}/{geo_accession}.tex"],
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            text=True) as proc:
+            for line in proc.stdout:
+                if line.startswith("Run"):
+                    log(line.strip())
+        
+        with upsert_file(".pdf") as pdffile:
+            reader = pypdf.PdfReader(f'{texdir}/{geo_accession}.pdf')
+            writer = pypdf.PdfWriter()
+            for page in reader.pages:
+                writer.add_page(page)
+            writer.write(pdffile.file)
+        
+        shutil.copy(f"{texdir}/{geo_accession}.log", f"public/geo-report/{geo_accession}.log")
+
+    zipfile["filename"] = f"{geo_accession}.zip"
+    pdffile["filename"] = f"{geo_accession}.pdf"
+
+    return {"bundle":zipfile, "pdf":pdffile}

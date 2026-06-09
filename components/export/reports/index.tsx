@@ -1,3 +1,4 @@
+import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { variable_icon } from '@/icons'
 import { z } from 'zod'
@@ -10,7 +11,7 @@ import python from '@/utils/python'
 import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
 import { ScoredGenes } from '@/components/core/scored'
-import { useEffect, useState } from 'react'
+import { useExRouter, ExLink } from '@/app/fragments/ex-router'
 
 const ReportFile = z.object({
   file: FileC,
@@ -144,6 +145,65 @@ export const GEOReanalysisAgentReport = MetaNode(`GEOReanalysisAgentReport`)
             enrichr_komp_down: props.inputs.enrichrKOMPDown
         },
         perturbseqr: props.inputs.perturbseqr
+      }},
+      message => props.notify({ type: 'info', message }),
+    )
+  })
+  .story(props => ({
+    abstract: ``,
+    methods: ``,
+    legend: ``,
+  }))
+  .build()
+
+export const ReportPDF = MetaNode(`ReportPDF`)
+  .meta({
+    label: 'Report PDF',
+    description: 'A PDF of an executed report',
+    icon: [variable_icon],
+  })
+  .codec(z.object({ bundle: FileC, pdf: FileC,}))
+  .view(results => {
+    const router = useExRouter()
+    const fpl_id = React.useMemo(() => {
+      const m = /^\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
+      if (m !== null) return m[2]
+    }, [router.asPath])
+    return (
+      <>
+        <div className="flex flex-column m-30 h-[calc(100vh-80px)]">
+          <iframe
+            src={`${resolveDRSURL(results.pdf.url)}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+            style={{
+              flex: 1,
+              width: "100%",
+              border: "none",
+              display: "block",
+              minHeight: 0
+            }}
+          />
+        </div>
+        <div className="flex justify-center p-5">
+          <a href={`/api/v1/tex/${fpl_id}?format=pdf`}><button className="btn btn-success center">Download Report</button></a>
+        </div>
+      </>
+    )
+  })
+  .build()
+
+export const GEOReanalysisReportViewer = MetaNode(`GEOReanalysisReportViewer`)
+  .meta({
+    label: 'GEO Re-Analysis Report Viewer',
+    description: 'View a PDF of an executed GEO study re-analysis report.',
+    icon: [variable_icon],
+  })
+  .inputs({report: GEOReanalysisReport})
+  .output(ReportPDF)
+  .resolve(async (props) => {
+    return await python(
+      'components.export.reports.render_georeanalysis_report',
+      { kargs:[], kwargs: {
+        report: props.inputs.report,
       }},
       message => props.notify({ type: 'info', message }),
     )

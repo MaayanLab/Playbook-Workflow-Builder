@@ -1,2 +1,3 @@
 adjustText
 openai
+pypdf

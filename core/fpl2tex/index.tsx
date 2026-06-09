@@ -1,5 +1,5 @@
 import type KRG from "@/core/KRG"
-import type { Data, FPL } from "@/core/FPPRG"
+import type { Data, FPL, Process } from "@/core/FPPRG"
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { fpl_expand, Metadata, Author } from "@/core/common"
@@ -7,6 +7,8 @@ import puppeteer from 'puppeteer'
 import path from 'path'
 import fs from 'fs'
 import cache from '@/utils/global_cache'
+import { DataMetaNode } from "@/spec/metanode"
+import { PDFDocument,rgb,StandardFonts } from 'pdf-lib'
 
 const puppeteerSingleton = cache('puppeteer', () => puppeteer.launch())
 
@@ -18,67 +20,13 @@ type File = {
   sha256: string
 }
 
-type ReportFigure = {
-  pdf: File,
-  png: File,
-  caption: string
+
+type report = {
+  bundle: File, pdf: File
 }
 
-type ReportTable = {
-  file: File,
-  caption: string
-} 
-
-type Reference = {
-  id: string,
-  type: string,
-  title: string,
-  authors?: string[],
-  year?: string,
-  journal?: string,
-  volume?: string,
-  pages?: string,
-  doi?: string,
-  url?: string
-}
-
-type ReanalysisReport = {
-  geo_accession: string,
-  title: string,
-  abstract: string,
-  introduction: {
-    problem: string,
-    background: string,
-    motivation: string
-  },
-  methods: string,
-  results: string,
-  discussion: {
-    enrichr: string,
-    perturbseqr: string,
-    conclusion: string
-  },
-  figures : {
-    librarySizes: ReportFigure,
-    PCAScatter: ReportFigure,
-    volcanoScatter: ReportFigure,
-    upEnrichrBars: ReportFigure,
-    downEnrichrBars: ReportFigure
-  },
-  tables: {
-    perturbseqrGeneMimickers: ReportTable,
-    perturbseqrDrugMimickers: ReportTable,
-    perturbseqrGeneReversers: ReportTable,
-    perturbseqrDrugReversers: ReportTable,
-  },
-  supplement: {
-    enrichrUp: string,
-    enrichrDown: string,
-    perturbseqrUpGenes: string,
-    perturbseqrDownGenes: string
-  },
-  references: Reference[],
-  model: string
+function hasReportOutputType(metanode:DataMetaNode): boolean {
+  return metanode.spec === 'ReportPDF'
 }
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
@@ -134,255 +82,47 @@ async function extras() {
   }
 }
 
-export async function fetchGEOReportFile( url:string ): Promise<string | ArrayBuffer> {
-  const objecturl = url.replace(
+export async function retrieeBundleFiles(fileURL: string): Promise<string | ArrayBuffer> {
+  const objecturl = fileURL.replace(
     /^drs:\/\/([^\/]+)\/(.+)$/,
     `${process.env.NEXT_PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`
   )
-  const response = await fetch(objecturl);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-  }
-
-  return response.arrayBuffer();
+  return fetch(objecturl).then(r => r.arrayBuffer())
 }
 
-export async function constructGEOReportReferences(references: Reference[]): Promise<string> {
-  return references.map((ref) => {
-    const fields: string[] = [
-      `  title     = {${ref.title}}`,
-      ref.authors  && `  author    = {${ref.authors.join(' and ')}}`,
-      ref.year     && `  year      = {${ref.year}}`,
-      ref.journal  && `  journal   = {${ref.journal}}`,
-      ref.volume   && `  volume    = {${ref.volume}}`,
-      ref.pages    && `  pages     = {${ref.pages}}`,
-      ref.doi      && `  doi       = {${ref.doi}}`,
-      ref.url      && `  url       = {${ref.url}}`,
-    ].filter(Boolean) as string[]
-
-    return `@${ref.type}{${ref.id}, ${fields.join(', ')} }`
-  }).join('\n\n')
+export async function ReportNode2TEX(reportOutput: report, fpl_id:string): Promise<Record<string, Promise<string | ArrayBuffer>>> {
+  const existingPDF = await retrieeBundleFiles(reportOutput.pdf.url)
+  const pdfDoc = await PDFDocument.load(existingPDF)
+  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const pages = pdfDoc.getPages()
+  const firstPage = pages[0]
+  const { width, height } = firstPage.getSize()
+  const reportURL = `${process.env.NEXT_PUBLIC_URL||''}/report/${fpl_id}`
+  const fontSize = 10
+  const reportURLWidth = helveticaFont.widthOfTextAtSize(reportURL, fontSize)
+  firstPage.drawText(reportURL, {
+    x: (width-reportURLWidth)*0.5,
+    y: 25,
+    size: fontSize,
+    font: helveticaFont,
+    color: rgb(0.04, 0.06, 0.63),
+  })
+  return {
+    [`${reportOutput.bundle.filename}`]: retrieeBundleFiles(reportOutput.bundle.url),
+    [`${reportOutput.pdf.filename}`]: pdfDoc.save()
+  }
 }
-
-export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,supplement,references,model }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {
-  async function GEOextras() {
-    const extrasRootPath = path.resolve(
-      process.env.APP_ROOT as string,
-      'core',
-      'fpl2tex',
-      'extras',
-    )
-    
-    return {
-      'ExcelAtFIT.cls': new Promise<ArrayBuffer>((resolve, reject) =>
-        fs.readFile(path.resolve(extrasRootPath, 'ExcelAtFIT.cls'), (err, data) => {
-          if (err) { reject(err) } else { resolve(new Uint8Array(data).buffer) }
-        })
-      ),
-      'maayan-lab-logo.png': new Promise<ArrayBuffer>((resolve, reject) =>
-        fs.readFile(path.resolve(extrasRootPath, 'maayan-lab-logo.png'), (err, data) => {
-          if (err) { reject(err) } else { resolve(new Uint8Array(data).buffer) }
-        })
-      )
-    }
-  }
-  const texFile = `${geo_accession}.tex`
-
-  const files:Record<string, Promise<string | ArrayBuffer>> = {
-    ...(await GEOextras()),
-    'figures/librarySizeBars.pdf': fetchGEOReportFile(figures.librarySizes.pdf.url),
-    'figures/PCAScatter.pdf': fetchGEOReportFile(figures.PCAScatter.pdf.url),
-    'figures/VolcanoScatter.pdf': fetchGEOReportFile(figures.volcanoScatter.pdf.url),
-    'figures/UpEnrichrBars.pdf': fetchGEOReportFile(figures.upEnrichrBars.pdf.url),
-    'figures/DownEnrichrBars.pdf': fetchGEOReportFile(figures.downEnrichrBars.pdf.url),
-    'tables/PerturbseqrGeneMimickers.tsv': fetchGEOReportFile(tables.perturbseqrGeneMimickers.file.url),
-    'tables/PerturbseqrDrugMimickers.tsv': fetchGEOReportFile(tables.perturbseqrDrugMimickers.file.url),
-    'tables/PerturbseqrGeneReversers.tsv': fetchGEOReportFile(tables.perturbseqrGeneReversers.file.url),
-    'tables/PerturbseqrDrugReversers.tsv': fetchGEOReportFile(tables.perturbseqrDrugReversers.file.url),
-    [ texFile ]: Promise.resolve(`
-  \\documentclass{ExcelAtFIT}
-  \\ExcelFinalCopy
-
-  \\hypersetup{
-    pdftitle={Paper Title},
-    pdfauthor={Author},
-    pdfkeywords={Keywords}
-  }
-
-  \\lstset{ 
-    backgroundcolor=\\color{white},
-    basicstyle=\\footnotesize\\tt,
-  }
-
-  \\usepackage{float}
-  \\usepackage{csquotes}
-  \\usepackage{pgfplotstable}
-  \\pgfplotsset{compat=1.18}
-  \\usepackage{adjustbox}
-
-  \\addbibresource{references.bib}
-  
-  \\providecommand{\\keywords}[1]
-  {
-    \\small	
-    \\textbf{\\textit{Keywords---}} #1
-  }
-  
-  \\ExcelYear{2026}
-
-  \\PaperTitle{${title}}
-  
-  \\Authors{Axiom K. Playwright (AI Author)*}
-  \\affiliation{*%
-    {The Ma'ayan Laboratory, Mount Sinai Center for Bioinformatics, Department of Pharmacological Sciences, Windreich Department of Artificial Intelligence and Human Health, Icahn School of Medicine at Mount Sinai, New York, NY 10029}}
-
-  \\Abstract{
-    ${abstract}
-    The executed playbook is available at \\url{${process.env.NEXT_PUBLIC_URL||''}/report/${report_id}}.
-  }
-  
-  \\begin{document}
-
-
-  \\startdocument
-  \\raggedbottom
-
-  \\section{Introduction}\\label{introduction}
-  ${introduction.problem}
-  
-  ${introduction.background}
-
-  ${introduction.motivation}
-
-
-  \\section{Methods}\\label{methods}
-
-  ${methods}
-  
-  \\section{Results}\\label{results}
-
-  \\begin{figure}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/librarySizeBars.pdf}
-    \\caption{${figures.librarySizes.caption}}
-    \\label{fig:librarySizes}
-  \\end{figure}
-
-  \\begin{figure}[htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/PCAScatter.pdf}
-    \\caption{${figures.PCAScatter.caption}}}
-    \\label{fig:PCAScatter}
-  \\end{figure}
-
-  \\begin{figure}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/VolcanoScatter.pdf}
-    \\caption{${figures.volcanoScatter.caption}}}
-    \\label{fig:volcanoScatter}
-  \\end{figure}
-
-  \\begin{figure*}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/UpEnrichrBars.pdf}
-    \\caption{${figures.upEnrichrBars.caption}}}
-    \\label{fig:upEnrichrBars}
-  \\end{figure*}
-
-  \\begin{figure*}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/DownEnrichrBars.pdf}
-    \\caption{${figures.downEnrichrBars.caption}}}
-    \\label{fig:downEnrichrBars}
-  \\end{figure*}
-
-  \\catcode\`\\#=12
-  \\pgfplotstableset{
-    every column/.style={string type, column type=l},
-    every cell/.style={
-        postproc cell content/.append code={
-          \\pgfkeysalso{@cell content=\\expandafter\\detokenize\\expandafter{\\pgfkeysvalueof{/pgfplots/table/@cell content}}}
-        }
-    },
-    every head row/.style={before row=\\toprule, after row=\\midrule},
-    every last row/.style={after row=\\bottomrule}
-  }
-
-  \\begin{table*}[!htbp]
-    \\centering
-    \\caption{${tables.perturbseqrGeneMimickers.caption}}}
-    \\adjustbox{max width=\\textwidth}{
-      \\large
-      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrGeneMimickers.tsv}
-    }
-    \\label{table:perturbseqrGeneMimickers}
-  \\end{table*}
-
-  \\begin{table*}[!htbp]
-    \\centering
-    \\caption{${tables.perturbseqrDrugMimickers.caption}}}
-    \\adjustbox{max width=\\textwidth}{
-      \\large
-      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrDrugMimickers.tsv}
-    }
-    \\label{table:perturbseqrDrugMimickers}
-  \\end{table*}
-
-  \\begin{table*}[!htbp]
-    \\centering
-    \\caption{${tables.perturbseqrGeneReversers.caption}}}
-    \\adjustbox{max width=\\textwidth}{
-      \\large
-      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrGeneReversers.tsv}
-    }
-    \\label{table:perturbseqrGeneReversers}
-  \\end{table*}
-
-  \\begin{table*}[!htbp]
-    \\centering
-    \\caption{${tables.perturbseqrDrugReversers.caption}}}
-    \\adjustbox{max width=\\textwidth}{
-      \\large
-      \\pgfplotstabletypeset[col sep=tab]{tables/PerturbseqrDrugReversers.tsv}
-    }
-    \\label{table:perturbseqrDrugReversers}
-  \\end{table*}
-  \\catcode\`\\#=6
-
-  ${results}
-  
-  \\section{Discussion}\\label{Discussion}
-  ${discussion.enrichr}
-
-  ${discussion.perturbseqr}
-
-  ${discussion.conclusion}
-  
-  \\section*{Acknowledgements}\\label{Acknowledgements}
-  This project was funded by the NIH grant \\href{https://reporter.nih.gov/search/SdeFoZSP2U2zRTjMZKFHlQ/project-details/11080094}{OT2OD036435}.
-  The workflow was constructed using the \\href{https://playbook-workflow-builder.cloud/}{Playbook Workflow Builder} and full details about the site and its development are available in its PLOS Computational Biology \\href{https://doi.org/10.1371/journal.pcbi.1012901}{publication}.
-  The OpenAI ${model} LLM was used to assist in writing the introduction.
-  
-  {\\small
-    \\printbibliography
-  }
-  
-  \\end{document}
-  `),'references.bib': constructGEOReportReferences(references)
-  }
-
-  return files
-}
-
 
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, Promise<string | ArrayBuffer>>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
-  // Use GEO report, if exists
-  const reportNode = fullFPL.at(-1)
-  if (reportNode && reportNode.process?.type === 'GEOReanalysisAgentReport') {
-    const reportSections:ReanalysisReport = (await reportNode.process.output() as Data).value
-    return GEOReanalysis2TEX(props.fpl.id, reportSections)
+  // Use computed bundle/PDF report, if it exists
+  const reportNodes = Object.values(processLookup)
+  const reportNodeIncidices = reportNodes.map((proc) => hasReportOutputType(proc.metanode.output))
+  const reportNodeIndex = reportNodeIncidices.indexOf(true)
+  if (reportNodeIndex > 0) {
+    const reportNode = reportNodes.at(reportNodeIndex)
+    const reportOutput = reportNode?.output as report
+    return ReportNode2TEX(reportOutput, props.fpl.id)
   }
   const title = props.metadata?.title ? latexEscape(props.metadata.title) : 'Playbook'
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :

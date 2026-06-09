@@ -439,10 +439,30 @@ def _parse_reference_bib(ref) -> dict | None:
 
     pub_type = cit.attrib.get("publication-type", "")
     entry_type = "article" if pub_type == "journal" else "misc"
+
     doi = cit.findtext(".//pub-id[@pub-id-type='doi']", "").strip()
 
+    ext_link = cit.find(".//ext-link")
+    ext_url = ""
+    if ext_link is not None:
+        ext_url = (
+            ext_link.get("{http://www.w3.org/1999/xlink}href")
+            or ext_link.get("xlink:href")
+            or ""
+        ).strip()
+
+    url = ext_url or (f"https://doi.org/{doi}" if doi else "")
+
+    title = (cit.findtext("article-title") or "").strip()
+    if not title and pub_type not in ("journal",):
+        text_parts = ([cit.text] if cit.text else []) + [
+            child.tail for child in cit if child.tail
+        ]
+        title = " ".join(p.strip() for p in text_parts if p.strip())
+        title = " ".join(title.split())
+
     return _ref_dict(entry_type, ref_id, {
-        "title":   (cit.findtext("article-title") or "").strip(),
+        "title":   title,
         "authors": _extract_citation_author_list(cit),
         "journal": (cit.findtext("source") or "").strip(),
         "year":    cit.findtext("year", ""),
@@ -450,7 +470,7 @@ def _parse_reference_bib(ref) -> dict | None:
         "pages":   _page_range(cit),
         "doi":     doi,
         "pmid":    cit.findtext(".//pub-id[@pub-id-type='pmid']", ""),
-        **({"url": f"https://doi.org/{doi}"} if doi else {}),
+        **({"url": url} if url else {}),
     })
 
 def parse_pmc_xml(geo_accession: str, pmc_set: set[str]):
@@ -622,10 +642,9 @@ def make_library_size_barplot(library_size_plotly):
         ax.spines[spine].set_visible(False)
 
     plt.tight_layout()
-    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
+    with upsert_file('.pdf') as f:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
-    return f,f1
+    return f
 
 
 def make_pca_scatter(pca_scatter_plotly):
@@ -670,10 +689,9 @@ def make_pca_scatter(pca_scatter_plotly):
     ax.set_ylabel(plotly_scene['yaxis']['title']['text'], fontsize=24, labelpad=10)
     ax.legend(handles=legend_elements, bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=16)
     ax.tick_params(axis='both', labelsize=16)
-    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
+    with upsert_file('.pdf') as f:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
-    return f,f1
+    return f
 
 
 def make_volcano_scatter(volcano_scatter_plotly):
@@ -775,10 +793,9 @@ def make_volcano_scatter(volcano_scatter_plotly):
     ax.grid(True, alpha=0.2)
 
     plt.tight_layout()
-    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
+    with upsert_file('.pdf') as f:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
-    return f,f1
+    return f
 
 
 def make_enrichr_barplot(scored_enrichr_libraries: dict[str,pd.DataFrame]):
@@ -818,44 +835,38 @@ def make_enrichr_barplot(scored_enrichr_libraries: dict[str,pd.DataFrame]):
         ax.text(-0.02, 1.05, label, transform=ax.transAxes,fontsize=16, fontweight='bold', va='top', ha='right')
 
     plt.tight_layout()
-    with upsert_file('.pdf') as f, upsert_file('.png') as f1:
+    with upsert_file('.pdf') as f:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
-        plt.savefig(f1.file, format='png', dpi=300, bbox_inches='tight')
-    return f,f1
+    return f
 
 
 def make_figures(plots, enrichr_results:dict[str,dict[str,pd.DataFrame]], supplement:dict[str,str]):
-    library_pdf, librar_png = make_library_size_barplot(plots["library_sizes_plot"])
-    pca_pdf, pca_png = make_pca_scatter(plots["pca_plot"])
-    volcano_pdf, volcano_png = make_volcano_scatter(plots["volcano_plot"])
-    enrichr_up_pdf, enrichr_up_png = make_enrichr_barplot(enrichr_results["enrichr_up"])
-    enrichr_down_pdf, enrichr_down_png = make_enrichr_barplot(enrichr_results["enrichr_down"])
+    library_pdf = make_library_size_barplot(plots["library_sizes_plot"])
+    pca_pdf = make_pca_scatter(plots["pca_plot"])
+    volcano_pdf = make_volcano_scatter(plots["volcano_plot"])
+    enrichr_up_pdf = make_enrichr_barplot(enrichr_results["enrichr_up"])
+    enrichr_down_pdf = make_enrichr_barplot(enrichr_results["enrichr_down"])
     enrichr_up_id = supplement["enrichrUp"]
     enrichr_down_id = supplement["enrichrDown"]
     return {
         "librarySizes": {
-            "pdf":library_pdf,
-            "png":librar_png,
+            "file":library_pdf,
             "caption":"Library sizes for each sample in the dataset, shown as total mapped read counts per sample. Samples are labeled by their GEO accession identifier (GSM). Consistent library sizes across samples indicate uniform sequencing depth suitable for differential expression analysis."
         },
         "PCAScatter": {
-            "pdf":pca_pdf,
-            "png":pca_png,
+            "file":pca_pdf,
             "caption":"Principal component analysis (PCA) of normalized gene expression profiles across all samples. Each point represents one sample, colored by experimental condition: control (blue), perturbation (red), and additional study samples not included in the differential expression analysis (gray). Axes indicate the percentage of total variance explained by each principal component. Normalization was performed using log-counts-per-million (logCPM)."
         },
         "volcanoScatter": {
-            "pdf":volcano_pdf,
-            "png":volcano_png,
+            "file":volcano_pdf,
             "caption":"Volcano plot of differential expression results comparing perturbation to control samples. Each point represents one protein-coding gene; the x-axis shows the log2 fold-change and the y-axis shows statistical significance as -log10(adjusted p-value). Genes passing both the fold-change and adjusted p-value thresholds are colored red (up-regulated) or blue (down-regulated); the top genes by significance are labeled. Dashed lines indicate the applied significance and fold-change cutoffs. Insignificant points are randomly downsampled by a factor of 0.5.",
         },
         "upEnrichrBars": {
-            "pdf":enrichr_up_pdf,
-            "png":enrichr_up_png,
+            "file":enrichr_up_pdf,
             "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_up_id}}}{{Enrichr}}.",
         },
         "downEnrichrBars": {
-            "pdf":enrichr_down_pdf,
-            "png":enrichr_down_png,
+            "file":enrichr_down_pdf,
             "caption":f"Enrichment analysis of the down-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_down_id}}}{{Enrichr}}."
         }
     }
@@ -1221,6 +1232,7 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
         "discussion":discussion,
         "figures":figures,
         "tables":tables,
+        "supplement":supplement,
         "references":references,
         "model":model
     }

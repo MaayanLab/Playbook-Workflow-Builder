@@ -48,7 +48,7 @@ export const PerturbSeqrGeneSignature = MetaNode(`Perturb-SeqrGeneSignature`)
 export const PerturbSeqrEnrichmentAnalysis = MetaNode(`Perturb-SeqrEnrichmentAnalysis`)
   .meta({
     label: 'Perturb-Seqr Gene Set Search',
-    description: 'Use Perturb-Seqr to identify small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the gene set',
+    description: 'Use Perturb-Seqr to identify small molecules and single gene perturbations that produce gene expression profiles similar or opposite to the gene set',
     icon: [perturbseqr_icon],
     external: true,
   })
@@ -68,15 +68,15 @@ export const PerturbSeqrEnrichmentAnalysis = MetaNode(`Perturb-SeqrEnrichmentAna
     return { id }
   })
   .story(props => ({
-    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
-    legend: `A listing of small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} found using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
+    abstract: `Small molecules and single gene perturbations that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
+    legend: `A listing of small molecules and single gene perturbations that produce gene expression profiles similar or opposite to gene sets with ${props.inputs?.gene_set?.description ? props.inputs.gene_set.description : 'the gene set'} found using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
   }))
   .build()
 
 export const PerturbSeqrSignatureEnrichmentAnalysis = MetaNode(`Perturb-SeqrSignatureEnrichmentAnalysis`)
   .meta({
     label: 'Perturb-Seqr Signature Search',
-    description: 'Use Perturb-Seqr to identify small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the gene signature',
+    description: 'Use Perturb-Seqr to identify small molecules and single gene perturbations that produce gene expression profiles similar or opposite to the gene signature',
     icon: [perturbseqr_icon],
     external: true,
   })
@@ -116,7 +116,7 @@ export const PerturbSeqrSignatureEnrichmentAnalysis = MetaNode(`Perturb-SeqrSign
     return { up_id:up_id, down_id:down_id }
   })
   .story(props => ({
-    abstract: `Small molecules and single gene CRISPR KOs that produce gene expression profiles similar or opposite to the signature were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
+    abstract: `Small molecules and gene perturbations that produce gene expression profiles similar or opposite to the signature were identified using Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
     legend: `A table of drug and gene perturbation enrichment results from Perturb-Seqr\\ref{Perturb-Seqr, https://perturbseqr.maayanlab.cloud/}.`,
   }))
   .build()

@@ -1,5 +1,5 @@
 import type KRG from "@/core/KRG"
-import type { Data, FPL } from "@/core/FPPRG"
+import type { Data, FPL, Process } from "@/core/FPPRG"
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import { fpl_expand, Metadata, Author } from "@/core/common"
@@ -7,46 +7,26 @@ import puppeteer from 'puppeteer'
 import path from 'path'
 import fs from 'fs'
 import cache from '@/utils/global_cache'
+import { DataMetaNode } from "@/spec/metanode"
+import { PDFDocument,rgb,StandardFonts } from 'pdf-lib'
 
 const puppeteerSingleton = cache('puppeteer', () => puppeteer.launch())
 
-type ReportFile = {
+type File = {
   url: string,
   filename: string,
   description?: string,
   size: number,
   sha256: string
-} 
+}
 
-type ReanalysisReport = {
-  geo_accession: string,
-  title: string,
-  abstract: string,
-  introduction: {
-    problem: string,
-    background: string,
-    motivation: string
-  },
-  methods: string,
-  results: string,
-  discussion: {
-    enrichr: string,
-    perturbseqr: string,
-    conclusion: string
-  },
-  figures : {
-    librarySizes: ReportFile,
-    PCAScatter: ReportFile,
-    volcanoScatter: ReportFile,
-    upEnrichrBars: ReportFile,
-    downEnrichrBars: ReportFile
-  },
-  tables: {
-    perturbseqrMimickers: ReportFile,
-    perturbseqrReversers: ReportFile
-  },
-  references: string[],
-  model: string
+
+type report = {
+  bundle: File, pdf: File
+}
+
+function hasReportOutputType(metanode:DataMetaNode): boolean {
+  return metanode.spec === 'ReportPDF'
 }
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
@@ -102,239 +82,47 @@ async function extras() {
   }
 }
 
-export async function fetchGEOReportFile( url:string ): Promise<string | ArrayBuffer> {
-  const objecturl = url.replace(
+export async function retrieeBundleFiles(fileURL: string): Promise<string | ArrayBuffer> {
+  const objecturl = fileURL.replace(
     /^drs:\/\/([^\/]+)\/(.+)$/,
     `${process.env.NEXT_PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`
   )
-  const response = await fetch(objecturl);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-  }
-
-  return response.arrayBuffer();
+  return fetch(objecturl).then(r => r.arrayBuffer())
 }
 
-export async function constructGEOReportReferences( references:string[] ): Promise<string> {
-  return references.join('\n\n')
+export async function ReportNode2TEX(reportOutput: report, fpl_id:string): Promise<Record<string, Promise<string | ArrayBuffer>>> {
+  const existingPDF = await retrieeBundleFiles(reportOutput.pdf.url)
+  const pdfDoc = await PDFDocument.load(existingPDF)
+  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const pages = pdfDoc.getPages()
+  const firstPage = pages[0]
+  const { width, height } = firstPage.getSize()
+  const reportURL = `${process.env.NEXT_PUBLIC_URL||''}/report/${fpl_id}`
+  const fontSize = 10
+  const reportURLWidth = helveticaFont.widthOfTextAtSize(reportURL, fontSize)
+  firstPage.drawText(reportURL, {
+    x: (width-reportURLWidth)*0.5,
+    y: 25,
+    size: fontSize,
+    font: helveticaFont,
+    color: rgb(0.04, 0.06, 0.63),
+  })
+  return {
+    [`${reportOutput.bundle.filename}`]: retrieeBundleFiles(reportOutput.bundle.url),
+    [`${reportOutput.pdf.filename}`]: pdfDoc.save()
+  }
 }
 
-export async function GEOReanalysis2TEX(report_id:string,{ geo_accession, title, abstract,introduction,methods,results,discussion,figures,tables,references,model }:ReanalysisReport): Promise<Record<string, Promise<string | ArrayBuffer>>> {
-  async function GEOextras() {
-    const extrasRootPath = path.resolve(
-      process.env.APP_ROOT as string,
-      'core',
-      'fpl2tex',
-      'extras',
-    )
-    
-    return {
-      'ExcelAtFIT.cls': new Promise<ArrayBuffer>((resolve, reject) =>
-        fs.readFile(path.resolve(extrasRootPath, 'ExcelAtFIT.cls'), (err, data) => {
-          if (err) { reject(err) } else { resolve(new Uint8Array(data).buffer) }
-        })
-      ),
-      'maayan-lab-logo.png': new Promise<ArrayBuffer>((resolve, reject) =>
-        fs.readFile(path.resolve(extrasRootPath, 'maayan-lab-logo.png'), (err, data) => {
-          if (err) { reject(err) } else { resolve(new Uint8Array(data).buffer) }
-        })
-      )
-    }
-  }
-  const texFile = `${geo_accession}.tex`
-
-  const files:Record<string, Promise<string | ArrayBuffer>> = {
-    ...(await GEOextras()),
-    'figures/librarySizeBars.pdf': fetchGEOReportFile(figures.librarySizes.url),
-    'figures/PCAScatter.pdf': fetchGEOReportFile(figures.PCAScatter.url),
-    'figures/VolcanoScatter.pdf': fetchGEOReportFile(figures.volcanoScatter.url),
-    'figures/UpEnrichrBars.pdf': fetchGEOReportFile(figures.upEnrichrBars.url),
-    'figures/DownEnrichrBars.pdf': fetchGEOReportFile(figures.downEnrichrBars.url),
-    'tables/PerturbseqrMimickers.csv': fetchGEOReportFile(tables.perturbseqrMimickers.url),
-    'tables/PerturbseqrReversers.csv': fetchGEOReportFile(tables.perturbseqrReversers.url),
-    [ texFile ]: Promise.resolve(`
-  \\documentclass{ExcelAtFIT}
-  \\ExcelFinalCopy
-
-  \\hypersetup{
-    pdftitle={Paper Title},
-    pdfauthor={Author},
-    pdfkeywords={Keywords}
-  }
-
-  \\lstset{ 
-    backgroundcolor=\\color{white},
-    basicstyle=\\footnotesize\\tt,
-  }
-
-  \\usepackage{float}
-  \\usepackage{csquotes}
-  \\usepackage{pgfplotstable}
-  \\pgfplotsset{compat=1.18}
-  \\usepackage{adjustbox}
-
-  \\addbibresource{references.bib}
-  
-  \\providecommand{\\keywords}[1]
-  {
-    \\small	
-    \\textbf{\\textit{Keywords---}} #1
-  }
-  
-  \\ExcelYear{2026}
-
-  \\PaperTitle{${title}}
-  
-  \\Authors{Axiom K. Playwright (AI Author)*}
-  \\affiliation{*%
-    {The Ma'ayan Laboratory, Mount Sinai Center for Bioinformatics, Department of Pharmacological Sciences, Windreich Department of Artificial Intelligence and Human Health, Icahn School of Medicine at Mount Sinai, New York, NY 10029}}
-
-  \\Abstract{
-    ${abstract}
-    The executed playbook is available at \\url{${process.env.NEXT_PUBLIC_URL||''}/report/${report_id}}.
-  }
-  
-  \\begin{document}
-
-
-  \\startdocument
-  \\raggedbottom
-
-  \\section{Introduction}\\label{introduction}
-  ${introduction.problem}
-  
-  ${introduction.background}
-
-  ${introduction.motivation}
-
-
-  \\section{Methods}\\label{methods}
-
-  
-
-  \\begin{figure}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/librarySizeBars.pdf}
-    \\caption{A bar plot representing library sizes.}
-    \\label{fig:Libraries}
-  \\end{figure}
-
-  \\begin{figure}[htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/PCAScatter.pdf}
-    \\caption{A scatterplot showing the first two principal components of the AnnData.}
-    \\label{fig:PCA}
-  \\end{figure}
-
-  \\begin{figure}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/VolcanoScatter.pdf}
-    \\caption{A volcano plot showing the log2-fold-changes and statistical significance of each gene.}
-    \\label{fig:Volcano}
-  \\end{figure}
-
-  \\begin{figure*}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/UpEnrichrBars.pdf}
-    \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for up-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
-    \\label{fig:Enrichr_up}
-  \\end{figure*}
-
-  \\begin{figure*}[!htbp]
-    \\centering
-    \\includegraphics[width=\\linewidth]{figures/DownEnrichrBars.pdf}
-    \\caption{Results of the Enrichr ~\\cite{Enrichr} enrichment analysis for down-regulated genes. Bar charts show the significantly enriched terms from the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries. Z-scores are capped at 10x the smallest value shown.}
-    \\label{fig:Enrichr_down}
-  \\end{figure*}
-
-  \\catcode\`\\#=12
-  \\pgfplotstableset{
-    every column/.style={string type, column type=l},
-    every cell/.style={
-        postproc cell content/.append code={
-          \\pgfkeysalso{@cell content=\\expandafter\\detokenize\\expandafter{\\pgfkeysvalueof{/pgfplots/table/@cell content}}}
-        }
-    },
-    every head row/.style={before row=\\toprule, after row=\\midrule},
-    every last row/.style={after row=\\bottomrule}
-  }
-
-  \\begin{table*}[!htbp]
-    \\centering
-    \\caption{A listing of drug and gene perturbations that produce gene expression profiles similar to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
-    \\adjustbox{max width=\\textwidth}{
-      \\large
-      \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrMimickers.csv}
-    }
-    \\label{table:PerturbSeqrMimic}
-  \\end{table*}
-
-  \\begin{table*}[!htbp]
-    \\centering
-    \\caption{A listing of drug and gene perturbations that produce gene expression profiles opposite to the signatures found using Perturb-seqr ~\\cite{Perturb-Seqr}.}
-    \\adjustbox{max width=\\textwidth}{
-      \\large
-      \\pgfplotstabletypeset[col sep=comma]{tables/PerturbseqrReversers.csv}
-    }
-    \\label{table:PerturbSeqrReverse}
-  \\end{table*}
-  \\catcode\`\\#=6
-  
-  The workflow starts with selecting ${geo_accession} as the search term.
-  GEO studies were identified matching ${geo_accession} using  ARCHS4 ~\\cite{ARCHS4} term search.
-  The GEO study accession was used to fetch the linked publication accession from PMC.
-  Gene expression counts and sample metadata for published samples were obtained from ARCHS4 ~\\cite{ARCHS4}.
-  An AnnData file was prepared from the input data and metadata ~\\cite{AnnData}.
-  Genes from the anndata matrix were filtered to include protein-coding genes.
-  The samples were then labeled as either control or perturbation to allow for further analysis.
-  The AnnData file was then visualized as a bar plot representing library sizes (Figure \\ref{fig:Libraries}).
-  Dimensionality reduction of the data was performed using PCA with the normalization set to log-counts-per-million (logCPM).
-  The first two principal components (PCs) were used to generate a scatter plot (Figure \\ref{fig:PCA}).
-  The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{limma, voom} to create a gene signature using the selected conditions. 
-  The data in the differential expression table was then visualized as a volcano plot (Figure \\ref{fig:Volcano}).
-  The up-regulated genes were extracted from the gene signature computed by the Limma-Voom analysis from the file.
-  The gene set containing significant up genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
-  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_up}).
-  The gene set containing significant down genes was extracted from the gene signature and submitted to Enrichr ~\\cite{Enrichr}.
-  The gene set was enriched against the GO Biological Process 2023 ~\\cite{GO}, KEGG 2021 Human ~\\cite{KEGG}, ChEA 2022 ~\\cite{ChEA}, and KOMP2 Mouse Phenotypes 2022 ~\\cite{KOMP2} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes (Figure \\ref{fig:Enrichr_down}).
-  Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{Perturb-Seqr} to identify drug and single gene perturbations producing gene expression profiles similar (Table ~\\ref{table:PerturbSeqrMimic}) or opposite (Table ~\\ref{table:PerturbSeqrReverse}) to the signature.
-  
-  \\section{Results}\\label{results}
-
-  ${results}
-  
-  \\section{Discussion}\\label{Discussion}
-  ${discussion.enrichr}
-
-  ${discussion.perturbseqr}
-
-  ${discussion.conclusion}
-  
-  \\section*{Acknowledgements}\\label{Acknowledgements}
-  This project was funded by the NIH grant \\href{https://reporter.nih.gov/search/SdeFoZSP2U2zRTjMZKFHlQ/project-details/11080094}{OT2OD036435}.
-  The workflow was constructed using the \\href{https://playbook-workflow-builder.cloud/}{Playbook Workflow Builder} and full details about the site and its development are available in its PLOS Computational Biology \\href{https://doi.org/10.1371/journal.pcbi.1012901}{publication}.
-  The OpenAI ${model} LLM was used to assist in writing the introduction.
-  
-  {\\small
-    \\printbibliography
-  }
-  
-  \\end{document}
-  `),'references.bib': constructGEOReportReferences(references)
-  }
-
-  return files
-}
-
-//export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, string | Buffer>>
 export default async function FPL2TEX(props: { krg: KRG, fpl: FPL, metadata?: Metadata, author?: Author | null }): Promise<Record<string, Promise<string | ArrayBuffer>>> {
   const { fullFPL, processLookup, story } = await fpl_expand(props)
-  // Use GEO report, if exists
-  const reportNode = fullFPL.at(-1)
-  if (reportNode && reportNode.process?.type === 'GEOReanalysisAgentReport') {
-    const reportSections:ReanalysisReport = (await reportNode.process.output() as Data).value
-    return GEOReanalysis2TEX(props.fpl.id, reportSections)
+  // Use computed bundle/PDF report, if it exists
+  const reportNodes = Object.values(processLookup)
+  const reportNodeIncidices = reportNodes.map((proc) => hasReportOutputType(proc.metanode.output))
+  const reportNodeIndex = reportNodeIncidices.indexOf(true)
+  if (reportNodeIndex > 0) {
+    const reportNode = reportNodes.at(reportNodeIndex)
+    const reportOutput = reportNode?.output as report
+    return ReportNode2TEX(reportOutput, props.fpl.id)
   }
   const title = props.metadata?.title ? latexEscape(props.metadata.title) : 'Playbook'
   const abstract = story.ast.flatMap(part => !part.tags.includes('abstract') ? [] :

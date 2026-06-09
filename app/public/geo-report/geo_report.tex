@@ -1,0 +1,167 @@
+\documentclass{ExcelAtFIT}
+\ExcelFinalCopy
+
+\hypersetup{
+pdftitle={Paper Title},
+pdfauthor={Author},
+pdfkeywords={Keywords}
+}
+
+\lstset{ 
+backgroundcolor=\color{white},
+basicstyle=\footnotesize\tt,
+}
+
+\usepackage{float}
+\usepackage{csquotes}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.18}
+\usepackage{adjustbox}
+
+\addbibresource{references.bib}
+
+\providecommand{\keywords}[1]
+{
+\small	
+\textbf{\textit{Keywords---}} #1
+}
+
+\ExcelYear{2026}
+
+\PaperTitle{(((title)))}
+
+\Authors{Axiom K. Playwright (AI Author)*}
+\affiliation{*%
+{The Ma'ayan Laboratory, Mount Sinai Center for Bioinformatics, Department of Pharmacological Sciences, Windreich Department of Artificial Intelligence and Human Health, Icahn School of Medicine at Mount Sinai, New York, NY 10029}}
+
+\Abstract{
+(((abstract)))
+}
+
+\begin{document}
+
+
+\startdocument
+\raggedbottom
+
+\section{Introduction}\label{introduction}
+(((introduction.problem)))
+
+(((introduction.background)))
+
+(((introduction.motivation)))
+
+
+\section{Methods}\label{methods}
+
+(((methods)))
+
+\section{Results}\label{results}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/librarySizes.pdf}
+\caption{(((figures.librarySizes.caption)))}
+\label{fig:librarySizes}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/PCAScatter.pdf}
+\caption{(((figures.PCAScatter.caption)))}
+\label{fig:PCAScatter}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/volcanoScatter.pdf}
+\caption{(((figures.volcanoScatter.caption)))}
+\label{fig:volcanoScatter}
+\end{figure}
+
+\begin{figure*}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/upEnrichrBars.pdf}
+\caption{(((figures.upEnrichrBars.caption)))}
+\label{fig:upEnrichrBars}
+\end{figure*}
+
+\begin{figure*}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/downEnrichrBars.pdf}
+\caption{(((figures.downEnrichrBars.caption)))}
+\label{fig:downEnrichrBars}
+\end{figure*}
+
+\catcode`#=12
+\pgfplotstableset{
+every column/.style={string type, column type=l},
+every cell/.style={
+    postproc cell content/.append code={
+        \pgfkeysalso{@cell content=\expandafter\detokenize\expandafter{\pgfkeysvalueof{/pgfplots/table/@cell content}}}
+    }
+},
+every head row/.style={before row=\toprule, after row=\midrule},
+every last row/.style={after row=\bottomrule}
+}
+
+\begin{table*}[!htbp]
+\centering
+\caption{(((tables.perturbseqrGeneMimickers.caption)))}
+\adjustbox{max width=\textwidth}{
+    \large
+    \pgfplotstabletypeset[col sep=tab]{tables/perturbseqrGeneMimickers.tsv}
+}
+\label{table:perturbseqrGeneMimickers}
+\end{table*}
+
+\begin{table*}[!htbp]
+\centering
+\caption{(((tables.perturbseqrDrugMimickers.caption)))}
+\adjustbox{max width=\textwidth}{
+    \large
+    \pgfplotstabletypeset[col sep=tab]{tables/perturbseqrDrugMimickers.tsv}
+}
+\label{table:perturbseqrDrugMimickers}
+\end{table*}
+
+\begin{table*}[!htbp]
+\centering
+\caption{(((tables.perturbseqrGeneReversers.caption)))}
+\adjustbox{max width=\textwidth}{
+    \large
+    \pgfplotstabletypeset[col sep=tab]{tables/perturbseqrGeneReversers.tsv}
+}
+\label{table:perturbseqrGeneReversers}
+\end{table*}
+
+\begin{table*}[!htbp]
+\centering
+\caption{(((tables.perturbseqrDrugReversers.caption)))}
+\adjustbox{max width=\textwidth}{
+    \large
+    \pgfplotstabletypeset[col sep=tab]{tables/perturbseqrDrugReversers.tsv}
+}
+\label{table:perturbseqrDrugReversers}
+\end{table*}
+\catcode`#=6
+
+(((results)))
+
+\section{Discussion}\label{Discussion}
+(((discussion.enrichr)))
+
+(((discussion.perturbseqr)))
+
+(((discussion.conclusion)))
+
+\section*{Acknowledgements}\label{Acknowledgements}
+This project was funded by the NIH grant \href{https://reporter.nih.gov/search/SdeFoZSP2U2zRTjMZKFHlQ/project-details/11080094}{OT2OD036435}.
+The workflow was constructed using the \href{https://playbook-workflow-builder.cloud/}{Playbook Workflow Builder} and full details about the site and its development are available in its PLOS Computational Biology \href{https://doi.org/10.1371/journal.pcbi.1012901}{publication}.
+The OpenAI (((model))) LLM was used to assist in writing the introduction.
+
+{\small
+\printbibliography
+}
+
+\end{document}

@@ -46,6 +46,14 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
       } : undefined,
     })
     if (inputs.query.format === 'zip') {
+      const precomputedZip = dict.keys(tex_files).find(k => k.endsWith('.zip'))
+      if (precomputedZip) {
+        res.setHeader('Content-Type', 'application/zip')
+        res.setHeader('Content-Disposition', `attachment; filename="${precomputedZip}"`)
+        const buffer = await tex_files[precomputedZip]
+        res.end(Buffer.from(buffer as ArrayBuffer))
+        return
+      }
       const zip = new JSZip()
       dict.items(tex_files).forEach(({ key, value }) => {
         zip.file(key, value)
@@ -55,6 +63,14 @@ export const TeXForPlaybook = API.get('/api/v1/tex/[fpl_id]')
         streamFiles: true,
       }).pipe(res)
     } else if (inputs.query.format === 'pdf') {
+      const precomputedPdf = dict.keys(tex_files).find(k => k.endsWith('.pdf'))
+      if (precomputedPdf) {
+        res.setHeader('Content-Type', 'application/pdf')
+        res.setHeader('Content-Disposition', `attachment; filename="${precomputedPdf}"`)
+        const buffer = await tex_files[precomputedPdf]
+        res.end(Buffer.from(buffer as ArrayBuffer))
+        return
+      }
       const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tex-'))
       try {
         res.setHeader('Content-Type', 'application/pdf')

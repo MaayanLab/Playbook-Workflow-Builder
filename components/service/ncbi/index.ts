@@ -37,14 +37,14 @@ export const GEOStudyLinkedPublicationFetch = MetaNode(`GEOStudyLinkedPublicatio
     const pubmed_ids = ids as string[]
     if (!pubmed_ids) throw new Error('No linked publications found')
     const pmc_req = await fetch(
-      `${pmcconverter_url}?email=&danieljbclarkemssm@gmail.comtool=playbookworkflowbuilder&ids=${pubmed_ids.join(",")}&format=json`, {
+      `${pmcconverter_url}?email=danieljbclarkemssm@gmail.com&tool=playbookworkflowbuilder&ids=${pubmed_ids.join(",")}&format=json`, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
       method: 'GET',
-      })
-      if (!pmc_req.ok) throw new Error('Failed to retrieve PMC accessions')
+    })
+    if (!pmc_req.ok) throw new Error('Failed to retrieve PMC accessions')
     const { records } = await pmc_req.json()
     const pub_records = records as Record<string, string | number>[]
     if (!pub_records) throw new Error('No linked publications found')

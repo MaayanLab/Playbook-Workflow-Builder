@@ -25,6 +25,7 @@ import subprocess
 import shutil
 import jinja2
 import pypdf
+import urllib.request
 
 def log(message: str):
     print(message, file=sys.stderr, flush=True)
@@ -1268,9 +1269,10 @@ def render_georeanalysis_report(report):
     log('Preparing LaTeX bundle...')
     geo_accession = report["geo_accession"]
     with TemporaryDirectory() as texdir:
-        shutil.copy("public/geo-report/geo_report.tex", f"{texdir}/geo_report.tex")
-        shutil.copy("public/geo-report/ExcelAtFIT.cls", f"{texdir}/ExcelAtFIT.cls")
-        shutil.copy("public/geo-report/maayan-lab-logo.png", f"{texdir}/maayan-lab-logo.png")
+        public_url = os.getenv("PUBLIC_URL")
+        urllib.request.urlretrieve(f"{public_url}/geo-report/geo_report.tex", f"{texdir}/geo_report.tex")
+        urllib.request.urlretrieve(f"{public_url}/geo-report/ExcelAtFIT.cls", f"{texdir}/ExcelAtFIT.cls")
+        urllib.request.urlretrieve(f"{public_url}/geo-report/maayan-lab-logo.png", f"{texdir}/maayan-lab-logo.png")
         os.makedirs(f"{texdir}/figures", exist_ok=True)
         for figure,figurefile in report["figures"].items():
             with file_as_path(figurefile["file"]) as path:
@@ -1323,8 +1325,6 @@ def render_georeanalysis_report(report):
                 writer.add_page(page)
             writer.write(pdffile.file)
         
-        shutil.copy(f"{texdir}/{geo_accession}.log", f"public/geo-report/{geo_accession}.log")
-
     zipfile["filename"] = f"{geo_accession}.zip"
     pdffile["filename"] = f"{geo_accession}.pdf"
 

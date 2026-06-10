@@ -1190,10 +1190,9 @@ def repair_and_validate_report(
 
     return report['abstract'], report['introduction'], report['discussion']
 
+def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_anndata, signature, plots, enrichr_up, enrichr_down, perturbseqr):
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_MODEL", "gpt-5-nano")
-
-def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_anndata, signature, plots, enrichr_up, enrichr_down, perturbseqr):
     labelled_samples = extract_labelled_samples(labelled_samples_anndata).to_json()
     supplement,enrichr_results = extract_enrichr_results(enrichr_up,enrichr_down)
     perturbseqr_results = extract_perturbseqr_results(perturbseqr)

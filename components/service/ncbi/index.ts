@@ -35,7 +35,7 @@ export const GEOStudyLinkedPublicationFetch = MetaNode(`GEOStudyLinkedPublicatio
     if (!geo_req.ok) throw new Error('Failed to submit study accession to GEO')
     const { result : { [gse_id] : { pubmedids: ids } } } = await geo_req.json()
     const pubmed_ids = ids as string[]
-    if (!pubmed_ids) throw new Error('No linked publications found')
+    if (!pubmed_ids || pubmed_ids.length===0) throw new Error('No linked publications found')
     const pmc_req = await fetch(
       `${pmcconverter_url}?email=danieljbclarkemssm@gmail.com&tool=playbookworkflowbuilder&ids=${pubmed_ids.join(",")}&format=json`, {
       headers: {
@@ -44,11 +44,15 @@ export const GEOStudyLinkedPublicationFetch = MetaNode(`GEOStudyLinkedPublicatio
       },
       method: 'GET',
     })
-    if (!pmc_req.ok) throw new Error('Failed to retrieve PMC accessions')
+    if (!pmc_req.ok) throw new Error(`Failed to submit PubMed publication${pubmed_ids.length>1 ? 's' : ''} ${pubmed_ids.join(",")} to PMC`)
     const { records } = await pmc_req.json()
     const pub_records = records as Record<string, string | number>[]
-    if (!pub_records) throw new Error('No linked publications found')
-    return { set: (pub_records.map((record) => record.pmcid) as string[]) }
+    if (!pub_records || pub_records[0].status==="error") {
+      throw new Error(`Full text of PubMed publication${pubmed_ids.length>1 ? 's' : ''} ${pubmed_ids.join(",")} could not be located in PMC`)
+    }
+    const pmc_set = (pub_records.map((record) => record.pmcid) as string[])
+    if (pmc_set.length===0) throw new Error('Empty PMC accession set retrieved')
+    return { set:pmc_set  }
   })
   .story(props => ({
     abstract: `The GEO study accession was used to fetch ${props.output && props.output.set.length > 1 ? 'linked publication accessions' : 'the linked publication accession'} from PMC.`,

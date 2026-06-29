@@ -347,3 +347,11 @@ import * as export_reports from "./export/reports"
 import export_reports_packageJson from "./export/reports/package.json"
 metanodes.push(...MetaNodesFromExports(export_reports, export_reports_packageJson))
 components.push("export/reports")
+import * as gene_set_crossing from "./data/gene_set_crossing"
+import data_gene_set_crossing_packageJson from "./data/gene_set_crossing/package.json"
+metanodes.push(...MetaNodesFromExports(gene_set_crossing, data_gene_set_crossing_packageJson))
+components.push("data/gene_set_crossing")
+import * as data_venndiagram from "./data/venndiagram"
+import data_venndiagram_packageJson from "./data/venndiagram/package.json"
+metanodes.push(...MetaNodesFromExports(data_venndiagram, data_venndiagram_packageJson))
+components.push("data/venndiagram")

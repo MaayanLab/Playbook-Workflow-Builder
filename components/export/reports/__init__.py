@@ -12,6 +12,7 @@ import sys
 from textwrap import dedent
 
 import asyncio
+from aiohttp import ClientSession, ClientError
 from openai import AsyncOpenAI
 from xml.etree import ElementTree as ET
 
@@ -26,12 +27,14 @@ import shutil
 import jinja2
 import pypdf
 import urllib.request
+from io import BytesIO
+import json
 
 def log(message: str):
     print(message, file=sys.stderr, flush=True)
 
 
-SYSTEM_PROMPT = """You are a scientific writing assistant generating sections of a bioinformatics re-analysis report.
+GEO_SYSTEM_PROMPT = """You are a scientific writing assistant generating sections of a bioinformatics re-analysis report.
 
 The re-analysis workflow retrieves RNA-seq expression data and metadata from ARCHS4, performs 
 differential expression analysis using limma-voom to create a gene signature, and submits the 
@@ -45,6 +48,29 @@ Output rules that apply to every response:
 - Do not speculate or introduce claims beyond what the provided source material explicitly supports.
 - When drawing on PMC articles, use only the title, abstract, and introduction sections unless the instruction specifies otherwise. Do not draw from the methods, results, or discussion of the source articles."""
 
+CROSSING_SYSTEM_PROMPT = """You are a scientific writing assistant generating sections of a bioinformatics report on the intersection of gene sets derived from NIH Common Fund program datasets.
+
+    The workflow identifies statistically significant crossings between two to five gene sets sourced 
+    from Common Fund program libraries, computes overlap statistics (Fisher's exact test p-value, 
+    Jaccard index, and the intersecting gene list), submits the overlapping gene set to Enrichr for 
+    enrichment analysis across biological process, pathway, transcription factor, and phenotype 
+    libraries, and synthesizes per-gene literature deepdives drawn from the top 50 most-cited PubMed 
+    abstracts for each gene in the intersection.
+
+    Input provided for each section will include some combination of: the names and sizes of the 
+    crossing gene sets, crossing statistics, Enrichr enrichment results, dataset and Common Fund 
+    program metadata, and per-gene deepdive summaries compiled from PubMed abstracts. 
+    Write only from what is explicitly provided in the input for that section.
+
+    Output rules that apply to every response:
+    - Use only plain text prose. No markdown, no bullet points, no numbered lists, no bold, no italics, no headers. Special characters (including em-dashes) will be removed and negatively affect formatting. so do not use them.
+    - When an instruction explicitly asks for an outline, use a dash to begin each point. In all other cases, write in paragraph prose only.
+    - Cite sources inline using this exact format (no other brackets are acceptable): [[[key1, key2]]]. Do not invent citation keys, do not reformat them. Citations you include MUST come only from input publications, results, or explicit instructions.
+    - If you are explicitly instructed to exclude citations for a section, you must do so.
+    - Do not speculate or introduce claims beyond what the provided source material explicitly supports.
+    - Do not infer biological meaning, mechanistic relationships, or experimental context from gene set names, term labels, or dataset identifiers alone. A term name is an identifier, not evidence for a biological claim.
+    - Do not introduce prior knowledge about specific genes, pathways, or datasets beyond what the provided input explicitly states. This applies in particular to deepdive synthesis: draw only from the provided per-gene abstract summaries and do not supplement them with external claims about those genes.
+    - When drawing on PMC articles, use only the title, abstract, and introduction sections unless the instruction specifies otherwise. Do not draw from the methods, results, or discussion of the source articles."""
 
 def format_citations(input_text:str):
     def repl(match):
@@ -60,10 +86,10 @@ def format_citations(input_text:str):
     return re.sub(r"\[\[\[(.+?)\]\]\]", r"~\\cite{\1}", merged_citations)
 
 
-async def generate_section(client: AsyncOpenAI, model:str, prompt:str, data:str):
+async def generate_section(client: AsyncOpenAI, model:str, system_prompt:str, prompt:str, data:str):
     
     history = [
-        {"role":"system","content":SYSTEM_PROMPT},
+        {"role":"system","content":system_prompt},
         {"role":"user","content":prompt},
         {"role": "user", "content": data}
     ]
@@ -120,7 +146,7 @@ async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:st
     Results: {results}
     Discussion: {discussion}''').strip()
 
-    abstract = await generate_section(client, model, prompt, data)
+    abstract = await generate_section(client, model, GEO_SYSTEM_PROMPT, prompt, data)
     abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
     abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
 
@@ -155,10 +181,10 @@ async def write_report_introduction(client: AsyncOpenAI, model:str, geo_accessio
 
 
     introduction_problem, SIGNATURE_NAME= await asyncio.gather(
-        generate_section(client, model,problem_prompt, pmc_articles),
-        generate_section(client, model, signature_prompt, labelled_samples)
+        generate_section(client, model, GEO_SYSTEM_PROMPT, problem_prompt, pmc_articles),
+        generate_section(client, model, GEO_SYSTEM_PROMPT, signature_prompt, labelled_samples)
     )
-    introduction_background = await generate_section(client, model, background_prompt, f"Articles:{pmc_articles}\nIntroduction Problem:{introduction_problem}")
+    introduction_background = await generate_section(client, model, GEO_SYSTEM_PROMPT, background_prompt, f"Articles:{pmc_articles}\nIntroduction Problem:{introduction_problem}")
 
     introduction_motivation = dedent(f'''
     In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {geo_accession} ~\\cite{{{geo_accession}}}
@@ -327,8 +353,8 @@ async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:
     [[[PerturbAtlas]]], [[[RummaGEO]]], [[[Replogle]]], [[[SciPlex]]], [[[Tahoe]]].''').strip()
 
     discussion_enrichr, discussion_perturbseqr = await asyncio.gather(
-        generate_section(client, model, enrichr_prompt, str(enrichr_results)),
-        generate_section(client, model, perturbseqr_prompt, str(perturbseqr_results)),
+        generate_section(client, model, GEO_SYSTEM_PROMPT, enrichr_prompt, str(enrichr_results)),
+        generate_section(client, model, GEO_SYSTEM_PROMPT, perturbseqr_prompt, str(perturbseqr_results)),
     )
 
     conclusion_prompt = dedent('''
@@ -341,7 +367,7 @@ async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:
     Do not include citations.''').strip()
 
     conclusion_data = f'''Samples: {labelled_samples}\nEnrichr Results:{discussion_enrichr}\nPerturb-Seqr Results:{discussion_perturbseqr}'''
-    discussion_conclusion = await generate_section(client, model, conclusion_prompt, conclusion_data)
+    discussion_conclusion = await generate_section(client, model, GEO_SYSTEM_PROMPT, conclusion_prompt, conclusion_data)
 
     log("Discussion complete.")
 
@@ -952,7 +978,7 @@ async def stage_sections(client: AsyncOpenAI, model:str, geo_accession:str, pmc_
      for important words, maintaining acronyms, if used. Do not include quantities or special symbols.'''
 
     REPORT_TITLE,introduction, discussion = await asyncio.gather(
-        generate_section(client, model, title_prompt, f'GEO study:{geo_accession}\nSamples:{labelled_samples}'),
+        generate_section(client, model, GEO_SYSTEM_PROMPT, title_prompt, f'GEO study:{geo_accession}\nSamples:{labelled_samples}'),
         write_report_introduction(client, model, geo_accession, pmc_articles, labelled_samples),
         write_report_discussion(client, model, geo_accession, pmc_articles, labelled_samples, enrichr_results, perturbseqr_results)
     )
@@ -1110,6 +1136,25 @@ def _escape_latex_segment(segment: str) -> str:
 
     SUPER_SUB = re.compile(r'([_^])([^{\\])')
     segment = segment.translate(LATEX_ESCAPES)
+
+    _UNICODE_TO_LATEX: list[tuple[str, str]] = [
+        # Dashes
+        ('\u2014', '-'),
+        ('\u2013', '-'),
+        ('\u2012', '--'),
+        ('\u2015', '---'),
+        # Spaces
+        ('\u00a0', ' '),
+        ('\u202f', ' '),
+        ('\u2009', ' '),
+        ('\u2003', ' '),
+        ('\u2002', ' '),
+    ]
+
+    for char, replacement in _UNICODE_TO_LATEX:
+        if char in segment:
+            segment = segment.replace(char, replacement)
+
     segment = SUPER_SUB.sub(r'\1{\2}', segment)
     return segment.encode('ascii', errors='ignore').decode('ascii')
 
@@ -1137,15 +1182,9 @@ def repair_and_validate_report(
 ):
     valid_keys = _extract_reference_keys(references)
 
-    _TEXT_PATHS: list[tuple[str, ...]] = [
-        ('abstract',),
-        ('introduction', 'problem'),
-        ('introduction', 'background'),
-        ('introduction', 'motivation'),
-        ('discussion', 'enrichr'),
-        ('discussion', 'perturbseqr'),
-        ('discussion', 'conclusion'),
-    ]
+    _TEXT_PATHS: list[tuple[str, ...]] = [('abstract',)]+ \
+    [('introduction', key) for key in report["introduction"].keys()]+ \
+    [('discussion', key) for key in report["discussion"].keys()]
 
 
     def _get(d: dict, path: tuple) -> str:
@@ -1182,6 +1221,8 @@ def repair_and_validate_report(
                 f'[[[{key}]]]',
                 fixed,
             )
+            if path==('abstract',):
+                fixed = re.sub(r'\[+\s*[A-Za-z0-9_][^\[\]]*?\s*\]+', '', fixed)
             fixed = _validate_and_repair_citations(fixed, valid_keys, section_name, strip_unknown)
 
         # 5. Emit \cite{} and escape LaTeX specials in ONE pass (prevents escaper from mangling BibTeX keys like Smith_2020)
@@ -1310,7 +1351,7 @@ def render_georeanalysis_report(report):
         log('Beginning PDF compilation...')
             
         with subprocess.Popen(
-            ['latexmk', '-pdf', '-lualatex', '-f', '-cd', f"{texdir}/{geo_accession}.tex"],
+            ['latexmk', '-pdf', '-lualatex', '-cd', '-f', '-interaction=nonstopmode', f"{texdir}/{geo_accession}.tex"],
             stdout=subprocess.PIPE, 
             stderr=subprocess.PIPE, 
             text=True) as proc:
@@ -1327,5 +1368,707 @@ def render_georeanalysis_report(report):
         
     zipfile["filename"] = f"{geo_accession}.zip"
     pdffile["filename"] = f"{geo_accession}.pdf"
+
+    return {"bundle":zipfile, "pdf":pdffile}
+
+def make_venn_diagram(venn_diagram_plotly):
+    img_source = venn_diagram_plotly['layout']['images'][0]['source']
+    b64_str = img_source.split(',', 1)[1]
+    img_bytes = base64.b64decode(b64_str)
+
+    img = plt.imread(BytesIO(img_bytes))
+
+    fig, ax = plt.subplots(figsize=(10, 10), dpi=300)
+    ax.imshow(img)
+    ax.axis('off')
+
+    plt.tight_layout()
+    with upsert_file('.pdf') as f:
+        plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
+    plt.close()
+    return f
+
+def get_gpt4o_gene_summary(gene_symbol: str) -> str | None:
+    """Fetch just the GPT-4o gene summary from GSFM via tRPC."""
+    url = "https://gsfm.maayanlab.cloud/api/trpc/gene_info"
+    params = {
+        "input": json.dumps(gene_symbol)
+    }
+    
+    resp = requests.get(url, params=params)
+    resp.raise_for_status()
+    
+    data = resp.json()
+    gene_info = data["result"]["data"]
+    
+    raw = gene_info.get("deepdive_gpt4o_description")
+    if not raw:
+        return None
+    
+    return json.loads(raw)
+
+def format_deepdive(symbol, deepdive):
+    def md(props):
+        fn = COMPONENTS.get(props.get("type"))
+        return fn(props) if fn else ""
+
+    def component_recurse(props):
+        return "".join(md(child) for child in props.get("children", []))
+
+    COMPONENTS = {
+        "root": lambda props: component_recurse(props).strip(),
+
+        "p": lambda props: component_recurse(props).strip() + "\n\n",
+
+        "t": lambda props: props.get("text", ""),
+
+        # flatten string
+        "b": lambda props: component_recurse(props),
+        "i": lambda props: component_recurse(props),
+
+        # keep link text
+        "a": lambda props: component_recurse(props),
+
+        # single reference
+        "f": lambda props: f"[{props.get('ref')}]",
+
+        # grouped references
+        "fg": lambda props: (
+            "[" +
+            ",".join(md(child) for child in props.get("children", [])) +
+            "]"
+        ),
+
+        # individual ref inside fg
+        "fg_f": lambda props: props.get("ref"),
+
+        # reference range
+        "fg_fs": lambda props: (
+            f"{props.get('start_ref')}-{props.get('end_ref')}"
+        ),
+
+        # references group
+        "rg": lambda props: (
+            "\nReferences\n\n"
+            #+ "-" * 10 + "\n"
+            + component_recurse(props).strip()
+        ),
+
+        # reference
+        "r": lambda props: (
+            f"[{props.get('ref')}] "
+            f"{component_recurse(props).strip()}\n"
+        ),
+    }
+
+    rendered = md(deepdive).rstrip().split('\n\n\n', 1)[0]
+
+    ref_to_doi = {}
+
+    def extract_dois(node):
+        if not isinstance(node, dict):
+            return
+
+        node_type = node.get("type")
+
+        if node_type == "r":
+            ref_number = node.get("ref")
+            doi = None
+
+            children = node.get("children", [])
+            for i, child in enumerate(children):
+                # look for "DOI: " text node
+                if (
+                    child.get("type") == "t"
+                    and "DOI" in child.get("text", "")
+                ):
+                    if i + 1 < len(children):
+                        next_child = children[i + 1]
+                        if next_child.get("type") == "a":
+                            doi = "".join(
+                                c.get("text", "")
+                                for c in next_child.get("children", [])
+                                if c.get("type") == "t"
+                            )
+                    break
+
+            if ref_number is not None and doi:
+                ref_to_doi[f'{symbol}_{int(ref_number)}'] = doi
+
+        for child in node.get("children", []):
+            extract_dois(child)
+
+    extract_dois(deepdive)
+
+    return rendered,ref_to_doi
+
+class CrossingReport():
+    '''
+    Organize and generate the sections of a crossing report, analyzing a selecgted crossing by integrating
+    information about the crossed GMTs, involved terms, enrichment analysis, and research DeepDives of the
+    genes from the intersecting set.
+    '''
+    def __init__(self, client: AsyncOpenAI, model:str, datasets, gmts, crossing, venn_diagram, intersecting_genes, enrichr):
+        self.client = client
+        self.model = model
+        self.system_prompt = CROSSING_SYSTEM_PROMPT
+        self.datasets = datasets
+        self.gmts = gmts
+        self.crossing = crossing
+        self.venn_diagram = venn_diagram
+        self.intersecting_genes = intersecting_genes
+        self.enrichr = enrichr
+        self.title = None
+        self.abstract = None
+        self.introduction = None
+        self.methods = None
+        self.results = None
+        self.discussion = None
+        self.references = []
+        log("Initialized")
+
+
+    async def write_report_abstract(self):
+        log("Writing abstract...")
+        prompt = dedent('''
+        Write a single plain text paragraph abstract of approximately 200 words for a gene set crossing 
+        analysis report. You should introduce the problem of discrete datasets, summarize why crossing
+        Common Fund datasets is useful, what was done, and what was found. You must make sure to include
+        the name of each resource and why each included gene set is useful based on the results, using
+        the discussion section as a guide to justify your reasoning.Your abstract should serve as an overall
+        summary of the report. Do not include statistics, a header, citations, or any symbols. Highlight that the
+        report explores one crossing, that the intersectiung genes are in all gene sets and that the crossing
+        is being investigated because of their maximal inclusion among all possible overlaps, and highlight
+        why the relevant drug may be useful. Your response should closely resemble this example format:
+        Biomedical omics resources are often analyzed as discrete datasets, which fragments biological
+        insight and limits discovery of shared mechanisms across conditions and species. Crossing Common
+        Fund datasets can reveal molecular programs, increase robustness, assess reproducibility, and
+        connect molecular changes to physiology and intervention. We intersected four complementary
+        gene sets spanning intervention, aging, tissue state, and metabolism: an imeglimin response in
+        adipose from RummaGEO, a heart aging signature from GTEx, a brown adipose exercise consensus from
+        MoTrPAC, and an metabolite centered associations-derived NAD+ enzyme gene set from Metabolomics
+        Workbench. Gene sets were harmonized and crossed, and the intersection was profiled for pathway
+        and regulator enrichment. The intersection converged on a coherent mitochondrial oxidative
+        metabolism program that linked imeglimin exposure, thermogenic biology, and age related expression
+        shifts. Shared genes included pyruvate dehydrogenase complex subunits PDHA1 PDHB DLAT DLD and DLST,
+        tricarboxylic acid cycle enzymes IDH3B MDH1 MDH2, respiratory chain components NDUFS1 NDUFS2, and LDHB.
+        Enriched processes highlighted aerobic respiration, pyruvate metabolism, acetyl CoA biosynthesis, the
+        malate aspartate shuttle, NADH oxidation, and lipoic acid metabolism, consistent with tighter coupling
+        of pyruvate entry to citrate cycle throughput and complex one activity under NAD plus centered redox control.
+        The overlap with the heart aging signature suggests partial restoration of youthful mitochondrial
+        programs, while the brown adipose consensus supports increased thermogenic capacity. Together, these
+        findings nominate imeglimin as a potential modulator of aging, exercise-like adaptations, and metabolic
+        flexibility.
+
+        Do not copy sentences verbatim from the provided sections.
+        You MUST NOT include citations or reference keys of any kind.''').strip()
+        data = dedent(f'''
+        Introduction:{self.introduction}
+        Methods: {self.methods}
+        Results: {self.results}
+        Discussion: {self.discussion}''').strip()
+
+        abstract = await generate_section(self.client, self.model, self.system_prompt, prompt, data)
+        abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
+        abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
+
+        log("Abstract complete.")
+        self.abstract = abstract
+        return abstract
+
+
+    async def write_report_introduction(self):
+        log("Writing introduction...")
+        terms = [val for (key,val) in self.crossing.items() if ("term" in key and "Length" not in key)]
+        dataset_info = [(dataset["dataset"]["name"],dataset["dataset"]["resource"]) for dataset in self.datasets]
+
+        static_introduction = dedent('''
+        Common Fund programs have generated many diverse and robust multiomics datasets in the past 20 years.
+        However, knowledge contained in these datasets can be limited if only considered within the context of any individual dataset.
+        To address this, we have converted Common Fund datasets from the Common Fund Data Ecosystem (CFDE) [[[CFDE}]]] into gene set libraries  to combine multiple datasets at a time and investigate interesting overlapping features.
+        Pairwise gene set library crossing has been explored previously in GeneSetCart [[[GeneSetCart]]], and Harmonizome 3.0 [[[Harmonizome]]], where gene sets from two libraries where significant overlaps were found using Fisher's exact test.
+        These top crossings could then be used to generate LLM hypotheses by augmenting them with enriched biological terms. Here we extend the strategy by combining more libraries at once.
+        Each combination of three gene sets (one from each library) is analyzed to identify signficant pairwise intersections and a robust 3-way intersecting gene set.
+        ''')
+
+        datasets = ", and ".join(", ".join([f'{name} [[[{resource}]]]' for (name, resource) in dataset_info]).rsplit(", ",1))
+        dynamic_introduction = dedent(f'''
+        For this report, we combined gene sets from the {datasets} datasets.
+        Among the top-ranked crossings, we identified an overlap with rank {self.crossing["rank"]} and a p-value of {self.crossing["pvalue"]:.5e} warranting further investigation.
+        ''')
+
+        terms_prompt = dedent('''
+        Introduce the gene sets found in this top-ranked crossing between 3 datasets.
+        You must make sure to include each term name in the provided top-ranked crossing to provide context.
+        Include a simple explanation of what each gene set represents using only the provided inforatmion.
+        Your response will be inserted into a template, so do not inclue an introduction or conclusion.
+        Aovid repeating the names of each geene set and using the term "signature" instead of "gene set".
+        Make sure to mention that the GlyGen set represents proteins phosphorylated by the glycan.
+        Return LaTeX compliant plaintext paragraph.
+        Do not use any LaTeX or Markdown expressions.''').strip()
+
+        introduction_terms = await generate_section(
+            self.client,
+            self.model,
+            self.system_prompt,
+            terms_prompt,
+            f"Terms:{terms}\nIntroduction:{static_introduction}\n{dynamic_introduction}\nDatasets:{dataset_info}",
+        )
+
+        introduction = {
+            "cfde":static_introduction, 
+            "dataset":dynamic_introduction,
+            "terms":introduction_terms
+        }
+
+        log("Introduction complete.")
+        self.introduction = introduction
+        return introduction
+
+
+    def write_report_methods(self):
+        dataset_info = [
+            (
+                dataset["dataset"]["name"],dataset["dataset"]["resource"],dataset["dataset"]["processing"]
+            ) for dataset in self.datasets
+        ]
+        dataset_names = ", and ".join(", ".join([name for (name,_,_) in dataset_info]).rsplit(",", 1))
+        dataset_strings = "\n".join([dataset_processing for (_,_,dataset_processing) in dataset_info])
+        methods = dedent(f'''
+            {dataset_strings}
+            The workflow starts with selecting the {dataset_names} datasets. Gene matrix transpose (GMT) files were retrieved from the CFDE
+            Workbench ~\\cite{{CFDE}}. GMTs were crossed to analyze all possible combinations of one gene set from each library. For each combination,
+            the p-value was computed by computing the hypergeometric test of each gene set against the intersection of the remaining sets, using the
+            most conservative p-value as the value for the crossing. The top 5,000 combinations were kept, ranked by ascending (most conservative) p-value
+            and descending Jaccard index. The crossing with rank {self.crossing["rank"]} was selected for further investigation, and the intersecting gene
+            set was extracted. The terms involved in the crossing were extracted from their respective gene set library and used to create a {len(dataset_info)}-way
+            Venn diagram. The intersecting gene set was submitted to Enrichr ~\\cite{{Enrichr}}. The gene sets were enriched against the GO Biological
+            Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and GWAS Catalog 2019 ~\\cite{{GWAS}} libraries to
+            identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes.'''
+        ).strip().replace('\n', ' ')
+        
+        self.methods = methods
+        return methods
+
+
+    def write_report_results(self,  deepdive_results):
+        def clean_term(term: str):
+            return term.split('(')[0].strip()
+
+        def natural_join(items):
+            """
+            Oxford comma join:
+            A
+            A and B
+            A, B, and C
+            """
+            if len(items) == 0:
+                return ""
+            if len(items) == 1:
+                return items[0]
+            if len(items) == 2:
+                return f"{items[0]} and {items[1]}"
+
+            return f"{', '.join(items[:-1])}, and {items[-1]}"
+
+        def summarize_library(library: str, terms, n_terms: int = 2):
+            cleaned_terms = []
+            seen = set()
+
+            for term in terms:
+                cleaned = clean_term(term)
+                normalized = cleaned.lower()
+
+                if normalized not in seen:
+                    seen.add(normalized)
+                    cleaned_terms.append(cleaned)
+
+                if len(cleaned_terms) >= n_terms:
+                    break
+
+            joined_terms = natural_join(cleaned_terms)
+            lib_lower = library.lower()
+
+            standard_rules = [
+                ("go", lambda: f"GO Biological Process terms related to {joined_terms.lower()} ~\\cite{{GO}}"),
+                ("kegg", lambda: f"KEGG pathways involving {joined_terms.lower()} ~\\cite{{KEGG}}"),
+                ("chea", lambda: f"ChEA transcription factors including {joined_terms} ~\\cite{{ChEA}}"),
+                ("gwas", lambda: f"GWAS Catalog phenotypes associated with {joined_terms.lower()} ~\\cite{{GWAS}}"),
+            ]
+
+            for pattern, formatter in standard_rules:
+                if pattern in lib_lower:
+                    return formatter()
+
+            return f"{joined_terms} from {library}"
+
+        def format_enrichr_section(results, n_terms=2):
+            library_summaries = [
+                summarize_library(lib.rsplit("_", 1)[0], terms_df["term"], n_terms=n_terms)
+                for lib, terms_df in results.items()
+            ]
+
+            return natural_join(library_summaries)
+
+        results = dedent(f'''
+        The crossing had a rank of {self.crossing["rank"]}, p-value of {self.crossing["pvalue"]}, and Jaccard index of {self.crossing["jaccard"]}.
+        The intersecting gene set identified {self.crossing["overlap"]} genes appearing in all involved sets (Figure \\ref{{fig:venn}}).
+        The intersecting gne set consists of {", and".join(self.crossing["genes"].rsplit(" ", 1))}.
+        Functional enrichment analysis of the gene set identified associations with {format_enrichr_section(self.enrichr)} (Figure \\ref{{fig:enrichment}}). 
+        ''').strip().replace('\n',' ')
+
+        self.results = results
+        return results
+
+
+    async def write_report_discussion(self, deepdive_results):
+        log("Writing discussion...")
+
+        deepdive_prompt = dedent('''
+        Create between 1 and 3 paragraphs summarizing the shared biological roles of this gene set.
+
+        Instructions:
+        1. Reason over the similarities to produce a bullet point outline to guide you.
+        2. Each paragraph must begin with an introductory sentence describing the main theme.
+        3. Each paragraph should include 2-4 points describing supporting biological mechanisms, pathways, or phenotypes.
+
+        Content constraints:
+        - Focus on biological processes related to aging and glycosylation.
+        - Only use information explicitly present in the provided summaries.
+        - Do NOT introduce outside knowledge or speculation.
+
+        Citation rules (VERY IMPORTANT):
+        - Every sub-bullet MUST end with the citations that support the statement.
+        - Citations must be copied EXACTLY from the summaries in the format:
+        [[[GENE_REFNUM]]]
+        Examples: [[[A1BG_1, STAT3_3]]]; [[[ABCA2_1, ABCA2_2, TMEM127B_4]]
+        - The gene symbol & reference number format are immutable identifiers.
+        - Numeric citations like [1] or [1,3] are INVALID.
+        - Do NOT renumber, merge, or alter citation tokens.
+        - Do NOT group citations by gene; simply list all relevant citations.
+
+        Style:
+        - Avoid repeating the same mechanism across sentences.
+        - Combine similar gene functions where possible.
+        ''').strip()
+
+        enrichr_prompt = dedent('''
+        Write a plain text paragraph analyzing the Enrichr enrichment results provided for the up-regulated and down-regulated gene sets from this re-analysis.
+        Do not list the terms to introduce them, assume this has already been done.
+        Focus on: terms that appear or are consistent across multiple libraries, and any complementary or contrasting patterns between the up and down gene sets.
+        Only discuss terms that are present in the results provided.
+        Do not introduce terms or biological processes not present in the data.
+        Cite only the libraries whose results you are directly referencing, choosing from: 
+        [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[GWAS]]].''').strip()
+
+        discussion_deepdive, discussion_enrichr,  = await asyncio.gather(
+            generate_section(self.client, self.model, self.system_prompt, deepdive_prompt, str(deepdive_results)),
+            generate_section(self.client, self.model, self.system_prompt, enrichr_prompt, str(self.enrichr)),
+        )
+
+        conclusion_prompt = dedent('''
+        Write a plain text concluding paragraph for a re-analysis report.
+        Summarize the most notable findings from the crossing, gene deepdives, and Enrichr analyses provided.
+        Focus on findings that are consistent with or directly relevant to the biology of the terms.
+        Where a finding is unexpected relative to the biological context, note it briefly.
+        Do not propose mechanisms unless they are directly supported by the enrichment results provided.
+        Connect the findings back to the research question described in the DeepDive and Enrichr paragraphs.
+        Do not include citations.''').strip()
+
+        conclusion_data = f'''Crossing: {self.crossing}\nEnrichr Results:{discussion_enrichr}\nPerturb-Seqr Results:{discussion_deepdive}'''
+        discussion_conclusion = await generate_section(self.client, self.model, self.system_prompt, conclusion_prompt, conclusion_data)
+
+        log("Discussion complete.")
+
+        discussion =  {
+            "deepdive":discussion_deepdive,
+            "enrichr":discussion_enrichr, 
+            "conclusion":discussion_conclusion
+        }
+        self.discussion = discussion
+
+        return discussion
+
+    async def make_references(self, deepdive_results):
+        def extract(ref: str, field: str, default=None):
+            m = re.search(rf'{field}\s*=\s*\{{([^}}]*)\}}', ref)
+            if not m:
+                return [] if field == "author" else default
+            value = m.group(1).strip()
+            if field == "author":
+                return [a.strip() for a in value.split(" and ")]
+            return value
+
+        semaphore = asyncio.Semaphore(2)
+
+        async def doi_to_ref(session: ClientSession, key: str, doi: str):
+            async with semaphore:
+                try:
+                    async with session.get(
+                        url=f"https://api.crossref.org/works/{doi}/transform/application/x-bibtex?mailto=danieljbclarkemssm@gmail.edu",
+                    ) as res:
+                        if not res.ok:
+                            return {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
+
+                        ref = await res.text(encoding="utf-8")
+
+                        if not ref.startswith("@"):
+                            return {"id": key, "type": "article", "doi": doi, "url": f"https://doi.org/{doi}"}
+
+                        return {
+                            "id": key,
+                            "type": "article",
+                            "title": extract(ref, "title"),
+                            "year": extract(ref, "year"),
+                            "authors": extract(ref, "author"),
+                            "journal": extract(ref, "journal"),
+                            "volume": extract(ref, "volume"),
+                            "pages": extract(ref, "pages"),
+                            "doi": doi,
+                            "url": f"https://doi.org/{doi}",
+                        }
+
+                except ClientError:
+                    return {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
+
+                finally:
+                    await asyncio.sleep(0.5)
+
+
+        refs = [
+            {"id": "CFDE", "type": "article", "title":"The CFDE Workbench: Integrating Metadata and Processed Data from Common Fund Programs","year":"2026", "authors": ["Evangelista, John Erol", "Clarke, Daniel J.B.", "Byrd, Anna I.", "Srinivasan, Shivaramakrishna", "Srinivasan, Sumana", "Maurya, Mano R.", "Jenkins, Sherry L.", "Diamant, Ido", "Sanchez, Ethan", "Xie, Zhuorui", "Olaiya, Stephanie", "Kim, Heesu", "Marino, Giacomo B.", "Ahmed, Nasheath", "Ramachandran, Srinivasan", "Subramaniam, Shankar", "Ma'ayan, Avi"], "journal":"Journal of Molecular Biology", "pages":"169631", "doi": "10.1016/j.jmb.2026.169631", "url": "https://doi.org/10.1016/j.jmb.2026.169631"},
+            {"id": "Harmonizome", "type": "article", "title":"Harmonizome 3.0: integrated knowledge about genes and proteins from diverse multi-omics resources","year":"2024", "authors": ["Diamant, Ido", "Clarke, Daniel\u00a0J B", "Evangelista, John\u00a0Erol", "Lingam, Nathania", "Ma'ayan, Avi"], "journal":"Nucleic Acids Research", "volume":"53", "pages":"D1016--D1028", "doi": "10.1093/nar/gkae1080", "url": "https://doi.org/10.1093/nar/gkae1080"},
+            {"id": "GeneSetCart", "type": "article", "title":"GeneSetCart: assembling, augmenting, combining, visualizing, and analyzing gene sets","year":"2025", "authors": ["Marino, Giacomo B", "Olaiya, Stephanie", "Evangelista, John Erol", "Clarke, Daniel J B", "Ma'ayan, Avi"], "journal":"GigaScience", "volume":"14", "doi": "10.1093/gigascience/giaf025", "url": "https://doi.org/10.1093/gigascience/giaf025"},
+            {"id": "GlyGen", "type": "article", "title":"GlyGen: Computational and Informatics Resources for Glycoscience","year":"2019", "authors": ["York, William S", "Mazumder, Raja", "Ranzinger, Rene", "Edwards, Nathan", "Kahsay, Robel", "Aoki-Kinoshita, Kiyoko F", "Campbell, Matthew P", "Cummings, Richard D", "Feizi, Ten", "Martin, Maria", "Natale, Darren A", "Packer, Nicolle H", "Woods, Robert J", "Agarwal, Gaurav", "Arpinar, Sena", "Bhat, Sanath", "Blake, Judith", "Castro, Leyla Jael Garcia", "Fochtman, Brian", "Gildersleeve, Jeffrey", "Goldman, Radoslav", "Holmes, Xavier", "Jain, Vinamra", "Kulkarni, Sujeet", "Mahadik, Rupali", "Mehta, Akul", "Mousavi, Reza", "Nakarakommula, Sandeep", "Navelkar, Rahi", "Pattabiraman, Nagarajan", "Pierce, Michael J", "Ross, Karen", "Vasudev, Preethi", "Vora, Jeet", "Williamson, Tatiana", "Zhang, Wenjin"], "journal":"Glycobiology", "volume":"30", "pages":"72--73", "doi": "10.1093/glycob/cwz080", "url": "https://doi.org/10.1093/glycob/cwz080"},
+            {"id": "GTEx", "type": "article", "title":"The GTEx Consortium atlas of genetic regulatory effects across human tissues","year":"2020", "authors": ["", "Aguet, Fran\u00e7ois", "Anand, Shankara", "Ardlie, Kristin G.", "Gabriel, Stacey", "Getz, Gad A.", "Graubert, Aaron", "Hadley, Kane", "Handsaker, Robert E.", "Huang, Katherine H.", "Kashin, Seva", "Li, Xiao", "MacArthur, Daniel G.", "Meier, Samuel R.", "Nedzel, Jared L.", "Nguyen, Duyen T.", "Segr\u00e8, Ayellet V.", "Todres, Ellen", "Balliu, Brunilda", "Barbeira, Alvaro N.", "Battle, Alexis", "Bonazzola, Rodrigo", "Brown, Andrew", "Brown, Christopher D.", "Castel, Stephane E.", "Conrad, Donald F.", "Cotter, Daniel J.", "Cox, Nancy", "Das, Sayantan", "de Goede, Olivia M.", "Dermitzakis, Emmanouil T.", "Einson, Jonah", "Engelhardt, Barbara E.", "Eskin, Eleazar", "Eulalio, Tiffany Y.", "Ferraro, Nicole M.", "Flynn, Elise D.", "Fresard, Laure", "Gamazon, Eric R.", "Garrido-Mart\u00edn, Diego", "Gay, Nicole R.", "Gloudemans, Michael J.", "Guig\u00f3, Roderic", "Hame, Andrew R.", "He, Yuan", "Hoffman, Paul J.", "Hormozdiari, Farhad", "Hou, Lei", "Im, Hae Kyung", "Jo, Brian", "Kasela, Silva", "Kellis, Manolis", "Kim-Hellmuth, Sarah", "Kwong, Alan", "Lappalainen, Tuuli", "Li, Xin", "Liang, Yanyu", "Mangul, Serghei", "Mohammadi, Pejman", "Montgomery, Stephen B.", "Mu\u00f1oz-Aguirre, Manuel", "Nachun, Daniel C.", "Nobel, Andrew B.", "Oliva, Meritxell", "Park, YoSon", "Park, Yongjin", "Parsana, Princy", "Rao, Abhiram S.", "Reverter, Ferran", "Rouhana, John M.", "Sabatti, Chiara", "Saha, Ashis", "Stephens, Matthew", "Stranger, Barbara E.", "Strober, Benjamin J.", "Teran, Nicole A.", "Vi\u00f1uela, Ana", "Wang, Gao", "Wen, Xiaoquan", "Wright, Fred", "Wucher, Valentin", "Zou, Yuxin", "Ferreira, Pedro G.", "Li, Gen", "Mel\u00e9, Marta", "Yeger-Lotem, Esti", "Barcus, Mary E.", "Bradbury, Debra", "Krubit, Tanya", "McLean, Jeffrey A.", "Qi, Liqun", "Robinson, Karna", "Roche, Nancy V.", "Smith, Anna M.", "Sobin, Leslie", "Tabor, David E.", "Undale, Anita", "Bridge, Jason", "Brigham, Lori E.", "Foster, Barbara A.", "Gillard, Bryan M.", "Hasz, Richard", "Hunter, Marcus", "Johns, Christopher", "Johnson, Mark", "Karasik, Ellen", "Kopen, Gene", "Leinweber, William F.", "McDonald, Alisa", "Moser, Michael T.", "Myer, Kevin", "Ramsey, Kimberley D.", "Roe, Brian", "Shad, Saboor", "Thomas, Jeffrey A.", "Walters, Gary", "Washington, Michael", "Wheeler, Joseph", "Jewell, Scott D.", "Rohrer, Daniel C.", "Valley, Dana R.", "Davis, David A.", "Mash, Deborah C.", "Branton, Philip A.", "Barker, Laura K.", "Gardiner, Heather M.", "Mosavel, Maghboeba", "Siminoff, Laura A.", "Flicek, Paul", "Haeussler, Maximilian", "Juettemann, Thomas", "Kent, W. James", "Lee, Christopher M.", "Powell, Conner C.", "Rosenbloom, Kate R.", "Ruffier, Magali", "Sheppard, Dan", "Taylor, Kieron", "Trevanion, Stephen J.", "Zerbino, Daniel R.", "Abell, Nathan S.", "Akey, Joshua", "Chen, Lin", "Demanelis, Kathryn", "Doherty, Jennifer A.", "Feinberg, Andrew P.", "Hansen, Kasper D.", "Hickey, Peter F.", "Jasmine, Farzana", "Jiang, Lihua", "Kaul, Rajinder", "Kibriya, Muhammad G.", "Li, Jin Billy", "Li, Qin", "Lin, Shin", "Linder, Sandra E.", "Pierce, Brandon L.", "Rizzardi, Lindsay F.", "Skol, Andrew D.", "Smith, Kevin S.", "Snyder, Michael", "Stamatoyannopoulos, John", "Tang, Hua", "Wang, Meng", "Carithers, Latarsha J.", "Guan, Ping", "Koester, Susan E.", "Little, A. Roger", "Moore, Helen M.", "Nierras, Concepcion R.", "Rao, Abhi K.", "Vaught, Jimmie B.", "Volpi, Simona"], "journal":"Science", "volume":"369", "pages":"1318--1330", "doi": "10.1126/science.aaz1776", "url": "https://doi.org/10.1126/science.aaz1776"},
+            {"id": "HuBMAP", "type": "article", "title":"Human BioMolecular Atlas Program (HuBMAP): 3D Human Reference Atlas construction and usage","year":"2025", "authors": ["B\u00f6rner, Katy", "Blood, Philip D.", "Silverstein, Jonathan C.", "Ruffalo, Matthew", "Satija, Rahul", "Teichmann, Sarah A.", "Pryhuber, Gloria J.", "Misra, Ravi S.", "Purkerson, Jeffrey M.", "Fan, Jean", "Hickey, John W.", "Molla, Gesmira", "Xu, Chuan", "Zhang, Yun", "Weber, Griffin M.", "Jain, Yashvardhan", "Qaurooni, Danial", "Kong, Yongxin", "Abramson, Jakub", "Anderson, David", "Ardlie, Kristin", "Arends, Mark J.", "Aronow, Bruce J.", "Bajema, Rachel", "Baldock, Richard A.", "Barnowski, Ross", "Barwinska, Daria", "Bernard, Amy", "Betancur, David", "Bidanta, Supriya", "Bj\u00f6rklund, Frida", "Bolin, Axel", "Boppana, Avinash", "Boulter, Luke", "Browne, Kristen", "Brusko, Maigan A.", "Burger, Albert", "Campbell-Thompson, Martha", "Cao-Berg, Ivan", "Caron, Anita R.", "Carroll, Megan", "Chadwick, Chrystal", "Chen, Haoran", "Chen, Lu", "de Bono, Bernard", "Deutsch, Gail", "Ding, Song-Lin", "Donahue, Sean", "El-Achkar, Tarek M.", "Eskaros, Adel", "Falo, Louis", "Farrow, Melissa", "Ferkowicz, Michael J.", "Fisher, Stephen A.", "Gee, James C.", "Germain, Ronald N.", "Ginda, Michael", "Ginty, Fiona", "Gitomer, Sarah A.", "Goldstone, Melanie B.", "Gustilo, Katherine S.", "Hagood, James S.", "Halushka, Marc K.", "Haniffa, Muzlifah A.", "Hanna, Peter", "Hardi, Josef", "He, Yongqun Oliver", "Honick, Brendan John", "Houghton, Derek", "Itkin, Maxim", "Jain, Sanjay", "Jardine, Laura", "Jiang, Z. Gordon", "Ju, Yingnan", "Karunamurthy, Arivarasan", "Kelleher, Neil L.", "Kendall, Timothy J.", "Kruse, Angela R. S.", "Laronda, Monica M.", "Laurent, Louise C.", "Laurenti, Elisa", "Lee, Sujin", "Lein, Ed", "Li, Chenran", "Li, Zhuoyan", "Lin, Shin", "Lin, Yiing", "Lindsay, Scott A.", "Longacre, Teri A.", "Lundberg, Emma", "Maier, Libby", "Malhotra, Rajeev", "Martinez Casals, Anna", "Masci, Anna Maria", "Mathews, Clayton E.", "McDonough, Elizabeth", "McLaughlin, James A.", "Menon, Rajasree", "Menon, Vilas", "Miller, Jeremy A.", "Morgan, Richard", "M\u00fcller, Werner", "Murphy, Robert F.", "Musen, Mark A.", "Nakshatri, Harikrishna", "Nawijn, Martijn C.", "Neumann, Elizabeth K.", "Nigra, Debra J.", "O'Neill, Kathleen", "Parast, Mana M.", "Patel, Ushma", "Pei, Liming", "Phatnani, Hemali", "Phillips, Gesina A.", "Pouch, Alison M.", "Powers, Alvin C.", "Puerto, Juan F.", "Puig-Barbe, Aleix", "Quardokus, Ellen M.", "Radtke, Andrea J.", "Rajbhandari, Presha", "Record, Elizabeth G.", "Roberts, Drucilla J.", "Ropelewski, Alexander J.", "Rowe, David", "Ruschman, Nancy L.", "Saunders, Diane C.", "Scheuermann, Richard H.", "Schey, Kevin L.", "Schilling, Birgit", "Schlehlein, Heidi", "Schwenk, Melissa", "Scibek, Robin", "Seifert, Robert P.", "Shirey, Bill", "Shivkumar, Kalyanam", "Siletti, Kimberly", "Simmons, J. Alan", "Singhal, Dhruv", "Snyder, Michael", "Spraggins, Jeffrey M.", "Stanley, Valentina", "Strand, Douglas W.", "Sunshine, Joel C.", "Surrette, Christine", "Suzuki, Ayako", "Tata, Purushothama Rao", "Taylor, Deanne M.", "Theriault, Todd", "Theriault, Tracey", "Thomas, Jerin Easo", "Tsui, Elizabeth L.", "Uranic, Jackie", "Valerius, M. Todd", "Van Valen, David", "Vezina, Chad M.", "Vlachos, Ioannis S.", "Wang, Fusheng", "Wang, Xuefei \u2018Julie'", "Wasserfall, Clive H.", "Welling, Joel S.", "Werlein, Christopher", "Winfree, Seth", "Wright, Devin M.", "Yao, Li", "Yuan, Zhou", "Zhang, Ted", "Bueckle, Andreas", "Herr, Bruce W."], "journal":"Nature Methods", "volume":"22", "pages":"845--860", "doi": "10.1038/s41592-024-02563-5", "url": "https://doi.org/10.1038/s41592-024-02563-5"},
+            {"id": "IDG", "type": "article", "title":"DrugCentral 2023 extends human clinical data and integrates veterinary drugs","year":"2022", "authors": ["Avram, Sorin", "Wilson, Thomas B", "Curpan, Ramona", "Halip, Liliana", "Borota, Ana", "Bora, Alina", "Bologa, Cristian\u00a0G", "Holmes, Jayme", "Knockel, Jeffrey", "Yang, Jeremy\u00a0J", "Oprea, Tudor\u00a0I"], "journal":"Nucleic Acids Research", "volume":"51", "pages":"D1276--D1287", "doi": "10.1093/nar/gkac1085", "url": "https://doi.org/10.1093/nar/gkac1085"},
+            {"id": "KOMP2", "type": "article", "title":"The International Mouse Phenotyping Consortium: comprehensive knockout phenotyping underpinning the study of human disease","year":"2022", "authors": ["Groza, Tudor", "Gomez, Federico Lopez", "Mashhadi, Hamed Haseli", "Mu\u00f1oz-Fuentes, Violeta", "Gunes, Osman", "Wilson, Robert", "Cacheiro, Pilar", "Frost, Anthony", "Keskivali-Bond, Piia", "Vardal, Bora", "McCoy, Aaron", "Cheng, Tsz Kwan", "Santos, Luis", "Wells, Sara", "Smedley, Damian", "Mallon, Ann-Marie", "Parkinson, Helen"], "journal":"Nucleic Acids Research", "volume":"51", "pages":"D1038--D1045", "doi": "10.1093/nar/gkac972", "url": "https://doi.org/10.1093/nar/gkac972"},
+            {"id": "LINCS", "type": "article", "title":"SigCom LINCS: data and metadata search engine for a million gene expression signatures","year":"2022", "authors": ["Evangelista, John Erol", "Clarke, Daniel J B", "Xie, Zhuorui", "Lachmann, Alexander", "Jeon, Minji", "Chen, Kerwin", "Jagodnik, Kathleen\u00a0M", "Jenkins, Sherry L", "Kuleshov, Maxim\u00a0V", "Wojciechowicz, Megan\u00a0L", "Sch\u00fcrer, Stephan\u00a0C", "Medvedovic, Mario", "Ma'ayan, Avi"], "journal":"Nucleic Acids Research", "volume":"50", "pages":"W697--W709", "doi": "10.1093/nar/gkac328", "url": "https://doi.org/10.1093/nar/gkac328"},
+            {"id": "MoTrPAC", "type": "article", "title":"Molecular Transducers of Physical Activity Consortium (MoTrPAC): Mapping the Dynamic Responses to Exercise","year":"2020", "authors": ["Sanford, James A.", "Nogiec, Christopher D.", "Lindholm, Malene E.", "Adkins, Joshua N.", "Amar, David", "Dasari, Surendra", "Drugan, Jonelle K.", "Fern\u00e1ndez, Facundo M.", "Radom-Aizik, Shlomit", "Schenk, Simon", "Snyder, Michael P.", "Tracy, Russell P.", "Vanderboom, Patrick", "Trappe, Scott", "Walsh, Martin J.", "Adkins, Joshua N.", "Amar, David", "Dasari, Surendra", "Drugan, Jonelle K.", "Evans, Charles R.", "Fernandez, Facundo M.", "Li, Yafeng", "Lindholm, Malene E.", "Nogiec, Christopher D.", "Radom-Aizik, Shlomit", "Sanford, James A.", "Schenk, Simon", "Snyder, Michael P.", "Tomlinson, Lyl", "Tracy, Russell P.", "Trappe, Scott", "Vanderboom, Patrick", "Walsh, Martin J.", "Lee Alekel, D.", "Bekirov, Iddil", "Boyce, Amanda T.", "Boyington, Josephine", "Fleg, Jerome L.", "Joseph, Lyndon J.O.", "Laughlin, Maren R.", "Maruvada, Padma", "Morris, Stephanie A.", "McGowan, Joan A.", "Nierras, Concepcion", "Pai, Vinay", "Peterson, Charlotte", "Ramos, Ed", "Roary, Mary C.", "Williams, John P.", "Xia, Ashley", "Cornell, Elaine", "Rooney, Jessica", "Miller, Michael E.", "Ambrosius, Walter T.", "Rushing, Scott", "Stowe, Cynthia L.", "Jack Rejeski, W.", "Nicklas, Barbara J.", "Pahor, Marco", "Lu, Ching-ju", "Trappe, Todd", "Chambers, Toby", "Raue, Ulrika", "Lester, Bridget", "Bergman, Bryan C.", "Bessesen, David H.", "Jankowski, Catherine M.", "Kohrt, Wendy M.", "Melanson, Edward L.", "Moreau, Kerrie L.", "Schauer, Irene E.", "Schwartz, Robert S.", "Kraus, William E.", "Slentz, Cris A.", "Huffman, Kim M.", "Johnson, Johanna L.", "Willis, Leslie H.", "Kelly, Leslie", "Houmard, Joseph A.", "Dubis, Gabriel", "Broskey, Nick", "Goodpaster, Bret H.", "Sparks, Lauren M.", "Coen, Paul M.", "Cooper, Dan M.", "Haddad, Fadia", "Rankinen, Tuomo", "Ravussin, Eric", "Johannsen, Neil", "Harris, Melissa", "Jakicic, John M.", "Newman, Anne B.", "Forman, Daniel D.", "Kershaw, Erin", "Rogers, Renee J.", "Nindl, Bradley C.", "Page, Lindsay C.", "Stefanovic-Racic, Maja", "Barr, Susan L.", "Rasmussen, Blake B.", "Moro, Tatiana", "Paddon-Jones, Doug", "Volpi, Elena", "Spratt, Heidi", "Musi, Nicolas", "Espinoza, Sara", "Patel, Darpan", "Serra, Monica", "Gelfond, Jonathan", "Burns, Aisling", "Bamman, Marcas M.", "Buford, Thomas W.", "Cutter, Gary R.", "Bodine, Sue C.", "Esser, Karyn", "Farrar, Rodger P.", "Goodyear, Laurie J.", "Hirshman, Michael F.", "Albertson, Brent G.", "Qian, Wei-Jun", "Piehowski, Paul", "Gritsenko, Marina A.", "Monore, Matthew E.", "Petyuk, Vladislav A.", "McDermott, Jason E.", "Hansen, Joshua N.", "Hutchison, Chelsea", "Moore, Samuel", "Gaul, David A.", "Clish, Clary B.", "Avila-Pacheco, Julian", "Dennis, Courtney", "Kellis, Manolis", "Carr, Steve", "Jean-Beltran, Pierre M.", "Keshishian, Hasmik", "Mani, D.R.", "Clauser, Karl", "Krug, Karsten", "Mundorff, Charlie", "Pearce, Cadence", "Ivanova, Anna A.", "Ortlund, Eric A.", "Maner-Smith, Kristal", "Uppal, Karan", "Zhang, Tiantian", "Sealfon, Stuart C.", "Zaslavsky, Elena", "Nair, Venugopalan", "Li, SiDe", "Jain, Nimisha", "Ge, YongChao", "Sun, Yifei", "Nudelman, German", "Ruf-zamojski, Frederique", "Smith, Gregory", "Pincas, Nhanna", "Rubenstein, Aliza", "Anne Amper, Mary", "Seenarine, Nitish", "Lappalainen, Tuuli", "Lanza, Ian R.", "Sreekumaran Nair, K.", "Klaus, Katherine", "Montgomery, Stephen B.", "Smith, Kevin S.", "Gay, Nicole R.", "Zhao, Bingqing", "Hung, Chia-Jiu", "Zebarjadi, Navid", "Balliu, Brunilda", "Fresard, Laure", "Burant, Charles F.", "Li, Jun Z.", "Kachman, Maureen", "Soni, Tanu", "Raskind, Alexander B.", "Gerszten, Robert", "Robbins, Jeremy", "Ilkayeva, Olga", "Muehlbauer, Michael J.", "Newgard, Christopher B.", "Ashley, Euan A.", "Wheeler, Matthew T.", "Jimenez-Morales, David", "Raja, Archana", "Dalton, Karen P.", "Zhen, Jimmy", "Suk Kim, Young", "Christle, Jeffrey W.", "Marwaha, Shruti", "Chin, Elizabeth T.", "Hershman, Steven G.", "Hastie, Trevor", "Tibshirani, Robert", "Rivas, Manuel A."], "journal":"Cell", "volume":"181", "pages":"1464--1474", "doi": "10.1016/j.cell.2020.06.004", "url": "https://doi.org/10.1016/j.cell.2020.06.004"},
+            {"id": "Metabolomics", "type": "article", "title":"Metabolomics Workbench: An international repository for metabolomics data and metadata, metabolite standards, protocols, tutorials and training, and analysis tools","year":"2015", "authors": ["Sud, Manish", "Fahy, Eoin", "Cotter, Dawn", "Azam, Kenan", "Vadivelu, Ilango", "Burant, Charles", "Edison, Arthur", "Fiehn, Oliver", "Higashi, Richard", "Nair, K. Sreekumaran", "Sumner, Susan", "Subramaniam, Shankar"], "journal":"Nucleic Acids Research", "volume":"44", "pages":"D463--D470", "doi": "10.1093/nar/gkv1042", "url": "https://doi.org/10.1093/nar/gkv1042"},
+            {"id": "RummaGEO", "type": "article", "title":"RummaGEO: Automatic mining of human and mouse gene sets from GEO","year":"2024", "authors": ["Marino, Giacomo B.", "Clarke, Daniel J.B.", "Lachmann, Alexander", "Deng, Eden Z.", "Ma'ayan, Avi"], "journal":"Patterns", "volume":"5", "pages":"101072", "doi": "10.1016/j.patter.2024.101072", "url": "https://doi.org/10.1016/j.patter.2024.101072"},
+            {"id":"Enrichr","type":"article","title":"Gene Set Knowledge Discovery with Enrichr","authors":["Xie, Zhuorui","Bailey, Allison","Kuleshov, Maxim V.","Clarke, Daniel J. B.","Evangelista, John E.","Jenkins, Sherry L.","Lachmann, Alexander","Wojciechowicz, Megan L.","Kropiwnicki, Eryk","Jagodnik, Kathleen M.","Jeon, Minji","Ma'ayan, Avi"],"year":"2021","journal":"Current Protocols","volume":"1","pages":"e90","doi":"10.1002/cpz1.90","url":"https://doi.org/10.1002/cpz1.90"},
+            {"id":"GO","type":"article","title":"Gene Ontology: tool for the unification of biology","authors":["Ashburner, Michael","Ball, Catherine A.","Blake, Judith A.","Botstein, David","Butler, Heather","Cherry, J. Michael","Davis, Allan P.","Dolinski, Kara","Dwight, Selina S.","Eppig, Janan T.","Harris, Midori A.","Hill, David P.","Issel-Tarver, Laurie","Kasarskis, Andrew","Lewis, Suzanna","Matese, John C.","Richardson, Joel E.","Ringwald, Martin","Rubin, Gerald M.","Sherlock, Gavin"],"year":"2000","journal":"Nature Genetics","volume":"25","pages":"25--29","doi":"10.1038/75556","url":"https://doi.org/10.1038/75556"},
+            {"id":"KEGG","type":"article","title":"KEGG for taxonomy-based analysis of pathways and genomes","authors":["Kanehisa, Minoru","Furumichi, Miho","Sato, Yoko","Kawashima, Masayuki","Ishiguro-Watanabe, Mari"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D587--D592","doi":"10.1093/nar/gkac963","url":"https://doi.org/10.1093/nar/gkac963"},
+            {"id":"ChEA","type":"article","title":"ChEA3: transcription factor enrichment analysis by orthogonal omics integration","authors":["Keenan, Alexandra B","Torre, Denis","Lachmann, Alexander","Leong, Ariel K","Wojciechowicz, Megan L","Utti, Vivian","Jagodnik, Kathleen M","Kropiwnicki, Eryk","Wang, Zichen","Ma'ayan, Avi"],"year":"2019","journal":"Nucleic Acids Research","volume":"47","pages":"W212--W224","doi":"10.1093/nar/gkz446","url":"https://doi.org/10.1093/nar/gkz446"},
+            {"id": "GWAS", "type": "article", "title":"The NHGRI-EBI GWAS Catalog: standards for reusability, sustainability and diversity","year":"2024", "authors": ["Cerezo, Maria", "Sollis, Elliot", "Ji, Yue", "Lewis, Elizabeth", "Abid, Ala", "Bircan, Karatu\u011f\u00a0Ozan", "Hall, Peggy", "Hayhurst, James", "John, Sajo", "Mosaku, Abayomi", "Ramachandran, Santhi", "Foreman, Amy", "Ibrahim, Arwa", "McLaughlin, James", "Pendlington, Zo\u00eb", "Stefancsik, Ray", "Lambert, Samuel A", "McMahon, Aoife", "Morales, Joannella", "Keane, Thomas", "Inouye, Michael", "Parkinson, Helen", "Harris, Laura W"], "journal":"Nucleic Acids Research", "volume":"53", "pages":"D998--D1005", "doi": "10.1093/nar/gkae1070", "url": "https://doi.org/10.1093/nar/gkae1070"},
+        ]
+
+        async with ClientSession() as session:
+            tasks = [
+                doi_to_ref(session, key, doi)
+                for summary, gene_refs in deepdive_results.values()
+                for key, doi in gene_refs.items()
+            ]
+            refs.extend(await asyncio.gather(*tasks))
+
+        log("References complete.")
+        return refs
+
+    async def stage_sections(self,  deepdive_results):
+        introduction, discussion, references = await asyncio.gather(
+            
+            self.write_report_introduction(),
+            self.write_report_discussion(deepdive_results),
+            self.make_references(deepdive_results)
+        )
+        abstract = await self.write_report_abstract()
+
+        title_prompt = '''Write a title for this gene set crossing report using the following structure:
+
+        Crossing Gene Sets from [DATASETS] Reveals [ENTITY] as a Potential Modulator of [PROCESS] and [PROCESS]
+
+        where:
+
+        [DATASETS]: list the source resource names exactly as provided, separated by commas (if 3+) with "and" before the final resource.
+        [ENTITY]: select a single intersecting gene, protein, or compound from the provided terms. Choose the entity that
+        best represents the shared biological theme of the crossed gene sets. Select which intersecting entity would best serve as
+        a marker, perturbagen, or target; do not select entities that are not in the crossing terms.
+        [PROCESS]: summarize each crossed term into one or two concise biological concepts (such as a biological process, phenotype,
+        disease, cellular function, or signaling pathway). Use broad, recognizable concepts rather than copying full term names.
+        Include two or three processes when appropriate. Merge redundant concepts and avoid repeating synonymous ideas.
+
+        Resource descriptions are provided to indicate what each gene set collection represents
+         (for example, GlyGen — Glycosylated Proteins; GTEx — Tissue-Specific Aging Signatures).
+
+        Use these descriptions only to infer the underlying biological themes when selecting the process keywords. In the
+        generated title, include only the resource names exactly as provided and do not include the descriptive phrases. Derive
+        the process keywords only from the crossed term names, using the resource descriptions only as
+        supporting context when the biological theme is unclear. Processes should be derived from the dataset descriptions and ge set names.
+        Do not include a process if the corresponding term is already selected as the entity (Example: a glycan is selected for an aging/
+        exercise/glycosylation corssing, so only aging and exercise are selected as processes).
+        
+
+        The title should summarize the common biology implied by the intersecting gene sets rather than simply restating their names.
+        Preserve acronyms exactly as written. Do not include statistics, gene set sizes, p-values, Jaccard values,
+        parentheses, quotation marks, or other special symbols. Do not invent biological concepts that are unsupported 
+        by the provided terms. Return only the title. Use title case, capitalizaing all keywords.'''
+
+        resources = [
+            dataset["dataset"]["resource"]
+            for dataset in self.datasets
+        ]
+        dataset_descriptions = [
+            dataset["dataset"]["name"]
+            .replace(dataset["dataset"]["resource"], f'{dataset["dataset"]["resource"]} - ') 
+            for dataset in self.datasets
+        ]
+        terms = [
+            val for col,val in self.crossing.items() if (col.startswith("term") and "Length" not in col)
+        ]
+        title_data = f'Resources:{resources}\nDataset Descriptions:{dataset_descriptions}\nCrossing Terms:{terms}'
+
+        REPORT_TITLE = await generate_section(self.client, self.model, self.system_prompt, title_prompt, title_data)
+        self.title = REPORT_TITLE
+
+        log("Sections complete.")
+        return REPORT_TITLE,abstract,introduction,discussion,references
+
+def construct_crossing_report(datasets, gmts, crossing, venn_diagram, intersecting_genes, enrichr):
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    model = os.getenv("OPENAI_MODEL", "gpt-5-nano")
+
+    enrichr_id = enrichr.pop("enrichr_id")["shortId"]
+    enrichr_results = {
+        library:pd.DataFrame(results["scored"]).head(10) for library,results in enrichr.items()
+    }
+
+    crossing_report = CrossingReport(client, model, datasets, gmts, crossing, venn_diagram, intersecting_genes["set"], enrichr_results)
+
+    log("Fetching intersecting gene DeepDives...")
+    deepdive_results = {}
+    for gene in crossing_report.intersecting_genes:
+        summary = get_gpt4o_gene_summary(gene)
+        deepdive_results[gene] = format_deepdive(gene,summary)
+
+    log("Generating sections...")
+    methods = crossing_report.write_report_methods()
+    results = crossing_report.write_report_results(deepdive_results)
+    title,abstract,introduction,discussion,references = asyncio.run(crossing_report.stage_sections(deepdive_results))
+    
+
+    abstract, introduction, discussion = repair_and_validate_report(
+        dict(
+            abstract=abstract,
+            introduction=introduction,
+            discussion=discussion
+        ),
+        references,
+        strip_unknown=False
+    )
+    log("Formatting validated.")
+
+    venn_diagram_pdf = make_venn_diagram(venn_diagram)
+    venn_diagram_file =  {
+        "file":venn_diagram_pdf,
+        "caption":f"A venn diagram of the crossed gene sets. Sizes of each set and {'2-,3-, and 4-way' if len(datasets)==4 else '2- and 3-way'} intersection are labelled.",
+    }
+    enrichr_bars_pdf = make_enrichr_barplot(crossing_report.enrichr)
+    enrichr_bars_file =  {
+        "file":enrichr_bars_pdf,
+        "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. GWAS Catalog 2019~\\cite{{GWAS}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_id}}}{{Enrichr}}.",
+    }
+    figures = {
+        "vennDiagram": venn_diagram_file,
+        "enrichrBars": enrichr_bars_file,
+    }
+    log("Figures complete.")
+    return {
+        "title": crossing_report.title,
+        "abstract": crossing_report.abstract,
+        "crossing": crossing_report.crossing,
+        "introduction": crossing_report.introduction,
+        "methods": crossing_report.methods,
+        "results": crossing_report.results,
+        "discussion": crossing_report.discussion,
+        "figures": figures,
+        "supplement": {
+            "enrichrId":enrichr_id,
+            "datasets":datasets
+        },
+        "references": references,
+        "model": crossing_report.model
+    }
+
+
+def construct_crossing_references(references: list[dict]) -> str:
+    entries = []
+    for ref in references:
+        fields = [
+            f"  title     = {{{ref['title']}}}" if ref.get('title') else None,
+            f"  author    = {{{' and '.join(ref['authors'])}}}" if ref.get('authors') else None,
+            f"  year      = {{{ref['year']}}}"    if ref.get('year')    else None,
+            f"  journal   = {{{ref['journal']}}}" if ref.get('journal') else None,
+            f"  volume    = {{{ref['volume']}}}"  if ref.get('volume')  else None,
+            f"  pages     = {{{ref['pages']}}}"   if ref.get('pages')   else None,
+            f"  doi       = {{{ref['doi']}}}"     if ref.get('doi')     else None,
+            f"  url       = {{{ref['url']}}}"     if ref.get('url')     else None,
+        ]
+        fields = [f for f in fields if f is not None]
+        entries.append(f"@{ref['type']}{{{ref['id']}, {', '.join(fields)} }}")
+
+    return '\n\n'.join(entries)
+
+def render_crossing_report(report):
+    log('Preparing LaTeX bundle...')
+    crossing = report["crossing"]
+    n = (len(crossing)-5)//2
+    datasets = [dataset["key"] for dataset in report["supplement"]["datasets"]]
+    crossing_name = f'Crossing_{"".join(datasets)}_{crossing["rank"]}'
+    with TemporaryDirectory() as texdir:
+        public_url = os.getenv("PUBLIC_URL")
+        urllib.request.urlretrieve(f"{public_url}/crossing-report/crossing_report_{n}.tex", f"{texdir}/crossing_report.tex")
+        urllib.request.urlretrieve(f"{public_url}/crossing-report/ExcelAtFIT.cls", f"{texdir}/ExcelAtFIT.cls")
+        urllib.request.urlretrieve(f"{public_url}/crossing-report/maayan-lab-logo.png", f"{texdir}/maayan-lab-logo.png")
+        os.makedirs(f"{texdir}/figures", exist_ok=True)
+        for figure,figurefile in report["figures"].items():
+            with file_as_path(figurefile["file"]) as path:
+                shutil.copy(path, f"{texdir}/figures/{figure}.pdf")
+        os.makedirs(f"{texdir}/tables", exist_ok=True)
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(texdir),
+            variable_start_string='(((',
+            variable_end_string=')))',
+        )
+        template = env.get_template("crossing_report.tex").render(
+            title=report['title'],
+            abstract=report['abstract'],
+            introduction = report['introduction'],
+            methods = report['methods'],
+            results = report['results'],
+            discussion = report['discussion'],
+            figures = report['figures'],
+            model = report['model'],
+        )
+        log('Rendering LaTeX template...')
+        with open(f"{texdir}/{crossing_name}.tex", "w") as texfile:
+            texfile.write(template)
+        with open(f"{texdir}/references.bib", "w") as bibfile:
+            bibfile.write(construct_crossing_references(report["references"]))
+        with upsert_file('.zip') as zipfile:
+            base = zipfile.file.rsplit('.', 1)[0]
+            shutil.make_archive(base, "zip", texdir)
+        log('Bundle complete.')
+        log('Beginning PDF compilation...')
+
+        with subprocess.Popen(
+            ['latexmk', '-pdf', '-lualatex', '-cd', '-f', '-interaction=nonstopmode', f"{texdir}/{crossing_name}.tex"],
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            text=True) as proc:
+            for line in proc.stdout:
+                if line.startswith("Run"):
+                    log(line.strip())
+
+        with upsert_file(".pdf") as pdffile:
+            reader = pypdf.PdfReader(f'{texdir}/{crossing_name}.pdf')
+            writer = pypdf.PdfWriter()
+            for page in reader.pages:
+                writer.add_page(page)
+            writer.write(pdffile.file)
+
+    zipfile["filename"] = f"{crossing_name}.zip"
+    pdffile["filename"] = f"{crossing_name}.pdf"
 
     return {"bundle":zipfile, "pdf":pdffile}

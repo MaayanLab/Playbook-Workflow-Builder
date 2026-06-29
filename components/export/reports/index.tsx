@@ -2,7 +2,7 @@ import React from 'react'
 import { MetaNode } from '@/spec/metanode'
 import { variable_icon } from '@/icons'
 import { z } from 'zod'
-import { PMCAccessionSet } from '@/components/core/set'
+import { GeneSet, PMCAccessionSet } from '@/components/core/set'
 import { GEOAccessionTerm } from '@/components/core/term'
 import { PlotlyPlot } from '@/components/viz/plotly'
 import { EnrichrEnrichmentAnalysis, EnrichrScoredGenes, EnrichrScoredPathways, EnrichrScoredPhenotypes } from '@/components/service/enrichr'
@@ -12,6 +12,9 @@ import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
 import { ScoredGenes } from '@/components/core/scored'
 import { useExRouter, ExLink } from '@/app/fragments/ex-router'
+import { GMT } from '@/components/data/gene_matrix_transpose'
+import { GeneSetCrossing } from '@/components/data/gene_set_crossing'
+import { CFDEDataset } from '@/components/service/cfde-gse'
 
 const ReportFile = z.object({
   file: FileC,
@@ -156,6 +159,133 @@ export const GEOReanalysisAgentReport = MetaNode(`GEOReanalysisAgentReport`)
   }))
   .build()
 
+export const GeneSetCrossingReport = MetaNode(`GeneSetCrossingReport`)
+  .meta({
+    label: 'Gene Set Crossing Report',
+    description: 'An agentic report analyzing an intersection of gene sets from crossing GMTs',
+    icon: [variable_icon],
+    external: true,
+  })
+  .codec(z.object({
+    title: z.string(),
+    abstract: z.string(),
+    crossing: z.object({
+      rank:z.number(),
+      term1:z.string(),
+      term1Length:z.number(),
+      term2:z.string(),
+      term2Length:z.number(),
+      term3:z.string().optional(),
+      term3Length:z.number().optional(),
+      term4:z.string().optional(),
+      term4Length:z.number().optional(),
+      term5:z.string().optional(),
+      term5Length:z.number().optional(),
+      pvalue:z.number(),
+      jaccard:z.number(),
+      overlap:z.number(),
+      genes:z.string()
+    }),
+    introduction: z.object({
+        cfde:z.string(),
+        dataset:z.string(),
+        terms:z.string()
+    }),
+    methods: z.string(),
+    results: z.string(),
+    discussion: z.object({
+        deepdive: z.string(),
+        enrichr: z.string(),
+        conclusion: z.string()
+    }),
+    figures: z.object({
+        vennDiagram: ReportFile,
+        enrichrBars: ReportFile,
+    }),
+    supplement: z.object({
+      enrichrId: z.string(),
+      datasets: z.array(
+        z.object({
+          key:z.string(),
+          dataset: z.object({
+            name: z.string(),
+            resource: z.string(),
+            url: z.string(),
+            processing: z.string()
+        })
+      }))
+    }),
+    references: z.array(z.object({
+      id: z.string(),
+      type: z.string(),
+      title: z.string().optional(),
+      authors: z.array(z.string()).optional(),
+      year: z.string().optional(),
+      journal: z.string().optional(),
+      volume: z.string().optional(),
+      pages: z.string().optional(),
+      doi: z.string().optional(),
+      url: z.string().optional()
+    })),
+    model: z.string()
+  }))
+  .view(props => {
+    return (
+      <div className="flex-grow flex flex-col m-0 prose">
+        <h2><b>{props.title}</b></h2>
+        <h2>Abstract</h2>
+        <p>{props.abstract}</p>
+      </div>
+    )
+  })
+  .build()
+
+export const GeneSetCrossingAgentReport = MetaNode(`GeneSetCrossingAgentReport`)
+  .meta({
+    label: 'Gene Set Crossing Agent Report',
+    description: 'Generate an LLM-AUGMENTED gene set crossing analysis report.',
+    icon: [variable_icon],
+  })
+  .inputs({
+    datasets: [CFDEDataset],
+    gmts: [GMT],
+    crossing: GeneSetCrossing,
+    vennDiagram: PlotlyPlot,
+    intersectingGenes: GeneSet,
+    enrichr: EnrichrEnrichmentAnalysis,
+    enrichrGOBP: EnrichrScoredPathways,
+    enrichrKEGG: EnrichrScoredPathways,
+    enrichrChEA: EnrichrScoredGenes,
+    enrichrGWAS: EnrichrScoredPhenotypes
+  })
+  .output(GeneSetCrossingReport)
+  .resolve(async (props) => {
+    return await python(
+      'components.export.reports.construct_crossing_report',
+      { kargs:[], kwargs: {
+        datasets: props.inputs.datasets,
+        gmts: props.inputs.gmts,
+        crossing: props.inputs.crossing,
+        venn_diagram: props.inputs.vennDiagram,
+        intersecting_genes: props.inputs.intersectingGenes,
+        enrichr:{
+            enrichr_id: props.inputs.enrichr,
+            enrichr_gobp: props.inputs.enrichrGOBP,
+            enrichr_kegg: props.inputs.enrichrKEGG,
+            enrichr_chea: props.inputs.enrichrChEA,
+            enrichr_komp: props.inputs.enrichrGWAS
+        }
+      }},
+      message => props.notify({ type: 'info', message }),
+    )
+  })
+  .story(props => ({
+    abstract: ``,
+    methods: ``,
+    legend: ``,
+  }))
+  .build()
+
 export const ReportPDF = MetaNode(`ReportPDF`)
   .meta({
     label: 'Report PDF',
@@ -202,6 +332,30 @@ export const GEOReanalysisReportViewer = MetaNode(`GEOReanalysisReportViewer`)
   .resolve(async (props) => {
     return await python(
       'components.export.reports.render_georeanalysis_report',
+      { kargs:[], kwargs: {
+        report: props.inputs.report,
+      }},
+      message => props.notify({ type: 'info', message }),
+    )
+  })
+  .story(props => ({
+    abstract: ``,
+    methods: ``,
+    legend: ``,
+  }))
+  .build()
+
+export const GeneSetCrossingisReportViewer = MetaNode(`GeneSetCrossingisReportViewer`)
+  .meta({
+    label: 'Gene Set Crossing Report Viewer',
+    description: 'View a PDF of an executed gene set crossing analysis report.',
+    icon: [variable_icon],
+  })
+  .inputs({report: GeneSetCrossingReport})
+  .output(ReportPDF)
+  .resolve(async (props) => {
+    return await python(
+      'components.export.reports.render_crossing_report',
       { kargs:[], kwargs: {
         report: props.inputs.report,
       }},

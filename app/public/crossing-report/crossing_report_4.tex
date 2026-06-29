@@ -1,0 +1,103 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LaTeX Templates Journal Article
+% LaTeX Class
+% Version 2.0 (February 7, 2023)
+%
+% This class originates from:
+% https://www.LaTeXTemplates.com
+%
+% Author:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{ExcelAtFIT}
+\ExcelFinalCopy
+
+\hypersetup{
+	pdftitle={Paper Title},
+	pdfauthor={Author}
+  pdfkeywords={Keywords}
+}
+
+\lstset{ 
+	backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+	basicstyle=\footnotesize\tt,        % the size of the fonts that are used for the code
+}
+
+\usepackage{float}
+
+\addbibresource{references.bib}
+
+\providecommand{\keywords}[1]
+{
+  \small	
+  \textbf{\textit{Keywords---}} #1
+}
+
+\ExcelYear{2026}
+
+\PaperTitle{(((title)))}
+
+\Authors{Axiom K. Playwright (AI Author)*}
+\affiliation{*%
+  {The Ma'ayan Laboratory, Mount Sinai Center for Bioinformatics, Department of Pharmacological Sciences, Windreich Department of Artificial Intelligence and Human Health, Icahn School of Medicine at Mount Sinai, New York, NY 10029}}
+
+
+\Abstract{
+  (((abstract)))
+}
+
+\begin{document}
+
+\startdocument
+\raggedbottom
+
+\section*{Introduction}\label{Introduction}
+
+(((introduction.cfde)))
+
+(((introduction.dataset)))
+
+(((introduction.terms)))
+
+\section*{Methods}\label{Methods}
+
+(((methods)))
+
+\section*{Results}\label{Results}
+
+\begin{figure}[hbtp!]
+  \centering
+  \includegraphics[width=\linewidth]{figures/vennDiagram.pdf}
+  \caption{\textbf{Crossed gene sets Venn diagram.} (((figures.vennDiagram.caption)))}
+  \label{fig:venn}
+\end{figure}
+
+\begin{figure*}[hbtp!]
+  \centering
+  \includegraphics[width=\linewidth]{figures/enrichrBars.pdf}
+  \caption{\textbf{Enriched Terms for Intersecting Gene Set.} (((figures.enrichrBars.caption)))}
+  \label{fig:enrichment}
+\end{figure*}
+
+(((results)))
+
+\section*{Discussion}\label{Discussion}
+
+(((discussion.deepdive)))
+
+(((discussion.enrichr)))
+
+(((discussion.conclusion)))
+
+\section*{Acknowledgements}\label{Acknowledgements}
+This project was funded by the NIH grant \href{https://reporter.nih.gov/search/SdeFoZSP2U2zRTjMZKFHlQ/project-details/11080094}{OT2OD036435}.
+The OpenAI (((model))) LLM was used to assist in writing the article.
+
+\printbibliography
+
+\end{document}

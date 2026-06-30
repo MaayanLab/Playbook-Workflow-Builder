@@ -8,7 +8,8 @@ import { GMT } from '../gene_matrix_transpose'
 import { downloadBlob } from '@/utils/download'
 import { GeneSet } from '@/components/core/set'
 import SafeRender from '@/utils/saferender'
-import { SELECTED } from '@blueprintjs/core/lib/esm/common/classes'
+import { CFDEGMTs } from '@/components/service/cfde-gse'
+import * as dict from '@/utils/dict'
 
 
 export const GeneSetCrossing = MetaNode('GeneSetCrossing')
@@ -160,6 +161,44 @@ export const GeneSetCrossings = MetaNode('GeneSetCrossings')
   })
   .build()
 
+export const CrossingTermGeneSets = MetaNode(`CrossingTermGeneSets`)
+  .meta({
+    label: `Crossing Term Gene Sets`,
+    description: 'Retrieve gene sets from mapped terms from crossing',
+    icon: [gmt_icon],
+  })
+  .codec(z.record(z.string(), z.object({ description: z.string().optional(), set: z.array(z.string()) })))
+  .view(gmt => {
+    const gmt_items = dict.items(gmt)
+    return (
+      <Table
+        height={500}
+        cellRendererDependencies={[gmt_items]}
+        numRows={gmt_items.length}
+        enableGhostCells
+        enableFocusedCell
+        downloads={{
+          JSON: () => downloadBlob(new Blob([JSON.stringify(gmt)], { type: 'application/json;charset=utf-8' }), 'data.json'),
+          GMT: () => downloadBlob(new Blob([gmt_items.map(({ key: term, value: { description, set } }) => [term, description||'', ...set].join('\t')).join('\n')], { type: 'text/tab-separated-values;charset=utf-8' }), 'data.gmt'),
+        }}
+      >
+        <Column
+          name="Term"
+          cellRenderer={row => <Cell key={row+''}>{gmt_items[row].key.toString()}</Cell>}
+        />
+        <Column
+          name="Description"
+          cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.description||''}</Cell>}
+        />
+        <Column
+          name="Gene Set"
+          cellRenderer={row => <Cell key={row+''}>{gmt_items[row].value.set.join('\t')}</Cell>}
+        />
+      </Table>
+    )
+  })
+  .build()
+
 export const GMTCrossing = MetaNode('GMTCrossing')
   .meta({
     label: 'GMT Crossing',
@@ -167,11 +206,11 @@ export const GMTCrossing = MetaNode('GMTCrossing')
     icon: [gmt_icon, gmt_icon],
   })
   .inputs({
-    gmts: [GMT],
+    gmts: [GMT]
   })
   .output(GeneSetCrossings)
   .resolve(async (props) => {
-    const gmts = props.inputs.gmts.filter((gmt): gmt is NonNullable<typeof gmt> => gmt != null)
+    const gmts = props.inputs.gmts.filter((gmt) => gmt !== null)
     
     return await python(
       'components.data.gene_set_crossing.cross_gmts',
@@ -187,6 +226,32 @@ export const GMTCrossing = MetaNode('GMTCrossing')
   }))
   .build()
 
+export const CFDEGMTCrossing = MetaNode('CFDEGMTCrossing')
+  .meta({
+    label: 'CFDE GMT Crossing',
+    description: 'Cross 2+ GMTs from the CFDE Workbench to identify interesting and unexpected overlaps',
+    icon: [gmt_icon, gmt_icon],
+  })
+  .inputs({
+    gmts: CFDEGMTs
+  })
+  .output(GeneSetCrossings)
+  .resolve(async (props) => {
+    const gmts = props.inputs.gmts.map(({ dataset }) => dataset.gmt)
+    
+    return await python(
+      'components.data.gene_set_crossing.cross_gmts',
+      { kargs: [], kwargs: { gmts:gmts } },
+      message => props.notify({ type: 'info', message }),
+    )
+  })
+  .story(props => ({
+    abstract: 'GMTs were crossed to identify the combinations of one gene set from each dataset where all gene sets were highly enriched against the intersection of remaining sets.',
+    introduction: 'For each combination of one gene set from each dataset, the hypergeometric p-value was computed for each gene set against the intersection of the remaining sets. The most conservative p-value of each crossing was used to rank all combinations, and the top 5000 results were kept.',
+    methods: '',
+    tableLegend: `A table showing up to the top 5000 crossings between the input GMTs.`,
+  }))
+  .build()
 
 export const SelectGeneSetCrossing = MetaNode('SelectGeneSetCrossing')
   .meta({
@@ -377,6 +442,52 @@ export const ExtractCrossingTermGeneSet = MetaNode('ExtractCrossingTermGeneSet')
   })
   .story(props => ({
     abstract: 'The intersecting gene set was extracted from the crossing.',
+  }))
+  .build()
+
+export const ExtractCFDECrossingTermGeneSets = MetaNode('ExtractCFDECrossingTermGeneSets')
+  .meta({
+    label: 'Extract CFDE Crossing Term Gene Sets',
+    description: 'Select the term from a CFDE crossing and retrieve the corresponding gene set from the crossed GMT',
+    icon: [gmt_icon, gmt_icon],
+  })
+  .inputs({
+    crossing:GeneSetCrossing,
+    gmts:CFDEGMTs,
+  })
+  .output(GMT)
+  .resolve(async (props) => {
+    const termEntries = Object.entries(props.inputs.crossing)
+      .filter(
+        (entry): entry is [string, string] =>
+          /^term\d+$/.test(entry[0]) && typeof entry[1] === "string"
+      )
+    const gmts = props.inputs.gmts
+
+    const sets: Record<string, { set: string[]; description?: string }> = {}
+    for (const [termKey, term] of termEntries) {
+      const preferredIndex = parseInt(termKey.replace("term", ""), 10) - 1
+      const preferred = gmts[preferredIndex]?.dataset.gmt
+  
+      const foundGmt =
+        preferred?.[term] != null
+          ? preferred
+          : gmts.find((g) => g.dataset.gmt[term] != null)?.dataset.gmt
+  
+      if (!foundGmt) {
+        throw new Error(
+          `Gene set '${term}' (${termKey}) was not found in any of the supplied GMTs.`
+        )
+      }
+  
+      sets[term] = {
+        set: foundGmt[term].set
+      }
+    }
+    return sets
+  })
+  .story(props => ({
+    abstract: 'The crossing term gene sets were extracted from the crossed GMTs and crossing.',
   }))
   .build()
 

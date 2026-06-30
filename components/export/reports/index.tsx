@@ -14,7 +14,7 @@ import { ScoredGenes } from '@/components/core/scored'
 import { useExRouter, ExLink } from '@/app/fragments/ex-router'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import { GeneSetCrossing } from '@/components/data/gene_set_crossing'
-import { CFDEDataset } from '@/components/service/cfde-gse'
+import { CFDEDataset, CFDEGMTs } from '@/components/service/cfde-gse'
 
 const ReportFile = z.object({
   file: FileC,
@@ -243,12 +243,11 @@ export const GeneSetCrossingReport = MetaNode(`GeneSetCrossingReport`)
 export const GeneSetCrossingAgentReport = MetaNode(`GeneSetCrossingAgentReport`)
   .meta({
     label: 'Gene Set Crossing Agent Report',
-    description: 'Generate an LLM-AUGMENTED gene set crossing analysis report.',
+    description: 'Generate an LLM-augmented gene set crossing analysis report.',
     icon: [variable_icon],
   })
   .inputs({
-    datasets: [CFDEDataset],
-    gmts: [GMT],
+    datasets: CFDEGMTs,
     crossing: GeneSetCrossing,
     vennDiagram: PlotlyPlot,
     intersectingGenes: GeneSet,
@@ -264,7 +263,6 @@ export const GeneSetCrossingAgentReport = MetaNode(`GeneSetCrossingAgentReport`)
       'components.export.reports.construct_crossing_report',
       { kargs:[], kwargs: {
         datasets: props.inputs.datasets,
-        gmts: props.inputs.gmts,
         crossing: props.inputs.crossing,
         venn_diagram: props.inputs.vennDiagram,
         intersecting_genes: props.inputs.intersectingGenes,

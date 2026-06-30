@@ -24,3 +24,11 @@ def load_gmt(url):
             gene_set_length += len(geneset)
 
     return gmt
+
+def load_gmts(datasets):
+    gmts = []
+    for (key,dataset) in datasets:
+        dataset["gmt"] = load_gmt(dataset["url"])
+        gmts.append({"key":key, "dataset":dataset})
+
+    return gmts

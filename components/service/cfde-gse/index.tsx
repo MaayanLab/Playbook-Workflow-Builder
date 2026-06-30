@@ -279,9 +279,44 @@ export const CFDEDataset = MetaNode('CFDEDataset')
       resource: z.string(),
       url: z.string(),
       processing: z.string()
-  })}))
+    })
+  }))
   .view(dataset => {
     return (<></>)
+  })
+  .build()
+
+export const CFDEGMTs = MetaNode('CFDEGMTs')
+.meta({
+  label: 'CFDE GMTs',
+  description: 'Multiple GMTs from the CFDE Workbench',
+    tags: {
+      'Data Source': {
+        'CFDE': 1
+      },
+    },
+    external: true,
+  })
+  .codec(z.array(z.object({
+    key:z.string(),
+    dataset: z.object({
+      name: z.string(),
+      resource: z.string(),
+      url: z.string(),
+      processing: z.string(),
+      gmt: z.record(
+        z.string(), 
+        z.object({ 
+          description: z.string().optional(), 
+          set: z.array(z.string()) 
+        })
+      )
+    })
+  })))
+  .view(datasets => {
+    return (
+      <></>
+    )
   })
   .build()
 
@@ -301,7 +336,7 @@ export const SelectCFDEGSEDataset = MetaNode('SelectCFDEGSEDataset')
   .output(CFDEDataset)
   .prompt(props => {
     const [selected, setSelected] = React.useState<string | null>(
-      props.data?.key ?? null
+      props.output?.key ?? null
     )
 
     return (
@@ -364,7 +399,127 @@ export const CFDEGSEDatasetToGMT = MetaNode('CFDEGSEDatasetToGMT')
       )
     })
     .story(props => ({
-      abstract: `${props.inputs ? 'The ' + props.inputs.dataset.dataset.name : 'A'} GMT was retrieved from the CFDE Workbench\\ref{CFDE Workbench, https://cfde.cloud/}.`,
-      methods: `${props.inputs ? 'The ' + props.inputs.dataset.dataset.name : 'A'} GMT was retrieved from the CFDE Workbench\\ref{CFDE Workbench, https://cfde.cloud/}.`,
+      abstract: `${props.inputs ? 'The ' + props.inputs.dataset.dataset.name : 'A'} GMT was retrieved from the CFDE Workbench\\ref{doi:10.1016/j.jmb.2026.169631}.`,
     }))
+    .build()
+
+export const SelectCFDEGSEGMTs = MetaNode('SelectCFDEGSEGMTs')
+  .meta({
+    label: 'Select CFDE GSE GMTs',
+    description: 'Select multiple datasets from the CFDE Workbench and retrieve GMTs',
+      tags: {
+        'Data Source': {
+          'CFDE': 1
+        },
+      },
+      external: true,
+    })
+    .codec(z.object({ 
+      datasets: z.array(z.string()),
+    }))
+    .inputs({})
+    .output(CFDEGMTs)
+    .prompt(props => {
+      const [selected0, setSelected0] = React.useState<string | null>(
+        props.data?.datasets[0] ?? null
+      )
+      const [selected1, setSelected1] = React.useState<string | null>(
+        props.data?.datasets[1] ?? null
+      )
+      const [selected2, setSelected2] = React.useState<string | null>(
+        props.data?.datasets[2] ?? null
+      )
+      const [selected3, setSelected3] = React.useState<string | null>(
+        props.data?.datasets[3] ?? null
+      )
+      const [selected4, setSelected4] = React.useState<string | null>(
+        props.data?.datasets[4] ?? null
+      )
+  
+      return (
+        <>
+          <div className="md-6">
+            <select
+              className="select select-bordered w-full"
+              value={selected0 ?? ''}
+              onChange={e => setSelected0(e.target.value)}
+            >
+              <option value="" disabled>Select a dataset...</option>
+              {Object.entries(datasets).map(([key, dataset]) => (
+                <option key={key} value={key}>{dataset.name}</option>
+              ))}
+            </select>
+            <select
+              className="select select-bordered w-full"
+              value={selected1 ?? ''}
+              onChange={e => setSelected1(e.target.value)}
+            >
+              <option value="" disabled>Select a dataset...</option>
+              {Object.entries(datasets).map(([key, dataset]) => (
+                <option key={key} value={key}>{dataset.name}</option>
+              ))}
+            </select>
+            <select
+              className="select select-bordered w-full"
+              value={selected2 ?? ''}
+              onChange={e => setSelected2(e.target.value)}
+            >
+              <option value="" disabled>Select a dataset...</option>
+              {Object.entries(datasets).map(([key, dataset]) => (
+                <option key={key} value={key}>{dataset.name}</option>
+              ))}
+            </select>
+            {selected0 && selected1 && selected2 && 
+              <select
+                className="select select-bordered w-full"
+                value={selected3 ?? ''}
+                onChange={e => setSelected3(e.target.value)}
+              >
+                <option value="" disabled>Select a dataset...</option>
+                {Object.entries(datasets).map(([key, dataset]) => (
+                  <option key={key} value={key}>{dataset.name}</option>
+                ))}
+              </select>
+            }
+            {selected0 && selected1 && selected2 && selected3 && 
+              <select
+                className="select select-bordered w-full"
+                value={selected4 ?? ''}
+                onChange={e => setSelected4(e.target.value)}
+              >
+                <option value="" disabled>Select a dataset...</option>
+                {Object.entries(datasets).map(([key, dataset]) => (
+                  <option key={key} value={key}>{dataset.name}</option>
+                ))}
+              </select>
+            }
+          </div>
+          <button
+            className="bp5-button bp5-large"
+            disabled={!selected0 || !selected1 || !selected2}
+            onClick={() => {
+              if (!selected0 || !selected1 || !selected2) {
+                throw new Error("Please select at least 3 datasets.")
+              }
+              props.submit({ datasets:[selected0, selected1, selected2, selected3, selected4].filter((ds): ds is string => ds !== null) })
+            }}
+          >
+            Submit
+          </button>
+          {props.output ? <SafeRender component={CFDEGMTs.view} props={props.output} /> : null}
+        </>
+      )
+    })
+    .resolve(async (props) => {
+      console.log(props.data)
+      const selected = Object.entries(datasets).filter(([key]) => props.data.datasets.includes(key))
+      return await python(
+        'components.service.cfde-gse.load_gmts',
+        { kargs: [], kwargs: { datasets:selected } },
+        message => props.notify({ type: 'info', message }),
+      )
+    })
+    .story(props => ({
+      abstract: `${props.output ? `The ${props.output .map(d => d.dataset.name).slice(0, -1).join(", ")}, and ${props.output.at(-1)!.dataset.name} datasets were selected from the CFDE Workbench\\ref{doi:10.1016/j.jmb.2026.169631}.`: ""}`
+      }))
     .build()

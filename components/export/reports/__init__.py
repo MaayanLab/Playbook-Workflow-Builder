@@ -1221,8 +1221,6 @@ def repair_and_validate_report(
                 f'[[[{key}]]]',
                 fixed,
             )
-            if path==('abstract',):
-                fixed = re.sub(r'\[+\s*[A-Za-z0-9_][^\[\]]*?\s*\]+', '', fixed)
             fixed = _validate_and_repair_citations(fixed, valid_keys, section_name, strip_unknown)
 
         # 5. Emit \cite{} and escape LaTeX specials in ONE pass (prevents escaper from mangling BibTeX keys like Smith_2020)
@@ -1811,22 +1809,23 @@ class CrossingReport():
                             return {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
 
                         ref = await res.text(encoding="utf-8")
+                        ref = ref.strip()
 
                         if not ref.startswith("@"):
                             return {"id": key, "type": "article", "doi": doi, "url": f"https://doi.org/{doi}"}
 
-                        return {
+                        base_ref = {
                             "id": key,
                             "type": "article",
-                            "title": extract(ref, "title"),
-                            "year": extract(ref, "year"),
-                            "authors": extract(ref, "author"),
-                            "journal": extract(ref, "journal"),
-                            "volume": extract(ref, "volume"),
-                            "pages": extract(ref, "pages"),
                             "doi": doi,
                             "url": f"https://doi.org/{doi}",
                         }
+                        for field_key,field in [("title", "title"), ("year","year"), ("authors","author"), ("journal","journal")]:
+                            field = extract(ref,field)
+                            if field:
+                                base_ref[field_key] = field
+
+                        return base_ref
 
                 except ClientError:
                     return {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
@@ -1925,7 +1924,7 @@ class CrossingReport():
         log("Sections complete.")
         return REPORT_TITLE,abstract,introduction,discussion,references
 
-def construct_crossing_report(datasets, gmts, crossing, venn_diagram, intersecting_genes, enrichr):
+def construct_crossing_report(datasets, crossing, venn_diagram, intersecting_genes, enrichr):
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_MODEL", "gpt-5-nano")
 
@@ -1934,6 +1933,7 @@ def construct_crossing_report(datasets, gmts, crossing, venn_diagram, intersecti
         library:pd.DataFrame(results["scored"]).head(10) for library,results in enrichr.items()
     }
 
+    gmts = [dataset["dataset"].pop("gmt") for dataset in datasets]
     crossing_report = CrossingReport(client, model, datasets, gmts, crossing, venn_diagram, intersecting_genes["set"], enrichr_results)
 
     log("Fetching intersecting gene DeepDives...")
@@ -1946,9 +1946,9 @@ def construct_crossing_report(datasets, gmts, crossing, venn_diagram, intersecti
     methods = crossing_report.write_report_methods()
     results = crossing_report.write_report_results(deepdive_results)
     title,abstract,introduction,discussion,references = asyncio.run(crossing_report.stage_sections(deepdive_results))
-    
 
-    abstract, introduction, discussion = repair_and_validate_report(
+
+    crossing_report.abstract, crossing_report.introduction, crossing_report.discussion = repair_and_validate_report(
         dict(
             abstract=abstract,
             introduction=introduction,

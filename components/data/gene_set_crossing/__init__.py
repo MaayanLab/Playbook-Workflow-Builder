@@ -101,11 +101,11 @@ def cross_gmts(gmts,top_k:int=5000,background_size:int=22000):
 
     outer_gmt_size = len(sorted_gmts[0])
     log("Crossing GMTs...")
-    with tqdm(total=outer_gmt_size, desc="Crossing GMTs") as pbar:
+    with tqdm(total=outer_gmt_size, desc="Crossing GMTs", miniters=10 ) as pbar:
         for i,(term0, gs0) in enumerate(sorted_gmts[0]):
             recurse(1, [term0], [gs0], {frozenset({0}): gs0}, pbar)
-            if i%10==0 or i==outer_gmt_size:
-                log(pbar)
+            if i % 10 == 0:
+                log("")
 
     results = sorted(heap, key=lambda x: (-x[0], -x[1], -x[2]))
 

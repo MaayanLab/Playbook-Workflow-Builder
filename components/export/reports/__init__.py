@@ -21,7 +21,7 @@ import base64
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from tempfile import gettempdir,TemporaryDirectory
+from tempfile import TemporaryDirectory
 import subprocess
 import shutil
 import jinja2
@@ -123,259 +123,6 @@ async def generate_section(client: AsyncOpenAI, model:str, system_prompt:str, pr
     )
 
     return response.output_text.encode('ascii', errors='ignore').decode('ascii')
-                            
-    
-
-async def write_report_abstract(client: AsyncOpenAI, model:str, geo_accession:str, introduction:dict[str,str], methods:str, results:str, discussion:dict[str,str]):
-    log("Writing abstract...")
-    prompt = dedent('''
-    Write a single plain text paragraph abstract of approximately 200 words for a re-analysis report.
-
-    Cover the following points in order, briefly:
-    1. The biological or clinical problem the original study addressed.
-    2. The motivation for re-analyzing the data from that study.
-    3. What the re-analysis workflow did (include tools used but not specific methods)
-    4. One or two specific findings from the discussion that best represent the re-analysis results.
-
-    Do not copy sentences verbatim from the provided sections.
-    You MUST NOT include citations or reference keys of any kind.''').strip()
-    data = dedent(f'''
-    GEO Accession:{geo_accession}
-    Introduction:{introduction}
-    Methods: {methods}
-    Results: {results}
-    Discussion: {discussion}''').strip()
-
-    abstract = await generate_section(client, model, GEO_SYSTEM_PROMPT, prompt, data)
-    abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
-    abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
-
-    log("Abstract complete.")
-    return abstract
-
-
-async def write_report_introduction(client: AsyncOpenAI, model:str, geo_accession:str, pmc_articles:list, labelled_samples:pd.DataFrame):
-    log("Writing introduction...")
-    pmc_articles = str(pmc_articles)
-
-    problem_prompt = dedent('''
-    Write a plain text paragraph introducing the biological or clinical problem  investigated in the GEO study.
-    Use only the titles, abstracts, and introductions of the provided PMC articles as your source.
-    Describe the problem being studied and why it is relevant. Do not describe the methods used in the original study.
-    Do not mention the re-analysis. 
-    Include inline citations for any claims you make using references that appear in the articles.''').strip()
-
-    background_prompt = dedent('''
-    Write a plain text paragraph providing biological background that contextualizes the problem introduced in the GEO study.
-    Use only the titles, abstracts, and introductions of the provided PMC articles as your source.
-    Focus on established biology, prior work, or relevant context that motivates the study.
-    Expand on the previous problem paragraph, but avoid repeating information or abbreviations that have already been introduced.
-    Do not describe any analysis methods from the original study or the re-analysis.
-    Do not repeat the specific problem statement - assume that has already been introduced.
-    Include inline citations for any claims you make using references that appear in the articles.''').strip()
-
-    signature_prompt = dedent('''
-    Create a short name for the signature being re-analyzed by identifying the condition(s)
-    that are being used as perturbations in the labelled samples. Return only the name of the signature. For example:
-    "metformin signature" or "melanoma cell line signature". Avoid acronyms and be as concise as possible.''').strip()
-
-
-    introduction_problem, SIGNATURE_NAME= await asyncio.gather(
-        generate_section(client, model, GEO_SYSTEM_PROMPT, problem_prompt, pmc_articles),
-        generate_section(client, model, GEO_SYSTEM_PROMPT, signature_prompt, labelled_samples)
-    )
-    introduction_background = await generate_section(client, model, GEO_SYSTEM_PROMPT, background_prompt, f"Articles:{pmc_articles}\nIntroduction Problem:{introduction_problem}")
-
-    introduction_motivation = dedent(f'''
-    In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {geo_accession} ~\\cite{{{geo_accession}}}
-    to create a workflow analyzing the {SIGNATURE_NAME} signature utillizing bioinformatics tools. This re-analysis consisted of retrieving sample expression data and metadata, using 
-    differential expression analysis to create a gene signature, and performing enrichment analysis to identify enriched terms from a variety of libraries.''').strip().replace('\n', ' ')
-    log("Introduction complete.")
-
-    return {
-        "problem":introduction_problem, 
-        "background":introduction_background,
-        "motivation":introduction_motivation
-    }
-
-
-def write_report_methods(geo_accession:str, labelld_samples:pd.DataFrame):
-    return dedent(f'''The workflow starts with selecting {geo_accession} as the search term. GEO studies were identified matching {geo_accession} using 
-    ARCHS4 ~\\cite{{ARCHS4}} term search. The GEO study accession was used to fetch the linked publication accession from PMC. Gene expression counts and sample 
-    metadata for published samples were obtained from ARCHS4 ~\\cite{{ARCHS4}}. An AnnData file was prepared from the input data and metadata ~\\cite{{AnnData}}. Genes from the 
-    anndata matrix were filtered to include protein-coding genes. The samples were then labeled as either control or perturbation to allow for 
-    further analysis. The AnnData file was then visualized as a bar plot representing library sizes. Dimensionality reduction of the data was performed 
-    using PCA with the normalization set to log-counts-per-million (logCPM). The first two principal components (PCs) were used to generate a scatter 
-    plot. The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{{limma, voom}} to create a gene signature using the selected conditions. 
-    The data in the differential expression table was then visualized as a volcano plot. The up-regulated genes were extracted from the gene signature 
-    computed by the Limma-Voom analysis from the file. The gene sets containing significant up and down genes were extracted from the gene signatureand submitted to 
-    Enrichr ~\\cite{{Enrichr}}. The gene sets were enriched against the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 
-    2022 ~\\cite{{KOMP2}} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes. 
-    Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{{Perturb-Seqr}} to identify small molecules and single
-    gene perturbations producing gene expression profiles similar or opposite to the signature.''').strip().replace('\n',' ')
-
-
-def write_report_results(geo_accession:str, labelld_samples:pd.DataFrame, signature:dict[str,str|float], enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
-    def clean_term(term: str):
-        return term.split('(')[0].strip()
-
-    def natural_join(items):
-        """
-        Oxford comma join:
-        A
-        A and B
-        A, B, and C
-        """
-        if len(items) == 0:
-            return ""
-        if len(items) == 1:
-            return items[0]
-        if len(items) == 2:
-            return f"{items[0]} and {items[1]}"
-
-        return f"{', '.join(items[:-1])}, and {items[-1]}"
-
-    def summarize_library(library: str, terms, n_terms: int = 2):
-        cleaned_terms = []
-        seen = set()
-
-        for term in terms:
-            cleaned = clean_term(term)
-            normalized = cleaned.lower()
-
-            if normalized not in seen:
-                seen.add(normalized)
-                cleaned_terms.append(cleaned)
-
-            if len(cleaned_terms) >= n_terms:
-                break
-
-        joined_terms = natural_join(cleaned_terms)
-        lib_lower = library.lower()
-
-        standard_rules = [
-            ("go", lambda: f"GO Biological Process terms related to {joined_terms.lower()} ~\\cite{{GO}}"),
-            ("kegg", lambda: f"KEGG pathways involving {joined_terms.lower()} ~\\cite{{KEGG}}"),
-            ("chea", lambda: f"ChEA transcription factors including {joined_terms} ~\\cite{{ChEA}}"),
-            ("komp", lambda: f"KOMP2 mouse phenotypes associated with {joined_terms.lower()} ~\\cite{{KOMP2}}"),
-        ]
-
-        perturbseqr_citations = {
-            "lincs l1000 xpr": "LINCS",
-            "lincs l1000 cp": "LINCS",
-            "perturb atlas human": "PerturbAtlas",
-            "perturb atlas mouse": "PerturbAtlas",
-            "creeds gene": "CREEDS",
-            "creeds chem": "CREEDS",
-            "rummageo gene": "RummaGEO",
-            "rummageo chem": "RummaGEO",
-            "replogle et al.": "Replogle",
-            "cm4ai": "CM4AI",
-            "tahoe-100m": "Tahoe",
-            "microarrays cmap": "CMap",
-            "nibr drug-seq": "NIBR",
-            "sciplex": "SciPlex",
-            "deepcover moa": "DeepCoverMoA",
-            "ginkgo bioworks": "Ginkgo",
-        }
-
-        for pattern, formatter in standard_rules:
-            if pattern in lib_lower:
-                return formatter()
-
-        if lib_lower in perturbseqr_citations:
-            return f"{joined_terms} from {library} ~\\cite{{{perturbseqr_citations[lib_lower]}}}"
-
-        return f"{joined_terms} from {library}"
-
-
-    def format_enrichr_section(results, n_terms=2):
-        library_summaries = [
-            summarize_library(lib.rsplit("_", 1)[0], terms_df["term"], n_terms=n_terms)
-            for lib, terms_df in results.items()
-        ]
-
-        return natural_join(library_summaries)
-    
-
-    def format_perturbseqr_section(df, n_terms_per_dataset: int = 2):
-        summaries = [
-            summarize_library(dataset_name,dataset_df["Perturbation"],n_terms=n_terms_per_dataset)
-            for dataset_name, dataset_df in df.groupby("Dataset")
-        ]
-
-        return natural_join(summaries)
-
-    up_genes,down_genes = [],[]
-    for gene in signature:
-        symbol = gene['term']
-        score = float(gene['zscore'])
-        if score and score > 0:
-            up_genes.append(symbol)
-        elif score and score < 0:
-            down_genes.append(symbol)
-    down_genes = down_genes[::-1]
-
-    return dedent(f'''
-    Library size distributions across samples were visualized to assess sequencing depth and sample consistency (Figure \\ref{{fig:librarySizes}}).
-    PCA of normalized expression profiles revealed the relationship between control and perturbation samples, while also displaying additional study samples not included in the differential expression analysis (Figure \\ref{{fig:PCAScatter}}).
-    Differential expression analysis identified {len(up_genes)} significantly up-regulated genes and {len(down_genes)} significantly down-regulated genes after logFC and adjusted p-value filtering (Figure \\ref{{fig:volcanoScatter}}).
-    Among the most strongly up-regulated genes were {', '.join(up_genes[:4])}, and {up_genes[4]}, whereas prominent down-regulated genes included {', '.join(down_genes[:4])}, and {down_genes[4]}.
-    Functional enrichment analysis of the up-regulated gene set identified associations with {format_enrichr_section(enrichr_results['enrichr_up'])} (Figure \\ref{{fig:upEnrichrBars}}). 
-    Analysis of the down-regulated gene set identified enrichment for {format_enrichr_section(enrichr_results['enrichr_down'])} (Figure \\ref{{fig:downEnrichrBars}}).
-    Signature search revealed gene perturbations including {format_perturbseqr_section(perturbseqr_results['mimic_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneMimickers}}) and drug perturbations including {format_perturbseqr_section(perturbseqr_results['mimic_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugMimickers}}) as mimickers.
-    Top reversers includeded genes perturbations {format_perturbseqr_section(perturbseqr_results['reverse_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneReversers}}) and drugs including {format_perturbseqr_section(perturbseqr_results['reverse_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugReversers}}).
-    ''').strip().replace('\n',' ')
-
-
-async def write_report_discussion(client: AsyncOpenAI, model:str, geo_accession:str, pmc_articles:list, labelled_samples:pd.DataFrame, enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame]):
-    log("Writing discussion...")
-    pmc_articles = str(pmc_articles)
-
-    enrichr_prompt = dedent('''
-    Write a plain text paragraph analyzing the Enrichr enrichment results provided for the up-regulated and down-regulated gene sets from this re-analysis.
-    Do not list the terms to introduce them, assume this has already been done.
-    Focus on: terms that appear or are consistent across multiple libraries, and any complementary or contrasting patterns between the up and down gene sets.
-    Only discuss terms that are present in the results provided.
-    Do not introduce terms or biological processes not present in the data.
-    Cite only the libraries whose results you are directly referencing, choosing from: 
-    [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[KOMP2]]].''').strip()
-
-    perturbseqr_prompt = dedent('''
-    Write a plain text paragraph analyzing the Perturb-Seqr results provided for the gene signature from this re-analysis.
-    Focus on: small molecules or genetic perturbations that appear in each mimicker and reverser result table and what those patterns suggest about the biology of the signature.
-    Do not list the terms to introduce them, assume this has already been done.
-    Highlight similarities in perturbations within each result table.
-    Only discuss entries that are present in the results provided.
-    Do not introduce perturbations or mechanisms not present in the data.
-    When you reference a mimicker or reverser signature, you MUST cite the associated resource (found in Dataset field), choosing from:
-    [[[CMap]]], [[[CM4AI]]], [[[CREEDS]]], [[[DeepCoverMoA]]], [[[Ginkgo]]], [[[LINCS]]], [[[NIBR]]], 
-    [[[PerturbAtlas]]], [[[RummaGEO]]], [[[Replogle]]], [[[SciPlex]]], [[[Tahoe]]].''').strip()
-
-    discussion_enrichr, discussion_perturbseqr = await asyncio.gather(
-        generate_section(client, model, GEO_SYSTEM_PROMPT, enrichr_prompt, str(enrichr_results)),
-        generate_section(client, model, GEO_SYSTEM_PROMPT, perturbseqr_prompt, str(perturbseqr_results)),
-    )
-
-    conclusion_prompt = dedent('''
-    Write a plain text concluding paragraph for a re-analysis report.
-    Summarize the most notable findings from the Enrichr and Perturb-Seqr analyses provided.
-    Focus on findings that are consistent with or directly relevant to the biology of the samples.
-    Where a finding is unexpected relative to the sample context, note it briefly.
-    Do not propose mechanisms unless they are directly supported by the enrichment results provided.
-    Connect the findings back to the research question described in the Enrichr and Perturb-Seqr paragraphs.
-    Do not include citations.''').strip()
-
-    conclusion_data = f'''Samples: {labelled_samples}\nEnrichr Results:{discussion_enrichr}\nPerturb-Seqr Results:{discussion_perturbseqr}'''
-    discussion_conclusion = await generate_section(client, model, GEO_SYSTEM_PROMPT, conclusion_prompt, conclusion_data)
-
-    log("Discussion complete.")
-
-    return {
-        "enrichr":discussion_enrichr, 
-        "perturbseqr":discussion_perturbseqr,
-        "conclusion":discussion_conclusion
-    }    
 
 
 # Data extraction utility functions
@@ -465,7 +212,9 @@ def _parse_article_bib(geo_accession: str, front) -> dict:
 
 def _parse_reference_bib(ref) -> dict | None:
     ref_id = ref.attrib.get("id", "ref_unknown")
-    cit = ref.find("element-citation") or ref.find("mixed-citation")
+    cit = ref.find(".//element-citation")
+    if cit is None:
+        cit = ref.find(".//mixed-citation")
     if cit is None:
         return None
 
@@ -872,120 +621,12 @@ def make_enrichr_barplot(scored_enrichr_libraries: dict[str,pd.DataFrame]):
     return f
 
 
-def make_figures(plots, enrichr_results:dict[str,dict[str,pd.DataFrame]], supplement:dict[str,str]):
-    library_pdf = make_library_size_barplot(plots["library_sizes_plot"])
-    pca_pdf = make_pca_scatter(plots["pca_plot"])
-    volcano_pdf = make_volcano_scatter(plots["volcano_plot"])
-    enrichr_up_pdf = make_enrichr_barplot(enrichr_results["enrichr_up"])
-    enrichr_down_pdf = make_enrichr_barplot(enrichr_results["enrichr_down"])
-    enrichr_up_id = supplement["enrichrUp"]
-    enrichr_down_id = supplement["enrichrDown"]
-    return {
-        "librarySizes": {
-            "file":library_pdf,
-            "caption":"Library sizes for each sample in the dataset, shown as total mapped read counts per sample. Samples are labeled by their GEO accession identifier (GSM). Consistent library sizes across samples indicate uniform sequencing depth suitable for differential expression analysis."
-        },
-        "PCAScatter": {
-            "file":pca_pdf,
-            "caption":"Principal component analysis (PCA) of normalized gene expression profiles across all samples. Each point represents one sample, colored by experimental condition: control (blue), perturbation (red), and additional study samples not included in the differential expression analysis (gray). Axes indicate the percentage of total variance explained by each principal component. Normalization was performed using log-counts-per-million (logCPM)."
-        },
-        "volcanoScatter": {
-            "file":volcano_pdf,
-            "caption":"Volcano plot of differential expression results comparing perturbation to control samples. Each point represents one protein-coding gene; the x-axis shows the log2 fold-change and the y-axis shows statistical significance as -log10(adjusted p-value). Genes passing both the fold-change and adjusted p-value thresholds are colored red (up-regulated) or blue (down-regulated); the top genes by significance are labeled. Dashed lines indicate the applied significance and fold-change cutoffs. Insignificant points are randomly downsampled by a factor of 0.5.",
-        },
-        "upEnrichrBars": {
-            "file":enrichr_up_pdf,
-            "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_up_id}}}{{Enrichr}}.",
-        },
-        "downEnrichrBars": {
-            "file":enrichr_down_pdf,
-            "caption":f"Enrichment analysis of the down-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_down_id}}}{{Enrichr}}."
-        }
-    }
-
 
 # Table utility functions
 def make_table(table_data:pd.DataFrame):
     with upsert_file('.tsv') as f:
         table_data.to_csv(f.file, sep='\t')
     return f
-
-
-def make_tables(perturbseqr_results, supplement:dict[str,str]):
-    gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
-    drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
-    perturbseqr_url = f'https://perturbseqr.maayanlab.cloud/enrichpair?dataset={supplement["perturbseqrUpGenes"]}&dataset={supplement["perturbseqrDownGenes"]}'
-    return {
-        "perturbseqrGeneMimickers": {
-            "file":make_table(perturbseqr_results["mimic_gene_signatures"]),
-            "caption":f"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={gene_libraries}}}{{Perturb-Seqr}}."
-        },
-        "perturbseqrDrugMimickers": {
-            "file":make_table(perturbseqr_results["mimic_drug_signatures"]),
-            "caption":f"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={drug_libraries}}}{{Perturb-Seqr}}."
-        },
-        "perturbseqrGeneReversers": {
-            "file":make_table(perturbseqr_results["reverse_gene_signatures"]),
-            "caption":f"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={gene_libraries}}}{{Perturb-Seqr}}."
-        },
-        "perturbseqrDrugReversers": {
-            "file":make_table(perturbseqr_results["reverse_drug_signatures"]),
-            "caption":f"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={drug_libraries}}}{{Perturb-Seqr}}."
-        },
-    }
-
-
-def make_references(pmc_articles):
-    refs = [
-        {"id":"AnnData","type":"article","title":"anndata: Access and store annotated data matrices","authors":["Virshup, Isaac","Rybakov, Sergei","Theis, Fabian J.","Angerer, Philipp","Wolf, F. Alexander"],"year":"2024","journal":"Journal of Open Source Software","volume":"9","pages":"4371","doi":"10.1101/2021.12.16.473007","url":"https://doi.org/10.1101/2021.12.16.473007"},
-        {"id":"ARCHS4","type":"article","title":"Massive mining of publicly available RNA-seq data from human and mouse","authors":["Lachmann, Alexander","Torre, Denis","Keenan, Alexandra B.","Jagodnik, Kathleen M.","Lee, Hoyjin J.","Wang, Lily","Silverstein, Moshe C.","Ma'ayan, Avi"],"year":"2018","journal":"Nature Communications","volume":"9","pages":"1366","doi":"10.1038/s41467-018-03751-6","url":"https://doi.org/10.1038/s41467-018-03751-6"},
-        {"id":"voom","type":"article","title":"voom: precision weights unlock linear model analysis tools for RNA-seq read counts","authors":["Law, Charity W","Chen, Yunshun","Shi, Wei","Smyth, Gordon K"], "year":"2014","journal":"Genome Biology","volume":"15","pages":"R29","doi":"10.1186/gb-2014-15-2-r29","url":"https://doi.org/10.1186/gb-2014-15-2-r29"},
-        {"id":"limma","type":"article","title":"limma powers differential expression analyses for RNA-sequencing and microarray studies","authors":["Ritchie, Matthew E.","Phipson, Belinda","Wu, Di","Hu, Yifang","Law, Charity W.","Shi, Wei","Smyth, Gordon K."], "year":"2015","journal":"Nucleic Acids Research","volume":"43","pages":"e47","doi":"10.1093/nar/gkv007","url":"https://doi.org/10.1093/nar/gkv007"},
-        {"id":"Enrichr","type":"article","title":"Gene Set Knowledge Discovery with Enrichr","authors":["Xie, Zhuorui","Bailey, Allison","Kuleshov, Maxim V.","Clarke, Daniel J. B.","Evangelista, John E.","Jenkins, Sherry L.","Lachmann, Alexander","Wojciechowicz, Megan L.","Kropiwnicki, Eryk","Jagodnik, Kathleen M.","Jeon, Minji","Ma'ayan, Avi"],"year":"2021","journal":"Current Protocols","volume":"1","pages":"e90","doi":"10.1002/cpz1.90","url":"https://doi.org/10.1002/cpz1.90"},
-        {"id":"GO","type":"article","title":"Gene Ontology: tool for the unification of biology","authors":["Ashburner, Michael","Ball, Catherine A.","Blake, Judith A.","Botstein, David","Butler, Heather","Cherry, J. Michael","Davis, Allan P.","Dolinski, Kara","Dwight, Selina S.","Eppig, Janan T.","Harris, Midori A.","Hill, David P.","Issel-Tarver, Laurie","Kasarskis, Andrew","Lewis, Suzanna","Matese, John C.","Richardson, Joel E.","Ringwald, Martin","Rubin, Gerald M.","Sherlock, Gavin"],"year":"2000","journal":"Nature Genetics","volume":"25","pages":"25--29","doi":"10.1038/75556","url":"https://doi.org/10.1038/75556"},
-        {"id":"KEGG","type":"article","title":"KEGG for taxonomy-based analysis of pathways and genomes","authors":["Kanehisa, Minoru","Furumichi, Miho","Sato, Yoko","Kawashima, Masayuki","Ishiguro-Watanabe, Mari"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D587--D592","doi":"10.1093/nar/gkac963","url":"https://doi.org/10.1093/nar/gkac963"},
-        {"id":"ChEA","type":"article","title":"ChEA3: transcription factor enrichment analysis by orthogonal omics integration","authors":["Keenan, Alexandra B","Torre, Denis","Lachmann, Alexander","Leong, Ariel K","Wojciechowicz, Megan L","Utti, Vivian","Jagodnik, Kathleen M","Kropiwnicki, Eryk","Wang, Zichen","Ma'ayan, Avi"],"year":"2019","journal":"Nucleic Acids Research","volume":"47","pages":"W212--W224","doi":"10.1093/nar/gkz446","url":"https://doi.org/10.1093/nar/gkz446"},
-        {"id":"KOMP2","type":"article","title":"The International Mouse Phenotyping Consortium: comprehensive knockout phenotyping underpinning the study of human disease","authors":["Groza, Tudor","Gomez, Federico Lopez","Mashhadi, Hamed Haseli","Muñoz-Fuentes, Violeta","Gunes, Osman","Wilson, Robert","Cacheiro, Pilar","Frost, Anthony","Keskivali-Bond, Piia","Vardal, Bora","McCoy, Aaron","Cheng, Tsz Kwan","Santos, Luis","Wells, Sara","Smedley, Damian","Mallon, Ann-Marie","Parkinson, Helen"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D1038--D1045","doi":"10.1093/nar/gkac972","url":"https://doi.org/10.1093/nar/gkac972"},
-        {"id":"CMap","type":"article","title":"The Connectivity Map: Using Gene-Expression Signatures to Connect Small Molecules, Genes, and Disease","authors":["Lamb, Justin","Crawford, Emily D.","Peck, David","Modell, Joshua W.","Blat, Irene C.","Wrobel, Matthew J.","Lerner, Jim","Brunet, Jean-Philippe","Subramanian, Aravind","Ross, Kenneth N.","Reich, Michael","Hieronymus, Haley","Wei, Guo","Armstrong, Scott A.","Haggarty, Stephen J.","Clemons, Paul A.","Wei, Ru","Carr, Steven A.","Lander, Eric S.","Golub, Todd R."],"year":"2006","journal":"Science","volume":"313","pages":"1929--1935","doi":"10.1126/science.1132939","url":"https://doi.org/10.1126/science.1132939"},
-        {"id":"CM4AI","type":"article","title":"A Perturbation Cell Atlas of Human Induced Pluripotent Stem Cells","authors":["Nourreddine, Sami","Doctor, Yesh","Dailamy, Amir","Forget, Antoine","Lee, Yi-Hung","Chinn, Becky","Khaliq, Hammza","Polacco, Benjamin","Muralidharan, Monita","Pan, Emily","Zhang, Yifan","Sigaeva, Alina","Hansen, Jan Niklas","Gao, Jiahao","Parker, Jillian A.","Obernier, Kirsten","Clark, Timothy","Chen, Jake Y.","Metallo, Christian","Lundberg, Emma","Ideker, Trey","Krogan, Nevan","Mali, Prashant"],"year":"2024","journal":"bioRxiv","doi":"10.1101/2024.11.03.621734","url":"https://doi.org/10.1101/2024.11.03.621734"},
-        {"id":"CREEDS","type":"article","title":"Extraction and analysis of signatures from the Gene Expression Omnibus by the crowd","authors":["Wang, Zichen","Monteiro, Caroline D.","Jagodnik, Kathleen M.","Fernandez, Nicolas F.","Gundersen, Gregory W.","Rouillard, Andrew D.","Jenkins, Sherry L.","Feldmann, Axel S.","Hu, Kevin S.","McDermott, Michael G.","Duan, Qiaonan","Clark, Neil R.","Jones, Matthew R.","Kou, Yan","Goff, Troy","Woodland, Holly","Amaral, Fabio M R.","Szeto, Gregory L.","Fuchs, Oliver","Schüssler-Fiorenza Rose, Sophia M.","Sharma, Shvetank","Schwartz, Uwe","Bausela, Xabier Bengoetxea","Szymkiewicz, Maciej","Maroulis, Vasileios","Salykin, Anton","Barra, Carolina M.","Kruth, Candice D.","Bongio, Nicholas J.","Mathur, Vaibhav","Todoric, Radmila D","Rubin, Udi E.","Malatras, Apostolos","Fulp, Carl T.","Galindo, John A.","Motiejunaite, Ruta","Jüschke, Christoph","Dishuck, Philip C.","Lahl, Katharina","Jafari, Mohieddin","Aibar, Sara","Zaravinos, Apostolos","Steenhuizen, Linda H.","Allison, Lindsey R.","Gamallo, Pablo","de Andres Segura, Fernando","Dae Devlin, Tyler","Pérez-García, Vicente","Ma'ayan, Avi"],"year":"2016","journal":"Nature Communications","volume":"7","pages":"12846","doi":"10.1038/ncomms12846","url":"https://doi.org/10.1038/ncomms12846"},
-        {"id":"DeepCoverMOA","type":"article","title":"A proteome-wide atlas of drug mechanism of action","authors":["Mitchell, Dylan C.","Kuljanin, Miljan","Li, Jiaming","Van Vranken, Jonathan G.","Bulloch, Nathan","Schweppe, Devin K.","Huttlin, Edward L.","Gygi, Steven P."],"year":"2023","journal":"Nature Biotechnology","volume":"41","pages":"845--857","doi":"10.1038/s41587-022-01539-0","url":"https://doi.org/10.1038/s41587-022-01539-0"},
-        {"id":"Ginkgo","type":"online","title":"Ginkgo Bioworks","url":"https://www.ginkgo.bio/"},
-        {"id":"LINCS","type":"article","title":"SigCom LINCS: data and metadata search engine for a million gene expression signatures","authors":["Evangelista, John Erol","Clarke, Daniel J B","Xie, Zhuorui","Lachmann, Alexander","Jeon, Minji","Chen, Kerwin","Jagodnik, Kathleen M","Jenkins, Sherry L","Kuleshov, Maxim V","Wojciechowicz, Megan L","Schürer, Stephan C","Medvedovic, Mario","Ma'ayan, Avi"],"year":"2022","journal":"Nucleic Acids Research","volume":"50","pages":"W697--W709","doi":"10.1093/nar/gkac328","url":"https://doi.org/10.1093/nar/gkac328"},
-        {"id":"NIBR","type":"article","title":"DRUG-seq Provides Unbiased Biological Activity Readouts for Neuroscience Drug Discovery","authors":["Li, Jingyao","Ho, Daniel J.","Henault, Martin","Yang, Chian","Neri, Marilisa","Ge, Robin","Renner, Steffen","Mansur, Leandra","Lindeman, Alicia","Kelly, Brian","Tumkaya, Tayfun","Ke, Xiaoling","Soler-Llavina, Gilberto","Shanker, Gopi","Russ, Carsten","Hild, Marc","Gubser Keller, Caroline","Jenkins, Jeremy L.","Worringer, Kathleen A.","Sigoillot, Frederic D.","Ihry, Robert J."],"year":"2022","journal":"ACS Chemical Biology","volume":"17","pages":"1401--1414","doi":"10.1021/acschembio.1c00920","url":"https://doi.org/10.1021/acschembio.1c00920"},
-        {"id":"PerturbAtlas","type":"article","title":"PerturbAtlas: a comprehensive atlas of public genetic perturbation bulk RNA-seq datasets","authors":["Zhang, Yiming","Zhang, Ting","Yang, Gaoxia","Pan, Zhenzhong","Tang, Min","Wen, Yue","He, Ping","Wang, Yuan","Zhou, Ran"],"year":"2024","journal":"Nucleic Acids Research","volume":"53","pages":"D1112--D1119","doi":"10.1093/nar/gkae851","url":"https://doi.org/10.1093/nar/gkae851"},
-        {"id":"Perturb-Seqr","type":"online","title":"Perturb-Seqr","url":"https://perturbseqr.maayanlab.cloud"},
-        {"id":"Replogle","type":"article","title":"Mapping information-rich genotype-phenotype landscapes with genome-scale Perturb-seq","authors":["Replogle, Joseph M.","Saunders, Reuben A.","Pogson, Angela N.","Hussmann, Jeffrey A.","Lenail, Alexander","Guna, Alina","Mascibroda, Lauren","Wagner, Eric J.","Adelman, Karen","Lithwick-Yanai, Gila","Iremadze, Nika","Oberstrass, Florian","Lipson, Doron","Bonnar, Jessica L.","Jost, Marco","Norman, Thomas M.","Weissman, Jonathan S."],"year":"2022","journal":"Cell","volume":"185","pages":"2559--2575.e28","doi":"10.1016/j.cell.2022.05.013","url":"https://doi.org/10.1016/j.cell.2022.05.013"},
-        {"id":"RummaGEO","type":"article","title":"RummaGEO: Automatic mining of human and mouse gene sets from GEO","authors":["Marino, Giacomo B.","Clarke, Daniel J.B.","Lachmann, Alexander","Deng, Eden Z.","Ma'ayan, Avi"],"year":"2024","journal":"Patterns","volume":"5","pages":"101072","doi":"10.1016/j.patter.2024.101072","url":"https://doi.org/10.1016/j.patter.2024.101072"},
-        {"id":"SciPlex","type":"article","title":"Massively multiplex chemical transcriptomics at single-cell resolution","authors":["Srivatsan, Sanjay R.","McFaline-Figueroa, José L.","Ramani, Vijay","Saunders, Lauren","Cao, Junyue","Packer, Jonathan","Pliner, Hannah A.","Jackson, Dana L.","Daza, Riza M.","Christiansen, Lena","Zhang, Fan","Steemers, Frank","Shendure, Jay","Trapnell, Cole"],"year":"2020","journal":"Science","volume":"367","pages":"45--51","doi":"10.1126/science.aax6234","url":"https://doi.org/10.1126/science.aax6234"},
-        {"id":"Tahoe","type":"article","title":"Tahoe-100M: A Giga-Scale Single-Cell Perturbation Atlas for Context-Dependent Gene Function and Cellular Modeling","authors":["Zhang, Jesse","Ubas, Airol A","de Borja, Richard","Svensson, Valentine","Thomas, Nicole","Thakar, Neha","Lai, Ian","Winters, Aidan","Khan, Umair","Jones, Matthew G.","Thompson, John D.","Tran, Vuong","Pangallo, Joseph","Papalexi, Efthymia","Sapre, Ajay","Nguyen, Hoai","Sanderson, Oliver","Nigos, Maria","Kaplan, Olivia","Schroeder, Sarah","Hariadi, Bryan","Marrujo, Simone","Salvino, Crina Curca Alec","Gallareta Olivares, Guillermo","Koehler, Ryan","Geiss, Gary","Rosenberg, Alexander","Roco, Charles","Merico, Daniele","Alidoust, Nima","Goodarzi, Hani","Yu, Johnny"],"year":"2025","journal":"bioRxiv","doi":"10.1101/2025.02.20.639398","url":"https://doi.org/10.1101/2025.02.20.639398"}
-    ]
-
-    for article in pmc_articles:
-        refs.extend(article['references'])
-
-    return refs
-
-
-async def stage_sections(client: AsyncOpenAI, model:str, geo_accession:str, pmc_articles:list, labelled_samples:pd.DataFrame, enrichr_results:dict[str,dict[str,pd.DataFrame]], perturbseqr_results:dict[str,pd.DataFrame], methods, results):
-    pmc_arrticles = [f'{article["title"]}{article["abstract"]}{article["body"]}' for article in pmc_articles]
-
-    title_prompt = '''Create a title for the signature being re-analyzed by identifying the condition(s)
-    that are being used as perturbations in the labelled samples. Return only the name of the signature. For example:
-    "Re-Analysis of GSE299362 Human iPSC-Derived Hepatocyte-Like Cells Treated with DHT and Insulin". Fill in the
-    GEO study accession and adjust the condition to match the samples used in signature generation. Selec the most
-    relevant terms to inform a reader what conditions were used to create a signature. Use proper title capitalization
-     for important words, maintaining acronyms, if used. Do not include quantities or special symbols.'''
-
-    REPORT_TITLE,introduction, discussion = await asyncio.gather(
-        generate_section(client, model, GEO_SYSTEM_PROMPT, title_prompt, f'GEO study:{geo_accession}\nSamples:{labelled_samples}'),
-        write_report_introduction(client, model, geo_accession, pmc_articles, labelled_samples),
-        write_report_discussion(client, model, geo_accession, pmc_articles, labelled_samples, enrichr_results, perturbseqr_results)
-    )
-
-    abstract = await write_report_abstract(client, model, geo_accession, introduction, methods, results, discussion)
-
-    return REPORT_TITLE,abstract,introduction,discussion
 
 
 # LaTex cleanup helper functions
@@ -1093,6 +734,9 @@ def _split_comma_citations(text: str):
 def _extract_reference_keys(references: list[dict]):
     return {ref["id"] for ref in references if "id" in ref}
 
+def _extract_reference_title_mapping(references: list[dict])->dict[str,str]:
+    return {ref["title"]:ref["id"] for ref in references if "title" in ref}
+
 def _find_unresolved_bare_brackets(text: str, valid_keys: set[str]):
     """Find [key] patterns that survived normalisation and match a valid key."""
     found: list[str] = []
@@ -1107,20 +751,27 @@ def _find_unresolved_bare_brackets(text: str, valid_keys: set[str]):
 def _validate_and_repair_citations(
     text: str,
     valid_keys: set[str],
+    key_mapping: dict[str,str],
     section_name: str = '',
-    strip_unknown: bool = False,
+    strip_unknown: bool = True,
 ):
     """Warn on unknown keys; optionally remove them."""
     def _check(match: re.Match) -> str:
         keys = [k.strip() for k in match[1].split(',')]
+        key_map = {k.lower():k for k in keys}
+        title_map = {k.lower():k for k in key_mapping}
         good = [k for k in keys if k in valid_keys]
         bad  = [k for k in keys if k not in valid_keys]
 
+        good.extend([key_map[k.lower()] for k in bad if k.lower() in key_map])
+        good.extend([title_map[k.lower()] for k in bad if k.lower() in title_map])
+
         if bad:
             log(f'Unknown citation key(s) in {section_name or "unknown section"}: {"", "".join(bad)}')
+            log(f'{[key_map[k.lower()] for k in bad if k.lower() in key_map]} recovered')
 
         kept = good if strip_unknown else keys
-        return f'[[[{",".join(kept)}]]]' if kept else ''
+        return f'[[[{",".join(set(kept))}]]]' if kept else ''
 
     text = _CITE_TOKEN.sub(_check, text)
     text = re.sub(r'~\s*$', '', text, flags=re.MULTILINE)
@@ -1128,14 +779,21 @@ def _validate_and_repair_citations(
 
 
 def _escape_latex_segment(segment: str) -> str:
-    LATEX_ESCAPES = str.maketrans({
-        '%': r'\%',
-        '$': r'\$',
-        '&': r'\&',
-    })
+    LATEX_ESCAPES = {
+        '\\': r'\textbackslash{}',
+        '{':  r'\{',
+        '}':  r'\}',
+        '%':  r'\%',
+        '$':  r'\$',
+        '&':  r'\&',
+        '_':  r'\_',
+        '#':  r'\#',
+        '~':  r'\textasciitilde{}',
+        '^':  r'\textasciicircum{}',
+    }
 
-    SUPER_SUB = re.compile(r'([_^])([^{\\])')
-    segment = segment.translate(LATEX_ESCAPES)
+    pattern = re.compile('|'.join(re.escape(c) for c in LATEX_ESCAPES))
+    segment = pattern.sub(lambda m: LATEX_ESCAPES[m.group(0)], segment)
 
     _UNICODE_TO_LATEX: list[tuple[str, str]] = [
         # Dashes
@@ -1155,7 +813,6 @@ def _escape_latex_segment(segment: str) -> str:
         if char in segment:
             segment = segment.replace(char, replacement)
 
-    segment = SUPER_SUB.sub(r'\1{\2}', segment)
     return segment.encode('ascii', errors='ignore').decode('ascii')
 
 def _to_latex_cite_and_escape(text: str):
@@ -1177,10 +834,11 @@ def _to_latex_cite_and_escape(text: str):
 
 def repair_and_validate_report(
     report: dict,
-    references: list[str],
+    references: list[dict],
     strip_unknown: bool = False,
 ):
     valid_keys = _extract_reference_keys(references)
+    key_mapping = _extract_reference_title_mapping(references)
 
     _TEXT_PATHS: list[tuple[str, ...]] = [('abstract',)]+ \
     [('introduction', key) for key in report["introduction"].keys()]+ \
@@ -1211,7 +869,7 @@ def repair_and_validate_report(
         fixed = _split_comma_citations(fixed)
 
         # 3. Validate keys (and optionally strip unknown ones)
-        fixed = _validate_and_repair_citations(fixed, valid_keys, section_name, strip_unknown)
+        fixed = _validate_and_repair_citations(fixed, valid_keys, key_mapping, section_name, strip_unknown)
 
         # 4. Catch any bare [key] that survived normalisation
         bare = _find_unresolved_bare_brackets(fixed, valid_keys)
@@ -1221,7 +879,7 @@ def repair_and_validate_report(
                 f'[[[{key}]]]',
                 fixed,
             )
-            fixed = _validate_and_repair_citations(fixed, valid_keys, section_name, strip_unknown)
+            fixed = _validate_and_repair_citations(fixed, valid_keys, key_mapping, section_name, strip_unknown)
 
         # 5. Emit \cite{} and escape LaTeX specials in ONE pass (prevents escaper from mangling BibTeX keys like Smith_2020)
         fixed = _to_latex_cite_and_escape(fixed)
@@ -1230,28 +888,462 @@ def repair_and_validate_report(
 
     return report['abstract'], report['introduction'], report['discussion']
 
+class GEOReport():
+    '''
+    Organize and generate the sections of a GEO study re-analysis report, analyzing a selected GEO study by
+    combining information about the selected samples, the original study's publication(s), enrichment analysis,
+    and Perturb-Seqr signature search to identify gene and drug perturbation mimickers/reversers.
+    '''
+    def __init__(self, client: AsyncOpenAI, model:str, geo_accession:str, pmc_set, labelled_samples_anndata, signature, plots, enrichr_up, enrichr_down, perturbseqr):
+        self.client = client
+        self.model = model
+        self.system_prompt = GEO_SYSTEM_PROMPT
+        self.geo_accession = geo_accession
+        self.pmc_articles = pmc_articles = parse_pmc_xml(geo_accession,pmc_set)
+        self.labelled_samples = extract_labelled_samples(labelled_samples_anndata).to_json()
+        self.signature = signature
+        self.plots = plots
+        supplement, self.enrichr_results = extract_enrichr_results(enrichr_up,enrichr_down)
+        self.perturbseqr_results = extract_perturbseqr_results(perturbseqr)
+        self.title = None
+        self.abstract = None
+        self.introduction = None
+        self.methods = None
+        self.results = None
+        self.discussion = None
+        self.figures = None
+        self.tables = None
+        self.references = []
+        supplement['perturbseqrUpGenes'] = perturbseqr['up_id']
+        supplement['perturbseqrDownGenes'] = perturbseqr['down_id']
+        self.supplement = supplement
+        log("Initialized")
+
+
+    async def write_report_abstract(self):
+        log("Writing abstract...")
+        prompt = dedent('''
+        Write a single plain text paragraph abstract of approximately 200 words for a re-analysis report.
+
+        Cover the following points in order, briefly:
+        1. The biological or clinical problem the original study addressed.
+        2. The motivation for re-analyzing the data from that study.
+        3. What the re-analysis workflow did (include tools used but not specific methods)
+        4. One or two specific findings from the discussion that best represent the re-analysis results.
+
+        Do not copy sentences verbatim from the provided sections.
+        You MUST NOT include citations or reference keys of any kind.''').strip()
+        data = dedent(f'''
+        GEO Accession:{self.geo_accession}
+        Introduction:{self.introduction}
+        Methods: {self.methods}
+        Results: {self.results}
+        Discussion: {self.discussion}''').strip()
+
+        abstract = await generate_section(self.client, self.model, self.system_prompt, prompt, data)
+        abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
+        abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
+
+        log("Abstract complete.")
+        self.abstract = abstract
+        return abstract
+
+
+    async def write_report_introduction(self, pmc_articles):
+        log("Writing introduction...")
+        pmc_articles = str(pmc_articles)
+
+        problem_prompt = dedent('''
+        Write a plain text paragraph introducing the biological or clinical problem  investigated in the GEO study.
+        Use only the titles, abstracts, and introductions of the provided PMC articles as your source.
+        Describe the problem being studied and why it is relevant. Do not describe the methods used in the original study.
+        Do not mention the re-analysis. 
+        Include inline citations for any claims you make using references that appear in the articles.''').strip()
+
+        background_prompt = dedent('''
+        Write a plain text paragraph providing biological background that contextualizes the problem introduced in the GEO study.
+        Use only the titles, abstracts, and introductions of the provided PMC articles as your source.
+        Focus on established biology, prior work, or relevant context that motivates the study.
+        Expand on the previous problem paragraph, but avoid repeating information or abbreviations that have already been introduced.
+        Do not describe any analysis methods from the original study or the re-analysis.
+        Do not repeat the specific problem statement - assume that has already been introduced.
+        Include inline citations for any claims you make using references that appear in the articles.''').strip()
+
+        signature_prompt = dedent('''
+        Create a short name for the signature being re-analyzed by identifying the condition(s)
+        that are being used as perturbations in the labelled samples. Return only the name of the signature. For example:
+        "metformin signature" or "melanoma cell line signature". Avoid acronyms and be as concise as possible.''').strip()
+
+
+        introduction_problem, SIGNATURE_NAME= await asyncio.gather(
+            generate_section(self.client, self.model, self.system_prompt, problem_prompt, pmc_articles),
+            generate_section(self.client, self.model, self.system_prompt, signature_prompt, self.labelled_samples)
+        )
+        introduction_background = await generate_section(self.client, self.model, self.system_prompt, background_prompt, f"Articles:{pmc_articles}\nIntroduction Problem:{introduction_problem}")
+
+        introduction_motivation = dedent(f'''
+        In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {self.geo_accession} [{self.geo_accession}]
+        to create a workflow analyzing the {SIGNATURE_NAME} signature utillizing bioinformatics tools. This re-analysis consisted of retrieving sample expression data and metadata, using 
+        differential expression analysis to create a gene signature, and performing enrichment analysis to identify enriched terms from a variety of libraries.''').strip().replace('\n', ' ')
+        log("Introduction complete.")
+
+        introduction = {
+            "problem":introduction_problem, 
+            "background":introduction_background,
+            "motivation":introduction_motivation
+        }
+        self.introduction = introduction
+        return introduction
+
+
+    def write_report_methods(self):
+        methods = dedent(f'''The workflow starts with selecting {self.geo_accession} as the search term. GEO studies were identified matching {self.geo_accession} using 
+        ARCHS4 ~\\cite{{ARCHS4}} term search. The GEO study accession was used to fetch the linked publication accession from PMC. Gene expression counts and sample 
+        metadata for published samples were obtained from ARCHS4 ~\\cite{{ARCHS4}}. An AnnData file was prepared from the input data and metadata ~\\cite{{AnnData}}. Genes from the 
+        anndata matrix were filtered to include protein-coding genes. The samples were then labeled as either control or perturbation to allow for 
+        further analysis. The AnnData file was then visualized as a bar plot representing library sizes. Dimensionality reduction of the data was performed 
+        using PCA with the normalization set to log-counts-per-million (logCPM). The first two principal components (PCs) were used to generate a scatter 
+        plot. The AnnData file was then analyzed using differential expression by Limma-Voom ~\\cite{{limma, voom}} to create a gene signature using the selected conditions. 
+        The data in the differential expression table was then visualized as a volcano plot. The up-regulated genes were extracted from the gene signature 
+        computed by the Limma-Voom analysis from the file. The gene sets containing significant up and down genes were extracted from the gene signatureand submitted to 
+        Enrichr ~\\cite{{Enrichr}}. The gene sets were enriched against the GO Biological Process 2023 ~\\cite{{GO}}, KEGG 2021 Human ~\\cite{{KEGG}}, ChEA 2022 ~\\cite{{ChEA}}, and KOMP2 Mouse Phenotypes 
+        2022 ~\\cite{{KOMP2}} libraries to identify statistically significant enriched biological processes, pathways, transcription factors and phenotypes. 
+        Significant genes were extracted from the gene signature and submitted to Perturb-Seqr ~\\cite{{Perturb-Seqr}} to identify small molecules and single
+        gene perturbations producing gene expression profiles similar or opposite to the signature.''').strip().replace('\n',' ')
+        self.methods = methods
+        return methods
+
+    def write_report_results(self):
+        def clean_term(term: str):
+            return term.split('(')[0].strip()
+
+        def natural_join(items):
+            """
+            Oxford comma join:
+            A
+            A and B
+            A, B, and C
+            """
+            if len(items) == 0:
+                return ""
+            if len(items) == 1:
+                return items[0]
+            if len(items) == 2:
+                return f"{items[0]} and {items[1]}"
+
+            return f"{', '.join(items[:-1])}, and {items[-1]}"
+
+        def summarize_library(library: str, terms, n_terms: int = 2):
+            cleaned_terms = []
+            seen = set()
+
+            for term in terms:
+                cleaned = clean_term(term)
+                normalized = cleaned.lower()
+
+                if normalized not in seen:
+                    seen.add(normalized)
+                    cleaned_terms.append(cleaned)
+
+                if len(cleaned_terms) >= n_terms:
+                    break
+
+            joined_terms = natural_join(cleaned_terms)
+            lib_lower = library.lower()
+
+            standard_rules = [
+                ("go", lambda: f"GO Biological Process terms related to {joined_terms.lower()} ~\\cite{{GO}}"),
+                ("kegg", lambda: f"KEGG pathways involving {joined_terms.lower()} ~\\cite{{KEGG}}"),
+                ("chea", lambda: f"ChEA transcription factors including {joined_terms} ~\\cite{{ChEA}}"),
+                ("komp", lambda: f"KOMP2 mouse phenotypes associated with {joined_terms.lower()} ~\\cite{{KOMP2}}"),
+            ]
+
+            perturbseqr_citations = {
+                "lincs l1000 xpr": "LINCS",
+                "lincs l1000 cp": "LINCS",
+                "perturb atlas human": "PerturbAtlas",
+                "perturb atlas mouse": "PerturbAtlas",
+                "creeds gene": "CREEDS",
+                "creeds chem": "CREEDS",
+                "rummageo gene": "RummaGEO",
+                "rummageo chem": "RummaGEO",
+                "replogle et al.": "Replogle",
+                "cm4ai": "CM4AI",
+                "tahoe-100m": "Tahoe",
+                "microarrays cmap": "CMap",
+                "nibr drug-seq": "NIBR",
+                "sciplex": "SciPlex",
+                "deepcover moa": "DeepCoverMOA",
+                "ginkgo bioworks": "Ginkgo",
+            }
+
+            for pattern, formatter in standard_rules:
+                if pattern in lib_lower:
+                    return formatter()
+
+            if lib_lower in perturbseqr_citations:
+                return f"{joined_terms} from {library} ~\\cite{{{perturbseqr_citations[lib_lower]}}}"
+
+            return f"{joined_terms} from {library}"
+
+
+        def format_enrichr_section(results, n_terms=2):
+            library_summaries = [
+                summarize_library(lib.rsplit("_", 1)[0], terms_df["term"], n_terms=n_terms)
+                for lib, terms_df in results.items()
+            ]
+
+            return natural_join(library_summaries)
+        
+
+        def format_perturbseqr_section(df, n_terms_per_dataset: int = 2):
+            summaries = [
+                summarize_library(dataset_name,dataset_df["Perturbation"],n_terms=n_terms_per_dataset)
+                for dataset_name, dataset_df in df.groupby("Dataset")
+            ]
+
+            return natural_join(summaries)
+
+        up_genes,down_genes = [],[]
+        for gene in self.signature:
+            symbol = gene['term']
+            score = float(gene['zscore'])
+            if score and score > 0:
+                up_genes.append(symbol)
+            elif score and score < 0:
+                down_genes.append(symbol)
+        down_genes = down_genes[::-1]
+
+        results = dedent(f'''
+        Library size distributions across samples were visualized to assess sequencing depth and sample consistency (Figure \\ref{{fig:librarySizes}}).
+        PCA of normalized expression profiles revealed the relationship between control and perturbation samples, while also displaying additional study samples not included in the differential expression analysis (Figure \\ref{{fig:PCAScatter}}).
+        Differential expression analysis identified {len(up_genes)} significantly up-regulated genes and {len(down_genes)} significantly down-regulated genes after logFC and adjusted p-value filtering (Figure \\ref{{fig:volcanoScatter}}).
+        Among the most strongly up-regulated genes were {', '.join(up_genes[:4])}, and {up_genes[4]}, whereas prominent down-regulated genes included {', '.join(down_genes[:4])}, and {down_genes[4]}.
+        Functional enrichment analysis of the up-regulated gene set identified associations with {format_enrichr_section(self.enrichr_results['enrichr_up'])} (Figure \\ref{{fig:upEnrichrBars}}). 
+        Analysis of the down-regulated gene set identified enrichment for {format_enrichr_section(self.enrichr_results['enrichr_down'])} (Figure \\ref{{fig:downEnrichrBars}}).
+        Signature search revealed gene perturbations including {format_perturbseqr_section(self.perturbseqr_results['mimic_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneMimickers}}) and drug perturbations including {format_perturbseqr_section(self.perturbseqr_results['mimic_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugMimickers}}) as mimickers.
+        Top reversers includeded genes perturbations {format_perturbseqr_section(self.perturbseqr_results['reverse_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneReversers}}) and drugs including {format_perturbseqr_section(self.perturbseqr_results['reverse_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugReversers}}).
+        ''').strip().replace('\n',' ')
+        self.results = results
+        return results
+
+
+    async def write_report_discussion(self):
+        log("Writing discussion...")
+
+        enrichr_prompt = dedent('''
+        Write a plain text paragraph analyzing the Enrichr enrichment results provided for the up-regulated and down-regulated gene sets from this re-analysis.
+        Do not list the terms to introduce them, assume this has already been done.
+        Focus on: terms that appear or are consistent across multiple libraries, and any complementary or contrasting patterns between the up and down gene sets.
+        Only discuss terms that are present in the results provided.
+        Do not introduce terms or biological processes not present in the data.
+        Cite only the libraries whose results you are directly referencing, choosing from: 
+        [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[KOMP2]]].''').strip()
+
+        perturbseqr_prompt = dedent('''
+        Write a plain text paragraph analyzing the Perturb-Seqr results provided for the gene signature from this re-analysis.
+        Focus on: small molecules or genetic perturbations that appear in each mimicker and reverser result table and what those patterns suggest about the biology of the signature.
+        Do not list the terms to introduce them, assume this has already been done.
+        Highlight similarities in perturbations within each result table.
+        Only discuss entries that are present in the results provided.
+        Do not introduce perturbations or mechanisms not present in the data.
+        When you reference a mimicker or reverser signature, you MUST cite the associated resource (found in Dataset field), choosing from:
+        [[[CMap]]], [[[CM4AI]]], [[[CREEDS]]], [[[DeepCoverMoA]]], [[[Ginkgo]]], [[[LINCS]]], [[[NIBR]]], 
+        [[[PerturbAtlas]]], [[[RummaGEO]]], [[[Replogle]]], [[[SciPlex]]], [[[Tahoe]]].
+        Do not select any other references or mention any resources not explicitly provided.''').strip()
+
+        discussion_enrichr, discussion_perturbseqr = await asyncio.gather(
+            generate_section(
+                self.client,
+                self.model,
+                self.system_prompt,
+                enrichr_prompt,
+                str(self.enrichr_results),
+            ),
+            generate_section(
+                self.client,
+                self.model,
+                self.system_prompt,
+                perturbseqr_prompt,
+                str(self.perturbseqr_results),
+            ),
+        )
+        discussion_perturbseqr = discussion_perturbseqr.replace("[RummaGEO Gene]", "[RummaGEO]").replace("[RummaGEO Chem]", "[RummaGEO]").replace("[RummaGEO Drug]", "[RummaGEO]")
+
+        conclusion_prompt = dedent('''
+        Write a plain text concluding paragraph for a re-analysis report.
+        Summarize the most notable findings from the Enrichr and Perturb-Seqr analyses provided.
+        Focus on findings that are consistent with or directly relevant to the biology of the samples.
+        Where a finding is unexpected relative to the sample context, note it briefly.
+        Do not propose mechanisms unless they are directly supported by the enrichment results provided.
+        Connect the findings back to the research question described in the Enrichr and Perturb-Seqr paragraphs.
+        Do not include citations.''').strip()
+
+        conclusion_data = f'''Samples: {self.labelled_samples}\nEnrichr Results:{discussion_enrichr}\nPerturb-Seqr Results:{discussion_perturbseqr}'''
+        discussion_conclusion = await generate_section(
+            self.client, self.model, self.system_prompt, conclusion_prompt, conclusion_data
+        )
+
+        log("Discussion complete.")
+
+        discussion = {
+            "enrichr":discussion_enrichr, 
+            "perturbseqr":discussion_perturbseqr,
+            "conclusion":discussion_conclusion
+        }
+        self.discussion = discussion
+        return discussion
+
+
+    def make_figures(self):
+        library_pdf = make_library_size_barplot(self.plots["library_sizes_plot"])
+        pca_pdf = make_pca_scatter(self.plots["pca_plot"])
+        volcano_pdf = make_volcano_scatter(self.plots["volcano_plot"])
+        enrichr_up_pdf = make_enrichr_barplot(self.enrichr_results["enrichr_up"])
+        enrichr_down_pdf = make_enrichr_barplot(self.enrichr_results["enrichr_down"])
+        enrichr_up_id = self.supplement["enrichrUp"]
+        enrichr_down_id = self.supplement["enrichrDown"]
+        figures = {
+            "librarySizes": {
+                "file":library_pdf,
+                "caption":"Library sizes for each sample in the dataset, shown as total mapped read counts per sample. Samples are labeled by their GEO accession identifier (GSM). Consistent library sizes across samples indicate uniform sequencing depth suitable for differential expression analysis."
+            },
+            "PCAScatter": {
+                "file":pca_pdf,
+                "caption":"Principal component analysis (PCA) of normalized gene expression profiles across all samples. Each point represents one sample, colored by experimental condition: control (blue), perturbation (red), and additional study samples not included in the differential expression analysis (gray). Axes indicate the percentage of total variance explained by each principal component. Normalization was performed using log-counts-per-million (logCPM)."
+            },
+            "volcanoScatter": {
+                "file":volcano_pdf,
+                "caption":"Volcano plot of differential expression results comparing perturbation to control samples. Each point represents one protein-coding gene; the x-axis shows the log2 fold-change and the y-axis shows statistical significance as -log10(adjusted p-value). Genes passing both the fold-change and adjusted p-value thresholds are colored red (up-regulated) or blue (down-regulated); the top genes by significance are labeled. Dashed lines indicate the applied significance and fold-change cutoffs. Insignificant points are randomly downsampled by a factor of 0.5.",
+            },
+            "upEnrichrBars": {
+                "file":enrichr_up_pdf,
+                "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_up_id}}}{{Enrichr}}.",
+            },
+            "downEnrichrBars": {
+                "file":enrichr_down_pdf,
+                "caption":f"Enrichment analysis of the down-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_down_id}}}{{Enrichr}}."
+            }
+        }
+        self.figures = figures
+        return figures
+
+
+    def make_tables(self):
+        perturbseqr_results = self.perturbseqr_results
+        supplement = self.supplement
+        gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
+        drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
+        perturbseqr_url = f'https://perturbseqr.maayanlab.cloud/enrichpair?dataset={supplement["perturbseqrUpGenes"]}&dataset={supplement["perturbseqrDownGenes"]}'
+        tables = {
+            "perturbseqrGeneMimickers": {
+                "file":make_table(perturbseqr_results["mimic_gene_signatures"]),
+                "caption":f"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={gene_libraries}}}{{Perturb-Seqr}}."
+            },
+            "perturbseqrDrugMimickers": {
+                "file":make_table(perturbseqr_results["mimic_drug_signatures"]),
+                "caption":f"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={drug_libraries}}}{{Perturb-Seqr}}."
+            },
+            "perturbseqrGeneReversers": {
+                "file":make_table(perturbseqr_results["reverse_gene_signatures"]),
+                "caption":f"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={gene_libraries}}}{{Perturb-Seqr}}."
+            },
+            "perturbseqrDrugReversers": {
+                "file":make_table(perturbseqr_results["reverse_drug_signatures"]),
+                "caption":f"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={drug_libraries}}}{{Perturb-Seqr}}."
+            },
+        }
+        self.tables = tables
+        return tables
+
+
+    def make_references(self):
+        refs = [
+            {"id":"AnnData","type":"article","title":"anndata: Access and store annotated data matrices","authors":["Virshup, Isaac","Rybakov, Sergei","Theis, Fabian J.","Angerer, Philipp","Wolf, F. Alexander"],"year":"2024","journal":"Journal of Open Source Software","volume":"9","pages":"4371","doi":"10.1101/2021.12.16.473007","url":"https://doi.org/10.1101/2021.12.16.473007"},
+            {"id":"ARCHS4","type":"article","title":"Massive mining of publicly available RNA-seq data from human and mouse","authors":["Lachmann, Alexander","Torre, Denis","Keenan, Alexandra B.","Jagodnik, Kathleen M.","Lee, Hoyjin J.","Wang, Lily","Silverstein, Moshe C.","Ma'ayan, Avi"],"year":"2018","journal":"Nature Communications","volume":"9","pages":"1366","doi":"10.1038/s41467-018-03751-6","url":"https://doi.org/10.1038/s41467-018-03751-6"},
+            {"id":"voom","type":"article","title":"voom: precision weights unlock linear model analysis tools for RNA-seq read counts","authors":["Law, Charity W","Chen, Yunshun","Shi, Wei","Smyth, Gordon K"], "year":"2014","journal":"Genome Biology","volume":"15","pages":"R29","doi":"10.1186/gb-2014-15-2-r29","url":"https://doi.org/10.1186/gb-2014-15-2-r29"},
+            {"id":"limma","type":"article","title":"limma powers differential expression analyses for RNA-sequencing and microarray studies","authors":["Ritchie, Matthew E.","Phipson, Belinda","Wu, Di","Hu, Yifang","Law, Charity W.","Shi, Wei","Smyth, Gordon K."], "year":"2015","journal":"Nucleic Acids Research","volume":"43","pages":"e47","doi":"10.1093/nar/gkv007","url":"https://doi.org/10.1093/nar/gkv007"},
+            {"id":"Enrichr","type":"article","title":"Gene Set Knowledge Discovery with Enrichr","authors":["Xie, Zhuorui","Bailey, Allison","Kuleshov, Maxim V.","Clarke, Daniel J. B.","Evangelista, John E.","Jenkins, Sherry L.","Lachmann, Alexander","Wojciechowicz, Megan L.","Kropiwnicki, Eryk","Jagodnik, Kathleen M.","Jeon, Minji","Ma'ayan, Avi"],"year":"2021","journal":"Current Protocols","volume":"1","pages":"e90","doi":"10.1002/cpz1.90","url":"https://doi.org/10.1002/cpz1.90"},
+            {"id":"GO","type":"article","title":"Gene Ontology: tool for the unification of biology","authors":["Ashburner, Michael","Ball, Catherine A.","Blake, Judith A.","Botstein, David","Butler, Heather","Cherry, J. Michael","Davis, Allan P.","Dolinski, Kara","Dwight, Selina S.","Eppig, Janan T.","Harris, Midori A.","Hill, David P.","Issel-Tarver, Laurie","Kasarskis, Andrew","Lewis, Suzanna","Matese, John C.","Richardson, Joel E.","Ringwald, Martin","Rubin, Gerald M.","Sherlock, Gavin"],"year":"2000","journal":"Nature Genetics","volume":"25","pages":"25--29","doi":"10.1038/75556","url":"https://doi.org/10.1038/75556"},
+            {"id":"KEGG","type":"article","title":"KEGG for taxonomy-based analysis of pathways and genomes","authors":["Kanehisa, Minoru","Furumichi, Miho","Sato, Yoko","Kawashima, Masayuki","Ishiguro-Watanabe, Mari"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D587--D592","doi":"10.1093/nar/gkac963","url":"https://doi.org/10.1093/nar/gkac963"},
+            {"id":"ChEA","type":"article","title":"ChEA3: transcription factor enrichment analysis by orthogonal omics integration","authors":["Keenan, Alexandra B","Torre, Denis","Lachmann, Alexander","Leong, Ariel K","Wojciechowicz, Megan L","Utti, Vivian","Jagodnik, Kathleen M","Kropiwnicki, Eryk","Wang, Zichen","Ma'ayan, Avi"],"year":"2019","journal":"Nucleic Acids Research","volume":"47","pages":"W212--W224","doi":"10.1093/nar/gkz446","url":"https://doi.org/10.1093/nar/gkz446"},
+            {"id":"KOMP2","type":"article","title":"The International Mouse Phenotyping Consortium: comprehensive knockout phenotyping underpinning the study of human disease","authors":["Groza, Tudor","Gomez, Federico Lopez","Mashhadi, Hamed Haseli","Muñoz-Fuentes, Violeta","Gunes, Osman","Wilson, Robert","Cacheiro, Pilar","Frost, Anthony","Keskivali-Bond, Piia","Vardal, Bora","McCoy, Aaron","Cheng, Tsz Kwan","Santos, Luis","Wells, Sara","Smedley, Damian","Mallon, Ann-Marie","Parkinson, Helen"],"year":"2022","journal":"Nucleic Acids Research","volume":"51","pages":"D1038--D1045","doi":"10.1093/nar/gkac972","url":"https://doi.org/10.1093/nar/gkac972"},
+            {"id":"CMap","type":"article","title":"The Connectivity Map: Using Gene-Expression Signatures to Connect Small Molecules, Genes, and Disease","authors":["Lamb, Justin","Crawford, Emily D.","Peck, David","Modell, Joshua W.","Blat, Irene C.","Wrobel, Matthew J.","Lerner, Jim","Brunet, Jean-Philippe","Subramanian, Aravind","Ross, Kenneth N.","Reich, Michael","Hieronymus, Haley","Wei, Guo","Armstrong, Scott A.","Haggarty, Stephen J.","Clemons, Paul A.","Wei, Ru","Carr, Steven A.","Lander, Eric S.","Golub, Todd R."],"year":"2006","journal":"Science","volume":"313","pages":"1929--1935","doi":"10.1126/science.1132939","url":"https://doi.org/10.1126/science.1132939"},
+            {"id":"CM4AI","type":"article","title":"A Perturbation Cell Atlas of Human Induced Pluripotent Stem Cells","authors":["Nourreddine, Sami","Doctor, Yesh","Dailamy, Amir","Forget, Antoine","Lee, Yi-Hung","Chinn, Becky","Khaliq, Hammza","Polacco, Benjamin","Muralidharan, Monita","Pan, Emily","Zhang, Yifan","Sigaeva, Alina","Hansen, Jan Niklas","Gao, Jiahao","Parker, Jillian A.","Obernier, Kirsten","Clark, Timothy","Chen, Jake Y.","Metallo, Christian","Lundberg, Emma","Ideker, Trey","Krogan, Nevan","Mali, Prashant"],"year":"2024","journal":"bioRxiv","doi":"10.1101/2024.11.03.621734","url":"https://doi.org/10.1101/2024.11.03.621734"},
+            {"id":"CREEDS","type":"article","title":"Extraction and analysis of signatures from the Gene Expression Omnibus by the crowd","authors":["Wang, Zichen","Monteiro, Caroline D.","Jagodnik, Kathleen M.","Fernandez, Nicolas F.","Gundersen, Gregory W.","Rouillard, Andrew D.","Jenkins, Sherry L.","Feldmann, Axel S.","Hu, Kevin S.","McDermott, Michael G.","Duan, Qiaonan","Clark, Neil R.","Jones, Matthew R.","Kou, Yan","Goff, Troy","Woodland, Holly","Amaral, Fabio M R.","Szeto, Gregory L.","Fuchs, Oliver","Schüssler-Fiorenza Rose, Sophia M.","Sharma, Shvetank","Schwartz, Uwe","Bausela, Xabier Bengoetxea","Szymkiewicz, Maciej","Maroulis, Vasileios","Salykin, Anton","Barra, Carolina M.","Kruth, Candice D.","Bongio, Nicholas J.","Mathur, Vaibhav","Todoric, Radmila D","Rubin, Udi E.","Malatras, Apostolos","Fulp, Carl T.","Galindo, John A.","Motiejunaite, Ruta","Jüschke, Christoph","Dishuck, Philip C.","Lahl, Katharina","Jafari, Mohieddin","Aibar, Sara","Zaravinos, Apostolos","Steenhuizen, Linda H.","Allison, Lindsey R.","Gamallo, Pablo","de Andres Segura, Fernando","Dae Devlin, Tyler","Pérez-García, Vicente","Ma'ayan, Avi"],"year":"2016","journal":"Nature Communications","volume":"7","pages":"12846","doi":"10.1038/ncomms12846","url":"https://doi.org/10.1038/ncomms12846"},
+            {"id":"DeepCoverMOA","type":"article","title":"A proteome-wide atlas of drug mechanism of action","authors":["Mitchell, Dylan C.","Kuljanin, Miljan","Li, Jiaming","Van Vranken, Jonathan G.","Bulloch, Nathan","Schweppe, Devin K.","Huttlin, Edward L.","Gygi, Steven P."],"year":"2023","journal":"Nature Biotechnology","volume":"41","pages":"845--857","doi":"10.1038/s41587-022-01539-0","url":"https://doi.org/10.1038/s41587-022-01539-0"},
+            {"id":"Ginkgo","type":"online","title":"Ginkgo Bioworks","url":"https://www.ginkgo.bio/"},
+            {"id":"LINCS","type":"article","title":"SigCom LINCS: data and metadata search engine for a million gene expression signatures","authors":["Evangelista, John Erol","Clarke, Daniel J B","Xie, Zhuorui","Lachmann, Alexander","Jeon, Minji","Chen, Kerwin","Jagodnik, Kathleen M","Jenkins, Sherry L","Kuleshov, Maxim V","Wojciechowicz, Megan L","Schürer, Stephan C","Medvedovic, Mario","Ma'ayan, Avi"],"year":"2022","journal":"Nucleic Acids Research","volume":"50","pages":"W697--W709","doi":"10.1093/nar/gkac328","url":"https://doi.org/10.1093/nar/gkac328"},
+            {"id":"NIBR","type":"article","title":"DRUG-seq Provides Unbiased Biological Activity Readouts for Neuroscience Drug Discovery","authors":["Li, Jingyao","Ho, Daniel J.","Henault, Martin","Yang, Chian","Neri, Marilisa","Ge, Robin","Renner, Steffen","Mansur, Leandra","Lindeman, Alicia","Kelly, Brian","Tumkaya, Tayfun","Ke, Xiaoling","Soler-Llavina, Gilberto","Shanker, Gopi","Russ, Carsten","Hild, Marc","Gubser Keller, Caroline","Jenkins, Jeremy L.","Worringer, Kathleen A.","Sigoillot, Frederic D.","Ihry, Robert J."],"year":"2022","journal":"ACS Chemical Biology","volume":"17","pages":"1401--1414","doi":"10.1021/acschembio.1c00920","url":"https://doi.org/10.1021/acschembio.1c00920"},
+            {"id":"PerturbAtlas","type":"article","title":"PerturbAtlas: a comprehensive atlas of public genetic perturbation bulk RNA-seq datasets","authors":["Zhang, Yiming","Zhang, Ting","Yang, Gaoxia","Pan, Zhenzhong","Tang, Min","Wen, Yue","He, Ping","Wang, Yuan","Zhou, Ran"],"year":"2024","journal":"Nucleic Acids Research","volume":"53","pages":"D1112--D1119","doi":"10.1093/nar/gkae851","url":"https://doi.org/10.1093/nar/gkae851"},
+            {"id":"Perturb-Seqr","type":"online","title":"Perturb-Seqr","url":"https://perturbseqr.maayanlab.cloud"},
+            {"id":"Replogle","type":"article","title":"Mapping information-rich genotype-phenotype landscapes with genome-scale Perturb-seq","authors":["Replogle, Joseph M.","Saunders, Reuben A.","Pogson, Angela N.","Hussmann, Jeffrey A.","Lenail, Alexander","Guna, Alina","Mascibroda, Lauren","Wagner, Eric J.","Adelman, Karen","Lithwick-Yanai, Gila","Iremadze, Nika","Oberstrass, Florian","Lipson, Doron","Bonnar, Jessica L.","Jost, Marco","Norman, Thomas M.","Weissman, Jonathan S."],"year":"2022","journal":"Cell","volume":"185","pages":"2559--2575.e28","doi":"10.1016/j.cell.2022.05.013","url":"https://doi.org/10.1016/j.cell.2022.05.013"},
+            {"id":"RummaGEO","type":"article","title":"RummaGEO: Automatic mining of human and mouse gene sets from GEO","authors":["Marino, Giacomo B.","Clarke, Daniel J.B.","Lachmann, Alexander","Deng, Eden Z.","Ma'ayan, Avi"],"year":"2024","journal":"Patterns","volume":"5","pages":"101072","doi":"10.1016/j.patter.2024.101072","url":"https://doi.org/10.1016/j.patter.2024.101072"},
+            {"id":"SciPlex","type":"article","title":"Massively multiplex chemical transcriptomics at single-cell resolution","authors":["Srivatsan, Sanjay R.","McFaline-Figueroa, José L.","Ramani, Vijay","Saunders, Lauren","Cao, Junyue","Packer, Jonathan","Pliner, Hannah A.","Jackson, Dana L.","Daza, Riza M.","Christiansen, Lena","Zhang, Fan","Steemers, Frank","Shendure, Jay","Trapnell, Cole"],"year":"2020","journal":"Science","volume":"367","pages":"45--51","doi":"10.1126/science.aax6234","url":"https://doi.org/10.1126/science.aax6234"},
+            {"id":"Tahoe","type":"article","title":"Tahoe-100M: A Giga-Scale Single-Cell Perturbation Atlas for Context-Dependent Gene Function and Cellular Modeling","authors":["Zhang, Jesse","Ubas, Airol A","de Borja, Richard","Svensson, Valentine","Thomas, Nicole","Thakar, Neha","Lai, Ian","Winters, Aidan","Khan, Umair","Jones, Matthew G.","Thompson, John D.","Tran, Vuong","Pangallo, Joseph","Papalexi, Efthymia","Sapre, Ajay","Nguyen, Hoai","Sanderson, Oliver","Nigos, Maria","Kaplan, Olivia","Schroeder, Sarah","Hariadi, Bryan","Marrujo, Simone","Salvino, Crina Curca Alec","Gallareta Olivares, Guillermo","Koehler, Ryan","Geiss, Gary","Rosenberg, Alexander","Roco, Charles","Merico, Daniele","Alidoust, Nima","Goodarzi, Hani","Yu, Johnny"],"year":"2025","journal":"bioRxiv","doi":"10.1101/2025.02.20.639398","url":"https://doi.org/10.1101/2025.02.20.639398"}
+        ]
+
+        for article in self.pmc_articles:
+            refs.extend(article['references'])
+
+        self.references = refs
+        return refs
+
+
+    async def stage_sections(self):
+        pmc_articles = [f'{article["title"]}{article["abstract"]}{article["body"]}' for article in self.pmc_articles]
+
+        title_prompt = '''Create a title for the signature being re-analyzed by identifying the condition(s)
+        that are being used as perturbations in the labelled samples. Return only the name of the signature. For example:
+        "Re-Analysis of GSE299362 Human iPSC-Derived Hepatocyte-Like Cells Treated with DHT and Insulin". Fill in the
+        GEO study accession and adjust the condition to match the samples used in signature generation. Selec the most
+        relevant terms to inform a reader what conditions were used to create a signature. Use proper title capitalization
+        for important words, maintaining acronyms, if used. Do not include quantities or special symbols.'''
+
+        REPORT_TITLE,introduction, discussion = await asyncio.gather(
+            generate_section(self.client, self.model, self.system_prompt, title_prompt, f'GEO study:{self.geo_accession}\nSamples:{self.labelled_samples}'),
+            self.write_report_introduction(pmc_articles),
+            self.write_report_discussion()
+        )
+
+        abstract = await self.write_report_abstract()
+
+        self.title = REPORT_TITLE
+        return REPORT_TITLE,abstract,introduction,discussion
+    
+    def get_report(self):
+        return {
+            "geo_accession":self.geo_accession, 
+            "title":self.title,
+            "abstract":self.abstract,
+            "introduction":self.introduction,
+            "methods":self.methods,
+            "results":self.results,
+            "discussion":self.discussion,
+            "figures":self.figures,
+            "tables":self.tables,
+            "supplement":self.supplement,
+            "references":self.references,
+            "model":self.model
+        }
+
+
 def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_anndata, signature, plots, enrichr_up, enrichr_down, perturbseqr):
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_MODEL", "gpt-5-nano")
-    labelled_samples = extract_labelled_samples(labelled_samples_anndata).to_json()
-    supplement,enrichr_results = extract_enrichr_results(enrichr_up,enrichr_down)
-    perturbseqr_results = extract_perturbseqr_results(perturbseqr)
-    pmc_articles = parse_pmc_xml(geo_accession,pmc_set)
-    supplement['perturbseqrUpGenes'] = perturbseqr['up_id']
-    supplement['perturbseqrDownGenes'] = perturbseqr['down_id']
-    log("PMC articles retrieved.")
+    geo_report = GEOReport(client, model, geo_accession, pmc_set, labelled_samples_anndata, signature, plots, enrichr_up, enrichr_down, perturbseqr)
 
     log("Generating sections...")
-    methods = write_report_methods(geo_accession, labelled_samples)
-    results = write_report_results(geo_accession, labelled_samples, signature, enrichr_results, perturbseqr_results)
-    title,abstract,introduction,discussion = asyncio.run(stage_sections(client, model, geo_accession, pmc_articles, labelled_samples, enrichr_results, perturbseqr_results, methods, results))
+    methods = geo_report.write_report_methods()
+    results = geo_report.write_report_results()
+    title,abstract,introduction,discussion = asyncio.run(geo_report.stage_sections())
     log("Sections complete.")
 
     log("Collecting references...")
-    references = make_references(pmc_articles)
+    references = geo_report.make_references()
     log("References complete.")
 
-    abstract, introduction, discussion = repair_and_validate_report(
+    geo_report.abstract, geo_report.introduction, geo_report.discussion = repair_and_validate_report(
         dict(
             abstract=abstract,
             introduction=introduction,
@@ -1260,30 +1352,14 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
         references,
         strip_unknown=False
     )
-
     log("Formatting validated.")
-    figures = make_figures(plots, enrichr_results, supplement)
+
+    figures = geo_report.make_figures()
     log("Figures complete.")
-    tables = make_tables(perturbseqr_results, supplement)
 
-    return {
-        "geo_accession":geo_accession, 
-        "title":title,
-        "abstract":abstract,
-        "introduction":introduction,
-        "methods":methods,
-        "results":results,
-        "discussion":discussion,
-        "figures":figures,
-        "tables":tables,
-        "supplement":supplement,
-        "references":references,
-        "model":model
-    }
+    tables = geo_report.make_tables()
 
-def resolve_drs_url(url:str) -> str:
-
-    return url
+    return geo_report.get_report()
 
 
 def construct_geo_report_references(references: list[dict]) -> str:
@@ -1709,7 +1785,7 @@ class CrossingReport():
             return natural_join(library_summaries)
 
         results = dedent(f'''
-        The crossing had a rank of {self.crossing["rank"]}, p-value of {self.crossing["pvalue"]}, and Jaccard index of {self.crossing["jaccard"]}.
+        The crossing had a rank of {self.crossing["rank"]}, p-value of {self.crossing["pvalue"]:6e}, and Jaccard index of {self.crossing["jaccard"]:6f}.
         The intersecting gene set identified {self.crossing["overlap"]} genes appearing in all involved sets (Figure \\ref{{fig:venn}}).
         The intersecting gne set consists of {", and".join(self.crossing["genes"].rsplit(" ", 1))}.
         Functional enrichment analysis of the gene set identified associations with {format_enrichr_section(self.enrichr)} (Figure \\ref{{fig:enrichment}}). 
@@ -1824,7 +1900,7 @@ class CrossingReport():
                             field = extract(ref,field)
                             if field:
                                 base_ref[field_key] = field
-
+                                
                         return base_ref
 
                 except ClientError:

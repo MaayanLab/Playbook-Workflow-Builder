@@ -10,6 +10,7 @@ import { GeneSet } from '@/components/core/set'
 import SafeRender from '@/utils/saferender'
 import { CFDEGMTs } from '@/components/service/cfde-gse'
 import * as dict from '@/utils/dict'
+import { ColumnProps } from '@blueprintjs/table'
 
 
 export const GeneSetCrossing = MetaNode('GeneSetCrossing')
@@ -302,70 +303,78 @@ export const SelectGeneSetCrossing = MetaNode('SelectGeneSetCrossing')
       return String(value)
     }
 
-    const columnWidths = [
-      40,
-      ...columns.map(({ name, field }) => {
-        const maxLen = crossings.reduce((max, row) => {
-          return Math.max(max, formatCell(field, row[field]).length)
-        }, name.length)
-        return Math.min(Math.max(maxLen * 8 + 24, 60), 300)
-      }),
-    ]
+    const shape = [crossings.length, columns.length]
 
     return (
-      <div className="space-y-2">
-        {React.createElement(
-          Table,
-          {
-            cellRendererDependencies: [crossings],
-            numRows: crossings.length,
-            enableGhostCells: true,
-            enableFocusedCell: true,
-            onFocusedCell: cell => setSelected(cell.row),
-            columnWidths,
-            height: 500,
-          },
-          <Column
-            key="select"
-            name=""
-            cellRenderer={row => (
-              <Cell>
-                <input
-                  type="radio"
-                  checked={selected === row}
-                  onChange={() => {}}
-                  readOnly
+      <>
+        <div
+          style={{ maxHeight: 500, overflow: 'auto' }}
+          className="border border-gray-300 dark:border-gray-600"
+        >
+          <table className="border-collapse w-full text-sm">
+            <thead>
+              <tr>
+                <th
+                  className="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600 px-2 py-1 text-left"
                 />
-              </Cell>
-            )}
-          />,
-          ...columns.map(({ name, field }) => (
-            <Column
-              key={String(field)}
-              name={name}
-              cellRenderer={row => (
-                <Cell>{formatCell(field, crossings[row][field])}</Cell>
-              )}
-            />
-          ))
-        )}
-
+                {columns.map(({ name, field }) => (
+                  <th
+                    key={String(field)}
+                    className="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600 px-2 py-1 text-left whitespace-nowrap"
+                  >
+                    {name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {crossings.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  onClick={() => setSelected(rowIndex)}
+                  className={`cursor-pointer ${
+                    selected === rowIndex
+                      ? 'bg-blue-100 dark:bg-blue-900'
+                      : rowIndex % 2 === 0
+                        ? 'bg-white dark:bg-gray-900'
+                        : 'bg-gray-50 dark:bg-gray-800/50'
+                  }`}
+                >
+                  <td className="border border-gray-200 dark:border-gray-700 px-2 py-1">
+                    <input
+                      type="radio"
+                      checked={selected === rowIndex}
+                      readOnly
+                    />
+                  </td>
+                  {columns.map(({ name, field }) => (
+                    <td
+                      key={String(field)}
+                      className="border border-gray-200 dark:border-gray-700 px-2 py-1 whitespace-nowrap"
+                    >
+                      {formatCell(field, row[field])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="bp5-navbar-group">
+          <span className="prose max-w-none">
+            Shape: ({shape.map((dim, i) => `${i > 0 ? ', ' : ''}${dim}`).join('')})
+          </span>
+        </div>
         <button
           className="bp5-button bp5-large"
           disabled={selected === null}
           onClick={() => {
-            if (selected !== null) {
-              props.submit(crossings[selected]!)
-            }
+            if (selected !== null) props.submit(crossings[selected]!)
           }}
         >
           Submit
         </button>
-
-        {props.output
-          ? <SafeRender component={GeneSetCrossing.view} props={props.output} />
-          : null}
-      </div>
+      </>
     )
   })
   .resolve(async props => props.data)

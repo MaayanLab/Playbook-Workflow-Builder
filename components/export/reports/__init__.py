@@ -12,12 +12,14 @@ import sys
 from textwrap import dedent
 
 import asyncio
-from aiohttp import ClientSession, ClientError
+from aiohttp import ClientSession, ClientError, ClientTimeout
 from openai import AsyncOpenAI
 from xml.etree import ElementTree as ET
 
 from adjustText import adjust_text
 import base64
+import matplotlib
+matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -27,6 +29,7 @@ import shutil
 import jinja2
 import pypdf
 import urllib.request
+from urllib.parse import quote, urlencode, quote_plus
 from io import BytesIO
 import json
 
@@ -170,35 +173,38 @@ def _ref_dict(entry_type: str, key: str, fields: dict) -> dict:
                 clean[k] = html.unescape(v)
     return clean
 
-def extract_text_with_citations(elem):
-    parts = []
-    if elem.text:
-        parts.append(elem.text)
+def _pmc_prefix(article, idx: int) -> str:
+    for t in ("pmcid", "pmc", "pmc-uid"):
+        v = article.findtext(f".//article-id[@pub-id-type='{t}']", "").strip()
+        if v:
+            return v if v.startswith("PMC") else f"PMC{v}"
+    return f"ART{idx}"
+
+def extract_text_with_citations(elem, prefix):
+    parts = [elem.text or ""]
     for child in elem:
         if child.tag == "xref" and child.attrib.get("ref-type") == "bibr":
-            parts.append(f"[{child.get('rid')}]")
+            rids = child.get("rid", "").split()
+            if rids:
+                parts.append("[[[" + ",".join(f"{prefix}_{r}" for r in rids) + "]]]")
         else:
-            parts.append(extract_text_with_citations(child))
+            parts.append(extract_text_with_citations(child, prefix))
         if child.tail:
             parts.append(child.tail)
     return "".join(parts)
 
-def parse_section(sec):
+def parse_section(sec, prefix):
     title_el = sec.find("title")
     title = "".join(title_el.itertext()).strip() if title_el is not None else ""
-    paragraphs = [
-        extract_text_with_citations(p).strip()
-        for p in sec.findall("p")
-    ]
-    text = "\n\n".join(p for p in paragraphs if p)
-    blocks = [{"title": title, "text": text}]
+    paragraphs = [extract_text_with_citations(p, prefix).strip() for p in sec.findall("p")]
+    blocks = [{"title": title, "text": "\n\n".join(p for p in paragraphs if p)}]
     for subsec in sec.findall("sec"):
-        blocks.extend(parse_section(subsec))
+        blocks.extend(parse_section(subsec, prefix))
     return blocks
 
-def _parse_article_bib(geo_accession: str, front) -> dict:
+def _parse_article_bib(key: str, front) -> dict:
     doi = front.findtext(".//article-id[@pub-id-type='doi']", "").strip()
-    return _ref_dict("article", geo_accession, {
+    return _ref_dict("article", key, {
         "title":   front.findtext(".//article-title", "").strip(),
         "authors": _names_to_author_list(front.findall(".//contrib-group//name")),
         "journal": front.findtext(".//journal-id[@journal-id-type='nlm-ta']", ""),
@@ -210,8 +216,8 @@ def _parse_article_bib(geo_accession: str, front) -> dict:
         **({"url": f"https://doi.org/{doi}"} if doi else {}),
     })
 
-def _parse_reference_bib(ref) -> dict | None:
-    ref_id = ref.attrib.get("id", "ref_unknown")
+def _parse_reference_bib(ref,prefix) -> dict | None:
+    ref_id = f"{prefix}_{ref.attrib.get('id', 'ref_unknown')}"
     cit = ref.find(".//element-citation")
     if cit is None:
         cit = ref.find(".//mixed-citation")
@@ -258,8 +264,13 @@ def parse_pmc_xml(geo_accession: str, pmc_set: set[str]):
     root = ET.fromstring(retrieve_pmc_articles(pmc_set))
 
     articles = []
-    for article in root:
+    for idx, article in enumerate(root):
         front = article.find(".//front")
+        if front is None:
+            log(f"Skipping article {idx}: no <front> (error or embargoed record)")
+            continue
+        prefix = _pmc_prefix(article, idx)
+        bib_key = geo_accession if idx == 0 else f"{geo_accession}_{prefix}"
         abstract_el = article.find(".//abstract")
 
         abstract = " ".join(
@@ -272,14 +283,14 @@ def parse_pmc_xml(geo_accession: str, pmc_set: set[str]):
         if body is not None:
             for child in body:
                 if child.tag == "p":
-                    if text := extract_text_with_citations(child).strip():
+                    if text := extract_text_with_citations(child, prefix).strip():
                         sections.append({"title": "", "text": text})
                 elif child.tag == "sec":
-                    sections.extend(parse_section(child))
+                    sections.extend(parse_section(child, prefix))
 
-        references = [_parse_article_bib(geo_accession, front)]
+        references = [_parse_article_bib(bib_key, front)]
         for ref in article.findall(".//ref"):
-            if entry := _parse_reference_bib(ref):
+            if entry := _parse_reference_bib(ref, prefix):
                 references.append(entry)
 
         articles.append({
@@ -312,16 +323,17 @@ def extract_enrichr_results(up_enrichment, down_enrichment):
 
 def extract_perturbseqr_results(perturbseqr_ids:dict[str,str], n:int=20):
     def clean_df(df:pd.DataFrame, dir:str, pert:str):
+        drop_cols = ["signatureCount", "libraryCount", "totalSignatureCount", "geneSetIdUp", "geneSetIdDown"]
         if dir=="mimic":
             or_col="oddsRatioMimic"
             pval_col = "pvalueMimic"
             apval_col = "adjPvalueMimic"
-            drop_cols = ["signatureCount", "nReverseOverlap", "oddsRatioReverse", "pvalueReverse", "adjPvalueReverse"]
+            drop_cols = drop_cols + ["nReverseOverlap", "oddsRatioReverse", "pvalueReverse", "adjPvalueReverse"]
         else:
             or_col="oddsRatioReverse"
             pval_col = "pvalueReverse"
             apval_col = "adjPvalueReverse"
-            drop_cols = ["signatureCount", "nReverseOverlap", "oddsRatioMimic", "pvalueMimic", "adjPvalueMimic"]
+            drop_cols = drop_cols + ["nReverseOverlap", "oddsRatioMimic", "pvalueMimic", "adjPvalueMimic"]
         colnames = ["Dataset", "Perturbation", "Perturbation ID", "Cell Line", "Timepoint", "Concentration", "MoA", "FDA Approved", "Gene Set Size Up", "Gene Set Size Down", "n Overlap", "Odds Ratio", "p-value", "Adjusted p-value"]
         df = df.head(n).drop(columns=drop_cols).rename_axis("Rank", inplace=False)
         df[or_col] = df[or_col].astype(float).map(lambda x: np.format_float_positional(x, precision=5))
@@ -335,8 +347,6 @@ def extract_perturbseqr_results(perturbseqr_ids:dict[str,str], n:int=20):
 
     up_id = perturbseqr_ids['up_id']
     down_id = perturbseqr_ids['down_id']
-    gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
-    drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
     perturbseqr_url = 'https://perturbseqr.maayanlab.cloud/enrichpair/download'
     s = requests.Session()
     s.headers.update({'Accept': 'text/tab-separated-values'})
@@ -483,8 +493,14 @@ def make_volcano_scatter(volcano_scatter_plotly):
     hovertext = plotly_data['hovertext']
 
     genes = extract_gene_names(hovertext)
-    pvals = extract_pvals(hovertext)
+    pvals = np.maximum(extract_pvals(hovertext), np.finfo(float).tiny)
     y = -np.log10(pvals)
+    
+    finite = np.isfinite(x) & np.isfinite(y)
+    x, y = x[finite], y[finite]
+    pvals = pvals[finite]
+    genes = genes[finite]
+    colors = np.asarray(colors)[finite]
 
     mpl_colors = []
     for c in colors:
@@ -525,10 +541,15 @@ def make_volcano_scatter(volcano_scatter_plotly):
     ax.axvline(1.5, linestyle="--", linewidth=1, alpha=0.4)
     ax.axhline(-np.log10(p_thresh), linestyle="--", linewidth=1, alpha=0.4)
 
-    xpad = (x.max() - x.min()) * 0.05
-    ypad = (y.max() - y.min()) * 0.08
-    ax.set_xlim(x.min() - xpad, x.max() + xpad)
-    ax.set_ylim(y.min() - ypad, y.max() + ypad)
+    finite = np.isfinite(x) & np.isfinite(y)
+    if not finite.any():
+        raise ValueError("Volcano plot has no finite data points")
+    xlo, xhi = x[finite].min(), x[finite].max()
+    ylo, yhi = y[finite].min(), y[finite].max()
+    xpad = max((xhi - xlo) * 0.05, 0.05)
+    ypad = max((yhi - ylo) * 0.08, 0.05)
+    ax.set_xlim(xlo - xpad, xhi + xpad)
+    ax.set_ylim(ylo - ypad, yhi + ypad)
 
     texts = [
         ax.text(
@@ -579,55 +600,160 @@ def make_volcano_scatter(volcano_scatter_plotly):
     return f
 
 
-def make_enrichr_barplot(scored_enrichr_libraries: dict[str,pd.DataFrame]):
-    fig, axes = plt.subplots(2, 2, figsize=(18,10), dpi=300)
-    dfs = scored_enrichr_libraries.values()
-    titles = ["GO Biological Process", "KEGG Pathways", "ChEA Transcription Factors", "KOMP2 Mouse Phenotypes"]
-    columns = ["Scored Pathway or Biological Processes", "Scored Pathway or Biological Processes", "Scored Genes", "Scored Phenotypes"]
-    colors = ["skyblue","lightgreen","salmon","plum"]
-    panel_labels = ["A", "B", "C", "D"]
+GEO_ENRICHR_PANELS = [
+    dict(prefix="go",   title="GO Biological Process",      color="skyblue"),
+    dict(prefix="kegg", title="KEGG Pathways",              color="lightgreen"),
+    dict(prefix="chea", title="ChEA Transcription Factors", color="salmon"),
+    dict(prefix="komp", title="KOMP2 Mouse Phenotypes",     color="plum"),
+]
+CROSSING_ENRICHR_PANELS = [
+    dict(prefix="go",   title="GO Biological Process",      color="skyblue"),
+    dict(prefix="kegg", title="KEGG Pathways",              color="lightgreen"),
+    dict(prefix="chea", title="ChEA Transcription Factors", color="salmon"),
+    dict(prefix="gwas", title="GWAS Catalog Phenotypes", color="plum"),
+]
 
-    for ax, i, df, column, title, color, label in zip(axes.flatten(), range(4), dfs, columns, titles, colors, panel_labels):
+GEO_PANEL_TEXT = (r"A. GO Biological Process 2023~\cite{GO}, B. KEGG 2021 Human~\cite{KEGG}, "
+                  r"C. ChEA 2022~\cite{ChEA}, and D. KOMP2 Mouse Phenotypes 2022~\cite{KOMP2}")
+CROSSING_PANEL_TEXT = (r"A. GO Biological Process 2023~\cite{GO}, B. KEGG 2021 Human~\cite{KEGG}, "
+                       r"C. ChEA 2022~\cite{ChEA}, and D. GWAS Catalog 2019~\cite{GWAS}")
+
+def _lib_matches(lib: str, prefix: str) -> bool:
+    return re.search(rf'(?:^|[^a-z0-9]){prefix}', lib.lower()) is not None
+
+def make_enrichr_barplot(scored_libs: dict[str, pd.DataFrame], panels: list[dict]):
+    used, assigned = set(), []
+    for p in panels:
+        hit = next((l for l in scored_libs if l not in used and _lib_matches(l, p["prefix"])), None)
+        if hit: used.add(hit)
+        assigned.append(hit)
+    if not any(assigned):
+        log("No Enrichr library names matched panel prefixes; falling back to order")
+        assigned = list(scored_libs)[:len(panels)]
+        assigned += [None] * (len(panels) - len(assigned))
+
+    fig, axes = plt.subplots(2, 2, figsize=(18, 10), dpi=300)
+    for ax, panel, lib, label in zip(axes.flatten(), panels, assigned, "ABCD"):
+        df = scored_libs.get(lib) if lib else None
+        if df is None or df.empty:
+            ax.axis("off"); ax.set_title(f"{panel['title']} (no results)", fontsize=16)
+            continue
         top = df.copy()[::-1]
+        top["zscore"] = pd.to_numeric(top["zscore"], errors="coerce")
+        top = top[np.isfinite(top["zscore"])]
+        if top.empty:
+            ax.axis("off")
+            ax.set_title(f"{panel['title']} (no results)", fontsize=16)
+            continue
         top["term"] = top["term"].map(truncate)
-        cap = top['zscore'].min()*10
-        top['zscore'] = top['zscore'].clip(upper=cap)
-
-        bars = ax.barh(range(len(top)), top['zscore'], color=color)
-
-        ax.set_yticks([])
-        ax.set_yticklabels([])
-
-        ax.set_title(title, fontsize=16)
-        ax.set_xlabel("ZScore", fontsize=12)
-
-        for i, (term, z) in enumerate(zip(top['term'], top['zscore'])):
-            ax.text(
-                z * 0.02,
-                i,
-                term,
-                va='center',
-                ha='left',
-                fontsize=15,
-                color='black',
-                clip_on=True
-            )
-
-        ax.text(-0.02, 1.05, label, transform=ax.transAxes,fontsize=16, fontweight='bold', va='top', ha='right')
-
+        cap = top["zscore"].min() * 10
+        if cap > 0:
+            top["zscore"] = top["zscore"].clip(upper=cap)
+        ax.barh(range(len(top)), top["zscore"], color=panel["color"])
+        ax.set_yticks([]); ax.set_title(panel["title"], fontsize=16); ax.set_xlabel("ZScore", fontsize=12)
+        for i, (term, z) in enumerate(zip(top["term"], top["zscore"])):
+            ax.text(z * 0.02, i, term, va="center", ha="left", fontsize=15, color="black", clip_on=True)
+        ax.text(-0.02, 1.05, label, transform=ax.transAxes, fontsize=16, fontweight="bold", va="top", ha="right")
     plt.tight_layout()
     with upsert_file('.pdf') as f:
         plt.savefig(f.file, format='pdf', dpi=300, bbox_inches='tight')
+    plt.close(fig)
     return f
 
+def enrichr_caption(subject: str, panel_text: str, enrichr_id: str) -> str:
+    return (f"Enrichment analysis of {subject} using Enrichr~\\cite{{Enrichr}}. Bar charts display the top "
+            f"significantly enriched terms from four libraries. {panel_text}. Bars are ranked by Z-score and "
+            f"capped at 10 times the smallest value shown. Color indicates the source library. The full "
+            f"enrichment results are available to view at "
+            f"\\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_id}}}{{Enrichr}}.")
 
+
+PERTURBSEQR_CITATION_KEYS = {
+    "lincs l1000 xpr": "LINCS", "lincs l1000 cp": "LINCS",
+    "perturb atlas human": "PerturbAtlas", "perturb atlas mouse": "PerturbAtlas",
+    "creeds gene": "CREEDS", "creeds chem": "CREEDS",
+    "rummageo gene": "RummaGEO", "rummageo chem": "RummaGEO",
+    "replogle et al.": "Replogle", "cm4ai": "CM4AI", "tahoe-100m": "Tahoe",
+    "microarrays cmap": "CMap", "nibr drug-seq": "NIBR", "sciplex": "SciPlex",
+    "deepcover moa": "DeepCoverMOA", "ginkgo bioworks": "Ginkgo",
+}
+
+gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
+drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
 
 # Table utility functions
-def make_table(table_data:pd.DataFrame):
+def make_table(table_data: pd.DataFrame, latex_escape: bool = True):
+    df = table_data.copy()
+    if latex_escape:
+        df.columns = [tex(c) for c in df.columns]
+        df = df.apply(lambda col: col.map(lambda v: tex(v) if isinstance(v, str) else v))
     with upsert_file('.tsv') as f:
-        table_data.to_csv(f.file, sep='\t')
+        df.to_csv(f.file, sep='\t')
     return f
 
+def perturbseqr_view_url(up_id, down_id, direction, sort, libraries) -> str:
+    qs = urlencode({"view": "table", "dir": direction, "sort": sort, "libraries": libraries},
+                   quote_via=quote_plus, safe=",")     # spaces -> '+', avoids '%' inside \href
+    return f"https://perturbseqr.maayanlab.cloud/enrichpair?dataset={up_id}&dataset={down_id}&{qs}"
+
+def perturbseqr_llm_view(results: dict[str, pd.DataFrame]) -> str:
+    drop = ["Perturbation ID", "Gene Set Size Up", "Gene Set Size Down"]
+    blocks = []
+    for name, df in results.items():
+        d = df.drop(columns=[c for c in drop if c in df.columns]).copy()
+        d.insert(0, "CitationKey", d["Dataset"].str.strip().str.lower().map(PERTURBSEQR_CITATION_KEYS).fillna(""))
+        blocks.append(f"## {name}\n{d.to_csv()}")   # index is the Rank column
+    return "\n".join(blocks)
+
+def natural_join(items):
+    items = list(items)
+    if len(items) <= 2:
+        return " and ".join(items)
+    return f"{', '.join(items[:-1])}, and {items[-1]}"
+
+def clean_term(term: str) -> str:
+    cleaned = re.sub(r'\s*\([^()]*\)\s*$', '', term).strip()   # strip trailing "(GO:...)" only
+    return cleaned or term.strip()
+
+# (library prefix, phrase template, cite key, lowercase terms?)
+GEO_ENRICHR_RULES = [
+    ("go",   "GO Biological Process terms related to {terms}", "GO",    True),
+    ("kegg", "KEGG pathways involving {terms}",                "KEGG",  True),
+    ("chea", "ChEA transcription factors including {terms}",   "ChEA",  False),
+    ("komp", "KOMP2 mouse phenotypes associated with {terms}", "KOMP2", True),
+]
+CROSSING_ENRICHR_RULES = GEO_ENRICHR_RULES[:3] + [
+    ("gwas", "GWAS Catalog phenotypes associated with {terms}", "GWAS", True)]
+
+def summarize_library(library, terms, n_terms=2, rules=(), cite_map=None) -> str:
+    seen, picked = set(), []
+    for t in terms:
+        c = clean_term(str(t))
+        if c.lower() not in seen:
+            seen.add(c.lower()); picked.append(c)
+        if len(picked) >= n_terms:
+            break
+    joined = tex(natural_join(picked))
+    lib = library.strip().lower()
+    if cite_map and lib in cite_map:                     # exact match first
+        return f"{joined} from {tex(library)} ~\\cite{{{cite_map[lib]}}}"
+    for prefix, template, key, lower in rules:
+        if lib.startswith(prefix):
+            return template.format(terms=joined.lower() if lower else joined) + f" ~\\cite{{{key}}}"
+    return f"{joined} from {tex(library)}"
+
+def format_enrichr_section(results: dict, rules, n_terms=2) -> str:
+    return natural_join(
+        summarize_library(lib.rsplit("_", 1)[0], df["term"], n_terms, rules=rules)
+        for lib, df in results.items())
+
+def format_perturbseqr_section(df, n_terms=2) -> str:
+    return natural_join(
+        summarize_library(name, d["Perturbation"], n_terms, cite_map=PERTURBSEQR_CITATION_KEYS)
+        for name, d in df.groupby("Dataset"))
+
+def gene_list_phrase(genes, n=5) -> str:
+    return natural_join(tex(g) for g in genes[:n]) or "no genes"
 
 # LaTex cleanup helper functions
 def _repair_unbalanced_brackets(text: str):
@@ -673,14 +799,24 @@ def _repair_unbalanced_brackets(text: str):
     return ''.join(result)
 
 
-def _normalise_brackets(text: str):
-    text = re.sub(r'\[{4,}([^\[\]]+)\]{4,}', r'[[[\1]]]', text)
+def _normalise_brackets(text: str, canon: dict[str, str]) -> str:
+    # [[x]] -> [[[x]]] ONLY if x resolves to a known key/alias ([ATP] stays as text)
     text = re.sub(r'(?<!\[)\[\[([^\[\]]+)\]\](?!\])', r'[[[\1]]]', text)
-    text = re.sub(r'(?<!\[)\[([A-Za-z][A-Za-z0-9.\-_]{1,40})\](?!\])', r'[[[\1]]]', text)
-
-    return text
+    def single(m):
+        return f'[[[{m[1]}]]]' if _norm(m[1]) in canon else m[0]
+    return re.sub(r'(?<!\[)\[([^\[\]]{1,80})\](?!\])', single, text)
 
 _CITE_TOKEN = re.compile(r'\[\[\[([^\[\]]+)\]\]\]')
+
+_CITATION_ARTIFACT = re.compile(
+    r'~?\\cite\s*\{[^}]*\}'
+    r'|(?<!\[)\[{1,3}\s*(?:[A-Za-z][A-Za-z0-9_.:-]*|\d+)'
+    r'(?:\s*,\s*(?:[A-Za-z][A-Za-z0-9_.:-]*|\d+))*\s*\]{0,3}'
+)
+
+def strip_citations(text: str) -> str:
+    text = _CITATION_ARTIFACT.sub("", text)
+    return re.sub(r"\s+", " ", text).strip(" \t\r\n,;")
 
 def _emit_cite(keys: list[str]):
     seen: set[str] = set()
@@ -748,35 +884,63 @@ def _find_unresolved_bare_brackets(text: str, valid_keys: set[str]):
             found.append(key)
     return found
 
+def _norm(s: str) -> str:
+    """Case/punctuation-insensitive form used ONLY for matching keys."""
+    return re.sub(r'[\s\-.{}\\]', '', s).lower()
+
+def build_citation_aliases(references: list[dict]) -> dict[str, str]:
+    """alias text -> canonical bib id. Only aliases whose target exists are kept."""
+    valid = _extract_reference_keys(references)
+    aliases = {r["title"]: r["id"] for r in references if r.get("title") and r.get("id")}
+    aliases.update({name: key for name, key in PERTURBSEQR_CITATION_KEYS.items() if key in valid})
+    return aliases
+
+def _build_canon(valid_keys: set[str], aliases: dict[str, str]) -> dict[str, str]:
+    """normalized text -> canonical key. Ambiguous normalizations are dropped."""
+    cands: dict[str, set[str]] = {}
+    for k in valid_keys:
+        cands.setdefault(_norm(k), set()).add(k)
+    for alias, key in aliases.items():
+        if key in valid_keys:
+            cands.setdefault(_norm(alias), set()).add(key)
+    return {n: next(iter(ks)) for n, ks in cands.items() if len(ks) == 1}
+
 def _validate_and_repair_citations(
     text: str,
     valid_keys: set[str],
-    key_mapping: dict[str,str],
+    aliases: dict[str, str],
     section_name: str = '',
     strip_unknown: bool = True,
-):
-    """Warn on unknown keys; optionally remove them."""
-    def _check(match: re.Match) -> str:
-        keys = [k.strip() for k in match[1].split(',')]
-        key_map = {k.lower():k for k in keys}
-        title_map = {k.lower():k for k in key_mapping}
-        good = [k for k in keys if k in valid_keys]
-        bad  = [k for k in keys if k not in valid_keys]
+    unresolved: list | None = None,
+) -> str:
+    canon = _build_canon(valid_keys, aliases)
 
-        good.extend([key_map[k.lower()] for k in bad if k.lower() in key_map])
-        good.extend([title_map[k.lower()] for k in bad if k.lower() in title_map])
-
+    def _check(m: re.Match) -> str:
+        kept, bad = [], []
+        for raw in m[1].split(','):
+            k = raw.strip().strip('{}\\ ')
+            if not k:
+                continue
+            if k in valid_keys:
+                kept.append(k)
+            elif (c := canon.get(_norm(k))):
+                log(f'Recovered citation key {k!r} -> {c!r} in {section_name}')
+                kept.append(c)
+            else:
+                bad.append(k)
         if bad:
-            log(f'Unknown citation key(s) in {section_name or "unknown section"}: {"", "".join(bad)}')
-            log(f'{[key_map[k.lower()] for k in bad if k.lower() in key_map]} recovered')
-
-        kept = good if strip_unknown else keys
-        return f'[[[{",".join(set(kept))}]]]' if kept else ''
+            log(f'Unknown citation key(s) in {section_name or "unknown section"}: {", ".join(bad)}')
+            if unresolved is not None:
+                unresolved.extend((section_name, k) for k in bad)
+            if not strip_unknown:
+                kept.extend(bad)
+        kept = list(dict.fromkeys(kept))
+        return f'[[[{",".join(kept)}]]]' if kept else ''
 
     text = _CITE_TOKEN.sub(_check, text)
+    text = re.sub(r'[ \t]+([.,;])', r'\1', text)
     text = re.sub(r'~\s*$', '', text, flags=re.MULTILINE)
     return text
-
 
 def _escape_latex_segment(segment: str) -> str:
     LATEX_ESCAPES = {
@@ -815,6 +979,18 @@ def _escape_latex_segment(segment: str) -> str:
 
     return segment.encode('ascii', errors='ignore').decode('ascii')
 
+tex = _escape_latex_segment
+
+_BIB_ESC = {'&': r'\&', '%': r'\%', '#': r'\#', '_': r'\_', '$': r'\$'}
+def escape_bibtex_value(v) -> str:
+    """Bib fields keep Unicode (author names) but escape LaTeX specials and strip markup."""
+    v = html.unescape(str(v))
+    v = re.sub(r'<[^>]+>', '', v)
+    v = v.replace('\\', '')
+    if v.count('{') != v.count('}'):
+        v = v.replace('{', '').replace('}', '')
+    return re.sub('|'.join(map(re.escape, _BIB_ESC)), lambda m: _BIB_ESC[m.group(0)], v)
+
 def _to_latex_cite_and_escape(text: str):
     """
     Single-pass conversion: split on [[[key]]] tokens, escape the literal
@@ -833,60 +1009,70 @@ def _to_latex_cite_and_escape(text: str):
     return ''.join(out)
 
 def repair_and_validate_report(
-    report: dict,
-    references: list[dict],
-    strip_unknown: bool = False,
-):
+        report: dict, 
+        references: list[dict],
+        strip_unknown: bool = True,
+        warnings: list | None = None
+    ):
     valid_keys = _extract_reference_keys(references)
-    key_mapping = _extract_reference_title_mapping(references)
+    aliases = build_citation_aliases(references)
+    canon = _build_canon(valid_keys, aliases)
+    unresolved: list = []
 
-    _TEXT_PATHS: list[tuple[str, ...]] = [('abstract',)]+ \
-    [('introduction', key) for key in report["introduction"].keys()]+ \
-    [('discussion', key) for key in report["discussion"].keys()]
+    paths = (
+        [('abstract',)]
+        + [('introduction', k) for k in report['introduction']]
+        + [('discussion', k) for k in report['discussion']]
+    )
 
+    for path in paths:
+        node = report
+        for p in path[:-1]:
+            node = node[p]
+        section = '.'.join(path)
 
-    def _get(d: dict, path: tuple) -> str:
-        for key in path:
-            d = d[key]
-        return d  # type: ignore[return-value]
-
-
-    def _set(d: dict, path: tuple, value: str) -> None:
-        for key in path[:-1]:
-            d = d[key]
-        d[path[-1]] = value
-
-    for path in _TEXT_PATHS:
-        raw: str = _get(report, path)
-        section_name = '.'.join(path)
-
-        # 1. Balance and normalise bracket variants → [[[key]]]
-        fixed = _repair_unbalanced_brackets(raw)
-        fixed = _normalise_brackets(fixed)
-
-        # 2. Merge adjacent citations and clean key whitespace
+        fixed = _repair_unbalanced_brackets(node[path[-1]])
+        fixed = _normalise_brackets(fixed, canon)
         fixed = _merge_adjacent_citations(fixed)
         fixed = _split_comma_citations(fixed)
+        fixed = _validate_and_repair_citations(fixed, valid_keys, aliases, section, strip_unknown, unresolved)
+        # cite + escape in one pass
+        node[path[-1]] = _to_latex_cite_and_escape(fixed)   
 
-        # 3. Validate keys (and optionally strip unknown ones)
-        fixed = _validate_and_repair_citations(fixed, valid_keys, key_mapping, section_name, strip_unknown)
-
-        # 4. Catch any bare [key] that survived normalisation
-        bare = _find_unresolved_bare_brackets(fixed, valid_keys)
-        for key in bare:
-            fixed = re.sub(
-                r'(?<!\[)\[' + re.escape(key) + r'\](?!\])',
-                f'[[[{key}]]]',
-                fixed,
-            )
-            fixed = _validate_and_repair_citations(fixed, valid_keys, key_mapping, section_name, strip_unknown)
-
-        # 5. Emit \cite{} and escape LaTeX specials in ONE pass (prevents escaper from mangling BibTeX keys like Smith_2020)
-        fixed = _to_latex_cite_and_escape(fixed)
-
-        _set(report, path, fixed)
-
+    if warnings is not None:
+        warnings.extend(unresolved)
     return report['abstract'], report['introduction'], report['discussion']
+
+def _bib_field(name, value, escape=True):
+    if not value:
+        return None
+    return f"  {name} = {{{escape_bibtex_value(value) if escape else value}}}"
+
+def construct_references(references: list[dict]) -> str:
+    seen, entries = set(), []
+    for ref in references:
+        rid = ref.get("id")
+        if not rid or rid in seen:
+            continue
+        seen.add(rid)
+        etype = ref.get("type", "misc")
+        if etype == "online" or (etype == "article" and not ref.get("journal")):
+            etype = "misc"                     # @online needs biblatex; journal-less @article warns
+        authors = [a.strip() for a in ref.get("authors", []) if a and a.strip()]
+        fields = [x for x in (
+            _bib_field("title",   ref.get("title")),
+            _bib_field("author",  " and ".join(authors)),
+            _bib_field("year",    ref.get("year")),
+            _bib_field("journal", ref.get("journal")),
+            _bib_field("volume",  ref.get("volume")),
+            _bib_field("pages",   ref.get("pages")),
+            _bib_field("doi",     ref.get("doi"), escape=False),
+            _bib_field("url",     ref.get("url"), escape=False),
+        ) if x]
+        entries.append(f"@{etype}{{{rid},\n" + ",\n".join(fields) + "\n}")
+    return "\n\n".join(entries)
+
+from time import sleep
 
 class GEOReport():
     '''
@@ -900,6 +1086,7 @@ class GEOReport():
         self.system_prompt = GEO_SYSTEM_PROMPT
         self.geo_accession = geo_accession
         self.pmc_articles = pmc_articles = parse_pmc_xml(geo_accession,pmc_set)
+        self.study_keys = [a["references"][0]["id"] for a in self.pmc_articles if a["references"]]
         self.labelled_samples = extract_labelled_samples(labelled_samples_anndata).to_json()
         self.signature = signature
         self.plots = plots
@@ -940,9 +1127,9 @@ class GEOReport():
         Results: {self.results}
         Discussion: {self.discussion}''').strip()
 
-        abstract = await generate_section(self.client, self.model, self.system_prompt, prompt, data)
-        abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
-        abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
+        abstract = strip_citations(await generate_section(
+            self.client, self.model, self.system_prompt, prompt, data
+        ))
 
         log("Abstract complete.")
         self.abstract = abstract
@@ -982,7 +1169,7 @@ class GEOReport():
         introduction_background = await generate_section(self.client, self.model, self.system_prompt, background_prompt, f"Articles:{pmc_articles}\nIntroduction Problem:{introduction_problem}")
 
         introduction_motivation = dedent(f'''
-        In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {self.geo_accession} [{self.geo_accession}]
+        In order to further investigate any underlying mechanisms or regulatory activity, we performed a re-analysis of samples from {self.geo_accession} [[[{",".join(self.study_keys)}]]]
         to create a workflow analyzing the {SIGNATURE_NAME} signature utillizing bioinformatics tools. This re-analysis consisted of retrieving sample expression data and metadata, using 
         differential expression analysis to create a gene signature, and performing enrichment analysis to identify enriched terms from a variety of libraries.''').strip().replace('\n', ' ')
         log("Introduction complete.")
@@ -1014,113 +1201,19 @@ class GEOReport():
         return methods
 
     def write_report_results(self):
-        def clean_term(term: str):
-            return term.split('(')[0].strip()
-
-        def natural_join(items):
-            """
-            Oxford comma join:
-            A
-            A and B
-            A, B, and C
-            """
-            if len(items) == 0:
-                return ""
-            if len(items) == 1:
-                return items[0]
-            if len(items) == 2:
-                return f"{items[0]} and {items[1]}"
-
-            return f"{', '.join(items[:-1])}, and {items[-1]}"
-
-        def summarize_library(library: str, terms, n_terms: int = 2):
-            cleaned_terms = []
-            seen = set()
-
-            for term in terms:
-                cleaned = clean_term(term)
-                normalized = cleaned.lower()
-
-                if normalized not in seen:
-                    seen.add(normalized)
-                    cleaned_terms.append(cleaned)
-
-                if len(cleaned_terms) >= n_terms:
-                    break
-
-            joined_terms = natural_join(cleaned_terms)
-            lib_lower = library.lower()
-
-            standard_rules = [
-                ("go", lambda: f"GO Biological Process terms related to {joined_terms.lower()} ~\\cite{{GO}}"),
-                ("kegg", lambda: f"KEGG pathways involving {joined_terms.lower()} ~\\cite{{KEGG}}"),
-                ("chea", lambda: f"ChEA transcription factors including {joined_terms} ~\\cite{{ChEA}}"),
-                ("komp", lambda: f"KOMP2 mouse phenotypes associated with {joined_terms.lower()} ~\\cite{{KOMP2}}"),
-            ]
-
-            perturbseqr_citations = {
-                "lincs l1000 xpr": "LINCS",
-                "lincs l1000 cp": "LINCS",
-                "perturb atlas human": "PerturbAtlas",
-                "perturb atlas mouse": "PerturbAtlas",
-                "creeds gene": "CREEDS",
-                "creeds chem": "CREEDS",
-                "rummageo gene": "RummaGEO",
-                "rummageo chem": "RummaGEO",
-                "replogle et al.": "Replogle",
-                "cm4ai": "CM4AI",
-                "tahoe-100m": "Tahoe",
-                "microarrays cmap": "CMap",
-                "nibr drug-seq": "NIBR",
-                "sciplex": "SciPlex",
-                "deepcover moa": "DeepCoverMOA",
-                "ginkgo bioworks": "Ginkgo",
-            }
-
-            for pattern, formatter in standard_rules:
-                if pattern in lib_lower:
-                    return formatter()
-
-            if lib_lower in perturbseqr_citations:
-                return f"{joined_terms} from {library} ~\\cite{{{perturbseqr_citations[lib_lower]}}}"
-
-            return f"{joined_terms} from {library}"
-
-
-        def format_enrichr_section(results, n_terms=2):
-            library_summaries = [
-                summarize_library(lib.rsplit("_", 1)[0], terms_df["term"], n_terms=n_terms)
-                for lib, terms_df in results.items()
-            ]
-
-            return natural_join(library_summaries)
-        
-
-        def format_perturbseqr_section(df, n_terms_per_dataset: int = 2):
-            summaries = [
-                summarize_library(dataset_name,dataset_df["Perturbation"],n_terms=n_terms_per_dataset)
-                for dataset_name, dataset_df in df.groupby("Dataset")
-            ]
-
-            return natural_join(summaries)
-
-        up_genes,down_genes = [],[]
-        for gene in self.signature:
-            symbol = gene['term']
-            score = float(gene['zscore'])
-            if score and score > 0:
-                up_genes.append(symbol)
-            elif score and score < 0:
-                down_genes.append(symbol)
-        down_genes = down_genes[::-1]
+        ranked = sorted(((g['term'], float(g['zscore'])) for g in self.signature
+                 if g.get('zscore') is not None and np.isfinite(float(g['zscore']))),
+                key=lambda t: t[1])
+        up_genes   = [g for g, z in reversed(ranked) if z > 0]
+        down_genes = [g for g, z in ranked if z < 0]
 
         results = dedent(f'''
         Library size distributions across samples were visualized to assess sequencing depth and sample consistency (Figure \\ref{{fig:librarySizes}}).
         PCA of normalized expression profiles revealed the relationship between control and perturbation samples, while also displaying additional study samples not included in the differential expression analysis (Figure \\ref{{fig:PCAScatter}}).
         Differential expression analysis identified {len(up_genes)} significantly up-regulated genes and {len(down_genes)} significantly down-regulated genes after logFC and adjusted p-value filtering (Figure \\ref{{fig:volcanoScatter}}).
-        Among the most strongly up-regulated genes were {', '.join(up_genes[:4])}, and {up_genes[4]}, whereas prominent down-regulated genes included {', '.join(down_genes[:4])}, and {down_genes[4]}.
-        Functional enrichment analysis of the up-regulated gene set identified associations with {format_enrichr_section(self.enrichr_results['enrichr_up'])} (Figure \\ref{{fig:upEnrichrBars}}). 
-        Analysis of the down-regulated gene set identified enrichment for {format_enrichr_section(self.enrichr_results['enrichr_down'])} (Figure \\ref{{fig:downEnrichrBars}}).
+        Among the most strongly up-regulated genes were {gene_list_phrase(up_genes, 5)}, whereas prominent down-regulated genes included {gene_list_phrase(down_genes, 5)}.
+        Functional enrichment analysis of the up-regulated gene set identified associations with {format_enrichr_section(self.enrichr_results['enrichr_up'],GEO_ENRICHR_RULES)} (Figure \\ref{{fig:upEnrichrBars}}). 
+        Analysis of the down-regulated gene set identified enrichment for {format_enrichr_section(self.enrichr_results['enrichr_down'],GEO_ENRICHR_RULES)} (Figure \\ref{{fig:downEnrichrBars}}).
         Signature search revealed gene perturbations including {format_perturbseqr_section(self.perturbseqr_results['mimic_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneMimickers}}) and drug perturbations including {format_perturbseqr_section(self.perturbseqr_results['mimic_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugMimickers}}) as mimickers.
         Top reversers includeded genes perturbations {format_perturbseqr_section(self.perturbseqr_results['reverse_gene_signatures'])} (Table \\ref{{table:perturbseqrGeneReversers}}) and drugs including {format_perturbseqr_section(self.perturbseqr_results['reverse_drug_signatures'])} (Table \\ref{{table:perturbseqrDrugReversers}}).
         ''').strip().replace('\n',' ')
@@ -1140,17 +1233,17 @@ class GEOReport():
         Cite only the libraries whose results you are directly referencing, choosing from: 
         [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[KOMP2]]].''').strip()
 
-        perturbseqr_prompt = dedent('''
+        allowed = ", ".join(f"[[[{k}]]]" for k in sorted(set(PERTURBSEQR_CITATION_KEYS.values())))
+        perturbseqr_prompt = dedent(f'''
         Write a plain text paragraph analyzing the Perturb-Seqr results provided for the gene signature from this re-analysis.
         Focus on: small molecules or genetic perturbations that appear in each mimicker and reverser result table and what those patterns suggest about the biology of the signature.
         Do not list the terms to introduce them, assume this has already been done.
         Highlight similarities in perturbations within each result table.
         Only discuss entries that are present in the results provided.
         Do not introduce perturbations or mechanisms not present in the data.
-        When you reference a mimicker or reverser signature, you MUST cite the associated resource (found in Dataset field), choosing from:
-        [[[CMap]]], [[[CM4AI]]], [[[CREEDS]]], [[[DeepCoverMoA]]], [[[Ginkgo]]], [[[LINCS]]], [[[NIBR]]], 
-        [[[PerturbAtlas]]], [[[RummaGEO]]], [[[Replogle]]], [[[SciPlex]]], [[[Tahoe]]].
-        Do not select any other references or mention any resources not explicitly provided.''').strip()
+        When you reference a mimicker or reverser signature, you MUST cite its resource using the value in that row's
+        CitationKey column, written exactly as [[[Key]]]. Allowed keys: {allowed}.
+        Do not use any other citation keys or mention any resources not present in the data.''').strip()
 
         discussion_enrichr, discussion_perturbseqr = await asyncio.gather(
             generate_section(
@@ -1165,10 +1258,9 @@ class GEOReport():
                 self.model,
                 self.system_prompt,
                 perturbseqr_prompt,
-                str(self.perturbseqr_results),
+                perturbseqr_llm_view(self.perturbseqr_results),
             ),
         )
-        discussion_perturbseqr = discussion_perturbseqr.replace("[RummaGEO Gene]", "[RummaGEO]").replace("[RummaGEO Chem]", "[RummaGEO]").replace("[RummaGEO Drug]", "[RummaGEO]")
 
         conclusion_prompt = dedent('''
         Write a plain text concluding paragraph for a re-analysis report.
@@ -1199,8 +1291,8 @@ class GEOReport():
         library_pdf = make_library_size_barplot(self.plots["library_sizes_plot"])
         pca_pdf = make_pca_scatter(self.plots["pca_plot"])
         volcano_pdf = make_volcano_scatter(self.plots["volcano_plot"])
-        enrichr_up_pdf = make_enrichr_barplot(self.enrichr_results["enrichr_up"])
-        enrichr_down_pdf = make_enrichr_barplot(self.enrichr_results["enrichr_down"])
+        enrichr_up_pdf = make_enrichr_barplot(self.enrichr_results["enrichr_up"], GEO_ENRICHR_PANELS)
+        enrichr_down_pdf = make_enrichr_barplot(self.enrichr_results["enrichr_down"], GEO_ENRICHR_PANELS)
         enrichr_up_id = self.supplement["enrichrUp"]
         enrichr_down_id = self.supplement["enrichrDown"]
         figures = {
@@ -1218,11 +1310,11 @@ class GEOReport():
             },
             "upEnrichrBars": {
                 "file":enrichr_up_pdf,
-                "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_up_id}}}{{Enrichr}}.",
+                "caption":enrichr_caption("the up-regulated gene signature", GEO_PANEL_TEXT, enrichr_up_id),
             },
             "downEnrichrBars": {
                 "file":enrichr_down_pdf,
-                "caption":f"Enrichment analysis of the down-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. KOMP2 Mouse Phenotypes 2022~\\cite{{KOMP2}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_down_id}}}{{Enrichr}}."
+                "caption":enrichr_caption("the down-regulated gene signature", GEO_PANEL_TEXT, enrichr_down_id)
             }
         }
         self.figures = figures
@@ -1232,25 +1324,23 @@ class GEOReport():
     def make_tables(self):
         perturbseqr_results = self.perturbseqr_results
         supplement = self.supplement
-        gene_libraries = 'LINCS L1000 XPR,Perturb Atlas Human,Perturb Atlas Mouse,CREEDS Gene,RummaGEO Gene,Replogle et al.,CM4AI'
-        drug_libraries = 'LINCS L1000 CP,Tahoe-100M,Microarrays CMap,NIBR DRUG-seq,SciPlex,DeepCover MoA,CREEDS Chem,RummaGEO Chem,Ginkgo Bioworks'
         perturbseqr_url = f'https://perturbseqr.maayanlab.cloud/enrichpair?dataset={supplement["perturbseqrUpGenes"]}&dataset={supplement["perturbseqrDownGenes"]}'
         tables = {
             "perturbseqrGeneMimickers": {
                 "file":make_table(perturbseqr_results["mimic_gene_signatures"]),
-                "caption":f"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={gene_libraries}}}{{Perturb-Seqr}}."
+                "caption":f"Single gene perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_view_url(supplement['perturbseqrUpGenes'], supplement['perturbseqrDownGenes'], 'up', 'pvalue_mimic', gene_libraries)}}}{{Perturb-Seqr}}."
             },
             "perturbseqrDrugMimickers": {
                 "file":make_table(perturbseqr_results["mimic_drug_signatures"]),
-                "caption":f"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=up&sort=pvalue_mimic&libraries={drug_libraries}}}{{Perturb-Seqr}}."
+                "caption":f"Small molecule perturbations whose transcriptional profiles most closely resemble the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_view_url(supplement['perturbseqrUpGenes'], supplement['perturbseqrDownGenes'], 'up', 'pvalue_mimic', drug_libraries)}}}{{Perturb-Seqr}}."
             },
             "perturbseqrGeneReversers": {
                 "file":make_table(perturbseqr_results["reverse_gene_signatures"]),
-                "caption":f"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={gene_libraries}}}{{Perturb-Seqr}}."
+                "caption":f"Single gene perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, perturbed gene, cell line, timepoint, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_view_url(supplement['perturbseqrUpGenes'], supplement['perturbseqrDownGenes'], 'down', 'pvalue_reverse', gene_libraries)}}}{{Perturb-Seqr}}."
             },
             "perturbseqrDrugReversers": {
                 "file":make_table(perturbseqr_results["reverse_drug_signatures"]),
-                "caption":f"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_url}&view=table&dir=down&sort=pvalue_reverse&libraries={drug_libraries}}}{{Perturb-Seqr}}."
+                "caption":f"Small molecule perturbations whose transcriptional profiles are most opposite to the query signature, as identified by Perturb-seqr~\\cite{{Perturb-Seqr}}. Each row lists the source dataset, compound, cell line, timepoint, concentration, mechanism of action (MoA), FDA approval status, and statistical measures including gene set overlap size, odds ratio, and adjusted p-value. The full signature search results are available to view at \\href{{{perturbseqr_view_url(supplement['perturbseqrUpGenes'], supplement['perturbseqrDownGenes'], 'down', 'pvalue_reverse', drug_libraries)}}}{{Perturb-Seqr}}."
             },
         }
         self.tables = tables
@@ -1308,7 +1398,7 @@ class GEOReport():
 
         abstract = await self.write_report_abstract()
 
-        self.title = REPORT_TITLE
+        self.title = strip_citations(REPORT_TITLE)
         return REPORT_TITLE,abstract,introduction,discussion
     
     def get_report(self):
@@ -1350,7 +1440,7 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
             discussion=discussion
         ),
         references,
-        strip_unknown=False
+        strip_unknown=True
     )
     log("Formatting validated.")
 
@@ -1360,25 +1450,6 @@ def construct_georeanalysis_report(geo_accession, pmc_set, labelled_samples_annd
     tables = geo_report.make_tables()
 
     return geo_report.get_report()
-
-
-def construct_geo_report_references(references: list[dict]) -> str:
-    entries = []
-    for ref in references:
-        fields = [
-            f"  title     = {{{ref['title']}}}" if ref.get('title') else None,
-            f"  author    = {{{' and '.join(ref['authors'])}}}" if ref.get('authors') else None,
-            f"  year      = {{{ref['year']}}}"    if ref.get('year')    else None,
-            f"  journal   = {{{ref['journal']}}}" if ref.get('journal') else None,
-            f"  volume    = {{{ref['volume']}}}"  if ref.get('volume')  else None,
-            f"  pages     = {{{ref['pages']}}}"   if ref.get('pages')   else None,
-            f"  doi       = {{{ref['doi']}}}"     if ref.get('doi')     else None,
-            f"  url       = {{{ref['url']}}}"     if ref.get('url')     else None,
-        ]
-        fields = [f for f in fields if f is not None]
-        entries.append(f"@{ref['type']}{{{ref['id']}, {', '.join(fields)} }}")
-
-    return '\n\n'.join(entries)
 
 def render_georeanalysis_report(report):
     log('Preparing LaTeX bundle...')
@@ -1402,7 +1473,7 @@ def render_georeanalysis_report(report):
             variable_end_string=')))',
         )
         template = env.get_template("geo_report.tex").render(
-            title=report['title'],
+            title=tex(report['title']),
             abstract=report['abstract'],
             introduction = report['introduction'],
             methods = report['methods'],
@@ -1416,7 +1487,7 @@ def render_georeanalysis_report(report):
         with open(f"{texdir}/{geo_accession}.tex", "w") as texfile:
             texfile.write(template)
         with open(f"{texdir}/references.bib", "w") as bibfile:
-            bibfile.write(construct_geo_report_references(report["references"]))
+            bibfile.write(construct_references(report["references"]))
         
         with upsert_file('.zip') as zipfile:
             base = zipfile.file.rsplit('.', 1)[0]
@@ -1482,99 +1553,78 @@ def get_gpt4o_gene_summary(gene_symbol: str) -> str | None:
     return json.loads(raw)
 
 def format_deepdive(symbol, deepdive):
+    def _dd_key(symbol: str, ref) -> str | None:
+        try:
+            return f"{symbol}_{int(float(ref))}"
+        except (TypeError, ValueError):
+            return None
+
     def md(props):
         fn = COMPONENTS.get(props.get("type"))
         return fn(props) if fn else ""
 
-    def component_recurse(props):
-        return "".join(md(child) for child in props.get("children", []))
+    def recurse(props):
+        return "".join(md(c) for c in props.get("children", []))
+
+    def fg_keys(props):
+        keys = []
+        for c in props.get("children", []):
+            if c.get("type") == "fg_f":
+                keys.append(_dd_key(symbol, c.get("ref")))
+            elif c.get("type") == "fg_fs":
+                try:
+                    lo, hi = int(float(c["start_ref"])), int(float(c["end_ref"]))
+                except (KeyError, TypeError, ValueError):
+                    continue
+                keys.extend(_dd_key(symbol, i) for i in range(lo, hi + 1))
+        return [k for k in keys if k]
+
+    def f(props):
+        k = _dd_key(symbol, props.get("ref"))
+        return f"[[[{k}]]]" if k else ""
+
+    def fg(props):
+        ks = fg_keys(props)
+        return f"[[[{','.join(ks)}]]]" if ks else ""
 
     COMPONENTS = {
-        "root": lambda props: component_recurse(props).strip(),
-
-        "p": lambda props: component_recurse(props).strip() + "\n\n",
-
-        "t": lambda props: props.get("text", ""),
-
-        # flatten string
-        "b": lambda props: component_recurse(props),
-        "i": lambda props: component_recurse(props),
-
-        # keep link text
-        "a": lambda props: component_recurse(props),
-
-        # single reference
-        "f": lambda props: f"[{props.get('ref')}]",
-
-        # grouped references
-        "fg": lambda props: (
-            "[" +
-            ",".join(md(child) for child in props.get("children", [])) +
-            "]"
-        ),
-
-        # individual ref inside fg
-        "fg_f": lambda props: props.get("ref"),
-
-        # reference range
-        "fg_fs": lambda props: (
-            f"{props.get('start_ref')}-{props.get('end_ref')}"
-        ),
-
-        # references group
-        "rg": lambda props: (
-            "\nReferences\n\n"
-            #+ "-" * 10 + "\n"
-            + component_recurse(props).strip()
-        ),
-
-        # reference
-        "r": lambda props: (
-            f"[{props.get('ref')}] "
-            f"{component_recurse(props).strip()}\n"
-        ),
+        "root": lambda p: recurse(p).strip(),
+        "p":    lambda p: recurse(p).strip() + "\n\n",
+        "t":    lambda p: p.get("text", ""),
+        "b": recurse, "i": recurse, "a": recurse,
+        "f": f, "fg": fg,
+        "rg": lambda p: "",
+        "r":  lambda p: "",
     }
-
-    rendered = md(deepdive).rstrip().split('\n\n\n', 1)[0]
+    rendered = md(deepdive).strip()
 
     ref_to_doi = {}
-
     def extract_dois(node):
         if not isinstance(node, dict):
             return
-
-        node_type = node.get("type")
-
-        if node_type == "r":
-            ref_number = node.get("ref")
-            doi = None
-
+        if node.get("type") == "r":
+            key = _dd_key(symbol, node.get("ref"))
             children = node.get("children", [])
+            doi = None
             for i, child in enumerate(children):
-                # look for "DOI: " text node
-                if (
-                    child.get("type") == "t"
-                    and "DOI" in child.get("text", "")
-                ):
-                    if i + 1 < len(children):
-                        next_child = children[i + 1]
-                        if next_child.get("type") == "a":
-                            doi = "".join(
-                                c.get("text", "")
-                                for c in next_child.get("children", [])
-                                if c.get("type") == "t"
-                            )
+                if child.get("type") == "t" and "DOI" in child.get("text", ""):
+                    if i + 1 < len(children) and children[i + 1].get("type") == "a":
+                        doi = "".join(c.get("text", "") for c in children[i + 1].get("children", [])
+                                      if c.get("type") == "t")
                     break
-
-            if ref_number is not None and doi:
-                ref_to_doi[f'{symbol}_{int(ref_number)}'] = doi
-
+            if key and doi:
+                ref_to_doi[key] = doi
         for child in node.get("children", []):
             extract_dois(child)
-
     extract_dois(deepdive)
 
-    return rendered,ref_to_doi
+    return rendered, ref_to_doi
+
+def deepdive_llm_input(deepdive_results: dict) -> str:
+    return "\n\n".join(
+        f"GENE: {gene}\nALLOWED CITATION KEYS: {', '.join(ref_to_doi) or 'none'}\nSUMMARY:\n{summary}"
+        for gene, (summary, ref_to_doi) in deepdive_results.items()
+    )
 
 class CrossingReport():
     '''
@@ -1642,9 +1692,9 @@ class CrossingReport():
         Results: {self.results}
         Discussion: {self.discussion}''').strip()
 
-        abstract = await generate_section(self.client, self.model, self.system_prompt, prompt, data)
-        abstract = re.sub(r"\[\[\[(.+?)\]\]\]", "", abstract)
-        abstract = re.sub(r"~\\cite\{(?:.+?)\}","", abstract).strip(',')
+        abstract = strip_citations(await generate_section(
+            self.client, self.model, self.system_prompt, prompt, data
+        ))
 
         log("Abstract complete.")
         self.abstract = abstract
@@ -1659,7 +1709,7 @@ class CrossingReport():
         static_introduction = dedent('''
         Common Fund programs have generated many diverse and robust multiomics datasets in the past 20 years.
         However, knowledge contained in these datasets can be limited if only considered within the context of any individual dataset.
-        To address this, we have converted Common Fund datasets from the Common Fund Data Ecosystem (CFDE) [[[CFDE}]]] into gene set libraries  to combine multiple datasets at a time and investigate interesting overlapping features.
+        To address this, we have converted Common Fund datasets from the Common Fund Data Ecosystem (CFDE) [[[CFDE]]] into gene set libraries  to combine multiple datasets at a time and investigate interesting overlapping features.
         Pairwise gene set library crossing has been explored previously in GeneSetCart [[[GeneSetCart]]], and Harmonizome 3.0 [[[Harmonizome]]], where gene sets from two libraries where significant overlaps were found using Fisher's exact test.
         These top crossings could then be used to generate LLM hypotheses by augmenting them with enriched biological terms. Here we extend the strategy by combining more libraries at once.
         Each combination of three gene sets (one from each library) is analyzed to identify signficant pairwise intersections and a robust 3-way intersecting gene set.
@@ -1726,69 +1776,11 @@ class CrossingReport():
 
 
     def write_report_results(self,  deepdive_results):
-        def clean_term(term: str):
-            return term.split('(')[0].strip()
-
-        def natural_join(items):
-            """
-            Oxford comma join:
-            A
-            A and B
-            A, B, and C
-            """
-            if len(items) == 0:
-                return ""
-            if len(items) == 1:
-                return items[0]
-            if len(items) == 2:
-                return f"{items[0]} and {items[1]}"
-
-            return f"{', '.join(items[:-1])}, and {items[-1]}"
-
-        def summarize_library(library: str, terms, n_terms: int = 2):
-            cleaned_terms = []
-            seen = set()
-
-            for term in terms:
-                cleaned = clean_term(term)
-                normalized = cleaned.lower()
-
-                if normalized not in seen:
-                    seen.add(normalized)
-                    cleaned_terms.append(cleaned)
-
-                if len(cleaned_terms) >= n_terms:
-                    break
-
-            joined_terms = natural_join(cleaned_terms)
-            lib_lower = library.lower()
-
-            standard_rules = [
-                ("go", lambda: f"GO Biological Process terms related to {joined_terms.lower()} ~\\cite{{GO}}"),
-                ("kegg", lambda: f"KEGG pathways involving {joined_terms.lower()} ~\\cite{{KEGG}}"),
-                ("chea", lambda: f"ChEA transcription factors including {joined_terms} ~\\cite{{ChEA}}"),
-                ("gwas", lambda: f"GWAS Catalog phenotypes associated with {joined_terms.lower()} ~\\cite{{GWAS}}"),
-            ]
-
-            for pattern, formatter in standard_rules:
-                if pattern in lib_lower:
-                    return formatter()
-
-            return f"{joined_terms} from {library}"
-
-        def format_enrichr_section(results, n_terms=2):
-            library_summaries = [
-                summarize_library(lib.rsplit("_", 1)[0], terms_df["term"], n_terms=n_terms)
-                for lib, terms_df in results.items()
-            ]
-
-            return natural_join(library_summaries)
-
         results = dedent(f'''
         The crossing had a rank of {self.crossing["rank"]}, p-value of {self.crossing["pvalue"]:6e}, and Jaccard index of {self.crossing["jaccard"]:6f}.
         The intersecting gene set identified {self.crossing["overlap"]} genes appearing in all involved sets (Figure \\ref{{fig:venn}}).
-        The intersecting gne set consists of {", and".join(self.crossing["genes"].rsplit(" ", 1))}.
-        Functional enrichment analysis of the gene set identified associations with {format_enrichr_section(self.enrichr)} (Figure \\ref{{fig:enrichment}}). 
+        The intersecting gene set consists of {natural_join(tex(g) for g in self.intersecting_genes)}.
+        Functional enrichment analysis of the gene set identified associations with {format_enrichr_section(self.enrichr, CROSSING_ENRICHR_RULES)} (Figure \\ref{{fig:enrichment}}). 
         ''').strip().replace('\n',' ')
 
         self.results = results
@@ -1812,14 +1804,11 @@ class CrossingReport():
         - Do NOT introduce outside knowledge or speculation.
 
         Citation rules (VERY IMPORTANT):
-        - Every sub-bullet MUST end with the citations that support the statement.
-        - Citations must be copied EXACTLY from the summaries in the format:
-        [[[GENE_REFNUM]]]
-        Examples: [[[A1BG_1, STAT3_3]]]; [[[ABCA2_1, ABCA2_2, TMEM127B_4]]
-        - The gene symbol & reference number format are immutable identifiers.
-        - Numeric citations like [1] or [1,3] are INVALID.
-        - Do NOT renumber, merge, or alter citation tokens.
-        - Do NOT group citations by gene; simply list all relevant citations.
+        - The summaries already contain citation tokens such as [[[A1BG_1]]] or [[[A1BG_1,A1BG_2]]]. Copy them exactly.
+        - Only use keys listed under ALLOWED CITATION KEYS for the gene you are drawing from.
+        - To cite several sources, write one token with comma-separated keys and no spaces: [[[A1BG_1,STAT3_3]]].
+        - Never write numeric citations such as [1] or [1,3].
+        - Place the citation at the end of the sentence it supports.
 
         Style:
         - Avoid repeating the same mechanism across sentences.
@@ -1836,7 +1825,7 @@ class CrossingReport():
         [[[GO]]], [[[KEGG]]], [[[ChEA]]], [[[GWAS]]].''').strip()
 
         discussion_deepdive, discussion_enrichr,  = await asyncio.gather(
-            generate_section(self.client, self.model, self.system_prompt, deepdive_prompt, str(deepdive_results)),
+            generate_section(self.client, self.model, self.system_prompt, deepdive_prompt, deepdive_llm_input(deepdive_results)),
             generate_section(self.client, self.model, self.system_prompt, enrichr_prompt, str(self.enrichr)),
         )
 
@@ -1875,39 +1864,35 @@ class CrossingReport():
 
         semaphore = asyncio.Semaphore(2)
 
-        async def doi_to_ref(session: ClientSession, key: str, doi: str):
+        def _cr_author(a: dict) -> str:
+            if a.get("family"):
+                return f"{a['family']}, {a['given']}" if a.get("given") else a["family"]
+            return a.get("name", "")
+
+        async def doi_to_ref(session, key, doi):
+            fallback = {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
+            params = {"mailto": os.environ["CROSSREF_MAILTO"]} if os.getenv("CROSSREF_MAILTO") else {}
             async with semaphore:
                 try:
-                    async with session.get(
-                        url=f"https://api.crossref.org/works/{doi}/transform/application/x-bibtex?mailto=danieljbclarkemssm@gmail.edu",
-                    ) as res:
+                    async with session.get(f"https://api.crossref.org/works/{quote(doi, safe='/')}",
+                                        params=params, timeout=ClientTimeout(total=20)) as res:
                         if not res.ok:
-                            return {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
-
-                        ref = await res.text(encoding="utf-8")
-                        ref = ref.strip()
-
-                        if not ref.startswith("@"):
-                            return {"id": key, "type": "article", "doi": doi, "url": f"https://doi.org/{doi}"}
-
-                        base_ref = {
-                            "id": key,
-                            "type": "article",
-                            "doi": doi,
-                            "url": f"https://doi.org/{doi}",
-                        }
-                        for field_key,field in [("title", "title"), ("year","year"), ("authors","author"), ("journal","journal")]:
-                            field = extract(ref,field)
-                            if field:
-                                base_ref[field_key] = field
-                                
-                        return base_ref
-
-                except ClientError:
-                    return {"id": key, "type": "misc", "doi": doi, "url": f"https://doi.org/{doi}"}
-
+                            return fallback
+                        msg = (await res.json())["message"]
+                except (ClientError, asyncio.TimeoutError, KeyError, ValueError):
+                    return fallback
                 finally:
                     await asyncio.sleep(0.5)
+            first = lambda v: (v[0] if isinstance(v, list) and v else v) or ""
+            year = ((msg.get("issued", {}).get("date-parts") or [[None]])[0] or [None])[0]
+            return _ref_dict("article", key, {
+                "title": first(msg.get("title")),
+                "authors": [n for n in map(_cr_author, msg.get("author", [])) if n],
+                "journal": first(msg.get("container-title")),
+                "year": year or "", "volume": msg.get("volume", ""),
+                "pages": msg.get("page", "").replace("-", "--"),
+                "doi": doi, "url": f"https://doi.org/{doi}",
+            })
 
 
         refs = [
@@ -1936,7 +1921,8 @@ class CrossingReport():
                 for summary, gene_refs in deepdive_results.values()
                 for key, doi in gene_refs.items()
             ]
-            refs.extend(await asyncio.gather(*tasks))
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            refs.extend(r for r in results if isinstance(r, dict))
 
         log("References complete.")
         return refs
@@ -1995,7 +1981,7 @@ class CrossingReport():
         title_data = f'Resources:{resources}\nDataset Descriptions:{dataset_descriptions}\nCrossing Terms:{terms}'
 
         REPORT_TITLE = await generate_section(self.client, self.model, self.system_prompt, title_prompt, title_data)
-        self.title = REPORT_TITLE
+        self.title = strip_citations(REPORT_TITLE)
 
         log("Sections complete.")
         return REPORT_TITLE,abstract,introduction,discussion,references
@@ -2015,8 +2001,13 @@ def construct_crossing_report(datasets, crossing, venn_diagram, intersecting_gen
     log("Fetching intersecting gene DeepDives...")
     deepdive_results = {}
     for gene in crossing_report.intersecting_genes:
-        summary = get_gpt4o_gene_summary(gene)
-        deepdive_results[gene] = format_deepdive(gene,summary)
+        try:
+            summary = get_gpt4o_gene_summary(gene)
+        except requests.RequestException as e:
+            log(f"DeepDive fetch failed for {gene}: {e}"); continue
+        if not summary:
+            log(f"No DeepDive for {gene}"); continue
+        deepdive_results[gene] = format_deepdive(gene, summary)
 
     log("Generating sections...")
     methods = crossing_report.write_report_methods()
@@ -2031,7 +2022,7 @@ def construct_crossing_report(datasets, crossing, venn_diagram, intersecting_gen
             discussion=discussion
         ),
         references,
-        strip_unknown=False
+        strip_unknown=True
     )
     log("Formatting validated.")
 
@@ -2040,10 +2031,10 @@ def construct_crossing_report(datasets, crossing, venn_diagram, intersecting_gen
         "file":venn_diagram_pdf,
         "caption":f"A venn diagram of the crossed gene sets. Sizes of each set and {'2-,3-, and 4-way' if len(datasets)==4 else '2- and 3-way'} intersection are labelled.",
     }
-    enrichr_bars_pdf = make_enrichr_barplot(crossing_report.enrichr)
+    enrichr_bars_pdf = make_enrichr_barplot(crossing_report.enrichr, CROSSING_ENRICHR_PANELS)
     enrichr_bars_file =  {
         "file":enrichr_bars_pdf,
-        "caption":f"Enrichment analysis of the up-regulated gene signature using Enrichr~\\cite{{Enrichr}}. Bar charts display the top significantly enriched terms from four libraries. A. GO Biological Process 2023~\\cite{{GO}}, B. KEGG 2021 Human~\\cite{{KEGG}}, C. ChEA 2022~\\cite{{ChEA}}, and D. GWAS Catalog 2019~\\cite{{GWAS}}. Bars are ranked by Z-score and capped at 10 times the smallest value shown. Color indicates the source library. The full enrichment results are available to view at \\href{{https://maayanlab.cloud/enrichr/enrich?dataset={enrichr_id}}}{{Enrichr}}.",
+        "caption":enrichr_caption("the intersecting gene set", CROSSING_PANEL_TEXT, enrichr_id),
     }
     figures = {
         "vennDiagram": venn_diagram_file,
@@ -2068,30 +2059,13 @@ def construct_crossing_report(datasets, crossing, venn_diagram, intersecting_gen
     }
 
 
-def construct_crossing_references(references: list[dict]) -> str:
-    entries = []
-    for ref in references:
-        fields = [
-            f"  title     = {{{ref['title']}}}" if ref.get('title') else None,
-            f"  author    = {{{' and '.join(ref['authors'])}}}" if ref.get('authors') else None,
-            f"  year      = {{{ref['year']}}}"    if ref.get('year')    else None,
-            f"  journal   = {{{ref['journal']}}}" if ref.get('journal') else None,
-            f"  volume    = {{{ref['volume']}}}"  if ref.get('volume')  else None,
-            f"  pages     = {{{ref['pages']}}}"   if ref.get('pages')   else None,
-            f"  doi       = {{{ref['doi']}}}"     if ref.get('doi')     else None,
-            f"  url       = {{{ref['url']}}}"     if ref.get('url')     else None,
-        ]
-        fields = [f for f in fields if f is not None]
-        entries.append(f"@{ref['type']}{{{ref['id']}, {', '.join(fields)} }}")
-
-    return '\n\n'.join(entries)
-
 def render_crossing_report(report):
     log('Preparing LaTeX bundle...')
     crossing = report["crossing"]
     n = (len(crossing)-5)//2
     datasets = [dataset["key"] for dataset in report["supplement"]["datasets"]]
     crossing_name = f'Crossing_{"".join(datasets)}_{crossing["rank"]}'
+    crossing_name = re.sub(r'[^A-Za-z0-9._-]+', '_', crossing_name)
     with TemporaryDirectory() as texdir:
         public_url = os.getenv("PUBLIC_URL")
         urllib.request.urlretrieve(f"{public_url}/crossing-report/crossing_report_{n}.tex", f"{texdir}/crossing_report.tex")
@@ -2108,7 +2082,7 @@ def render_crossing_report(report):
             variable_end_string=')))',
         )
         template = env.get_template("crossing_report.tex").render(
-            title=report['title'],
+            title=tex(report['title']),
             abstract=report['abstract'],
             introduction = report['introduction'],
             methods = report['methods'],
@@ -2121,7 +2095,7 @@ def render_crossing_report(report):
         with open(f"{texdir}/{crossing_name}.tex", "w") as texfile:
             texfile.write(template)
         with open(f"{texdir}/references.bib", "w") as bibfile:
-            bibfile.write(construct_crossing_references(report["references"]))
+            bibfile.write(construct_references(report["references"]))
         with upsert_file('.zip') as zipfile:
             base = zipfile.file.rsplit('.', 1)[0]
             shutil.make_archive(base, "zip", texdir)

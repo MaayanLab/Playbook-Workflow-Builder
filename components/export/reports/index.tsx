@@ -271,7 +271,7 @@ export const GeneSetCrossingAgentReport = MetaNode(`GeneSetCrossingAgentReport`)
             enrichr_gobp: props.inputs.enrichrGOBP,
             enrichr_kegg: props.inputs.enrichrKEGG,
             enrichr_chea: props.inputs.enrichrChEA,
-            enrichr_komp: props.inputs.enrichrGWAS
+            enrichr_gwas: props.inputs.enrichrGWAS
         }
       }},
       message => props.notify({ type: 'info', message }),

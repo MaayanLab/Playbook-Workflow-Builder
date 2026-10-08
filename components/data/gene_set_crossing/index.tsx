@@ -264,19 +264,28 @@ export const SelectGeneSetCrossing = MetaNode('SelectGeneSetCrossing')
   .inputs({ crossings: GeneSetCrossings })
   .output(GeneSetCrossing)
   .prompt(props => {
-    const { crossings } = props.inputs
+    const inputCrossings = props.inputs.crossings
+    const crossings = Array.isArray(inputCrossings) ? inputCrossings : []
+
     type Row = (typeof crossings)[number]
 
-    const [selected, setSelected] = React.useState<number | null>(
-      props.data
-        ? crossings.findIndex(c => c.rank === props.data?.rank)
-        : null
-    )
+    const [selected, setSelected] = React.useState<number | null>(null)
 
-    const maxTerms: number = crossings.some(c => c.term5 !== undefined) ? 5
-      : crossings.some(c => c.term4 !== undefined) ? 4
-      : crossings.some(c => c.term3 !== undefined) ? 3
-      : 2
+    React.useEffect(() => {
+      const index = props.data
+        ? crossings.findIndex(c => c.rank === props.data?.rank)
+        : -1
+
+      setSelected(index >= 0 ? index : null)
+    }, [inputCrossings, props.data?.rank])
+
+    const maxTerms = crossings.reduce((max, crossing) =>
+      crossing.term5 !== undefined ? 5
+        : crossing.term4 !== undefined ? 4
+          : crossing.term3 !== undefined ? 3
+            : max,
+      2,
+    )
 
     const columns: Array<{ name: string; field: keyof Row }> = [
       { name: 'Rank', field: 'rank' },

@@ -1,24 +1,34 @@
 FROM maayanlab/base:1.6.0 AS base
 USER root
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-RUN echo "Installing system dependencies (git+puppeteer deps)..." \
+
+RUN echo "Installing system dependencies..." \
   && apt-get update \
   && apt-get -y install \
-    biber \
     curl \
     git \
     gnupg \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+RUN echo "Installing puppeteer dependencies..." \
+  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dl-google.gpg \
+  && sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/dl-google.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+  && apt-get update \
+  && apt-get install google-chrome-stable -y --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/*
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/google-chrome"
+
+RUN echo "Installing latex dependencies..." \
+  && apt-get update \
+  && apt-get -y install \
+    biber \
     latexmk \
     texlive-bibtex-extra \
     texlive-fonts-extra \
     texlive-latex-extra \
     texlive-luatex \
-  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-  && apt-get update \
-  && apt-get install google-chrome-stable -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/google-chrome"
+
 USER ubuntu
 RUN NODE_VERSION=21.3 /install.sh
 RUN npm i -g ts-node

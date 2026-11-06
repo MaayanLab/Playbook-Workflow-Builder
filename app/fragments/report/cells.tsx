@@ -44,6 +44,8 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     gpt_summary: '',
   } as Exclude<Metapath['playbook_metadata'], null>)
   const [updateRequired, setUpdateRequired] = React.useState(false)
+  const previousMetapath = React.useRef<Metapath[]>()
+  const pendingRebaseHead = React.useRef<string>()
   React.useEffect(() => {
     if (!data) return
     setUpdateRequired(
@@ -52,26 +54,60 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     )
   }, [data, cellMetadata, playbookMetadata, userPlaybook])
   React.useEffect(() => {
-    if (!data) return
+    if (!metapath) return
     const {
       id = '',
       title = '',
       description = '',
       summary = 'auto',
       gpt_summary = '',
-    } = data.metapath[data.metapath.length-1].playbook_metadata ?? {}
+    } = metapath[metapath.length-1].playbook_metadata ?? {}
     setPlaybookMetadata({ id, title, description, summary, gpt_summary })
-    setCellMetadata(dict.init(data.metapath.map((element, index) => {
-      const {
-        id = '',
-        label = '',
-        description = '',
-        process_visible = false,
-        data_visible = index+1 !== data.metapath.length-1,
-      } = element.cell_metadata ?? {}
-      return { key: element.id, value: { id, label, description, process_visible, data_visible } }
-    })))
-  }, [data])
+    // Snapshot this before enqueueing the state update. Reading the ref from
+    // inside the updater races with the assignment below and can make the new
+    // metapath masquerade as the previous one.
+    const oldMetapath = previousMetapath.current
+    const oldStepIds = new Set(oldMetapath?.map(step => step.id))
+    const oldProcessIds = new Set(oldMetapath?.map(step => step.process.id))
+    const isExpectedRebase = pendingRebaseHead.current === metapath[metapath.length - 1]?.id
+    const isRebase = oldMetapath !== undefined && (isExpectedRebase || metapath.some(step =>
+      oldStepIds.has(step.id) || oldProcessIds.has(step.process.id)
+    ))
+    const oldStepsBySlot = new Map<string, Metapath>()
+    const oldTypeCounts = new Map<string, number>()
+    oldMetapath?.forEach(step => {
+      const occurrence = oldTypeCounts.get(step.process.type) ?? 0
+      oldTypeCounts.set(step.process.type, occurrence + 1)
+      oldStepsBySlot.set(`${step.process.type}:${occurrence}`, step)
+    })
+    setCellMetadata(previous => {
+      // A rebase can add or remove downstream steps, so equality of the whole
+      // path is too strict. An unchanged step is enough to establish that this
+      // is another revision of the graph currently on screen.
+      const typeCounts = new Map<string, number>()
+      return dict.init(metapath.map((element, index) => {
+        const {
+          id = '',
+          label = '',
+          description = '',
+          process_visible = false,
+          data_visible = index+1 !== metapath.length-1,
+        } = element.cell_metadata ?? {}
+        const serverValue = { id, label, description, process_visible, data_visible }
+        const occurrence = typeCounts.get(element.process.type) ?? 0
+        typeCounts.set(element.process.type, occurrence + 1)
+        const oldStep = isRebase ? oldStepsBySlot.get(`${element.process.type}:${occurrence}`) : undefined
+        const localValue = oldStep ? previous[oldStep.id] : undefined
+        // An empty metadata id marks unsaved presentation changes. Carry them
+        // across a content-addressed input rebase, whose FPL ids all change.
+        return { key: element.id, value: localValue?.id === '' ? localValue : serverValue }
+      }))
+    })
+    if (pendingRebaseHead.current === metapath[metapath.length - 1]?.id) {
+      pendingRebaseHead.current = undefined
+    }
+    previousMetapath.current = metapath
+  }, [metapath])
   const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
   const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   const { waypoints, scrollTo } = useWaypoints()
@@ -194,15 +230,16 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
               }}
             />
           </Waypoint>
-          {(data.metapath||[]).filter(head => head.id in cellMetadata).map(head => (
+          {(data.metapath||[]).filter(head => head.id in cellMetadata).map((head, index) => (
             <Cell
-              key={`${head.id}-${cellMetadata[head.id]?.process_visible}-${cellMetadata[head.id]?.data_visible}`}
+              key={`${head.process.type}:${index}`}
               session_id={session_id}
               krg={krg}
               id={id}
               head={head}
               cellMetadata={cellMetadata}
               setCellMetadata={setCellMetadata}
+              onRebase={headId => { pendingRebaseHead.current = headId }}
             />
           ))}
           <References />

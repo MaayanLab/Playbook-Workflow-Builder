@@ -4,11 +4,10 @@ import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
 import { z } from 'zod'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { Metapath, MetapathProvider, useFPL, useMetapathOutput } from '@/app/fragments/metapath'
+import { Metapath, MetapathProvider, useFPL, useKRG, useMetapathOutput } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
 import KRG from '@/core/KRG'
-import useKRG from '@/app/fragments/graph/krg'
 
 
 const ParamType = z.union([
@@ -45,7 +44,7 @@ function Cell({ krg, head }: { krg: KRG, head: Metapath }) {
 }
 
 function Main({ session_id, graph_id, node_id }: { session_id?: string, graph_id: string, node_id: string }) {
-  const krg = useKRG({ session_id })
+  const krg = useKRG()
   const { data: metapath = [] } = useFPL(graph_id)
   const head = React.useMemo(() => metapath.filter(({ id }) => id === node_id)[0], [metapath, node_id])
   return (

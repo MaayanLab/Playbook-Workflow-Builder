@@ -61,7 +61,7 @@ export default function Cell({ session_id, krg, id, head, metapath }: { session_
               className="btn btn-primary"
               onClick={async (evt) => {
                 const res = await trpc.fpprg.recompute.mutate({ fpl_id: id, rebase_id: head.id }, { context: { session_id } })
-                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}`, undefined, { shallow: true })
+                router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}`, undefined, { shallow: true, scroll: false })
                 mutate()
               }}
             >Recompute</button>

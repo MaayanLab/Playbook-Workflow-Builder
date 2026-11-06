@@ -4,56 +4,75 @@ import type { AppRouter } from '@/app/trpc/router'
 import type KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
 import { useTRPCClient } from '@/app/trpc/client'
-import cache from '@/utils/cache'
-import { Readable, derived, readable } from '@/utils/store'
-import { useReadable, usePromise } from '@/utils/hooks'
-import type { ResolvedLifecycle } from '@/app/trpc/routers/fpprg'
 import { ResolutionWatcher } from '@/app/fragments/resolution-watcher'
+import { useQuery } from '@tanstack/react-query'
+import krg from '@/app/krg'
+import { suggestionsQueryKey, withSuggestions } from '@/app/extensions/suggestions'
 
 /** An FPL as received by the client (see FPL['toJSON']) */
 export type Metapath = inferRouterOutputs<AppRouter>['fpprg']['fpl'][number]
 
-const MetapathContext = React.createContext({
-  fetchFPL: (id: string) => Promise.reject<Metapath[]>('Uninitialized'),
-  fetchResolved: (id: string) => Promise.reject<Readable<ResolvedLifecycle> & { refresh: () => void }>('Uninitialized'),
-})
+type MetapathContextValue = {
+  session_id?: string
+  watcher: ResolutionWatcher
+  krg: KRG
+}
+
+const MetapathContext = React.createContext<MetapathContextValue | undefined>(undefined)
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
   const trpc = useTRPCClient()
   const context = React.useMemo(() => ({ session_id: props.session_id }), [props.session_id])
-  const fetchFPL = React.useCallback(cache(async (id: string) => {
-    if (id === 'start') return []
-    return await trpc.fpprg.fpl.query(id, { context })
-  }), [trpc, context])
-  // one subscription for every step watched on this page
+  // One subscription transports every process watched on this page.
   const watcher = React.useMemo(() => new ResolutionWatcher(trpc, context), [trpc, context])
-  const fetchResolved = React.useCallback(cache(async (id: string) => {
-    const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => watcher.watch(id, set))
-    return { subscribe, refresh: () => watcher.refresh(id) }
-  }), [watcher])
+  const { data: suggestions } = useQuery({
+    queryKey: suggestionsQueryKey(props.session_id),
+    queryFn: () => trpc.catalog.suggestions.query(undefined, { context }),
+    staleTime: 30_000,
+    retry: false,
+  })
+  const sessionKrg = React.useMemo(() => withSuggestions(krg, suggestions ?? []), [suggestions])
+  const value = React.useMemo(
+    () => ({ session_id: props.session_id, watcher, krg: sessionKrg }),
+    [props.session_id, watcher, sessionKrg],
+  )
   return (
-    <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>
+    <MetapathContext.Provider value={value}>
       {props.children}
     </MetapathContext.Provider>
   )
 }
 
 export function useMetapath() {
-  return React.useContext(MetapathContext)
+  const context = React.useContext(MetapathContext)
+  if (!context) throw new Error('useMetapath must be used inside MetapathProvider')
+  return context
+}
+
+/** The component registry and current database's user suggestions. */
+export function useKRG() {
+  return useMetapath().krg
 }
 
 export function useFPL(id?: string) {
-  const metapath = useMetapath()
-  const fpl = React.useMemo(() => id ? metapath.fetchFPL(id) : Promise.resolve([]), [id])
-  return usePromise(fpl)
+  const { session_id } = useMetapath()
+  const trpc = useTRPCClient()
+  return useQuery<Metapath[]>({
+    queryKey: ['fpprg-fpl', session_id, id],
+    queryFn: async () => !id || id === 'start'
+      ? []
+      : await trpc.fpprg.fpl.query(id, { context: { session_id } }),
+    staleTime: Infinity,
+    placeholderData: previous => previous,
+  })
 }
 
 export function useResolved(id?: string) {
-  const metapath = useMetapath()
-  const resolved = React.useMemo(() => id ? metapath.fetchResolved(id) : Promise.resolve(undefined), [id])
-  const { data: store } = usePromise(resolved)
-  const data = useReadable(store)
-  return { data, mutate: () => { store?.refresh() } }
+  const { watcher } = useMetapath()
+  const subscribe = React.useCallback((notify: () => void) => id ? watcher.watch(id, notify) : () => {}, [watcher, id])
+  const getSnapshot = React.useCallback(() => id ? watcher.get(id) : undefined, [watcher, id])
+  const data = React.useSyncExternalStore(subscribe, getSnapshot, () => undefined)
+  return { data, mutate: () => { if (id) watcher.refresh(id) } }
 }
 
 /**
@@ -97,7 +116,7 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
         error: undefined,
       }
     }
-  }, [resolved])
+  }, [resolved, krg, head.process.id, head.process.type])
   return { data: { output, outputNode }, error, isLoading, status, mutate }
 }
 
@@ -106,35 +125,27 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
  *  (requests are de-duplicated by the per-process cache in MetapathProvider)
  */
 export function useMetapathInputs({ krg, head }: { krg: KRG, head: Metapath }) {
-  const metapath = useMetapath()
-  const promise = React.useMemo(() => {
-    const keys = dict.sortedKeys(head.process.inputs)
-    return Promise.all(keys.map(key => metapath.fetchResolved(head.process.inputs[key].id)))
-      .then(values => dict.init(values.map((value, i) => ({ key: keys[i], value }))))
-  }, [metapath, head])
-  const { data: stores, error } = usePromise(promise)
-  const store = React.useMemo(() => {
-    if (!stores) return
-    const keys = dict.sortedKeys(stores)
-    return derived(
-      keys.map(key => stores[key]),
-      (values) => {
-        const inputs = {} as Record<string, any>
-        values.forEach((value, i) => {
-          const [k, ...rest] = keys[i].toString().split(':')
-          const v = value.type === 'resolved' ? value.data.data?.value : undefined
-          if (v === undefined) return
-          if (rest.length > 0) {
-            if (!(k in inputs)) inputs[k] = []
-            inputs[k].push(v)
-          } else {
-            inputs[k] = v
-          }
-        })
-        return inputs
-      },
-    )
-  }, [stores, head.process.id])
-  const data = useReadable(store)
-  return { data, error }
+  const { watcher } = useMetapath()
+  const keys = React.useMemo(() => dict.sortedKeys(head.process.inputs), [head.process.id])
+  const ids = React.useMemo(() => keys.map(key => head.process.inputs[key].id), [keys, head.process.id])
+  const subscribe = React.useCallback((notify: () => void) => watcher.watchMany(ids, notify), [watcher, ids])
+  const version = React.useSyncExternalStore(subscribe, watcher.getVersion, () => 0)
+  return React.useMemo(() => {
+    const inputs: Record<string, any> = {}
+    let error: Error | undefined
+    keys.forEach((key, i) => {
+      const value = watcher.get(ids[i])
+      if (value?.type === 'error') error ??= new Error(value.error)
+      const resolved = value?.type === 'resolved' ? value.data.data?.value : undefined
+      if (resolved === undefined) return
+      const [name, ...rest] = key.toString().split(':')
+      if (rest.length > 0) {
+        if (!(name in inputs)) inputs[name] = []
+        inputs[name].push(resolved)
+      } else {
+        inputs[name] = resolved
+      }
+    })
+    return { data: inputs, error }
+  }, [watcher, version, keys, ids])
 }

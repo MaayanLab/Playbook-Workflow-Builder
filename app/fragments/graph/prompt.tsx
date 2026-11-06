@@ -53,7 +53,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
                   inputs: head.process.inputs,
                 },
               }, { context: { session_id } })
-              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
+              router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true, scroll: false })
             }}
           />
           {/* <FigureCaption id={head.id} story={{ ...story, ast: astFiltered }} /> */}

@@ -15,7 +15,7 @@ const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>> }) {
+export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata, onRebase = () => {} }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>>, onRebase?: (headId: string) => void }) {
   const router = useExRouter()
   const { data: { outputNode = undefined, output = undefined } = {}, status, isLoading } = useMetapathOutput({ krg, head })
   const story = useStory()
@@ -67,6 +67,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               outputNode={outputNode}
               output={output}
               status={status}
+              onRebase={onRebase}
             />
             : <div className="collapse collapse-arrow text-black dark:text-white">
             <input type="checkbox" checked={currentCellMetadata.data_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...currentCellMetadata, data_visible: evt.target.checked, id: '' } }))}} />

@@ -2,8 +2,7 @@ import React from 'react'
 import { start_icon, func_icon, variable_icon, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { type Metapath, useFPL } from '@/app/fragments/metapath'
-import useKRG from '@/app/fragments/graph/krg'
+import { type Metapath, useFPL, useKRG } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
 import { Set } from 'immutable'
@@ -41,10 +40,39 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
   return metapath.filter(({ id }) => relevant[id] === true)
 }
 
-export default function Graph({ session_id, graph_id, node_id, thread_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, thread_id?: string, extend: boolean, suggest: boolean }) {
+type GraphProps = { session_id?: string, graph_id: string, node_id: string, thread_id?: string, extend: boolean, suggest: boolean }
+
+export default function Graph(props: GraphProps) {
+  const { session_id, thread_id } = props
   const router = useExRouter()
-  const krg = useKRG({ session_id })
-  const { data: metapath = [] } = useFPL(graph_id)
+  const krg = useKRG()
+  const fpl = useFPL(props.graph_id)
+  const settled = React.useRef({
+    graph_id: props.graph_id,
+    node_id: props.node_id,
+    extend: props.extend,
+    suggest: props.suggest,
+    metapath: [] as Metapath[],
+  })
+  if (!fpl.isPlaceholderData && fpl.data !== undefined) {
+    settled.current = {
+      graph_id: props.graph_id,
+      node_id: props.node_id,
+      extend: props.extend,
+      suggest: props.suggest,
+      metapath: fpl.data,
+    }
+  }
+  // A mutation changes the content-addressed graph id before its immutable FPL
+  // has arrived. Keep rendering the last complete graph instead of briefly
+  // collapsing the breadcrumbs and active cell.
+  const { graph_id, node_id, extend, suggest, metapath } = fpl.isPlaceholderData ? settled.current : {
+    graph_id: props.graph_id,
+    node_id: props.node_id,
+    extend: props.extend,
+    suggest: props.suggest,
+    metapath: fpl.data ?? [],
+  }
   const node_ids = React.useMemo(() => Set(node_id.split(',')), [node_id])
   const heads = React.useMemo(() => {
     return metapath.filter(({ id }) => node_ids.has(id))

@@ -22,6 +22,7 @@ export class ResolutionWatcher {
   /** processes covered by the current subscription */
   private subscribed = new Set<string>()
   private scheduled: ReturnType<typeof setTimeout> | undefined
+  private version = 0
 
   constructor(private client: TRPCClient<AppRouter>, private context: { session_id?: string }) {}
 
@@ -38,6 +39,18 @@ export class ResolutionWatcher {
       this.listeners.delete(id)
       if (this.listeners.size === 0) this.stop()
     }
+  }
+
+  /** Current lifecycle value for a process. Stable until the next event. */
+  get = (id: string) => this.latest.get(id)
+
+  /** Monotonic snapshot used when several process resolutions are consumed together. */
+  getVersion = () => this.version
+
+  /** Subscribe once to a set of process ids. */
+  watchMany = (ids: string[], listener: () => void) => {
+    const unwatch = ids.map(id => this.watch(id, listener))
+    return () => unwatch.forEach(stop => stop())
   }
 
   /** Request the resolution again (e.g. after its output was deleted) */
@@ -76,6 +89,7 @@ export class ResolutionWatcher {
 
   private set(id: string, value: ResolvedLifecycle) {
     this.latest.set(id, value)
+    this.version += 1
     this.listeners.get(id)?.forEach(listener => listener(value))
   }
 

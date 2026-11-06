@@ -12,8 +12,7 @@ import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import * as Auth from 'next-auth/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTRPCClient } from '@/app/trpc/client'
-import { withSuggestions } from '@/app/extensions/suggestions'
-import { suggestionsQueryKey } from '@/app/fragments/graph/krg'
+import { suggestionsQueryKey, withSuggestions } from '@/app/extensions/suggestions'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))

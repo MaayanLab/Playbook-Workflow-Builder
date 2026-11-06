@@ -14,7 +14,7 @@ import { useTRPCClient } from '@/app/trpc/client'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, status }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath, status: string | undefined }) {
+export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, status, onRebase }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode?: DataMetaNode, output: any, id: string, head: Metapath, status: string | undefined, onRebase: (headId: string) => void }) {
   const router = useExRouter()
   const trpc = useTRPCClient()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
@@ -61,6 +61,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
                   inputs: head.process.inputs,
                 },
               }, { context: { session_id } })
+              onRebase(res.head)
               router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res.head}`, undefined, { shallow: true, scroll: false })
             }}
           />

@@ -8,10 +8,9 @@ import { useQuery, useMutation, useQueryClient, skipToken } from '@tanstack/reac
 import { useTRPC, useTRPCClient, isTRPCClientError } from '@/app/trpc/client'
 import * as Auth from 'next-auth/react'
 
-import useKRG from '@/app/fragments/graph/krg'
+import { useFPL, useKRG } from '@/app/fragments/metapath'
 import { useExRouter } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
-import { useFPL } from '../metapath'
 import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 import { Breadcrumbs } from '../breadcrumbs'
@@ -25,7 +24,7 @@ const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
 export default function Page({ mode, session_id, graph_id, node_id, embedded = false }: { mode: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
-  const krg = useKRG({ session_id })
+  const krg = useKRG()
   const router = useExRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')

@@ -2,7 +2,7 @@
  * User suggestions (see the `suggestion` table) are represented in the KRG as
  *  placeholder nodes, so that playbooks containing suggested steps can be shown,
  *  saved and exported. Shared by the server (@/app/server-krg) and the browser
- *  (@/app/fragments/graph/krg).
+ *  (@/app/fragments/metapath).
  */
 import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
@@ -13,6 +13,9 @@ import { MetaNode } from '@/spec/metanode'
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 export type SuggestionSpec = Pick<Suggestion, 'name' | 'inputs' | 'output' | 'description' | 'user'>
+
+/** Suggestions belong to the database behind a local or tunneled session. */
+export const suggestionsQueryKey = (session_id?: string) => ['catalog-suggestions', session_id] as const
 
 /**
  * A KRG including the given suggestions (`krg` itself is not modified)

@@ -8,8 +8,8 @@
   "scripts": {
     "build:next": "NODE_ENV=production DATABASE_URL= next build",
     "build": "npm run build:next",
-    "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) tsx --env-file-if-exists=../.env server/cli.ts",
-    "dev": "NODE_ENV=development tsx --env-file-if-exists=../.env server/cli.ts"
+    "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) next start -p ${PORT:-3000}",
+    "dev": "NODE_ENV=development next dev -p ${PORT:-3000}"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.9",
@@ -29,8 +29,6 @@
     "react-masonry-css": "^1.0.16",
     "react-simple-code-editor": "^0.13.1",
     "sharp": "^0.32.6",
-    "socket.io": "^4.6.2",
-    "socket.io-client": "^4.6.2",
     "use-async-effect": "^2.2.7",
     "uuid": "^9.0.0"
   },

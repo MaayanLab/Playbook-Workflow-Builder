@@ -2,8 +2,9 @@ import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
 import db from '@/app/db'
 import { uuid } from '@/db'
-import { emitter } from '@/app/extensions/socket/cavatica'
-import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
+import { closeSession, isWorkerConnected, sessionEvents } from '@/app/extensions/cavatica/tunnel'
+import * as cavatica from '@/app/extensions/cavatica'
+import * as cavaticaLocal from '@/app/extensions/cavatica/testing'
 import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
 import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
@@ -14,6 +15,19 @@ import { authedProcedure, publicProcedure, router } from '../init'
 async function getIntegrations(user_id: string) {
   return await db.selectFrom('user_integrations').selectAll().where('id', '=', user_id).executeTakeFirst()
 }
+
+/** A CAVATICA session launched by `user` */
+async function getOwnSession(session_id: string, user: string) {
+  const proxy_session = await db.selectFrom('proxy_session').selectAll()
+    .where('id', '=', session_id)
+    .where('user', '=', user)
+    .executeTakeFirst()
+  if (!proxy_session) throw new TRPCError({ code: 'NOT_FOUND' })
+  return proxy_session
+}
+
+/** CAVATICA_LOCAL_WORKER=1 runs session workers on this machine instead of in CAVATICA (for development) */
+const { run_wes_worker, abort_wes_worker } = process.env.CAVATICA_LOCAL_WORKER ? cavaticaLocal : cavatica
 
 const notConfigured = () => new TRPCError({ code: 'PAYMENT_REQUIRED', message: 'CAVATICA Integration not configured' })
 
@@ -48,15 +62,14 @@ const cavaticaRouter = router({
       const { cavatica_api_key, cavatica_default_project } = integrations
       // TODO: spawn with pg-boss
       const proxy_session = await db.insertInto('proxy_session')
-        .values({ id: uuid(), state: '' })
+        .values({ id: uuid(), user: ctx.session.user.id, state: '' })
         .returning('id')
         .executeTakeFirstOrThrow()
       const setState = (data: { state?: string | null, run_id?: string | null }) =>
         db.updateTable('proxy_session').set(data).where('id', '=', proxy_session.id).execute()
       ;(async () => {
-        emitter.on(`join:${proxy_session.id}`, async () => {
-          await setState({ state: 'CONNECTED' })
-        })
+        const onJoin = () => { setState({ state: 'CONNECTED' }).catch(error => console.error(error)) }
+        sessionEvents.on(`join:${proxy_session.id}`, onJoin)
         try {
           for await (const status of run_wes_worker({
             url: process.env.PUBLIC_URL as string,
@@ -69,6 +82,7 @@ const cavaticaRouter = router({
         } catch (e) {
           await setState({ state: 'ERROR' })
         }
+        sessionEvents.off(`join:${proxy_session.id}`, onJoin)
         await db.deleteFrom('proxy_session').where('id', '=', proxy_session.id).execute()
       })().catch(error => console.error(error))
       return proxy_session.id
@@ -76,21 +90,16 @@ const cavaticaRouter = router({
 
   status: authedProcedure
     .input(z.object({ session_id: z.string() }))
-    .query(async ({ input }) => {
-      const proxy_session = await db.selectFrom('proxy_session').selectAll().where('id', '=', input.session_id).executeTakeFirst()
-      if (!proxy_session) throw new TRPCError({ code: 'NOT_FOUND' })
-      return proxy_session
+    .query(async ({ ctx, input }) => {
+      return await getOwnSession(input.session_id, ctx.session.user.id)
     }),
 
   disconnect: authedProcedure
     .input(z.object({ session_id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const proxy_session = await db.selectFrom('proxy_session').selectAll().where('id', '=', input.session_id).executeTakeFirst()
-      if (!proxy_session) throw new TRPCError({ code: 'NOT_FOUND' })
+      const proxy_session = await getOwnSession(input.session_id, ctx.session.user.id)
       if (!proxy_session.run_id) throw new TRPCError({ code: 'PAYMENT_REQUIRED', message: 'Not launched yet!' })
-      if (proxy_session.state === 'RUNNING') {
-        emitter.emit(`close:${input.session_id}`)
-      }
+      if (isWorkerConnected(input.session_id)) closeSession(input.session_id)
       const integrations = await getIntegrations(ctx.session.user.id)
       if (!integrations?.cavatica_api_key) throw notConfigured()
       await abort_wes_worker({

@@ -31,7 +31,9 @@ While somewhat elaborate, the benefits of using ufs+drs are:
 
 ## CAVATICA Integration
 
-The way this works is by using WES to start a task in the user's account with their API key. The task runs an in-memory dockerized version of the actual app. Additionally, a websocket connection is made back to the public app acting as a reverse proxy--requests made to `/socket/{session_id}/*` forward the request over the websocket, the worker performs the request and returns the result, allowing the standard front-end to be driven through communications with the backend running on the user's account.
+The way this works is by using WES to start a task in the user's account with their API key. The task (`cli/cavatica-worker.ts`) runs an in-memory dockerized version of the actual app (`next start`). The worker can't be reached directly, so it connects back to the public app, which acts as a reverse proxy: the worker subscribes to `tunnel.serve` (tRPC over server-sent events) to receive requests made to `/api/socket/{session_id}/*`, performs them against its app, and streams the responses back with `tunnel.respond` (see `app/extensions/cavatica/tunnel.ts`). This allows the standard front-end, including its subscriptions, to be driven by the backend running on the user's account. Workers authenticate with the CAVATICA API key of the user who launched the session, and exit when the session is disconnected or after 2 minutes without requests.
+
+To try this locally without CAVATICA, set `CAVATICA_LOCAL_WORKER=1`: sessions then run the worker on your machine (port 3001, with its own `next dev` build directory).
 
 The database used on the worker is an in-memory sqlite database rather than the production database. However, files are persisted to & accessed from the user's CAVATICA workspace in realtime over sbfs.
 

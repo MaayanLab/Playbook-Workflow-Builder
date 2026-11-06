@@ -34,6 +34,8 @@ if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE 
 
 /** @type {import('next').NextConfig} */
 module.exports = {
+  // a separate build directory lets a local CAVATICA worker (`next dev`) run alongside the app
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   images: {
     unoptimized: true,
   },
@@ -70,7 +72,7 @@ module.exports = {
       //  rather than bundled, files outside of app/ (externalDir) are otherwise bundled
       config.externals = [
         ...[].concat(config.externals ?? []),
-        ...['pg', 'pg-boss', 'pg-listen', 'better-sqlite3', 'kysely', 'kysely/migration', 'ws']
+        ...['pg', 'pg-boss', 'pg-listen', 'better-sqlite3', 'kysely', 'kysely/migration']
           .map(pkg => ({ [pkg]: `commonjs ${pkg}` })),
       ]
     } else {

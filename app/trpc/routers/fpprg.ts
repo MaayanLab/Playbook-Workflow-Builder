@@ -23,6 +23,39 @@ export type ResolvedLifecycle = {
   data: ResolvedJSON
 }
 
+export type ResolvedEvent = { id: string } & ResolvedLifecycle
+
+/**
+ * Report the resolution lifecycle of process `id` to `emit` until it's resolved (or fails).
+ *  awaitResolved (re-)submits the job each time it times out, so this keeps waiting.
+ */
+async function watchResolution(id: string, emit: (event: ResolvedLifecycle) => void, signal?: AbortSignal) {
+  // forward partial resolution updates
+  const status = { type: 'resolving' as const, percent: 0, status: '' }
+  const unsub = bus.listen(`distributed:resolved:${id}:status`, (update: StatusUpdate) => {
+    if (update.type === 'progress') status.percent = update.percent
+    else if (update.type === 'info') status.status += update.message
+    emit({ ...status })
+  })
+  try {
+    while (!signal?.aborted) {
+      try {
+        const resolved = await fpprg.awaitResolved(id)
+        emit({ type: 'resolved', data: resolved.toJSON() })
+        return
+      } catch (e) {
+        if (!TimeoutError.isinstance(e)) {
+          console.error(e)
+          emit({ type: 'error', error: String(e) })
+          return
+        }
+      }
+    }
+  } finally {
+    unsub()
+  }
+}
+
 export const fpprgRouter = router({
   import: publicProcedure
     .input(z.object({
@@ -142,54 +175,33 @@ export const fpprgRouter = router({
    * Request the resolution of a process, receiving progress updates
    *  until it is resolved.
    */
-  resolved: publicProcedure
-    .input(z.string())
-    .subscription(async function* ({ input: id, signal }): AsyncGenerator<ResolvedLifecycle> {
-      const pending: ResolvedLifecycle[] = []
-      let outcome: { resolved: Resolved } | { error: unknown } | { done: true } | undefined
+  /**
+   * Request the resolution of several processes, receiving progress updates
+   *  (as `{ id, ...ResolvedLifecycle }`) until all of them are resolved.
+   *  A page uses one of these for all of its steps.
+   */
+  resolvedMany: publicProcedure
+    .input(z.array(z.string()).min(1).max(1000))
+    .subscription(async function* ({ input, signal }): AsyncGenerator<ResolvedEvent> {
+      const ids = [...new Set(input)]
+      const queue: ResolvedEvent[] = []
       let wake: (() => void) | undefined
       const notify = () => { wake?.() }
       signal?.addEventListener('abort', notify, { once: true })
-
-      // forward partial resolution updates to the client
-      const status = { type: 'resolving' as const, percent: 0, status: '' }
-      const unsub = bus.listen(`distributed:resolved:${id}:status`, (update: StatusUpdate) => {
-        if (update.type === 'progress') status.percent = update.percent
-        else if (update.type === 'info') status.status += update.message
-        pending.push({ ...status })
-        notify()
-      })
-
-      // wait for it to be resolved, awaitResolved re-submits the job each time it times out
-      ;(async () => {
-        while (!signal?.aborted) {
-          try {
-            return { resolved: await fpprg.awaitResolved(id) }
-          } catch (e) {
-            if (!TimeoutError.isinstance(e)) return { error: e }
-          }
-        }
-        return { done: true as const }
-      })().then(result => { outcome = result; notify() })
-
+      let remaining = ids.length
+      for (const id of ids) {
+        watchResolution(id, (event) => { queue.push({ id, ...event }); notify() }, signal)
+          .finally(() => { remaining -= 1; notify() })
+      }
       try {
         while (true) {
-          while (pending.length > 0) yield pending.shift()!
-          if (outcome !== undefined) {
-            if ('resolved' in outcome) yield { type: 'resolved', data: outcome.resolved.toJSON() }
-            else if ('error' in outcome) {
-              console.error(outcome.error)
-              yield { type: 'error', error: String(outcome.error) }
-            }
-            return
-          }
-          if (signal?.aborted) return
+          while (queue.length > 0) yield queue.shift()!
+          if (remaining === 0 || signal?.aborted) return
           await new Promise<void>(resolve => { wake = resolve })
           wake = undefined
         }
       } finally {
         signal?.removeEventListener('abort', notify)
-        unsub()
       }
     }),
 })

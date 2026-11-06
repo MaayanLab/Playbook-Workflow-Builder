@@ -9,6 +9,7 @@ import { componentRouters } from '@/components/trpc'
 import { systemRouter } from './routers/system'
 import { catalogRouter } from './routers/catalog'
 import { publicApiRouter } from './routers/public-api'
+import { tunnelRouter } from './routers/tunnel'
 
 export const appRouter = router({
   admin: adminRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
   system: systemRouter,
   catalog: catalogRouter,
   publicApi: publicApiRouter,
+  tunnel: tunnelRouter,
 })
 
 export type AppRouter = typeof appRouter

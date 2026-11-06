@@ -26,8 +26,6 @@ export type Backend = {
   dialect: 'postgres' | 'sqlite'
   db: DB
   bus: EventBus
-  /** the underlying pool when using postgres (used by the socket.io adapter) */
-  pool?: pg.Pool
 }
 
 /** Generate a random id for a new record */
@@ -61,7 +59,6 @@ function createPostgres(connectionString: string): Backend {
     dialect: 'postgres',
     db: new Kysely<Database>({ dialect: new PostgresDialect({ pool }) }),
     bus: new PgEventBus(connectionString),
-    pool,
   }
 }
 

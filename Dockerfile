@@ -70,7 +70,6 @@ COPY --from=prepare_build --chown=ubuntu /home/ubuntu/app app
 WORKDIR /home/ubuntu/app
 RUN chmod +x cli/wes-worker.sh cli/pwb.sh
 ENV PORT=3000
-ENV PORT=3005
 ENV PYTHON_BIN=/home/ubuntu/.venv/bin/python
 CMD ["npm", "start"]
 

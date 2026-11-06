@@ -8,6 +8,7 @@ import cache from '@/utils/cache'
 import { Readable, derived, readable } from '@/utils/store'
 import { useReadable, usePromise } from '@/utils/hooks'
 import type { ResolvedLifecycle } from '@/app/trpc/routers/fpprg'
+import { ResolutionWatcher } from '@/app/fragments/resolution-watcher'
 
 /** An FPL as received by the client (see FPL['toJSON']) */
 export type Metapath = inferRouterOutputs<AppRouter>['fpprg']['fpl'][number]
@@ -24,23 +25,12 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
     if (id === 'start') return []
     return await trpc.fpprg.fpl.query(id, { context })
   }), [trpc, context])
+  // one subscription for every step watched on this page
+  const watcher = React.useMemo(() => new ResolutionWatcher(trpc, context), [trpc, context])
   const fetchResolved = React.useCallback(cache(async (id: string) => {
-    let refresh = () => {}
-    const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => {
-      let subscription: { unsubscribe: () => void } | undefined
-      refresh = () => {
-        subscription?.unsubscribe()
-        subscription = trpc.fpprg.resolved.subscribe(id, {
-          context,
-          onData: (value) => { set(value) },
-          onError: (error) => { set({ type: 'error', error: error.message }) },
-        })
-      }
-      refresh()
-      return () => { subscription?.unsubscribe() }
-    })
-    return { subscribe, refresh: () => refresh() }
-  }), [trpc, context])
+    const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => watcher.watch(id, set))
+    return { subscribe, refresh: () => watcher.refresh(id) }
+  }), [watcher])
   return (
     <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>
       {props.children}

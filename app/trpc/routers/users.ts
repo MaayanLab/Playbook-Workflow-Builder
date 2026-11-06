@@ -45,9 +45,12 @@ export const usersRouter = router({
       return null
     }),
 
-  suggestions: authedProcedure
+  /** The current user's suggestions (none when signed out, the graph loads these for everyone) */
+  suggestions: publicProcedure
     .query(async ({ ctx }) => {
-      return await db.selectFrom('suggestion').selectAll().where('user', '=', ctx.session.user.id).execute()
+      const session = await ctx.getSession()
+      if (!session?.user) return []
+      return await db.selectFrom('suggestion').selectAll().where('user', '=', session.user.id).execute()
     }),
 
   createSuggestion: authedProcedure

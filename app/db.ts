@@ -12,5 +12,3 @@ export const bus = backend.bus
 
 export const dialect = backend.dialect
 
-/** The postgres pool, when using postgres */
-export const pool = backend.pool

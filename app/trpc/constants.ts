@@ -1,4 +1,2 @@
-/** Path of the tRPC http endpoint */
+/** Path of the tRPC endpoint (queries & mutations, and subscriptions as server-sent events) */
 export const TRPC_HTTP_PATH = '/api/trpc'
-/** Path of the tRPC websocket endpoint (subscriptions), served by app/server/plugins/ws.ts */
-export const TRPC_WS_PATH = '/api/trpc-ws'

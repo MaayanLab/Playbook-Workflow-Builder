@@ -68,6 +68,8 @@ export interface UserIntegrationsTable {
 
 export interface ProxySessionTable {
   id: string
+  /** the user who launched the session */
+  user: Nullable<string>
   state: Nullable<string>
   run_id: Nullable<string>
   created: CreatedTimestamp

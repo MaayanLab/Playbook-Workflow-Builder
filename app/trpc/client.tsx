@@ -1,10 +1,10 @@
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink, TRPCClientError, type TRPCLink } from '@trpc/client'
+import { createTRPCClient, httpBatchLink, httpSubscriptionLink, splitLink, TRPCClientError, type TRPCLink } from '@trpc/client'
 import { createTRPCContext } from '@trpc/tanstack-react-query'
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
 import type { AppRouter } from './router'
-import { TRPC_HTTP_PATH, TRPC_WS_PATH } from './constants'
+import { TRPC_HTTP_PATH } from './constants'
 
 export const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>()
 
@@ -36,27 +36,19 @@ function sessionLink(factory: (session_id: string | undefined) => TRPCLink<AppRo
   }
 }
 
-function wsUrl(session_id: string | undefined) {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const search = session_id ? `?${new URLSearchParams({ session_id })}` : ''
-  return `${protocol}//${window.location.host}${TRPC_WS_PATH}${search}`
+/** In a CAVATICA session, requests go to its worker through the public server's tunnel */
+function trpcUrl(session_id: string | undefined) {
+  return `${session_id ? `/api/socket/${session_id}` : ''}${TRPC_HTTP_PATH}`
 }
 
 function createClient() {
   return createTRPCClient<AppRouter>({
     links: [
       splitLink({
+        // subscriptions are streamed as server-sent events
         condition: (op) => op.type === 'subscription',
-        true: sessionLink((session_id) => wsLink({
-          client: createWSClient({
-            url: () => wsUrl(session_id),
-            // only connect while there are active subscriptions
-            lazy: { enabled: true, closeMs: 5_000 },
-          }),
-        })),
-        false: sessionLink((session_id) => httpBatchLink({
-          url: `${session_id ? `/api/socket/${session_id}` : ''}${TRPC_HTTP_PATH}`,
-        })),
+        true: sessionLink((session_id) => httpSubscriptionLink({ url: trpcUrl(session_id) })),
+        false: sessionLink((session_id) => httpBatchLink({ url: trpcUrl(session_id) })),
       }),
     ],
   })

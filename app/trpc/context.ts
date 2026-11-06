@@ -5,6 +5,7 @@ import { getToken } from 'next-auth/jwt'
 import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
 import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 import type { Context } from './init'
+import { SYSTEM_USER_ID } from '@/db/constants'
 
 function lazy<T>(fn: () => Promise<T>) {
   let value: Promise<T> | undefined
@@ -23,7 +24,7 @@ export function createNextContext({ req, res }: CreateNextContextOptions): Conte
 export async function getSessionFromRequest(req: IncomingMessage): Promise<SessionWithId | null> {
   if (process.env.NEXTAUTH_SECRET && req.headers.authorization === `Token ${process.env.NEXTAUTH_SECRET}`) {
     return {
-      user: { id: '00000000-0000-0000-0000-000000000000' },
+      user: { id: SYSTEM_USER_ID },
       expires: (new Date(Date.now() + 1000*60*60*24)).toISOString(),
     } as SessionWithId
   }

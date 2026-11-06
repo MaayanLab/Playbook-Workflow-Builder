@@ -1,6 +1,7 @@
 import NextAuth, { ISODateString, NextAuthOptions, Session } from 'next-auth'
 import type { Provider } from "next-auth/providers/index"
 import db from '@/app/db'
+import { SYSTEM_USER_ID } from '@/db/constants'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import EmailProvider from 'next-auth/providers/email'
 import GoogleProvider from "next-auth/providers/google"
@@ -24,11 +25,12 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials, req) {
         const user = await db.insertInto('user')
           .values({
-            id: '00000000-0000-0000-0000-000000000000',
+            id: SYSTEM_USER_ID,
             name: 'Development User',
             email: '',
           })
-          .onConflict(oc => oc.column('id').doUpdateSet({ id: '00000000-0000-0000-0000-000000000000' }))
+          // in development, sign in as the system user (see the 0002_system_user migration)
+          .onConflict(oc => oc.column('id').doUpdateSet({ name: 'Development User' }))
           .returningAll()
           .executeTakeFirstOrThrow()
         return { ...user, name: user.name ?? undefined, image: user.image ?? undefined }

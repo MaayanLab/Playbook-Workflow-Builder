@@ -103,6 +103,5 @@ RUN echo "Installing dev deps..." \
   && apt-get clean \
   && apt-get autoremove \
   && rm -rf /var/lib/apt/lists/*
-COPY --from=amacneil/dbmate /usr/local/bin/dbmate /usr/local/bin/dbmate
 USER ubuntu
 CMD ["/bin/bash"]

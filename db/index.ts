@@ -17,6 +17,7 @@ import { wrapSqlite } from './sqlite'
 import { type EventBus, LocalEventBus, PgEventBus } from './events'
 
 export * from './schema'
+export * from './constants'
 export type { EventBus, Job } from './events'
 
 export type DB = Kysely<Database>
@@ -59,7 +60,7 @@ function createPostgres(connectionString: string): Backend {
   return {
     dialect: 'postgres',
     db: new Kysely<Database>({ dialect: new PostgresDialect({ pool }) }),
-    bus: new PgEventBus(connectionString, pool),
+    bus: new PgEventBus(connectionString),
     pool,
   }
 }

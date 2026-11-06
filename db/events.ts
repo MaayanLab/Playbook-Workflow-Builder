@@ -3,21 +3,26 @@
  *
  * - With postgres, events prefixed with `distributed:` go through LISTEN/NOTIFY
  *    (so they reach every process), insert notifications come from the
- *    `notify_trigger` triggers, and jobs are managed by pg-boss.
+ *    `notify_trigger` triggers, and jobs are managed by pg-boss (in the `pgboss` schema).
  * - With sqlite, everything happens in-process.
  */
-import type * as pg from 'pg'
-import PgBoss from 'pg-boss'
+import { PgBoss } from 'pg-boss'
 import createSubscriber, { type Subscriber } from 'pg-listen'
 import { z } from 'zod'
 
 export type Job = {
+  /** the id the work was submitted for */
   id: string
   name: string
   priority: number
   state: string
   createdon: string
   completedon: string | null
+}
+
+export type WorkOptions = {
+  /** how many jobs this process works on at once */
+  concurrency?: number
 }
 
 export interface EventBus {
@@ -27,8 +32,9 @@ export interface EventBus {
   inserted: (table: string, id: string) => void
   /** Submit work to a queue, each id is processed by only one worker */
   send: (queue: string, work: { id: string, priority?: number }) => Promise<void>
-  work: (queue: string, opts: { teamSize?: number, teamConcurrency?: number }, cb: (work: { data: { id: string } }) => Promise<void>) => Promise<() => void>
-  jobs: () => Promise<Job[]>
+  work: (queue: string, opts: WorkOptions, cb: (work: { data: { id: string } }) => Promise<void>) => Promise<() => void>
+  /** Recent jobs in a queue (only tracked with postgres) */
+  jobs: (queue: string) => Promise<Job[]>
 }
 
 class LocalListeners {
@@ -67,7 +73,7 @@ export class LocalEventBus implements EventBus {
   send = async (queue: string, work: { id: string, priority?: number }) => {
     this.notify(`boss:${queue}`, work)
   }
-  work = async (queue: string, _opts: unknown, cb: (work: { data: { id: string } }) => Promise<void>) => {
+  work = async (queue: string, _opts: WorkOptions, cb: (work: { data: { id: string } }) => Promise<void>) => {
     return this.listen(`boss:${queue}`, async (data) => {
       const { id } = z.object({ id: z.string() }).parse(data)
       if (!(id in this.active)) {
@@ -78,7 +84,7 @@ export class LocalEventBus implements EventBus {
       return await this.active[id]
     })
   }
-  jobs = async () => [] as Job[]
+  jobs = async (_queue: string) => [] as Job[]
 }
 
 const InsertPayloadC = z.object({
@@ -95,8 +101,9 @@ export class PgEventBus implements EventBus {
   private subscriber: Subscriber
   private boss: PgBoss
   private _ready: Promise<void> | undefined
+  private queues = new Map<string, Promise<void>>()
 
-  constructor(connectionString: string, private pool: pg.Pool) {
+  constructor(connectionString: string) {
     this.subscriber = createSubscriber({ connectionString })
     this.subscriber.events.on('error', (error) => {
       console.error('Fatal database connection error:', error)
@@ -162,35 +169,44 @@ export class PgEventBus implements EventBus {
   // insertions are announced by database triggers
   inserted = () => {}
 
+  /**
+   * Queues must exist before they're used. `exclusive` + singletonKey allows only one
+   *  queued or active job per id, so work isn't duplicated while it's pending.
+   *  (createQueue is idempotent, so concurrent processes can all call it)
+   */
+  private queue = (name: string) => {
+    let created = this.queues.get(name)
+    if (created === undefined) {
+      created = this.ready().then(() => this.boss.createQueue(name, { policy: 'exclusive' }))
+      created.catch(() => { this.queues.delete(name) })
+      this.queues.set(name, created)
+    }
+    return created
+  }
+
   send = async (queue: string, work: { id: string, priority?: number }) => {
-    await this.ready()
+    await this.queue(queue)
     await this.boss.send(queue, { id: work.id }, { singletonKey: work.id, priority: work.priority ?? 0 })
   }
 
-  work = async (queue: string, opts: { teamSize?: number, teamConcurrency?: number }, cb: (work: { data: { id: string } }) => Promise<void>) => {
-    await this.ready()
-    await this.boss.work(queue, opts, cb as any)
-    return () => { this.boss.stop().catch(error => console.error(error)) }
+  work = async (queue: string, opts: WorkOptions, cb: (work: { data: { id: string } }) => Promise<void>) => {
+    await this.queue(queue)
+    const workerId = await this.boss.work<{ id: string }>(queue, { batchSize: 1, localConcurrency: opts.concurrency ?? 1 }, async (jobs) => {
+      for (const job of jobs) await cb({ data: job.data })
+    })
+    return () => { this.boss.offWork(queue, { id: workerId }).catch(error => console.error(error)) }
   }
 
-  jobs = async () => {
-    const results = await this.pool.query(`
-      select name, priority, data, state, createdon, completedon
-      from pgboss.job
-      where data is not null
-    `)
-    return z.array(z.object({
-      name: z.string(),
-      priority: z.number(),
-      data: z.object({ id: z.string() }),
-      state: z.string(),
-      createdon: z.date(),
-      completedon: z.date().nullable(),
-    })).parse(results.rows).map(({ data, createdon, completedon, ...job }) => ({
-      ...job,
-      id: data.id,
-      createdon: createdon.toISOString(),
-      completedon: completedon?.toISOString() ?? null,
+  jobs = async (queue: string) => {
+    await this.queue(queue)
+    const jobs = await this.boss.findJobs<{ id: string }>(queue, { limit: 1000 })
+    return jobs.map(job => ({
+      id: job.data.id,
+      name: job.name,
+      priority: job.priority,
+      state: job.state,
+      createdon: job.createdOn.toISOString(),
+      completedon: job.completedOn?.toISOString() ?? null,
     }))
   }
 }

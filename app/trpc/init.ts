@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
 import type { IncomingMessage } from 'http'
 import { ResponseCodedError } from '@/spec/error'
+import { SYSTEM_USER_ID } from '@/db/constants'
 import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 
 export type Context = {
@@ -60,9 +61,7 @@ export const authedProcedure = publicProcedure.use(async ({ ctx, next }) => {
   return next({ ctx: { session: session as SessionWithId & { user: NonNullable<SessionWithId['user']> } } })
 })
 
-export const ADMIN_USER_ID = '00000000-0000-0000-0000-000000000000'
-
 export const adminProcedure = authedProcedure.use(async ({ ctx, next }) => {
-  if (ctx.session.user.id !== ADMIN_USER_ID) throw new TRPCError({ code: 'UNAUTHORIZED' })
+  if (ctx.session.user.id !== SYSTEM_USER_ID) throw new TRPCError({ code: 'UNAUTHORIZED' })
   return next()
 })

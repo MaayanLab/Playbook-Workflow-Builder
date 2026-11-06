@@ -79,6 +79,7 @@ module.exports = {
       config.resolve.alias = {
         ...config.resolve.alias,
         'better-sqlite3': false,
+        'pg-boss': false,
       }
       config.resolve.fallback = {
         ...config.resolve.fallback,

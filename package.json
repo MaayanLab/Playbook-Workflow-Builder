@@ -60,7 +60,7 @@
     "openai": "^6.35.0",
     "pdf-lib": "^1.17.1",
     "pg": "^8.23.1",
-    "pg-boss": "^9.0.3",
+    "pg-boss": "^12.38.1",
     "pg-listen": "^1.7.0",
     "pg-query-stream": "^4.5.5",
     "pluralize": "^8.0.0",

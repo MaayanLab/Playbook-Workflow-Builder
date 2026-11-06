@@ -10,6 +10,8 @@ This container references environment variables which can be specified in `.env`
 
 The database schema is managed with [kysely](https://kysely.dev) migrations in `db/migrations`. Apply them with `DATABASE_URL=postgres://... npm run db:migrate` before starting a new version. The baseline migration (`0000_baseline`) is idempotent, so databases previously provisioned with `dbmate` adopt it as a no-op.
 
+The `0003_pgboss_v12` migration upgrades the job queue from pg-boss 9 by moving the old `pgboss` schema to `pgboss_v9` (pg-boss can't migrate it), pg-boss then creates a fresh `pgboss` schema when it starts. Stop all ui & worker containers before applying it, and drop `pgboss_v9` once the upgrade is confirmed.
+
 Without a postgres `DATABASE_URL`, the app uses sqlite (`DATABASE_URL=sqlite:path/to/db.sqlite`, or in-memory when unset) which is migrated automatically. sqlite is only suitable for a single process (i.e. `N_WORKERS` in the ui process) since events & jobs are dispatched in-process.
 
 ## File Storage

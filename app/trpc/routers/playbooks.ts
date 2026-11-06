@@ -4,7 +4,7 @@ import { TRPCError } from '@trpc/server'
 import db from '@/app/db'
 import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
-import { uuid, type UserPlaybook } from '@/db'
+import { uuid, SYSTEM_USER_ID, type UserPlaybook } from '@/db'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
 import { tsvector, tsvector_intersect } from '@/utils/tsvector'
@@ -79,15 +79,16 @@ export const playbooksRouter = router({
             const fpl = await fpprg.resolveFPL(playbook.workflow as any)
             fpl.id = playbook.id
             await fpprg.upsertFPL(fpl)
-            // NOTE: user_playbook.user is not null so this fails unless a user is provided
+            // registered as public so that views are counted (see `get`)
             userPlaybookLookup[playbook.id] = await db.insertInto('user_playbook')
               .values({
                 id: uuid(),
+                user: SYSTEM_USER_ID,
                 playbook: playbook.id,
                 title: playbook.label,
                 description: playbook.description,
                 public: true,
-              } as any)
+              })
               .returningAll()
               .executeTakeFirstOrThrow()
           } catch (e) {
@@ -124,6 +125,7 @@ export const playbooksRouter = router({
       let playbooks = await db.selectFrom('user_playbook')
         .selectAll()
         .where('public', '=', true)
+        .where('user', '!=', SYSTEM_USER_ID)
         .orderBy('clicks', 'desc')
         .offset(input.skip ?? 0)
         .limit(input.limit ?? 50)

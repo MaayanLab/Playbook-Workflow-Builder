@@ -2,7 +2,6 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
-import { registerSuggestions } from '@/app/extensions/suggestions'
 import { z } from 'zod'
 import { useExRouter } from '@/app/fragments/ex-router'
 import { Metapath, MetapathProvider, useFPL, useMetapathOutput } from '@/app/fragments/metapath'
@@ -35,7 +34,6 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   if ('node_id' in params && !(params.node_id === 'start' || results.some(({ id }) => id === params.node_id))) {
     return { notFound: true }
   }
-  await registerSuggestions()
   return { props: {} }
 }
 

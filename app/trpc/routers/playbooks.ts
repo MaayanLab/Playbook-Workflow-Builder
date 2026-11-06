@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { sql } from 'kysely'
 import { TRPCError } from '@trpc/server'
 import db from '@/app/db'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import fpprg from '@/app/fpprg'
 import { uuid, SYSTEM_USER_ID, type UserPlaybook } from '@/db'
 import * as dict from '@/utils/dict'
@@ -211,6 +211,7 @@ export const playbooksRouter = router({
       fpl = await fpl.rebaseInTime()
       if (fpl === undefined) throw notFound()
       fpl = await fpprg.upsertFPL(fpl)
+      const krg = await getKRG()
       const playbookInputs = fpl.resolve().map(cell => krg.getProcessNode(cell.process.type)).filter(node => 'prompt' in node && dict.isEmpty(node.inputs)).map(node => node.output.spec).join(', ')
       const playbookOutputs = fpl.resolve().filter(cell => cell.cell_metadata?.data_visible === true).map(cell => krg.getProcessNode(cell.process.type).output.spec).join(', ')
       const record = {

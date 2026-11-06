@@ -2,7 +2,7 @@ import { z } from 'zod'
 import JSZip from 'jszip'
 import { fpl2ro_crate } from '@/core/fpl2ro-crate'
 import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
 import handler from '@/utils/next-rest'
 import * as dict from '@/utils/dict'
@@ -23,6 +23,7 @@ export default handler(async (req, res) => {
     const fpl = await fpprg.getFPL(fpl_id)
     if (fpl === undefined) throw new NotFoundError()
     const zip = new JSZip()
+    const krg = await getKRG()
     const ro_crate_files = await fpl2ro_crate({ krg, fpl })
     dict.items(ro_crate_files).forEach(({ key, value }) => {
       zip.file(key, value)

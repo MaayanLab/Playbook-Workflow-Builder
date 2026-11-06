@@ -6,7 +6,7 @@ import { closeSession, isWorkerConnected, sessionEvents } from '@/app/extensions
 import * as cavatica from '@/app/extensions/cavatica'
 import * as cavaticaLocal from '@/app/extensions/cavatica/testing'
 import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import fpprg from '@/app/fpprg'
 import FPL2BCO from '@/core/fpl2bco'
 import * as dict from '@/utils/dict'
@@ -151,6 +151,7 @@ const biocomputeRouter = router({
       if (!user?.name) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Name required' })
       if (!account) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'ORCID Required' })
       if (Date.now() / 1000 > (account.expires_at ?? 0)) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'ORCID Expired' })
+      const krg = await getKRG()
       const contents = await FPL2BCO({
         krg,
         fpl,

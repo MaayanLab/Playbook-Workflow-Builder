@@ -2,7 +2,7 @@ import handler from '@/utils/next-rest'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import cache from '@/utils/global_cache';
-import krg from '@/app/krg';
+import { getKRG } from '@/app/server-krg';
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
 import dedent from 'ts-dedent';
@@ -148,6 +148,7 @@ const server = cache('mcp', () => {
       } else if (workflow.length > 0) {
         heads = [workflow[workflow.length-1]]
       }
+      const krg = await getKRG()
       const { items } = options({ krg, heads, workflow })
       const result = items.map(proc => ({
         type: proc.spec,
@@ -197,6 +198,7 @@ const server = cache('mcp', () => {
       let fpl = props.workflow_id ? await fpprg.getFPL(props.workflow_id) : undefined
       if (props.workflow_id && fpl === undefined) throw new Error(`{"workflow_id":>"${props.workflow_id}" not found<}`)
       // assemble lookup with current steps in the graph
+      const krg = await getKRG()
       const stepNodes = Object.fromEntries((fpl?.resolve() ?? []).map(step => [step.process.id, krg.getProcessNode(step.process.type)] as const))
       // Verify step is valid
       //  type should exist
@@ -325,6 +327,7 @@ const server = cache('mcp', () => {
     try {
       const fpl = await fpprg.getFPL(props.workflow_id)
       if (!fpl) throw new Error(`{"workflow_id":>"${props.workflow_id}" not found<}`)
+      const krg = await getKRG()
       const { fullFPL, processLookup } = await fpl_expand({ krg, fpl })
       const result = fullFPL
         .map((step) => {

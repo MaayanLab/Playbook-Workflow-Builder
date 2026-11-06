@@ -3,7 +3,7 @@ import OpenAI from 'openai'
 import dedent from 'ts-dedent'
 import { TRPCError } from '@trpc/server'
 import db from '@/app/db'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import fpprg from '@/app/fpprg'
 import { uuid, type ThreadMessage } from '@/db'
 import cache from '@/utils/global_cache'
@@ -137,6 +137,7 @@ export const chatRouter = router({
       if (graph_id && !steps.includes(graph_id)) {
         const fpl = await fpprg.getFPL(graph_id)
         if (!fpl) throw new TRPCError({ code: 'NOT_FOUND', message: graph_id })
+        const krg = await getKRG()
         const graph_steps = fpl.resolve()
         const newMessageQueue: { fpl: string, role: string, content: string }[] = []
         for (const step of graph_steps.toReversed()) {

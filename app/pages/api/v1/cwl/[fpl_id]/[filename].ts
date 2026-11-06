@@ -2,7 +2,7 @@ import { z } from 'zod'
 import YAML from 'yaml'
 import { cwl_for_playbook } from '@/core/fpl2cwl'
 import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
 import handler from '@/utils/next-rest'
 
@@ -16,6 +16,7 @@ export default handler(async (req, res) => {
   const { fpl_id, filename } = QueryType.parse(req.query)
   const fpl = await fpprg.getFPL(fpl_id)
   if (fpl === undefined) throw new NotFoundError()
+  const krg = await getKRG()
   const cwl_files = await cwl_for_playbook({ krg, fpl })
   const cwl_file = cwl_files[filename as keyof typeof cwl_files]
   if (cwl_file === undefined) throw new NotFoundError()

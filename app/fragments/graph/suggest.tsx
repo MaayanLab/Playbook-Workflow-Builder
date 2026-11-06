@@ -10,7 +10,10 @@ import type KRG from '@/core/KRG'
 import { z_uuid } from '@/utils/zod'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import * as Auth from 'next-auth/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTRPCClient } from '@/app/trpc/client'
+import { withSuggestions } from '@/app/extensions/suggestions'
+import { suggestionsQueryKey } from '@/app/fragments/graph/krg'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -109,6 +112,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
 
 export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
   const trpc = useTRPCClient()
+  const queryClient = useQueryClient()
   const router = useExRouter()
   const { data: userSession } = useSessionWithId()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
@@ -231,40 +235,9 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
           }
           // register the suggestion
           await trpc.users.createSuggestion.mutate({ ...suggestion_final, user: userSession.user!.id }, { context: { session_id } })
-          // construct the KRG node locally
-          let OutputNode = krg.getDataNode(suggestion_final.output)
-          if (OutputNode === undefined) {
-            OutputNode = MetaNode(suggestion_final.output)
-              .meta({
-                label: `${suggestion_final.output} (Suggestion)`,
-                description: `A data type, suggested as part of ${suggestion_final.name}`,
-                pagerank: -100,
-              })
-              .codec<any>()
-              .view((props) => {
-                return <div className="prose max-w-none">This data type was suggested as part of {suggestion_final.name}</div>
-              })
-              .build()
-            krg.add(OutputNode)
-          }
-          const ProcessNode = MetaNode(suggestion_final.name)
-            .meta({
-              label: `${suggestion_final.name} (Suggestion)`,
-              description: suggestion_final.description,
-              pagerank: -100,
-            })
-            .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
-            ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
-            .output(OutputNode)
-            .prompt((props) => {
-              return <div className="prose max-w-none">
-                <p>{suggestion.description}</p>
-                <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook workflow builder user</>}.</p>
-              </div>
-            })
-            .story(props => ({ abstract: `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.` }))
-            .build()
-          krg.add(ProcessNode)
+          // the KRG (see useKRG) is rebuilt from the database to include the new suggestion
+          await queryClient.invalidateQueries({ queryKey: suggestionsQueryKey(session_id) })
+          const ProcessNode = withSuggestions(krg, [{ ...suggestion_final, user: userSession.user!.id }]).getProcessNode(suggestion_final.name)
           // extend using those nodes
           const inputs: Record<string, { id: string }> = {}
           if (head) {

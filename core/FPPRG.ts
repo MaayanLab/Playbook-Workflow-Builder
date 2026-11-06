@@ -25,7 +25,6 @@ import { NotFoundError, ResponseCodedError, TimeoutError } from '@/spec/error'
  */
 export class Process {
   id: string
-  resolved: Resolved | undefined = undefined
   _dependencies: number | undefined = undefined
 
   constructor(
@@ -107,10 +106,8 @@ export class Process {
    * The output of this process
    */
   output = async () => {
-    if (this.resolved !== undefined) return this.resolved.data
     if (this.db === undefined) throw new Error('Process not attached to a db')
-    this.resolved = await this.db.awaitResolved(this.id)
-    return this.resolved.data
+    return (await this.db.awaitResolved(this.id)).data
   }
 }
 
@@ -299,7 +296,7 @@ export class FPL {
     const now = new Date()
     let head: FPL | undefined = undefined
     for (const el of fplArray) {
-      const existing_resolved = (update[el.process.id] || el.process).resolved
+      const existing_resolved = el.process.db ? await el.process.db.getResolved((update[el.process.id] || el.process).id) : undefined
       const timestamp = existing_resolved?.created ?? now
       let new_proc = new Process(
         (update[el.process.id] || el.process).type,
@@ -466,7 +463,6 @@ export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table
 export default class FPPRG {
   private processTable: Record<string, Process> = {}
   private fplTable: Record<string, FPL> = {}
-  private resolvedTable: Record<string, Resolved> = {}
   private dataTable: Record<string, Data> = {}
   private cellMetadataTable: Record<string, CellMetadata> = {}
   private playbookMetadataTable: Record<string, PlaybookMetadata> = {}
@@ -484,8 +480,8 @@ export default class FPPRG {
       ))
     }
   }
-  getProcess = async (id: string, force = false): Promise<Process | undefined> => {
-    if (!(id in this.processTable) || force) {
+  getProcess = async (id: string): Promise<Process | undefined> => {
+    if (!(id in this.processTable)) {
       const result = await this.getProcessRecord(id)
       if (result !== undefined) {
         const process = new Process(
@@ -497,19 +493,6 @@ export default class FPPRG {
         )
         if (id === process.id) this.processTable[process.id] = process
         else this.processTable[id] = await this.upsertProcess(process)
-        // this process was already resolved?
-        // save that information, saves a lookup or two
-        if (result.resolved) {
-          if (!(id in this.resolvedTable)) {
-            const resolved = new Resolved(
-              process,
-              result.output !== null ? (await this.getData(result.output)) : undefined,
-              result.timestamp !== null ? new Date(result.timestamp) : undefined,
-            )
-            if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
-            else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
-          }
-        }
       }
     }
     return this.processTable[id]
@@ -680,85 +663,76 @@ export default class FPPRG {
     return this.dataTable[data.id]
   }
 
+  /**
+   * The resolution of a process, if it's resolved.
+   *  Resolutions can be deleted (to recompute them) so unlike the content-addressed
+   *  records, they're always read from the database rather than cached.
+   */
   getResolved = async (id: string): Promise<Resolved | undefined> => {
-    if (!(id in this.resolvedTable)) {
-      const result = await this.db.selectFrom('resolved').selectAll().where('id', '=', id).executeTakeFirst()
-      if (result !== undefined) {
-        const process = (await this.getProcess(result.id)) as Process
-        const resolved = new Resolved(
-          process,
-          result.data !== null ? (await this.getData(result.data)) as Data : undefined,
-          result.created !== null ? new Date(result.created) : undefined,
-        )
-        if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
-        else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
-      }
-    }
-    return this.resolvedTable[id]
+    const result = await this.db.selectFrom('resolved').selectAll().where('id', '=', id).executeTakeFirst()
+    if (result === undefined) return undefined
+    const process = await this.getProcess(result.id)
+    if (process === undefined) return undefined
+    const resolved = new Resolved(
+      process,
+      result.data !== null ? await this.getData(result.data) : undefined,
+      result.created !== null ? new Date(result.created) : undefined,
+    )
+    // the process id changed (e.g. its hashing changed), record it under the new id
+    if (id !== resolved.id) await this.upsertResolved(resolved)
+    return resolved
   }
   /**
    * Like getResolved but if it's not in the db yet, request & wait for it
    */
   awaitResolved = async (id: string): Promise<Resolved> => {
-    const resolved = await this.getResolved(id)
-    if (!resolved) {
-      const process = await this.getProcess(id)
-      if (!process) throw new Error('Not found')
-      await new Promise<void>(async (resolve, reject) => {
-        const ctx = { resolved: false }
-        const unsub = this.bus.listen(`insert:resolved`, (data) => {
-          const record = z.object({ id: z.string() }).parse(data)
-          if (record.id === id) {
-            if (!ctx.resolved) {
-              ctx.resolved = true
-              unsub()
-              resolve()
-            }
-          }
-        })
-        console.debug(`awaiting ${process.type} (${id})`)
-        await this.bus.send('work-queue', { id, priority: - (await process.dependencies()) })
-        setTimeout(() => {
+    const existing = await this.getResolved(id)
+    if (existing) return existing
+    const process = await this.getProcess(id)
+    if (!process) throw new Error('Not found')
+    await new Promise<void>(async (resolve, reject) => {
+      const ctx = { resolved: false }
+      const unsub = this.bus.listen(`insert:resolved`, (data) => {
+        const record = z.object({ id: z.string() }).parse(data)
+        if (record.id === id) {
           if (!ctx.resolved) {
             ctx.resolved = true
             unsub()
-            reject(new TimeoutError())
+            resolve()
           }
-        }, 5000)
+        }
       })
-      if (await this.getResolved(id) === undefined) {
-        throw new Error(`Received event but not resolved (${id})`)
-      }
-    }
-    return this.resolvedTable[id]
+      console.debug(`awaiting ${process.type} (${id})`)
+      await this.bus.send('work-queue', { id, priority: - (await process.dependencies()) })
+      setTimeout(() => {
+        if (!ctx.resolved) {
+          ctx.resolved = true
+          unsub()
+          reject(new TimeoutError())
+        }
+      }, 5000)
+    })
+    const resolved = await this.getResolved(id)
+    if (resolved === undefined) throw new Error(`Received event but not resolved (${id})`)
+    return resolved
   }
   upsertResolved = async (resolved: Resolved): Promise<Resolved> => {
-    if (!(resolved.id in this.resolvedTable)) {
-      if (resolved.data) {
-        await this.upsertData(resolved.data)
-      }
-      const inserted = await this.db.insertInto('resolved')
-        .values({
-          id: resolved.id,
-          data: resolved.data !== undefined ? resolved.data.id : null,
-          created: (resolved.created ?? new Date()).toISOString(),
-        })
-        .onConflict(oc => oc.column('id').doNothing())
-        .executeTakeFirst()
-      if (Number(inserted.numInsertedOrUpdatedRows ?? 0) > 0) this.bus.inserted('resolved', resolved.id)
-      this.resolvedTable[resolved.id] = resolved
-      resolved.process.resolved = resolved
+    if (resolved.data) {
+      await this.upsertData(resolved.data)
     }
-    return this.resolvedTable[resolved.id]
+    const inserted = await this.db.insertInto('resolved')
+      .values({
+        id: resolved.id,
+        data: resolved.data !== undefined ? resolved.data.id : null,
+        created: (resolved.created ?? new Date()).toISOString(),
+      })
+      .onConflict(oc => oc.column('id').doNothing())
+      .executeTakeFirst()
+    if (Number(inserted.numInsertedOrUpdatedRows ?? 0) > 0) this.bus.inserted('resolved', resolved.id)
+    return resolved
   }
   deleteResolved = async (resolved: Resolved) => {
-    if (resolved.id in this.resolvedTable) {
-      await this.db.deleteFrom('resolved').where('id', '=', resolved.id).execute()
-      if (resolved.id in this.processTable) {
-        this.processTable[resolved.id].resolved = undefined
-      }
-      delete this.resolvedTable[resolved.id]
-    }
+    await this.db.deleteFrom('resolved').where('id', '=', resolved.id).execute()
   }
 
   resolveFPL = async ({ data = {}, workflow, metadata }: { data?: Record<string, z.infer<typeof DataC>>, workflow: z.infer<typeof IdOrProcessC>[], metadata?: z.infer<typeof IdOrPlaybookMetadataC> }) => {
@@ -855,16 +829,12 @@ export default class FPPRG {
   }
 
   /**
-   * A process along with its inputs & resolution status
+   * A process along with its inputs
    */
   private getProcessRecord = async (id: string) => {
     const process = await this.db.selectFrom('process')
-      .leftJoin('resolved', 'resolved.id', 'process.id')
-      .select([
-        'process.id', 'process.type', 'process.data', 'process.timestamp',
-        'resolved.id as resolved_id', 'resolved.data as output',
-      ])
-      .where('process.id', '=', id)
+      .select(['id', 'type', 'data', 'timestamp'])
+      .where('id', '=', id)
       .executeTakeFirst()
     if (process === undefined) return undefined
     const inputs = await this.db.selectFrom('process_input')
@@ -877,8 +847,6 @@ export default class FPPRG {
       data: process.data,
       timestamp: process.timestamp,
       inputs: dict.init(inputs.map(({ key, value }) => ({ key, value }))),
-      resolved: process.resolved_id !== null,
-      output: process.output,
     }
   }
 
@@ -896,7 +864,6 @@ export default class FPPRG {
     return {
       dataTable: this.dataTable,
       processTable: this.processTable,
-      resolvedTable: this.resolvedTable,
       fplTable: this.fplTable,
       cellMetadataTable: this.playbookMetadataTable,
       playbookMetadataTable: this.cellMetadataTable,

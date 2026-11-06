@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import krg from '@/app/krg'
+import db from '@/app/db'
 import { metanodeType } from '@/app/fragments/components/listing'
 import * as dict from '@/utils/dict'
 import { publicProcedure, router } from '../init'
@@ -10,7 +11,17 @@ function summary(metanode: ReturnType<typeof krg.getDataNodes>[number] | ReturnT
   return { id, kind, type: metanodeType(metanode), meta }
 }
 
+/**
+ * The components catalog (user suggestions are not components, see `suggestions`)
+ */
 export const catalogRouter = router({
+  /** Every user suggestion, the browser adds them to its KRG (see @/app/extensions/suggestions) */
+  suggestions: publicProcedure
+    .query(async () => await db.selectFrom('suggestion')
+      .select(['id', 'name', 'inputs', 'output', 'description', 'user', 'created'])
+      .orderBy('created')
+      .execute()),
+
   resolve: publicProcedure
     .input(z.object({
       spec: z.string(),

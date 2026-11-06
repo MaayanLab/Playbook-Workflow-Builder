@@ -2,7 +2,7 @@ import React from 'react'
 import type { GetServerSidePropsContext } from 'next'
 import { useExRouter } from '@/app/fragments/ex-router'
 import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
+import useKRG from '@/app/fragments/graph/krg'
 import { z } from 'zod'
 import dynamic from 'next/dynamic'
 import { MetapathProvider } from '@/app/fragments/metapath'
@@ -35,6 +35,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
 export default function App() {
   const router = useExRouter()
   const params = React.useMemo(() => QueryType.parse(router.query), [router.query])
+  const krg = useKRG({ session_id: params?.session_id })
   return (
     <>
       <MetapathProvider session_id={params?.session_id}>

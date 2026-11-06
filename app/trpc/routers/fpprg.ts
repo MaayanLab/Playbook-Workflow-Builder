@@ -3,7 +3,7 @@ import { TRPCError } from '@trpc/server'
 import fpprg from '@/app/fpprg'
 import { DataC, FPL, IdOrPlaybookMetadataC, IdOrProcessC, Process } from '@/core/FPPRG'
 import { decode_complete_process_inputs } from '@/core/engine'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import { bus } from '@/app/db'
 import { TimeoutError } from '@/spec/error'
 import type { Resolved } from '@/core/FPPRG'
@@ -132,6 +132,7 @@ export const fpprgRouter = router({
     .query(async ({ input }) => {
       const process = await fpprg.getProcess(input)
       if (!process) throw new TRPCError({ code: 'NOT_FOUND' })
+      const krg = await getKRG()
       return await decode_complete_process_inputs(krg, process)
     }),
 

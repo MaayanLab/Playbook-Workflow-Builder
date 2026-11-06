@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import FPL2TEX from '@/core/fpl2tex'
 import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
 import JSZip from 'jszip'
 import * as dict from '@/utils/dict'
@@ -36,6 +36,7 @@ export default handler(async (req, res) => {
   const session = await getServerSessionWithId(req, res)
   const user = (session && session.user) ? (await getUser(session.user.id)) : undefined
   const userOrcidAccount = user ? await getUserOrcidAccount(user.id) : undefined
+  const krg = await getKRG()
   const tex_files = await FPL2TEX({
     krg,
     fpl,

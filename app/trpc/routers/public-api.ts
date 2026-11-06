@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import db from '@/app/db'
 import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
+import { getKRG } from '@/app/server-krg'
 import packageJson from '@/package.json'
 import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
 import { selectUserUploadComplete } from '@/db/queries'
@@ -152,6 +152,7 @@ export const publicApiRouter = router({
       const session = await ctx.getSession()
       const user = session?.user ? await getUser(session.user.id) : undefined
       const userOrcidAccount = user ? await getUserOrcidAccount(user.id) : undefined
+      const krg = await getKRG()
       return asJson(await FPL2BCO({
         krg, fpl, metadata,
         author: user?.name ? {
@@ -267,6 +268,7 @@ export const publicApiRouter = router({
     .query(async ({ input }) => {
       const fpl = await fpprg.getFPL(input.fpl_id)
       if (!fpl) throw new NotFoundError()
+      const krg = await getKRG()
       const files = await cwl_for_playbook({ krg, fpl })
       return asJson(input.format === 'list' ? dict.keys(files) : files)
     }),
@@ -281,6 +283,7 @@ export const publicApiRouter = router({
     .query(async ({ input }) => {
       const fpl = await fpprg.getFPL(input.fpl_id)
       if (!fpl) throw new NotFoundError()
+      const krg = await getKRG()
       return asJson(await fpl2ro_crate_metadata({ krg, fpl }))
     }),
 })

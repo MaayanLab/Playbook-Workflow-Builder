@@ -101,19 +101,22 @@ export async function resolve_process(krg: KRG, instanceProcess: Process, notify
  *  submitted jobs are given to one and only one worker. This should
  *  be run with several replicas in production.
  */
-export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
+/**
+ * @param getKRG the KRG to resolve with (read per job, it includes user suggestions)
+ */
+export function start_workers(getKRG: () => Promise<KRG>, db: FPPRG, n_workers: number) {
   return db.bus.work('work-queue', { concurrency: n_workers }, async (job) => {
     // the job.data should contain the process id
     const { data: { id: processId } } = JobC.parse(job)
     console.debug(`checking ${processId}..`)
     // we fetch it from the db
-    const instanceProcess = await db.getProcess(processId, true)
+    const instanceProcess = await db.getProcess(processId)
     if (!instanceProcess) {
       console.error(`process '${processId}' not found`)
-    } else if (instanceProcess.resolved === undefined) {
+    } else if (await db.getResolved(processId) === undefined) {
       console.debug(`resolving ${instanceProcess.type} (${processId})..`)
       db.bus.notify(`distributed:resolved:${instanceProcess.id}:status`, { type: 'progress', percent: 0 })
-      const resolved = await resolve_process(krg, instanceProcess, (update) => {
+      const resolved = await resolve_process(await getKRG(), instanceProcess, (update) => {
         // broadcast partial updates through the db
         db.bus.notify(`distributed:resolved:${instanceProcess.id}:status`, update)
       })

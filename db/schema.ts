@@ -189,6 +189,8 @@ export interface ThreadMessageTable {
   thread: string
   role: string
   content: string
+  /** Serialized OpenAI Responses input item; null on messages created before migration. */
+  response_item: Nullable<string>
   feedback: Nullable<string>
   created: CreatedTimestamp
 }

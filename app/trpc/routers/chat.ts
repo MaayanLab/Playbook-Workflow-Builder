@@ -31,19 +31,42 @@ async function getThread(thread_id: string) {
   return thread
 }
 
-async function createMessage(message: Omit<ThreadMessage, 'id' | 'created' | 'feedback' | 'fpl'> & { fpl?: string | null }) {
+async function createMessage(message: Omit<ThreadMessage, 'id' | 'created' | 'feedback' | 'fpl' | 'response_item'> & { fpl?: string | null, response_item?: string | null }) {
   return await db.insertInto('thread_message')
     .values({ id: uuid(), ...message })
     .returningAll()
     .executeTakeFirstOrThrow()
 }
 
-async function updateMessage(id: string, data: Partial<Pick<ThreadMessage, 'fpl' | 'content'>>) {
+async function updateMessage(id: string, data: Partial<Pick<ThreadMessage, 'fpl' | 'content' | 'response_item'>>) {
   return await db.updateTable('thread_message')
     .set(data)
     .where('id', '=', id)
     .returningAll()
     .executeTakeFirstOrThrow()
+}
+
+type ResponseInputItem = OpenAI.Responses.ResponseInputItem
+
+function inputMessage(role: 'user' | 'developer' | 'system', content: string): ResponseInputItem {
+  return { type: 'message', role, content: [{ type: 'input_text', text: content }] }
+}
+
+/** Prefer lossless typed items, falling back to the projection used by old threads. */
+function messageToResponseInput(message: ThreadMessage): ResponseInputItem {
+  if (message.response_item) {
+    const item = JSONTryParse(message.response_item)
+    if (item && typeof item === 'object' && typeof item.type === 'string') return item as ResponseInputItem
+  }
+  const role = message.role === 'assistant' ? 'assistant'
+    : message.role === 'user' ? 'user'
+    : 'developer'
+  return { role, content: message.content }
+}
+
+/** Keep provider-specific context on the server; clients only receive the UI projection. */
+function publicMessage({ response_item: _responseItem, ...message }: ThreadMessage) {
+  return message
 }
 
 // TODO: derive this from the mcp server definition somehow
@@ -113,7 +136,7 @@ export const chatRouter = router({
         .where('thread', '=', thread.id)
         .orderBy('created', 'asc')
         .execute()
-      return { messages, fpl: messages[messages.length-1]?.fpl ?? null }
+      return { messages: messages.map(publicMessage), fpl: messages[messages.length-1]?.fpl ?? null }
     }),
 
   send: authedProcedure
@@ -170,7 +193,11 @@ export const chatRouter = router({
           })
         }
         for (const newMessage of newMessageQueue.toReversed()) {
-          newMessages.push(await createMessage({ thread: thread.id, ...newMessage }))
+          newMessages.push(await createMessage({
+            thread: thread.id,
+            ...newMessage,
+            response_item: JSON.stringify(inputMessage('developer', `Application workflow state update: ${newMessage.content}`)),
+          }))
         }
       }
       const focusMessages: { role: string, content: string }[] = []
@@ -186,8 +213,9 @@ export const chatRouter = router({
         role: 'user',
         content: message,
         fpl: graph_id,
+        response_item: JSON.stringify(inputMessage('user', message)),
       }))
-      yield { messages: newMessages, fpl: graph_id }
+      yield { messages: newMessages.map(publicMessage), fpl: graph_id }
       const stream = await (await openai).responses.create({
         model: 'gpt-5-mini',
         tools: [
@@ -208,10 +236,10 @@ export const chatRouter = router({
           Do NOT assume capabilities, only what can be found with options for a given step is possible.
         `,
         input: [
-          ...currentMessages,
-          ...newMessages,
-          ...focusMessages,
-        ].map(({ role, content }) => ({ role, content })) as OpenAI.Responses.ResponseInput,
+          ...currentMessages.map(messageToResponseInput),
+          ...newMessages.map(messageToResponseInput),
+          ...focusMessages.map(({ role, content }) => inputMessage(role as 'developer', content)),
+        ],
         stream: true,
       }, { signal })
       let fpl: string | undefined
@@ -232,10 +260,10 @@ export const chatRouter = router({
                 function_call_output: {
                   output: output.output,
                 },
-              })}`
+              })}`,
             })
             newMessages.push(partialMessages[event.output_index])
-            yield { messages: newMessages, fpl }
+            yield { messages: newMessages.map(publicMessage), fpl }
           } else if (event.item.type === 'message') {
             partialMessages[event.output_index] = await createMessage({
               thread: thread.id,
@@ -244,14 +272,14 @@ export const chatRouter = router({
               fpl,
             })
             newMessages.push(partialMessages[event.output_index])
-            yield { messages: newMessages, fpl }
+            yield { messages: newMessages.map(publicMessage), fpl }
           }
         } else if (event.type === 'response.output_text.delta') {
           partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
             fpl,
             content: partialMessages[event.output_index].content + event.delta,
           })
-          yield { messages: newMessages, fpl }
+          yield { messages: newMessages.map(publicMessage), fpl }
         } else if (event.type === 'response.output_item.done') {
           if (event.item.type === 'mcp_call') {
             const output = event.item
@@ -267,6 +295,7 @@ export const chatRouter = router({
             if (event.output_index in partialMessages) {
               partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
                 fpl,
+                response_item: JSON.stringify(event.item),
                 content: `${JSON.stringify({
                   function_call: {
                     name: output.name,
@@ -277,14 +306,15 @@ export const chatRouter = router({
                   },
                 })}`
               })
-              yield { messages: newMessages, fpl }
+              yield { messages: newMessages.map(publicMessage), fpl }
             }
           } else if (event.item.type === 'message') {
             partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
               fpl,
+              response_item: JSON.stringify(event.item),
               content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
             })
-            yield { messages: newMessages, fpl }
+            yield { messages: newMessages.map(publicMessage), fpl }
           }
         }
       }

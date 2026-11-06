@@ -6,8 +6,8 @@ import { file_icon, input_icon } from '@/icons'
 import * as Auth from 'next-auth/react'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import classNames from 'classnames'
-import { clientUploadFile } from  '@/components/core/file/api/upload/client'
-import { clientFetchFile } from  '@/components/core/file/api/fetch/client'
+import { clientUploadFile } from './client/upload'
+import { useTRPCClient } from '@/app/trpc/client'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -33,12 +33,7 @@ export const FileURL = MetaNode('FileURL')
   .build()
 
 export function FilePrompt(props: {
-  example?(): Promise<{
-    url: string;
-    filename: string;
-    sha256: string;
-    size: number;
-  }>,
+  example?: { asset: string, filename: string },
   data?: {
       url: string;
       filename: string;
@@ -54,6 +49,7 @@ export function FilePrompt(props: {
   }, autoextend?: boolean) => void;
   session_id?: string | undefined;
 }) {
+  const trpc = useTRPCClient()
   const [currentFile, setCurrentFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const [tab, setTab] = React.useState<'upload' | 'url'>('upload')
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -94,7 +90,7 @@ export function FilePrompt(props: {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
               const description = rawDescription === null ? undefined : rawDescription.toString()
-              const record = await clientFetchFile({ url: currentFile.url }, props.session_id)
+              const record = await trpc.components.file.fetch.mutate({ url: currentFile.url }, { context: { session_id: props.session_id } })
               props.submit({ description, ...record }, true)
             } else {
               console.error('Missing input')
@@ -170,7 +166,7 @@ export function FilePrompt(props: {
                 rightIcon="cloud-upload"
                 onClick={async () => {
                   if (!props.example) return
-                  props.submit(await props.example(), true)
+                  props.submit(await trpc.components.file.register.mutate(props.example, { context: { session_id: props.session_id } }), true)
                 }}
               />
               : null}

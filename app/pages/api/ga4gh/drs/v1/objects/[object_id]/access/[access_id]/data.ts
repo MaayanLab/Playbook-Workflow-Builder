@@ -3,7 +3,7 @@ import db from '@/app/db'
 import { selectUserUploadComplete } from '@/db/queries'
 import { NotFoundError } from '@/spec/error'
 import { z } from 'zod'
-import { fileAsStream } from "@/components/core/file/api/download"
+import { fileAsStream } from "@/components/core/file/server/download"
 
 const QueryType = z.object({
   object_id: z.string(),

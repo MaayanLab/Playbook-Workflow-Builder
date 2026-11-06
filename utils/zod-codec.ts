@@ -5,10 +5,10 @@ function identity<T>(value: T): T {
   return value
 }
 
-export default function codecFrom<Output = any, Def extends z.ZodTypeDef = z.ZodTypeDef>(typ: z.ZodType<Output, Def, Output>): Codec<Output, Output> {
+export default function codecFrom<Output = any>(typ: z.ZodType<Output>): Codec<Output, unknown> {
   return {
     encode: (obj: Output) => identity(obj),
-    decode: (obj: Output) => typ.parse(identity(obj)),
+    decode: (obj: unknown) => typ.parse(identity(obj)),
     zod: typ,
   }
 }

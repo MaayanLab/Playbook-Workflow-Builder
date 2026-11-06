@@ -6,11 +6,13 @@ import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import classNames from 'classnames'
 import SafeRender from '@/utils/saferender'
+import { useTRPCClient } from '@/app/trpc/client'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
+  const trpc = useTRPCClient()
   const [data, setData] = React.useState<{
     // the latest id to be assigned so we can add new ones to the end, always equal to highest node id
     latest: number,
@@ -111,19 +113,11 @@ export default function App() {
           })
           setLoading(() => true)
           try {
-            const req = await fetch(`/api/resolver`, {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                spec: promptNode.spec,
-                data: promptNode.codec.encode(promptData),
-                inputs: currentNode.prompt.inputs,
-              }),
-            })
-            const res = JSON.stringify(await req.json())
+            const res = JSON.stringify(await trpc.catalog.resolve.mutate({
+              spec: promptNode.spec,
+              data: promptNode.codec.encode(promptData),
+              inputs: currentNode.prompt.inputs,
+            }))
             setData(data => ({
               ...data,
               nodes: {
@@ -218,20 +212,9 @@ export default function App() {
                           }
                         })
                         try {
-                          const req = await fetch(`/api/resolver`, {
-                            method: 'POST',
-                            headers: {
-                              'Accept': 'application/json',
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              spec: proc.spec,
-                              inputs,
-                            }),
-                          })
-                          const res = JSON.stringify(await req.json())
+                          const res = JSON.stringify(await trpc.catalog.resolve.mutate({ spec: proc.spec, inputs }))
                           appendData({
-                            type: req.status === 200 ? proc.output.spec : 'Error',
+                            type: proc.output.spec,
                             data: res,
                           })
                         } catch (e) {

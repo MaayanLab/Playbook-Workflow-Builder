@@ -1,7 +1,6 @@
 import React from 'react'
-import useSWR from 'swr/immutable'
-import fetcher from '@/utils/next-rest-fetcher'
-import { useExRouter } from '@/app/fragments/ex-router'
+import { useQuery } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 
 const fallbackRuntimeConfig = {
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL ? process.env.NEXT_PUBLIC_URL : '',
@@ -10,10 +9,10 @@ const fallbackRuntimeConfig = {
 const RuntimeConfigContext = React.createContext(fallbackRuntimeConfig)
 
 export function RuntimeConfig({ children }: React.PropsWithChildren<{}>) {
-  const router = useExRouter()
-  const { data: runtimeConfig } = useSWR<typeof fallbackRuntimeConfig>(() => router.isReady ? `${router.basePath}/api/config` : undefined, fetcher)
+  const trpc = useTRPC()
+  const { data: runtimeConfig } = useQuery({ ...trpc.system.runtimeConfig.queryOptions(), staleTime: Infinity })
   return (
-    <RuntimeConfigContext.Provider value={runtimeConfig ? runtimeConfig : fallbackRuntimeConfig}>
+    <RuntimeConfigContext.Provider value={{ ...fallbackRuntimeConfig, ...runtimeConfig }}>
       {children}
     </RuntimeConfigContext.Provider>
   )

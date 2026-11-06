@@ -1,11 +1,9 @@
 import type { Suggestion } from '@/db'
 import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
-import useSWR from 'swr'
-import useSWRMutation from 'swr/mutation'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { delete_icon, fork_icon } from '@/icons'
-import { z } from 'zod'
-import fetcher, { fetcherPOST } from '@/utils/next-rest-fetcher'
+import { useTRPC } from '@/app/trpc/client'
 import dynamic from 'next/dynamic'
 import { ExLink } from '@/app/fragments/ex-router'
 import classNames from 'classnames'
@@ -15,13 +13,18 @@ const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => A
 
 export default function Suggestions() {
   const router = useExRouter()
-  const { data: suggestions, isLoading, mutate } = useSWR<Array<Suggestion>>('/api/db/user/suggestions', fetcher)
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: suggestions, isLoading } = useQuery(trpc.users.suggestions.queryOptions())
   const [suggestionToDelete, setSuggestionToDelete] = React.useState<Suggestion | undefined>(undefined)
-  const { trigger: deleteSuggestion, isMutating } = useSWRMutation(() => suggestionToDelete ? `/api/db/user/suggestions/${suggestionToDelete.id}/delete` : null, fetcherPOST)
+  const deleteSuggestion = useMutation(trpc.users.deleteSuggestion.mutationOptions({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.users.suggestions.queryKey() }),
+  }))
+  const extend = useMutation(trpc.fpprg.extend.mutationOptions())
   return (
     <>
       <h3 className="bp5-heading">Suggestions</h3>
-      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || deleteSuggestion.isPending || extend.isPending) })}></progress>
       {suggestions ? (
         <div className="overflow-x-auto">
           <table className="table table-compact w-full text-black dark:text-white">
@@ -47,17 +50,10 @@ export default function Suggestions() {
                   <td>{suggest.created.toString()}</td>
                   <td className="flex flex-row">
                     <button onClick={async () => {
-                      const req = await fetch(`/api/db/fpl/start/extend`, {
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        method: 'POST',
-                        body: JSON.stringify({
+                      const res = await extend.mutateAsync({ fpl_id: 'start', process: {
                           type: suggest.name,
                           inputs: {},
-                        })
-                      })
-                      const res = z.string().parse(await req.json())
+                        } })
                       router.push(`/graph/${res}/extend`, undefined, { shallow: true })
                     }}>
                       <Icon icon={fork_icon} className="fill-black dark:fill-white" />
@@ -89,9 +85,8 @@ export default function Suggestions() {
         onCancel={() => {setSuggestionToDelete(undefined)}}
         onConfirm={() => {
           if (!suggestionToDelete) return
-          deleteSuggestion()
+          deleteSuggestion.mutateAsync({ id: suggestionToDelete.id })
             .then(() => {
-              mutate(data => data ? data.filter(({ id }) => id !== suggestionToDelete.id) : data)
               setSuggestionToDelete(undefined)
             })
         }}

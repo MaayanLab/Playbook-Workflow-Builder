@@ -7,7 +7,7 @@ import { downloadBlob } from '@/utils/download'
 
 import { file_icon, file_transfer_icon, glygen_icon } from "@/icons";
 import { FileC, FilePrompt, FileURL, FileInput } from "@/components/core/file";
-import { fileAsStream } from "@/components/core/file/api/download";
+import { fileAsStream } from "@/components/core/file/server/download";
 import SafeRender from "@/utils/saferender";
 
 import { GlycoSightOutputC, 
@@ -17,7 +17,6 @@ import { GlycoSightOutputC,
 import { TestGlycoSightAPI,
          UploadAndAnalyze
  } from "./sup_functions";
-import { clientLoadExample } from "@/components/gly_gen/api/glycosight/client";
 
 export const GlycoSightOutputNode = MetaNode("GlycoSightOutputNode")
     .meta({
@@ -124,7 +123,7 @@ export const GlycoSightFileUpload = MetaNode("GlycoSightUpload")
     .output(GlycoSightFileURLNode)
     .prompt(props => <>
         {/* XXX: <FilePrompt {...props} /> */}
-        TODO: <FilePrompt {...props} example={clientLoadExample} />
+        TODO: <FilePrompt {...props} example={{ asset: 'gly_gen/glycosight/assets/01CPTAC_OVprospective_G_JHUZ_20160317_QE_r01.mzid.gz', filename: '01CPTAC_OVprospective_G_JHUZ_20160317_QE_r01.mzid.gz' }} />
         {props.output ? 
             <SafeRender 
                 component={FileURL.view} 

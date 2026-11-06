@@ -5,13 +5,12 @@ import usePublicUrl from '@/utils/next-public-url'
 import { z } from 'zod'
 
 import { useQuery, useMutation, useQueryClient, skipToken } from '@tanstack/react-query'
-import { useTRPC, isTRPCClientError } from '@/app/trpc/client'
+import { useTRPC, useTRPCClient, isTRPCClientError } from '@/app/trpc/client'
 import * as Auth from 'next-auth/react'
 
 import krg from '@/app/krg'
 import { useExRouter } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
-import * as array from '@/utils/array'
 import { useFPL } from '../metapath'
 import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
@@ -32,6 +31,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   const { data: session } = Auth.useSession()
   const [thread_id, setThread_id] = React.useState<string | undefined>()
   const trpc = useTRPC()
+  const trpcClient = useTRPCClient()
   const queryClient = useQueryClient()
   const { data: { messages, fpl } = { messages: undefined, fpl: null } } = useQuery({
     ...trpc.chat.messages.queryOptions(thread_id ? { thread_id } : skipToken),
@@ -45,8 +45,9 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
     }
     previousFpl.current = fpl
   }, [fpl])
-  const createMessage = useMutation(trpc.chat.send.mutationOptions())
   const createChat = useMutation(trpc.chat.create.mutationOptions())
+  const [sendPending, setSendPending] = React.useState(false)
+  const [sendError, setSendError] = React.useState<Error | null>(null)
   const submit = React.useCallback(async ({ thread_id, ...body }: { message: string, graph_id?: string, node_id?: string, thread_id?: string }) => {
     try {
       let thread_id_: string
@@ -62,22 +63,38 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
         ...current?.messages ?? [],
         { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date().toISOString(), thread: thread_id_, feedback: null },
       ], fpl: graph_id ?? null }))
-      const res = await createMessage.mutateAsync({ thread_id: thread_id_, ...body })
-      queryClient.setQueryData(queryKey, (current) => ({
-        messages: array.unique([
-          ...(current?.messages ?? []).slice(0, -1),
-          ...res?.messages ?? [],
-        ], x => x.id),
-        fpl: res?.fpl ?? null,
-      }))
+      setSendPending(true)
+      setSendError(null)
+      await new Promise<void>((resolve, reject) => {
+        trpcClient.chat.send.subscribe({ thread_id: thread_id_, ...body }, {
+          onData: (update) => {
+            queryClient.setQueryData(queryKey, (current) => {
+              const updatedIds = new Set(update.messages.map(message => message.id))
+              return {
+                messages: [
+                  ...(current?.messages ?? []).filter(message => message.id !== '' && !updatedIds.has(message.id)),
+                  ...update.messages,
+                ],
+                fpl: update.fpl ?? null,
+              }
+            })
+          },
+          onError: reject,
+          onComplete: resolve,
+        })
+      })
     } catch (e: any) {
       if (isTRPCClientError(e, 'UNAUTHORIZED')) {
         const qs = new URLSearchParams(window.location.search)
         qs.set('message', body.message)
         Auth.signIn(undefined, { callbackUrl: `${window.location.pathname}?${qs.toString()}` })
+      } else {
+        setSendError(e instanceof Error ? e : new Error('unknown error'))
       }
+    } finally {
+      setSendPending(false)
     }
-  }, [])
+  }, [createChat, graph_id, queryClient, trpc, trpcClient])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
     fpl_to_metapath: dict.init(metapath.map(h => ({ key: h.id, value: h }))),
@@ -195,12 +212,12 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
             <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>
-              {createMessage.error ?
+              {sendError ?
                 <Message role="assistant" session={session}>
-                  I experienced an error: {createMessage.error instanceof Error ? createMessage.error.message : 'unknown error'}
+                  I experienced an error: {sendError.message}
                 </Message>
                 : null}
-              {createMessage.isPending ?
+              {sendPending ?
                 <Message role="assistant" session={session}>
                   <span className="loading loading-dots loading-lg mt-2"></span>
                 </Message>

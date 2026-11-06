@@ -38,7 +38,7 @@
     "@blueprintjs/select": "^5.1.4",
     "@blueprintjs/table": "^5.1.4",
     "@mdi/js": "^7.4.47",
-    "@modelcontextprotocol/sdk": "^1.20.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@socket.io/postgres-adapter": "^0.3.1",
     "@tanstack/react-query": "^5.106.1",
     "@trpc/client": "^11.25.0",
@@ -67,12 +67,13 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-error-boundary": "^4.0.13",
-    "swr": "^2.2.5",
+    "trpc-to-openapi": "3.3.3",
     "ts-dedent": "^2.2.0",
     "tsx": "^4.23.15",
     "ws": "^8.22.1",
     "yaml": "^2.4.2",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7",
+    "zod-openapi": "^5.4.6"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",

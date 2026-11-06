@@ -2,17 +2,23 @@ import React from 'react'
 import * as dict from '@/utils/dict'
 import { MetaNode } from '@/spec/metanode'
 import krg from '@/app/krg'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
+import { useTRPCClient } from '@/app/trpc/client'
 import dynamic from 'next/dynamic'
 
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 export default function useKRG({ session_id }: { session_id?: string }) {
-  const { data: suggestions, error } = useSWR(`/api/suggest`, { refreshInterval: 0 })
+  const trpc = useTRPCClient()
+  const { data: suggestions } = useQuery({
+    queryKey: ['user-suggestions', session_id],
+    queryFn: () => trpc.users.suggestions.query(undefined, { context: { session_id } }),
+    retry: false,
+  })
   const [krg_, setKrg_] = React.useState({ krg })
   React.useEffect(() => {
     if (!suggestions) return
-    for (const suggestion of dict.values(suggestions)) {
+    for (const suggestion of suggestions) {
       let OutputNode = krg.getDataNode(suggestion.output)
       if (OutputNode === undefined) {
         OutputNode = MetaNode(suggestion.output)

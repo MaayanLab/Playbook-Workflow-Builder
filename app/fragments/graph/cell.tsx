@@ -7,12 +7,13 @@ import { useExRouter } from '@/app/fragments/ex-router'
 import { useStory } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
 import { Abstract, FigureCaption, Methods, References } from './story'
-import { z } from 'zod'
+import { useTRPCClient } from '@/app/trpc/client'
 
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
 export default function Cell({ session_id, krg, id, head, metapath }: { session_id?: string, krg: KRG, id: string, head: Metapath, metapath: Metapath[] }) {
   const router = useExRouter()
+  const trpc = useTRPCClient()
   const processNode = krg.getProcessNode(head.process.type)
   const { data: { output, outputNode }, status, error: outputError, mutate } = useMetapathOutput({ krg, head })
   const story = useStory()
@@ -59,8 +60,7 @@ export default function Cell({ session_id, krg, id, head, metapath }: { session_
             <button
               className="btn btn-primary"
               onClick={async (evt) => {
-                const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/recompute/${head.id}`, { method: 'POST' })
-                const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
+                const res = await trpc.fpprg.recompute.mutate({ fpl_id: id, rebase_id: head.id }, { context: { session_id } })
                 router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}`, undefined, { shallow: true })
                 mutate()
               }}

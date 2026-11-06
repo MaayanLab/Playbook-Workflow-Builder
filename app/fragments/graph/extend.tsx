@@ -2,7 +2,6 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { NextRouter, useRouter } from 'next/router'
 import type KRG from '@/core/KRG'
-import { z } from 'zod'
 import { start_icon, rightarrow_icon, func_icon, variable_icon } from '@/icons'
 import { ProcessMetaNode } from '@/spec/metanode'
 import type { Metapath } from '@/app/fragments/metapath'
@@ -14,6 +13,7 @@ import Head from 'next/head'
 import classNames from 'classnames'
 import pluralize from 'pluralize'
 import { useExRouter } from "@/app/fragments/ex-router"
+import { useTRPCClient } from '@/app/trpc/client'
 
 import type CatalogType from '@/app/fragments/graph/catalog'
 const Catalog = dynamic(() => import('@/app/fragments/graph/catalog')) as typeof CatalogType
@@ -22,6 +22,7 @@ const Card = dynamic(() => import('@blueprintjs/core').then(({ Card }) => Card))
 
 export default function Extend({ session_id, krg, id, heads, metapath }: { session_id?: string, krg: KRG, id: string, heads: Metapath[], metapath: Metapath[] }) {
   const router = useExRouter()
+  const trpc = useTRPCClient()
   const processNode = heads[0] ? krg.getProcessNode(heads[0].process.type) : undefined
   const { items, selections } = React.useMemo(() => {
     // we'll use leaf nodes of the metapath + the current selected node as the selections
@@ -126,17 +127,13 @@ export default function Extend({ session_id, krg, id, heads, metapath }: { sessi
                       inputs[arg] = { id: selection.process.id }
                     }
                   })
-                  const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/extend`, {
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    method: 'POST',
-                    body: JSON.stringify({
+                  const res = await trpc.fpprg.extend.mutate({
+                    fpl_id: id,
+                    process: {
                       type: item.spec,
                       inputs,
-                    })
-                  })
-                  const res = z.string().parse(await req.json())
+                    },
+                  }, { context: { session_id } })
                   router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res}`, undefined, { shallow: true })
                 }
               }}

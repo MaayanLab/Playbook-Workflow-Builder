@@ -7,6 +7,7 @@ import krg from '@/app/krg'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
 import handler from '@/utils/next-rest'
 import * as dict from '@/utils/dict'
+import { openApiHandler } from '@/app/openapi'
 
 const QueryType = z.object({
   fpl_id: z.string(),
@@ -16,14 +17,13 @@ const QueryType = z.object({
 export default handler(async (req, res) => {
   if (req.method !== 'GET') throw new UnsupportedMethodError(req.method)
   const { fpl_id, format } = QueryType.parse(req.query)
-  const fpl = await fpprg.getFPL(fpl_id)
-  if (fpl === undefined) throw new NotFoundError()
-  const cwl_files = await cwl_for_playbook({ krg, fpl })
-  if (format === 'json') {
-    res.status(200).json(cwl_files)
-  } else if (format === 'list') {
-    res.status(200).json(dict.keys(cwl_files))
+  if (format === 'json' || format === 'list') {
+    req.query.trpc = ['v1', 'cwl', fpl_id]
+    await openApiHandler(req, res)
   } else if (format === 'zip') {
+    const fpl = await fpprg.getFPL(fpl_id)
+    if (fpl === undefined) throw new NotFoundError()
+    const cwl_files = await cwl_for_playbook({ krg, fpl })
     const zip = new JSZip()
     dict.items(cwl_files).forEach(({ key, value }) => {
       zip.file(key, YAML.stringify(value))

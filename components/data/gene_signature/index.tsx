@@ -10,7 +10,6 @@ import { GMT } from '../gene_matrix_transpose'
 import { GeneSet } from '@/components/core/set'
 import { ScoredGenes } from '@/components/core/scored'
 import SafeRender from '@/utils/saferender'
-import { clientLoadExample } from  '@/components/data/gene_signature/api/GTEx_aging_signature_limma.tsv/client'
 
 export const GeneSignature = MetaNode('GeneSignature')
   .meta({
@@ -82,7 +81,7 @@ export const GeneSigFileUpload = MetaNode('GeneSigFileUpload')
   .codec(FileC)
   .inputs()
   .output(GeneSignature)
-  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={GeneSignature.view} props={props.output} /> : null}</>)
+  .prompt(props => <><FilePrompt {...props} example={{ asset: 'data/gene_signature/assets/GTEx_aging_signature_limma.tsv', filename: 'GTEx_aging_signature_limma.tsv' }} />{props.output ? <SafeRender component={GeneSignature.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.gene_signature.gene_signature',
     { kargs: [props.data] },

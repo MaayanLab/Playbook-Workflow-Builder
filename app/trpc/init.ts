@@ -4,6 +4,7 @@ import type { IncomingMessage } from 'http'
 import { ResponseCodedError } from '@/spec/error'
 import { SYSTEM_USER_ID } from '@/db/constants'
 import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
+import type { OpenApiMeta } from 'trpc-to-openapi'
 
 export type Context = {
   req?: IncomingMessage
@@ -11,7 +12,7 @@ export type Context = {
   getSession: () => Promise<SessionWithId | null>
 }
 
-const t = initTRPC.context<Context>().create()
+const t = initTRPC.context<Context>().meta<OpenApiMeta>().create()
 
 const codeForStatus: Record<number, TRPC_ERROR_CODE_KEY> = {
   400: 'BAD_REQUEST',

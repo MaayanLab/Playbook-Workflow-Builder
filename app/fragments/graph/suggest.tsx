@@ -10,6 +10,7 @@ import type KRG from '@/core/KRG'
 import { z_uuid } from '@/utils/zod'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
 import * as Auth from 'next-auth/react'
+import { useTRPCClient } from '@/app/trpc/client'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -107,6 +108,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
 }
 
 export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
+  const trpc = useTRPCClient()
   const router = useExRouter()
   const { data: userSession } = useSessionWithId()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
@@ -228,13 +230,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
             suggestion_final.output = suggestion.name
           }
           // register the suggestion
-          const kvReq = await fetch(`/api/suggest/`, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify(suggestion_final)
-          })
+          await trpc.users.createSuggestion.mutate({ ...suggestion_final, user: userSession.user!.id }, { context: { session_id } })
           // construct the KRG node locally
           let OutputNode = krg.getDataNode(suggestion_final.output)
           if (OutputNode === undefined) {
@@ -276,17 +272,13 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
               inputs[arg] = { id: head.process.id }
             }
           }
-          const extendReq = await fetch(`/api/db/fpl/${id}/extend`, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify({
+          const extendRes = await trpc.fpprg.extend.mutate({
+            fpl_id: id,
+            process: {
               type: ProcessNode.spec,
               inputs,
-            })
-          })
-          const extendRes = z.string().parse(await extendReq.json())
+            },
+          }, { context: { session_id } })
           router.push(`/graph/${extendRes}`, undefined, { shallow: true })
         }}
       />

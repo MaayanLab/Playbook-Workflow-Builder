@@ -1,5 +1,4 @@
 import React from 'react'
-import { z } from 'zod'
 import { useExRouter } from '@/app/fragments/ex-router'
 import { DataMetaNode, PromptMetaNode } from '@/spec/metanode'
 import * as dict from '@/utils/dict'
@@ -8,9 +7,11 @@ import type KRG from '@/core/KRG'
 import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
 import { Abstract, FigureCaption, References } from './story'
+import { useTRPCClient } from '@/app/trpc/client'
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, metapath, status }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, metapath: Metapath[], status: string | undefined }) {
   const router = useExRouter()
+  const trpc = useTRPCClient()
   const { data: inputs, error } = useMetapathInputs({ krg, head })
   const story = useStory()
   const astFiltered = React.useMemo(() => story.ast.filter(part => part.tags.some(tag => metapath.some(p => tag === p.id))), [story])
@@ -40,21 +41,18 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
             inputs={inputs}
             output={outputNode.spec === processNode.output.spec ? output : undefined}
             submit={async (data, autoextend = false) => {
-              const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl/${id}/rebase/${head.process.id}`, {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                method: 'POST',
-                body: JSON.stringify({
+              const res = await trpc.fpprg.rebase.mutate({
+                fpl_id: id,
+                process_id: head.process.id,
+                process: {
                   type: head.process.type,
                   data: {
                     type: processNode.spec,
                     value: processNode.codec.encode(data),
                   },
                   inputs: head.process.inputs,
-                })
-              })
-              const res = z.object({ head: z.string(), rebased: z.string() }).parse(await req.json())
+                },
+              }, { context: { session_id } })
               router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${res.head}${res.head !== res.rebased ? `/node/${res.rebased}` : ''}${autoextend ? '/extend' : ''}`, undefined, { shallow: true })
             }}
           />

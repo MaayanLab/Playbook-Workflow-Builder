@@ -74,6 +74,27 @@ const McpCallC = z.union([
 ])
 
 export const chatRouter = router({
+  available: authedProcedure
+    .query(() => Boolean(process.env.OPENAI_API_KEY)),
+
+  augment: authedProcedure
+    .input(z.object({ description: z.string() }))
+    .mutation(async ({ input }) => {
+      if (!process.env.OPENAI_API_KEY) throw new TRPCError({ code: 'METHOD_NOT_SUPPORTED', message: 'OpenAI is not configured' })
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [{ role: 'user', content: `Restructure this text so it is easier to read, do not change or omit any information:\n${input.description}` }],
+          temperature: 0.7,
+        }),
+      })
+      if (!response.ok) throw new TRPCError({ code: 'BAD_GATEWAY', message: await response.text() })
+      const result = z.object({ choices: z.array(z.object({ message: z.object({ content: z.string() }) })) }).parse(await response.json())
+      return result.choices[0].message.content.trim()
+    }),
+
   create: authedProcedure
     .mutation(async ({ ctx }) => {
       const thread = await db.insertInto('thread')
@@ -102,7 +123,7 @@ export const chatRouter = router({
       node_id: z.string().optional(),
       message: z.string(),
     }))
-    .mutation(async ({ input: { thread_id, message, ...input } }) => {
+    .subscription(async function* ({ input: { thread_id, message, ...input }, signal }) {
       const graph_id = input.graph_id !== 'start' ? input.graph_id : undefined
       const node_id = input.node_id !== 'start' ? input.node_id : undefined
       const thread = await getThread(thread_id)
@@ -165,6 +186,7 @@ export const chatRouter = router({
         content: message,
         fpl: graph_id,
       }))
+      yield { messages: newMessages, fpl: graph_id }
       const stream = await (await openai).responses.create({
         model: 'gpt-5-mini',
         tools: [
@@ -190,7 +212,7 @@ export const chatRouter = router({
           ...focusMessages,
         ].map(({ role, content }) => ({ role, content })) as OpenAI.Responses.ResponseInput,
         stream: true,
-      })
+      }, { signal })
       let fpl: string | undefined
       const partialMessages: Record<number, ThreadMessage> = {}
       for await (const event of stream) {
@@ -212,6 +234,7 @@ export const chatRouter = router({
               })}`
             })
             newMessages.push(partialMessages[event.output_index])
+            yield { messages: newMessages, fpl }
           } else if (event.item.type === 'message') {
             partialMessages[event.output_index] = await createMessage({
               thread: thread.id,
@@ -220,12 +243,14 @@ export const chatRouter = router({
               fpl,
             })
             newMessages.push(partialMessages[event.output_index])
+            yield { messages: newMessages, fpl }
           }
         } else if (event.type === 'response.output_text.delta') {
           partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
             fpl,
             content: partialMessages[event.output_index].content + event.delta,
           })
+          yield { messages: newMessages, fpl }
         } else if (event.type === 'response.output_item.done') {
           if (event.item.type === 'mcp_call') {
             const output = event.item
@@ -251,18 +276,16 @@ export const chatRouter = router({
                   },
                 })}`
               })
+              yield { messages: newMessages, fpl }
             }
           } else if (event.item.type === 'message') {
             partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
               fpl,
               content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
             })
+            yield { messages: newMessages, fpl }
           }
         }
-      }
-      return {
-        messages: newMessages,
-        fpl,
       }
     }),
 

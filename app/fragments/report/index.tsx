@@ -4,9 +4,7 @@ import { useExRouter } from '@/app/fragments/ex-router'
 import fpprg from '@/app/fpprg'
 import krg from '@/app/krg'
 import { z } from 'zod'
-import { SWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
-import fetcher from '@/utils/next-rest-fetcher'
 import { MetapathProvider } from '@/app/fragments/metapath'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
@@ -51,7 +49,7 @@ export default function App({ fallback }: { fallback: any }) {
   const router = useExRouter()
   const params = React.useMemo(() => QueryType.parse(router.query), [router.query])
   return (
-    <SWRConfig value={{ fallback, fetcher }}>
+    <>
       <MetapathProvider session_id={params?.session_id}>
         <Layout
           sidebar={<Chat mode="report" graph_id={params.id} embedded />}
@@ -67,6 +65,6 @@ export default function App({ fallback }: { fallback: any }) {
           </main>
         </Layout>
       </MetapathProvider>
-    </SWRConfig>
+    </>
   )
 }

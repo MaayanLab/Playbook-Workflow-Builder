@@ -1,5 +1,4 @@
 import { Primative } from './spec'
-import useSWRImmutable from 'swr/immutable'
 import levenSort from '@/utils/leven-sort'
 import fetcher from '@/utils/next-rest-fetcher'
 import { glygenprotein_icon } from '@/icons'

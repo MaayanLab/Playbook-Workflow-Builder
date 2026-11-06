@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
 import fpprg from '@/app/fpprg'
+import { DataC, FPL, IdOrPlaybookMetadataC, IdOrProcessC, Process } from '@/core/FPPRG'
+import { decode_complete_process_inputs } from '@/core/engine'
+import krg from '@/app/krg'
 import { bus } from '@/app/db'
 import { TimeoutError } from '@/spec/error'
 import type { Resolved } from '@/core/FPPRG'
@@ -21,6 +24,110 @@ export type ResolvedLifecycle = {
 }
 
 export const fpprgRouter = router({
+  import: publicProcedure
+    .input(z.object({
+      data: z.record(z.string(), DataC).optional(),
+      workflow: z.array(IdOrProcessC),
+      metadata: IdOrPlaybookMetadataC.optional(),
+    }))
+    .mutation(async ({ input }) => (await fpprg.resolveFPL(input)).id),
+
+  /** Create the first step of a playbook, or extend an existing playbook. */
+  extend: publicProcedure
+    .input(z.object({ fpl_id: z.string(), process: IdOrProcessC }))
+    .mutation(async ({ input }) => {
+      const process = await fpprg.resolveProcess(input.process)
+      if (input.fpl_id === 'start') return (await fpprg.upsertFPL(new FPL(process))).id
+      const oldFpl = await fpprg.getFPL(input.fpl_id)
+      if (!oldFpl) throw new TRPCError({ code: 'NOT_FOUND' })
+      return (await fpprg.upsertFPL(oldFpl.extend(process))).id
+    }),
+
+  rebase: publicProcedure
+    .input(z.object({ fpl_id: z.string(), process_id: z.string(), process: IdOrProcessC }))
+    .mutation(async ({ input }) => {
+      const [oldProcess, oldFpl, newProcess] = await Promise.all([
+        fpprg.getProcess(input.process_id),
+        fpprg.getFPL(input.fpl_id),
+        fpprg.resolveProcess(input.process),
+      ])
+      if (!oldProcess || !oldFpl) throw new TRPCError({ code: 'NOT_FOUND' })
+      const { rebased, head } = oldFpl.rebase(oldProcess, newProcess)
+      return { head: (await fpprg.upsertFPL(head)).id, rebased: rebased.id }
+    }),
+
+  rebaseMetadata: publicProcedure
+    .input(z.object({ fpl_id: z.string(), rebase_id: z.string(), metadata: IdOrPlaybookMetadataC }))
+    .mutation(async ({ input }) => {
+      const [rebaseFpl, oldFpl, metadata] = await Promise.all([
+        fpprg.getFPL(input.rebase_id),
+        fpprg.getFPL(input.fpl_id),
+        fpprg.resolvePlaybookMetadata(input.metadata),
+      ])
+      if (!rebaseFpl || !oldFpl) throw new TRPCError({ code: 'NOT_FOUND' })
+      const { rebased, head } = oldFpl.rebasePlaybookMetadata(rebaseFpl, metadata)
+      return { head: (await fpprg.upsertFPL(head)).id, rebased: rebased.id }
+    }),
+
+  recompute: publicProcedure
+    .input(z.object({ fpl_id: z.string(), rebase_id: z.string() }))
+    .mutation(async ({ input }) => {
+      const [rebase, oldFpl] = await Promise.all([fpprg.getFPL(input.rebase_id), fpprg.getFPL(input.fpl_id)])
+      if (!rebase || !oldFpl) throw new TRPCError({ code: 'NOT_FOUND' })
+      const oldProcess = rebase.process
+      if (oldProcess.timestamp !== undefined) {
+        const newProcess = await fpprg.upsertProcess(new Process(oldProcess.type, oldProcess.data, oldProcess.inputs))
+        const { rebased, head } = oldFpl.rebase(oldProcess, newProcess)
+        return { head: (await fpprg.upsertFPL(head)).id, rebased: rebased.id }
+      }
+      const resolved = await fpprg.getResolved(oldProcess.id)
+      if (!resolved) throw new TRPCError({ code: 'NOT_FOUND' })
+      await fpprg.deleteResolved(resolved)
+      return { head: input.fpl_id, rebased: input.rebase_id }
+    }),
+
+  process: publicProcedure
+    .input(z.string())
+    .query(async ({ input }) => {
+      const process = await fpprg.getProcess(input)
+      if (!process) throw new TRPCError({ code: 'NOT_FOUND' })
+      return process.toJSON()
+    }),
+
+  inputs: publicProcedure
+    .input(z.string())
+    .query(async ({ input }) => {
+      const process = await fpprg.getProcess(input)
+      if (!process) throw new TRPCError({ code: 'NOT_FOUND' })
+      return await decode_complete_process_inputs(krg, process)
+    }),
+
+  output: publicProcedure
+    .input(z.string())
+    .query(async ({ input }) => {
+      const process = await fpprg.getProcess(input)
+      if (!process) throw new TRPCError({ code: 'NOT_FOUND' })
+      return (await process.output())?.toJSON() ?? null
+    }),
+
+  deleteOutput: publicProcedure
+    .input(z.string())
+    .mutation(async ({ input }) => {
+      const resolved = await fpprg.getResolved(input)
+      if (!resolved) throw new TRPCError({ code: 'NOT_FOUND' })
+      await fpprg.deleteResolved(resolved)
+      return null
+    }),
+
+  fplWithOutput: publicProcedure
+    .input(z.string())
+    .query(async ({ input }) => {
+      const fpl = await fpprg.getFPL(input)
+      if (!fpl) throw new TRPCError({ code: 'NOT_FOUND' })
+      return await Promise.all(fpl.resolve().map(step => step.toJSONWithOutput()))
+    }),
+
+
   /** The resolved sequence of steps in a playbook */
   fpl: publicProcedure
     .input(z.string())

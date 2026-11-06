@@ -1,13 +1,21 @@
 import { Primative } from './spec'
-import useSWRImmutable from 'swr/immutable'
+import { useQuery } from '@tanstack/react-query'
 import levenSort from '@/utils/leven-sort'
-import fetcher from '@/utils/next-rest-fetcher'
 import { gene_icon } from '@/icons'
 
 function useHarmonizomeGeneSuggestions(search: string) {
-  const { data, error } = useSWRImmutable<string[]>(() => search.length >= 2 ? `https://maayanlab.cloud/Harmonizome/api/1.0/suggest?t=gene&q=${encodeURIComponent(search)}` : null, fetcher)
+  const { data, error } = useQuery({
+    queryKey: ['harmonizome-gene-suggestions', search],
+    enabled: search.length >= 2,
+    queryFn: async () => {
+      const response = await fetch(`https://maayanlab.cloud/Harmonizome/api/1.0/suggest?t=gene&q=${encodeURIComponent(search)}`)
+      if (!response.ok) throw new Error(await response.text())
+      return await response.json() as string[]
+    },
+    staleTime: Infinity,
+  })
   const items = data ? levenSort(data, search).slice(0, 10) as string[] : []
-  return { items, error }
+  return { items, error: error?.message }
 }
 
 export const Gene = {

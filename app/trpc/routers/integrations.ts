@@ -5,6 +5,10 @@ import { uuid } from '@/db'
 import { emitter } from '@/app/extensions/socket/cavatica'
 import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
 import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
+import krg from '@/app/krg'
+import fpprg from '@/app/fpprg'
+import FPL2BCO from '@/core/fpl2bco'
+import * as dict from '@/utils/dict'
 import { authedProcedure, publicProcedure, router } from '../init'
 
 async function getIntegrations(user_id: string) {
@@ -123,6 +127,40 @@ async function fetchBCOs(fpl_id: string, id_token?: string | null) {
 }
 
 const biocomputeRouter = router({
+  draft: authedProcedure
+    .input(z.object({
+      fpl_id: z.string(),
+      metadata: z.object({ title: z.string().optional(), description: z.string().optional() }).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const [fpl, user, account] = await Promise.all([
+        fpprg.getFPL(input.fpl_id),
+        getUser(ctx.session.user.id),
+        getUserOrcidAccount(ctx.session.user.id),
+      ])
+      if (!fpl) throw new TRPCError({ code: 'NOT_FOUND' })
+      if (!user?.name) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Name required' })
+      if (!account) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'ORCID Required' })
+      if (Date.now() / 1000 > (account.expires_at ?? 0)) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'ORCID Expired' })
+      const contents = await FPL2BCO({
+        krg,
+        fpl,
+        metadata: input.metadata,
+        author: {
+          name: user.name,
+          ...dict.filter({ email: user.email, affiliation: user.affiliation ?? undefined, orcid: account.providerAccountId }),
+        },
+      })
+      const response = await fetch('https://biocomputeobject.org/users/bcodb/draft_bco/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${account.id_token}` },
+        body: JSON.stringify({ contents, origin: 'https://playbook-workflow-builder.cloud' }),
+      })
+      if (response.status === 403) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'BCO Unauthorization' })
+      if (!response.ok) throw new TRPCError({ code: 'BAD_GATEWAY', message: await response.text() })
+      return z.object({ object_id: z.string() }).parse(await response.json())
+    }),
+
   auth: publicProcedure
     .query(async ({ ctx }) => {
       const session = await ctx.getSession()

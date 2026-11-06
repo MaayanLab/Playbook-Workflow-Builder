@@ -1,21 +1,22 @@
 import React from 'react'
 import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
 import * as Auth from 'next-auth/react'
-import useSWRMutation from 'swr/mutation'
+import { useMutation } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'
-import { fetcherPOST } from '@/utils/next-rest-fetcher'
+import { useTRPC } from '@/app/trpc/client'
 
 const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 function DeleteAccount({ session }: { session: SessionWithId }) {
   const [deletionConfirmation, setDeletionConfirmation] = React.useState(false)
-  const { trigger: deleteUser, isMutating } = useSWRMutation('/api/db/user/delete', fetcherPOST)
+  const trpc = useTRPC()
+  const deleteUser = useMutation(trpc.users.delete.mutationOptions())
   return (
     <>
       <h3 className="bp5-heading text-red-600">Delete Account</h3>
-      <progress className={classNames('progress w-full', { 'hidden': !isMutating })}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !deleteUser.isPending })}></progress>
       <Bp5Button
         intent="danger"
         onClick={() => setDeletionConfirmation(true)}
@@ -30,7 +31,7 @@ function DeleteAccount({ session }: { session: SessionWithId }) {
         canOutsideClickCancel
         onCancel={() => {setDeletionConfirmation(false)}}
         onConfirm={() => {
-          deleteUser()
+          deleteUser.mutateAsync()
             .then(() => Auth.signOut({ callbackUrl: '/' }))
         }}
       >

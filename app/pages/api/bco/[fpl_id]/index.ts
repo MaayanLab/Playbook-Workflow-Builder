@@ -1,47 +1,22 @@
-import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
-import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
-import FPL2BCO from '@/core/fpl2bco'
 import { z } from 'zod'
-import * as dict from '@/utils/dict'
 import handler from '@/utils/next-rest'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
-import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
+import { openApiHandler } from '@/app/openapi'
 
 const QueryType = z.object({
   fpl_id: z.string(),
-  metadata: z.string().optional().transform(param =>
-    param ? z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-    }).parse(JSON.parse(param)) : undefined
-  ),
 })
 
 export default handler(async (req, res) => {
   if (req.method !== 'HEAD' && req.method !== 'GET') throw new UnsupportedMethodError(req.method)
-  const { fpl_id, metadata } = QueryType.parse(req.query)
-  const fpl = await fpprg.getFPL(fpl_id)
-  if (fpl === undefined) throw new NotFoundError()
+  const { fpl_id } = QueryType.parse(req.query)
   if (req.method === 'HEAD') {
+    const fpl = await fpprg.getFPL(fpl_id)
+    if (fpl === undefined) throw new NotFoundError()
     res.status(200).end()
     return
   }
-  const session = await getServerSessionWithId(req, res)
-  const user = (session && session.user) ? (await getUser(session.user.id)) : undefined
-  const userOrcidAccount = user ? await getUserOrcidAccount(user.id) : undefined
-  const BCO = await FPL2BCO({
-    krg,
-    fpl,
-    metadata,
-    author: user && user.name ? {
-      name: user.name,
-      ...dict.filter({
-        email: user.email,
-        affiliation: user.affiliation ?? undefined,
-        orcid: userOrcidAccount ? userOrcidAccount.providerAccountId : undefined,
-      }),
-    } : undefined,
-  })
-  res.status(200).json(BCO)
+  req.query.trpc = ['bco', fpl_id]
+  await openApiHandler(req, res)
 })

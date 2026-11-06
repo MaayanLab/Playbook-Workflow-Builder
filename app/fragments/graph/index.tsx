@@ -7,9 +7,7 @@ import db from '@/app/db'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { SWRConfig } from 'swr'
 import { MetaNode } from '@/spec/metanode'
-import fetcher from '@/utils/next-rest-fetcher'
 import { MetapathProvider } from '@/app/fragments/metapath'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
@@ -114,7 +112,7 @@ export default function App({ fallback }: { fallback: any }) {
     suggest: router.pathname.endsWith('/suggest'),
   }), [router.pathname])
   return (
-    <SWRConfig value={{ fallback, fetcher }}>
+    <>
       <MetapathProvider session_id={params?.session_id}>
         <Layout
           sidebar={<Chat mode="graph" graph_id={graph_id} node_id={node_id} embedded />}
@@ -131,6 +129,6 @@ export default function App({ fallback }: { fallback: any }) {
           </main>
         </Layout>
       </MetapathProvider>
-    </SWRConfig>
+    </>
   )
 }

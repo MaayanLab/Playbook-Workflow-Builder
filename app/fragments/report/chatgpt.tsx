@@ -1,33 +1,33 @@
 import React from 'react'
-import { fetcherPOST } from '@/utils/next-rest-fetcher'
-import useAsyncEffect from 'use-async-effect'
-import useSWRMutation from 'swr/mutation'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { useTRPC, useTRPCClient } from '@/app/trpc/client'
 
 /**
  * Client interface for chatGPT -- checks if chatGPT is available and reports reason why it might not be and
  *  facilitates submitting a query.
  */
 export function useChatGPT({ session_id }: { session_id?: string }) {
-  const [chatGPTAvailable, setChatGPTAvailable] = React.useState(false)
-  const { trigger, isMutating: isAugmentingWithChatGPT, error } = useSWRMutation(`${session_id ? `/api/socket/${session_id}` : ''}/api/chatgpt`, fetcherPOST<{ description: string }, string>)
+  const trpc = useTRPC()
+  const trpcClient = useTRPCClient()
   const { data: userSession } = useSessionWithId()
+  const { data: chatGPTAvailable = false } = useQuery({
+    queryKey: ['chat-available', session_id],
+    queryFn: () => trpcClient.chat.available.query(undefined, { context: { session_id } }),
+    enabled: Boolean(userSession?.user),
+    retry: false,
+  })
+  const augment = useMutation(trpc.chat.augment.mutationOptions({ trpc: { context: { session_id } } }))
   const augmentWithChatGPT = React.useCallback((description: string) => {
     if (!chatGPTAvailable) throw new Error('ChatGPT is unavailable')
-    return trigger({ description })
-  }, [trigger, chatGPTAvailable])
-  useAsyncEffect(async (isMounted) => {
-    if (userSession?.user === null) return
-    const req = await fetch(`/api/chatgpt`, { method: 'HEAD' })
-    if (!isMounted()) return
-    if (req.status === 200) setChatGPTAvailable(() => true)
-  }, [userSession?.user])
+    return augment.mutateAsync({ description })
+  }, [augment, chatGPTAvailable])
   return {
     chatGPTAvailable,
     augmentWithChatGPT,
-    isAugmentingWithChatGPT,
+    isAugmentingWithChatGPT: augment.isPending,
     errorAugmentingWithChatGPT:
-      chatGPTAvailable ? error :
+      chatGPTAvailable ? augment.error :
         !userSession?.user ? 'Please login'
         : 'ChatGPT is not configured',
   }

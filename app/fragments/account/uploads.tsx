@@ -1,11 +1,9 @@
 import React from 'react'
-import { z } from 'zod'
-import useSWRMutation from 'swr/mutation'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useExRouter } from '@/app/fragments/ex-router'
 import dynamic from 'next/dynamic'
-import useSWR from 'swr'
-import fetcher, { fetcherPOST } from '@/utils/next-rest-fetcher'
 import type { UserUploadComplete } from '@/db'
+import { useTRPC } from '@/app/trpc/client'
 import { FileInput, FileURL } from '@/components/core/file'
 import { delete_icon, fork_icon } from '@/icons'
 import classNames from 'classnames'
@@ -30,13 +28,18 @@ function humanSize(size: number) {
 
 export default function Uploads() {
   const router = useExRouter()
-  const { data: uploads, isLoading, mutate } = useSWR<Array<UserUploadComplete>>('/api/db/user/uploads', fetcher)
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: uploads, isLoading } = useQuery(trpc.users.uploads.queryOptions())
   const [uploadToDelete, setUploadToDelete] = React.useState<UserUploadComplete | undefined>(undefined)
-  const { trigger: deleteUpload, isMutating } = useSWRMutation(() => uploadToDelete ? `/api/db/user/uploads/${uploadToDelete.id}/delete` : null, fetcherPOST)
+  const deleteUpload = useMutation(trpc.users.deleteUpload.mutationOptions({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.users.uploads.queryKey() }),
+  }))
+  const extend = useMutation(trpc.fpprg.extend.mutationOptions())
   return (
     <>
       <h3 className="bp5-heading">Uploads</h3>
-      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
+      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || deleteUpload.isPending || extend.isPending) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">
           <table className="table table-compact w-full text-black dark:text-white">
@@ -69,21 +72,14 @@ export default function Uploads() {
                   <td>{upload.created.toString()}</td>
                   <td className="flex flex-row">
                     <button onClick={async () => {
-                      const req = await fetch(`/api/db/fpl/start/extend`, {
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        method: 'POST',
-                        body: JSON.stringify({
+                      const res = await extend.mutateAsync({ fpl_id: 'start', process: {
                           type: FileInput.spec,
                           inputs: {},
                           data: {
                             type: FileURL.spec,
                             value: FileURL.codec.encode({ url: upload.url, size: upload.size, filename: upload.filename }),
                           },
-                        })
-                      })
-                      const res = z.string().parse(await req.json())
+                        } })
                       router.push(`/graph/${res}/extend`, undefined, { shallow: true })
                     }}>
                       <Icon icon={fork_icon} className="fill-black dark:fill-white" />
@@ -99,21 +95,14 @@ export default function Uploads() {
               ))}
               <tr><td colSpan={8} align="center">
                 <button className="btn btn-primary btn-sm" onClick={async () => {
-                  const req = await fetch(`/api/db/fpl/start/extend`, {
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    method: 'POST',
-                    body: JSON.stringify({
+                  const res = await extend.mutateAsync({ fpl_id: 'start', process: {
                       type: FileInput.spec,
                       inputs: {},
                       data: {
                         type: FileURL.spec,
                         value: null,
                       },
-                    })
-                  })
-                  const res = z.string().parse(await req.json())
+                    } })
                   router.push(`/graph/${res}`, undefined, { shallow: true })
                 }}>Upload a new file</button>
               </td></tr>
@@ -132,9 +121,8 @@ export default function Uploads() {
         onCancel={() => {setUploadToDelete(undefined)}}
         onConfirm={() => {
           if (!uploadToDelete) return
-          deleteUpload()
+          deleteUpload.mutateAsync({ id: uploadToDelete.id })
             .then(() => {
-              mutate(data => data ? data.filter(({ id }) => id !== uploadToDelete.id) : data)
               setUploadToDelete(undefined)
             })
         }}

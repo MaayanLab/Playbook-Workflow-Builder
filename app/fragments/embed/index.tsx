@@ -7,9 +7,7 @@ import db from '@/app/db'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { SWRConfig } from 'swr'
 import { MetaNode } from '@/spec/metanode'
-import fetcher from '@/utils/next-rest-fetcher'
 import { Metapath, MetapathProvider, useFPL, useMetapathOutput } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
@@ -125,10 +123,10 @@ export default function App({ fallback }: { fallback: any }) {
   const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'
   const node_id = typeof params !== 'undefined' && 'node_id' in params && params.node_id ? params.node_id : graph_id
   return (
-    <SWRConfig value={{ fallback, fetcher }}>
+    <>
       <MetapathProvider session_id={params?.session_id}>
         <Main session_id={params?.session_id} graph_id={graph_id} node_id={node_id} />
       </MetapathProvider>
-    </SWRConfig>
+    </>
   )
 }

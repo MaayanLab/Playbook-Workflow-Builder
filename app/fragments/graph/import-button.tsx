@@ -2,11 +2,15 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { import_icon } from '@/icons'
 import { useExRouter } from '@/app/fragments/ex-router'
+import { useTRPCClient } from '@/app/trpc/client'
+import { z } from 'zod'
+import { DataC, IdOrPlaybookMetadataC, IdOrProcessC } from '@/core/FPPRG'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function ImportButton({ session_id }: { session_id?: string }) {
   const router = useExRouter()
+  const trpc = useTRPCClient()
   // TODO: error dialog on failure
   return (
     <>
@@ -24,18 +28,16 @@ export default function ImportButton({ session_id }: { session_id?: string }) {
             fileReader.addEventListener('load', () => resolve(fileReader.result as string))
             fileReader.addEventListener('error', (e) => reject(e))
           })
-          const req = await fetch(`${session_id ? `/api/socket/${session_id}` : ''}/api/db/fpl`, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body,
-          })
-          const res = await req.json()
-          if (req.ok) {
+          try {
+            const input = z.object({
+              data: z.record(z.string(), DataC).optional(),
+              workflow: z.array(IdOrProcessC),
+              metadata: IdOrPlaybookMetadataC.optional(),
+            }).parse(JSON.parse(body ?? ''))
+            const res = await trpc.fpprg.import.mutate(input, { context: { session_id } })
             router.push(`${session_id ? `/session/${session_id}` : ''}/report/${res}`, undefined, { shallow: true })
-          } else {
-            console.error(res)
+          } catch (error) {
+            console.error(error)
           }
         }}
       />

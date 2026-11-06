@@ -2,8 +2,8 @@ import React from 'react'
 import { MetaNode } from "@/spec/metanode"
 import { z } from 'zod'
 import { AnnData } from '@/components/data/anndata'
-import { useClientMetadataFromFile } from './api/metadata/client'
-import { updateMetadataColumn } from './api/metadata/update'
+import { useClientMetadataFromFile } from './client/metadata'
+import { updateMetadataColumn } from './server/update-metadata'
 import classNames from 'classnames'
 import { GeneCountMatrix } from '../gene_count_matrix'
 

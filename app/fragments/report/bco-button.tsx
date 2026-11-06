@@ -1,12 +1,10 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import useSWRMutation from 'swr/mutation'
 import { biocompute_icon } from '@/icons'
-import { fetcherPOST } from '@/utils/next-rest-fetcher'
 import { ResponseCodedError } from '@/spec/error'
 import { signIn, signOut } from 'next-auth/react'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { useQuery, skipToken } from '@tanstack/react-query'
+import { useMutation, useQuery, skipToken } from '@tanstack/react-query'
 import { useTRPC } from '@/app/trpc/client'
 
 const Bp5Popover = dynamic(() => import('@blueprintjs/core').then(({ Popover }) => Popover))
@@ -23,10 +21,10 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
     ...trpc.integrations.biocompute.published.queryOptions(id ? { fpl_id: id } : skipToken),
     retry: false,
   })
-  const { trigger, isMutating, error } = useSWRMutation(id ? `${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}/draft` : null, fetcherPOST<undefined, { object_id: string }>)
+  const draft = useMutation(trpc.integrations.biocompute.draft.mutationOptions({ trpc: { context: { session_id } } }))
   const [showError, setShowError] = React.useState(false)
   if (!id) return null
-  else if (isMutating) return <Bp5Spinner className="inline-block" size={20} />
+  else if (draft.isPending) return <Bp5Spinner className="inline-block" size={20} />
   return (
     <>
     {publishedBCO ?
@@ -55,7 +53,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
                 icon="send-to"
                 text="Draft in BioCompute Portal"
                 onClick={async (evt) => {
-                  trigger()
+                  draft.mutateAsync({ fpl_id: id, metadata })
                     .then((res) => {
                       if (res) window.open(res.object_id, '_blank')
                     })
@@ -94,8 +92,8 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
         cancelButtonText="Cancel"
         onCancel={() => {setShowError(false)}}
         onConfirm={() => {setShowError(false)}}
-      >{error ? (error as ResponseCodedError).message === 'ORCID Required' ? <>This feature requires your account to be linked with ORCID</>
-              : <>An error ocurred while attempting to register the BCO: {(error as ResponseCodedError).message}</>
+      >{draft.error ? draft.error.message === 'ORCID Required' ? <>This feature requires your account to be linked with ORCID</>
+              : <>An error ocurred while attempting to register the BCO: {draft.error.message}</>
               : null}
       </Bp5Alert>
     </>

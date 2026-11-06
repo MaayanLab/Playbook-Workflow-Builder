@@ -36,7 +36,7 @@ Below is a guide to add a component to the playbook. You can additionally reuse 
     npm run dev
     ```
     ![Prototype UI screenshot](./figures/prototype-ui.png)
-5. Add new components in directories under `components/`, potentially copying from an existing component. After adding a new component directory, be sure to execute `npm run codegen:components` which adds it to the full graph. **Avoid adding your components to existing files created by someone else, opt instead for a new directory**.
+5. Add new components in directories under `components/`, potentially copying from an existing component. A component may expose a typed API from a sibling `trpc.ts` default export; its router name comes from the component's `package.json` name. After adding a component or router, execute `npm run codegen:components`, which updates both `components/index.ts` and `components/trpc.ts`. **Avoid adding your components to existing files created by someone else, opt instead for a new directory**.
 6. Develop, test, and document your component, `index.tsx` should ultimately export your component's `metanodes`, see below for information describing how different types of Meta Nodes should be implemented.
 7. Submit a pull request against the main branch.
 
@@ -59,6 +59,100 @@ The `package.json` is a standard by the javascript ecosystem and is used to capt
   "devDependencies": {}
 }
 ```
+
+### Exposing a Component API with tRPC
+
+Components that need a JSON application API should define it in `trpc.ts` inside the component directory. Keep the implementation and its validation schemas with the component; do not add component-specific procedures to an app-wide router.
+
+`components/{mycomponent}/trpc.ts`
+```ts
+import { z } from 'zod'
+import { authedProcedure, publicProcedure, router } from '@/app/trpc/init'
+import { lookup, saveResult } from './service'
+
+const myComponentRouter = router({
+  // Use publicProcedure when no account is required.
+  lookup: publicProcedure
+    .input(z.object({ term: z.string() }))
+    .query(async ({ input }) => await lookup(input.term)),
+
+  // Use authedProcedure for user-owned data or privileged operations.
+  save: authedProcedure
+    .input(z.object({ value: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return await saveResult(input.value, ctx.session.user.id)
+    }),
+})
+
+// Component routers use a default export so codegen can compose them.
+export default myComponentRouter
+```
+
+The generated router namespace comes from the final segment of the component's `package.json` name. For example, both `"name": "mycomponent"` and `"name": "@playbook-partnership/mycomponent"` produce `components.mycomponent`. Names must be valid JavaScript identifiers and unique among components that expose routers.
+
+Run codegen after adding, removing, renaming, or moving a component router:
+
+```bash
+npm run codegen:components
+```
+
+This regenerates:
+
+- `components/index.ts`, containing the MetaNode registry.
+- `components/trpc.ts`, containing only the composition of discovered component routers.
+
+Both files are generated artifacts and should not be edited manually. Commit their regenerated contents with the component change.
+
+In React code, use the generated typed client through TanStack Query:
+
+```tsx
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
+
+function MyComponentView() {
+  const trpc = useTRPC()
+  const result = useQuery(
+    trpc.components.mycomponent.lookup.queryOptions({ term: 'ACE2' })
+  )
+  const save = useMutation(
+    trpc.components.mycomponent.save.mutationOptions()
+  )
+
+  // ...render result.data or call save.mutate({ value: 'example' })
+}
+```
+
+Use `useTRPCClient()` when an imperative request is a better fit, such as inside an existing callback. When operating through a remote session, pass its routing context:
+
+```ts
+await trpc.components.mycomponent.save.mutate(
+  { value: 'example' },
+  { context: { session_id } },
+)
+```
+
+Use tRPC for JSON queries, mutations, and subscriptions. Keep an HTTP route only when HTTP itself is part of the required interface, such as multipart file uploads, streaming or binary downloads, redirects, or webhooks. Transport routes live at the application boundary under `app/pages/api`; reusable component implementation remains with its owner (typically in `client/` or `server/`). Do not create component-local `api/` route trees or duplicate a tRPC procedure with HTTP.
+
+### Exposing a Public REST API
+
+Public JSON endpoints are tRPC procedures in `app/trpc/routers/public-api.ts`. Add an input schema, an output schema, and `openapi` metadata to every public procedure. The application uses Zod 4, which provides the schema metadata consumed by `trpc-to-openapi` and `zod-openapi`.
+
+```ts
+publicProcedure
+  .meta({ openapi: {
+    method: 'GET',
+    path: '/example/{id}',
+    tags: ['Examples'],
+    summary: 'Get an example',
+  } })
+  .input(z.object({ id: z.string() }))
+  .output(z.object({ id: z.string(), label: z.string() }))
+  .query(async ({ input }) => getExample(input.id))
+```
+
+The catch-all route at `app/pages/api/[...trpc].ts` exposes these procedures below `/api` while `app/pages/api/openapi.json.ts` serves their generated OpenAPI 3.1 document. Paths in procedure metadata therefore omit the `/api` prefix.
+
+Do not annotate private application procedures merely to make them callable over REST. Keep the public surface in `publicApiRouter`, with explicit output validation and stable paths. When an endpoint supports both JSON and a binary representation, route its JSON mode through the OpenAPI handler and retain a thin native handler for the binary response. BCO `HEAD`, CWL/RO-Crate ZIP downloads, DRS data streams, multipart uploads, sockets, MCP, and authentication are examples that still require native HTTP handling.
 
 ### Creating a Data Type / View
 Each data type has a view, the view is a react component capable of meaningfully visualizing a given data type. Some views simply show the data, such as `Gene`, while others are more elaborate, such as `PlotlyPlot` which render a plot.

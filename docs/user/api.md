@@ -2,7 +2,7 @@
 
 The Playbook Partnership API allows you to construct workflows via a REST API. Workflows are specified using a JSON serialized domain specific language (DSL), they are then registered into the database and either the output can be resolved or the resulting playbook can be visited.
 
-Browsable API docs will be available in the future, for now, these documents can be constructed with the help of the UI's export feature.
+The machine-readable OpenAPI 3.1 description is available at `/api/openapi.json`. It documents the public workflow export, BCO, CWL, RO-Crate, and GA4GH DRS JSON endpoints. Binary downloads and multipart uploads remain documented separately because they use native HTTP handlers.
 
 ## Building a Workflow
 
@@ -81,7 +81,7 @@ Output follows the same form as the input, but each node will additionally have 
 }
 ```
 
-Note that the structure of each data `value` depends on the `type`, this type information will eventually be provided in an OpenAPI-like docs interface.
+Note that the structure of each data `value` depends on the `type`. The public endpoint shapes and parameters are described by `/api/openapi.json`; component-specific value schemas remain part of the component catalog.
 
 
 ## Workflows with Files
@@ -96,7 +96,7 @@ ENDPOINT = 'https://playbook-workflow-builder.cloud'
 # Construct a workflow FileInput => AnnDataFromFile => Limma-Voom with the example.h5ad file
 res = requests.post(ENDPOINT + '/api/db/fpl', json={
   "workflow": [
-    {"id": "0", "type": "FileInput", "data": { "type": "FileURL", "value": { "url": ENDPOINT + '/api/v1/components/core/file/example.h5ad', "filename": "example.h5ad" } } },
+    {"id": "0", "type": "FileInput", "data": { "type": "FileURL", "value": { "url": "https://example.org/example.h5ad", "filename": "example.h5ad" } } },
     {"id": "1", "type": "AnnDataFromFile", "inputs": { "file": { "id": "0" } } },
     {"id": "2", "type": "Limma-Voom", "inputs": { "anndata": { "id": "1" } } }
   ]

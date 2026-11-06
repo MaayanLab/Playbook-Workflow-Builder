@@ -9,6 +9,7 @@ import { tunnelUpgrade } from '@/app/extensions/socket/cavatica'
 import { appRouter } from '@/app/trpc/router'
 import { createWSContext } from '@/app/trpc/context'
 import { TRPC_WS_PATH } from '@/app/trpc/constants'
+import { claimUpgradePath } from '../upgrade'
 import '@/utils/global_cache'
 declare global {
   var io: Server | undefined
@@ -35,6 +36,7 @@ export default async function plugin(server: http.Server, opts: {}) {
     io.adapter(createAdapter(pool))
   }
   io.on('connection', (socket) => onSocket(io, socket))
+  claimUpgradePath('/socket.io/')
 
   // tRPC subscriptions
   console.log('Starting tRPC websocket server...')
@@ -45,6 +47,7 @@ export default async function plugin(server: http.Server, opts: {}) {
     createContext: createWSContext,
     keepAlive: { enabled: true, pingMs: 30_000, pongWaitMs: 5_000 },
   })
+  claimUpgradePath(TRPC_WS_PATH)
   server.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
     if (url.pathname !== TRPC_WS_PATH) return

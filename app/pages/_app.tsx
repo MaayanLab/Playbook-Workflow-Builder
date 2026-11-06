@@ -22,16 +22,17 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
       </Head>
-      <RuntimeConfig>
-        <SessionProvider session={session}>
-          <TRPCReactProvider>
+      {/* outermost: RuntimeConfig (and anything else) may use tRPC */}
+      <TRPCReactProvider>
+        <RuntimeConfig>
+          <SessionProvider session={session}>
             <HotkeysProvider>
               <Component {...pageProps} />
             </HotkeysProvider>
-          </TRPCReactProvider>
-        </SessionProvider>
-        <Analytics />
-      </RuntimeConfig>
+          </SessionProvider>
+          <Analytics />
+        </RuntimeConfig>
+      </TRPCReactProvider>
     </>
   )
 }

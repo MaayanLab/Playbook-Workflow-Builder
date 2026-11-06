@@ -21,9 +21,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const params = QueryType.parse(ctx.params || {})
   if (!params.id || params.session_id !== undefined) {
     return {
-      props: {
-        fallback: {}
-      }
+      props: {}
     }
   }
   const fpl = await fpprg.getFPL(params.id)
@@ -31,21 +29,10 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     return { notFound: true }
   }
   const results = fpl.resolve().map(fpl => fpl.toJSON())
-  const fallback: Record<string, unknown> = {
-    [`/api/db/fpl/${params.id}`]: results
-  }
-  for (const result of results) {
-    const output = await fpprg.getResolved(result.process.id)
-    if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
-  }
-  return {
-    props: {
-      fallback: JSON.parse(JSON.stringify(fallback)),
-    }
-  }
+  return { props: {} }
 }
 
-export default function App({ fallback }: { fallback: any }) {
+export default function App() {
   const router = useExRouter()
   const params = React.useMemo(() => QueryType.parse(router.query), [router.query])
   return (

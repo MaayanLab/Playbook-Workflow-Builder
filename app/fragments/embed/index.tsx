@@ -2,19 +2,15 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import type { GetServerSidePropsContext } from 'next'
 import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
-import db from '@/app/db'
+import { registerSuggestions } from '@/app/extensions/suggestions'
 import { z } from 'zod'
-import * as dict from '@/utils/dict'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { MetaNode } from '@/spec/metanode'
 import { Metapath, MetapathProvider, useFPL, useMetapathOutput } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
 import KRG from '@/core/KRG'
 import useKRG from '@/app/fragments/graph/krg'
 
-const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const ParamType = z.union([
   z.object({ session_id: z.string().optional(), graph_id: z.string(), node_id: z.string() }),
@@ -28,7 +24,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const params = ParamType.parse(ctx.params)
   if (params === undefined || !('graph_id' in params) || params.graph_id === 'start' || params.session_id !== undefined) {
     return {
-      props: { fallback: {} }
+      props: {}
     }
   }
   const fpl = await fpprg.getFPL(params.graph_id)
@@ -39,62 +35,8 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   if ('node_id' in params && !(params.node_id === 'start' || results.some(({ id }) => id === params.node_id))) {
     return { notFound: true }
   }
-  const fallback: Record<string, unknown> = {
-    [`/api/db/fpl/${params.graph_id}`]: results
-  }
-  for (const result of results) {
-    const output = await fpprg.getResolved(result.process.id)
-    if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
-  }
-  const suggestions = await db.selectFrom('suggestion').selectAll().execute()
-  for (const key in suggestions) {
-    const suggestion = suggestions[key]
-    let OutputNode = krg.getDataNode(suggestion.output)
-    if (OutputNode === undefined) {
-      OutputNode = MetaNode(suggestion.output)
-        .meta({
-          label: `${suggestion.output} (Suggestion)`,
-          description: `A data type, suggested as part of ${suggestion.name}`,
-          pagerank: -100,
-        })
-        .codec<any>()
-        .view((props) => {
-          return <div>This data type was suggested as part of {suggestion.name}</div>
-        })
-        .build()
-      krg.add(OutputNode)
-    }
-    let ProcessNode = krg.getProcessNode(suggestion.name)
-    if (ProcessNode === undefined) {
-      const ProcessNode = MetaNode(suggestion.name)
-        .meta({
-          label: `${suggestion.name} (Suggestion)`,
-          description: suggestion.description,
-          pagerank: -100,
-        })
-        .inputs(suggestion.inputs ?
-            dict.init(suggestion.inputs.split(',').map((spec: string, ind: number) =>
-              ({ key: ind.toString(), value: krg.getDataNode(spec) }))
-              .filter(({ key, value }) => !!value))
-            : {} as any)
-        .output(OutputNode)
-        .prompt((props) => {
-          return <div>
-            <p>{suggestion.description}</p>
-            <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook workflow builder user</>}.</p>
-          </div>
-        })
-        .story(props => ({ abstract: `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.` }))
-        .build()
-      krg.add(ProcessNode)
-    }
-  }
-  fallback[`/api/suggest`] = suggestions
-  return {
-    props: {
-      fallback: JSON.parse(JSON.stringify(fallback)),
-    }
-  }
+  await registerSuggestions()
+  return { props: {} }
 }
 
 function Cell({ krg, head }: { krg: KRG, head: Metapath }) {
@@ -117,7 +59,7 @@ function Main({ session_id, graph_id, node_id }: { session_id?: string, graph_id
   )
 }
 
-export default function App({ fallback }: { fallback: any }) {
+export default function App() {
   const router = useExRouter()
   const params = ParamType.parse(router.query)
   const graph_id = typeof params !== 'undefined' && 'graph_id' in params && params.graph_id ? params.graph_id : 'start'

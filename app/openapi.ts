@@ -14,7 +14,7 @@ export const openApiHandler = createOpenApiNextHandler({
 export function openApiDocument() {
   return generateOpenApiDocument(appRouter, {
     title: 'Playbook Workflow Builder API',
-    description: 'Public APIs for exporting workflows and accessing GA4GH DRS objects.',
+    description: 'Public APIs for creating, inspecting & exporting workflows and accessing GA4GH DRS objects.',
     version: packageJson.version,
     baseUrl: `${(process.env.PUBLIC_URL || '').replace(/\/$/, '')}/api`,
     docsUrl: `${(process.env.PUBLIC_URL || '').replace(/\/$/, '')}/api/openapi.json`,

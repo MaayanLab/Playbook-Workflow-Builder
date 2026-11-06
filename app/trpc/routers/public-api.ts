@@ -11,6 +11,7 @@ import { cwl_for_playbook } from '@/core/fpl2cwl'
 import { fpl2ro_crate_metadata } from '@/core/fpl2ro-crate'
 import * as dict from '@/utils/dict'
 import { NotFoundError } from '@/spec/error'
+import { DataC, IdOrPlaybookMetadataC, IdOrProcessC } from '@/core/FPPRG'
 import { publicProcedure, router } from '../init'
 
 const JsonValue: z.ZodType<unknown> = z.lazy(() => z.union([
@@ -162,6 +163,76 @@ export const publicApiRouter = router({
           }),
         } : undefined,
       }))
+    }),
+
+  workflowCreate: publicProcedure
+    .meta({ openapi: {
+      method: 'POST', path: '/db/fpl', tags: ['Workflows'],
+      summary: 'Create a playbook from a workflow specification, returning its id',
+      description: 'The body uses the same structure as `/db/fpl/{fpl_id}/export`.',
+      errorResponses: [400],
+    } })
+    .input(z.object({
+      data: z.record(z.string(), DataC).optional(),
+      workflow: z.array(IdOrProcessC),
+      metadata: IdOrPlaybookMetadataC.optional(),
+    }))
+    .output(z.string())
+    .mutation(async ({ input }) => (await fpprg.resolveFPL(input)).id),
+
+  workflow: publicProcedure
+    .meta({ openapi: {
+      method: 'GET', path: '/db/fpl/{fpl_id}', tags: ['Workflows'],
+      summary: 'Get the steps of a playbook as registered in the database', errorResponses: [404],
+    } })
+    .input(FplIdInput)
+    .output(JsonValue)
+    .query(async ({ input }) => {
+      const fpl = await fpprg.getFPL(input.fpl_id)
+      if (!fpl) throw new NotFoundError()
+      return asJson(fpl.resolve().map(step => step.toJSON()))
+    }),
+
+  workflowOutput: publicProcedure
+    .meta({ openapi: {
+      method: 'GET', path: '/db/fpl/{fpl_id}/output', tags: ['Workflows'],
+      summary: 'Get the steps of a playbook along with their outputs', errorResponses: [404, 504],
+    } })
+    .input(FplIdInput)
+    .output(JsonValue)
+    .query(async ({ input }) => {
+      const fpl = await fpprg.getFPL(input.fpl_id)
+      if (!fpl) throw new NotFoundError()
+      return asJson(await Promise.all(fpl.resolve().map(step => step.toJSONWithOutput())))
+    }),
+
+  process: publicProcedure
+    .meta({ openapi: {
+      method: 'GET', path: '/db/process/{process_id}', tags: ['Workflows'],
+      summary: 'Get a process as registered in the database', errorResponses: [404],
+    } })
+    .input(z.object({ process_id: z.string() }))
+    .output(JsonValue)
+    .query(async ({ input }) => {
+      const process = await fpprg.getProcess(input.process_id)
+      if (!process) throw new NotFoundError()
+      return asJson(process.toJSON())
+    }),
+
+  processOutput: publicProcedure
+    .meta({ openapi: {
+      method: 'GET', path: '/db/process/{process_id}/output', tags: ['Workflows'],
+      summary: 'Get the output of a process, resolving it if necessary',
+      description: 'Responds with 504 if the output is not ready yet, retry until it is.',
+      errorResponses: [404, 504],
+    } })
+    .input(z.object({ process_id: z.string() }))
+    .output(JsonValue)
+    .query(async ({ input }) => {
+      const process = await fpprg.getProcess(input.process_id)
+      if (!process) throw new NotFoundError()
+      const output = await process.output()
+      return asJson(output ? output.toJSON() : null)
     }),
 
   workflowExport: publicProcedure

@@ -113,7 +113,7 @@ export function useMetapathOutput({ krg, head }: { krg: KRG, head: Metapath }) {
 
 /**
  * Retrieve inputs to this process from outputs of its inputs
- *  We rely on SWR to help us de-duplicate these requests
+ *  (requests are de-duplicated by the per-process cache in MetapathProvider)
  */
 export function useMetapathInputs({ krg, head }: { krg: KRG, head: Metapath }) {
   const metapath = useMetapath()

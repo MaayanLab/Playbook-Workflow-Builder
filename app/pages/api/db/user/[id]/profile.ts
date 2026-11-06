@@ -10,8 +10,8 @@ const QueryType = z.object({
 export default handler(async (req, res) => {
   if (req.method !== 'GET') throw new UnsupportedMethodError(req.method)
   const { id } = QueryType.parse(req.query)
-  const user = await db.objects.user.findUnique({ where: { id } })
-  if (user === null) throw new NotFoundError()
+  const user = await db.selectFrom('user').selectAll().where('id', '=', id).executeTakeFirst()
+  if (user === undefined) throw new NotFoundError()
   res.status(200).json({
     image: user.image,
     name: user.name,

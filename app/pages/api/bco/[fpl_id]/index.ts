@@ -1,6 +1,6 @@
 import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
-import db from '@/app/db'
+import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
 import FPL2BCO from '@/core/fpl2bco'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
@@ -28,18 +28,17 @@ export default handler(async (req, res) => {
     return
   }
   const session = await getServerSessionWithId(req, res)
-  const user = (session && session.user) ? (await db.objects.user.findUnique({ where: { id: session.user.id } })) : undefined
-  // @ts-ignore
-  const userOrcidAccount = user ? await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } }) : undefined
+  const user = (session && session.user) ? (await getUser(session.user.id)) : undefined
+  const userOrcidAccount = user ? await getUserOrcidAccount(user.id) : undefined
   const BCO = await FPL2BCO({
     krg,
     fpl,
     metadata,
-    author: user && user.name !== undefined ? {
+    author: user && user.name ? {
       name: user.name,
       ...dict.filter({
         email: user.email,
-        affiliation: user.affiliation,
+        affiliation: user.affiliation ?? undefined,
         orcid: userOrcidAccount ? userOrcidAccount.providerAccountId : undefined,
       }),
     } : undefined,

@@ -1,5 +1,6 @@
 import krg from '@/app/krg'
 import db from '@/app/db'
+import { uuid } from '@/db'
 import * as dict from '@/utils/dict'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import dynamic from 'next/dynamic'
@@ -31,9 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     if (req.method === 'GET')  {
       res.status(200).json(
-        await db.objects.suggestion.findMany({
-          where: { user: session.user.id }
-        })
+        await db.selectFrom('suggestion').selectAll().where('user', '=', session.user.id).execute()
       )
     } else if (req.method === 'POST') {
       const suggestion = BodyType.parse(req.body)
@@ -75,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .story(props => ({ abstract: `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.` }))
         .build()
       krg.add(ProcessNode)
-      await db.objects.suggestion.create({ data: suggestion })
+      await db.insertInto('suggestion').values({ ...suggestion, id: uuid() }).execute()
       res.status(200).end()
     } else {
       throw new UnsupportedMethodError(req.method)

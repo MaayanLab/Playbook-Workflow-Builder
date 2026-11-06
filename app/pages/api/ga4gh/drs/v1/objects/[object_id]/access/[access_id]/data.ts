@@ -1,5 +1,6 @@
 import handler from '@/utils/next-rest'
 import db from '@/app/db'
+import { selectUserUploadComplete } from '@/db/queries'
 import { NotFoundError } from '@/spec/error'
 import { z } from 'zod'
 import { fileAsStream } from "@/components/core/file/api/download"
@@ -19,8 +20,8 @@ export default handler(async (req, res) => {
     // TODO: potentially authorize with passports
   }
   if (access_id !== 'https') throw new NotFoundError()
-  const upload = await db.objects.user_upload_complete.findUnique({ where: { id: object_id } })
-  if (upload === null) throw new NotFoundError()
+  const upload = await selectUserUploadComplete(db).where('user_upload.id', '=', object_id).executeTakeFirst()
+  if (upload === undefined) throw new NotFoundError()
   const fileStream = await fileAsStream(upload)
   fileStream.pipe(res)
 })

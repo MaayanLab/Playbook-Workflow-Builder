@@ -18,7 +18,7 @@ export async function TestGlycoSightAPI(url: string) : Promise<GlycoSightOutputT
 
 export async function UploadAndAnalyze(file: GlycoSightFileURLType, fileData: Buffer) : Promise<GlycoSightOutputType> {
 
-    const blob = new Blob([fileData]);
+    const blob = new Blob([new Uint8Array(fileData)]);
 
     const res = await fetch(`${devGSURL}upload-and-analyze?n=${file.filename}&s=${file.size}`, 
         { 

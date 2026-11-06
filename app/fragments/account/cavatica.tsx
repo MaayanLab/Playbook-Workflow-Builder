@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic'
 import CAVATICAAPIKeyGuide from '@/app/public/CAVATICA-guide-apikey.png'
 import CAVATICAProjectGuide from '@/app/public/CAVATICA-guide-project.png'
 import classNames from 'classnames'
-import { useAPIMutation, useAPIQuery } from '@/core/api/client'
-import { UserIntegrationsCAVATICA, UserIntegrationsCAVATICAUpdate } from '@/app/api/client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 
 const Bp5FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
 const Bp5InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
@@ -13,8 +13,12 @@ const Bp5ControlGroup = dynamic(() => import('@blueprintjs/core').then(({ Contro
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export default function CAVATICA() {
-  const { data: userIntegrations, isLoading } = useAPIQuery(UserIntegrationsCAVATICA, {})
-  const { trigger: setUserIntegrations, isMutating } = useAPIMutation(UserIntegrationsCAVATICAUpdate, {})
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: userIntegrations, isLoading } = useQuery(trpc.integrations.cavatica.get.queryOptions())
+  const { mutateAsync: setUserIntegrations, isPending: isMutating } = useMutation(trpc.integrations.cavatica.update.mutationOptions({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.integrations.cavatica.get.queryKey() }),
+  }))
   const [userIntegrationsDraft, setUserIntegrationsDraft] = React.useState({
     cavatica_api_key: '',
     cavatica_default_project: '',
@@ -34,7 +38,7 @@ export default function CAVATICA() {
         className="prose prose-lg max-w-none"
         onSubmit={async (evt) => {
           evt.preventDefault()
-          setUserIntegrations({ body: userIntegrationsDraft })
+          setUserIntegrations(userIntegrationsDraft)
         }}
         method="POST"
       >
@@ -84,10 +88,8 @@ export default function CAVATICA() {
             intent="danger"
             onClick={() => {
               setUserIntegrations({
-                body: {
-                  cavatica_api_key: '',
-                  cavatica_default_project: '',
-                }
+                cavatica_api_key: '',
+                cavatica_default_project: '',
               }).then(() => {
                 setUserIntegrationsDraft({
                   cavatica_api_key: '',

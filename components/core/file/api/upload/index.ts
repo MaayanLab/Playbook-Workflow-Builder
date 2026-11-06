@@ -2,6 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import db from "@/app/db"
+import { insertUserUpload } from "@/db/queries"
 import { createHash } from 'crypto'
 import type { Writable, Readable } from 'stream'
 import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
@@ -56,27 +57,6 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
       ],
     })
   }
-  const upload = await db.objects.upload.upsert({
-    where: {
-      url: file.url,
-      sha256: file.sha256,
-    },
-    create: {
-      url: file.url,
-      sha256: file.sha256,
-      size: file.size,
-    },
-  })
-  const user_upload = await db.objects.user_upload.upsert({
-    where: {
-      user: session?.user?.id ?? null,
-      upload: upload.id,
-    },
-    create: {
-      user: session?.user?.id ?? null,
-      upload: upload.id,
-      filename: file.filename,
-    },
-  })
+  const user_upload = await insertUserUpload(db, { ...file, sha256: file.sha256 as string, size: file.size as number }, session?.user?.id ?? null)
   return { url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
 }

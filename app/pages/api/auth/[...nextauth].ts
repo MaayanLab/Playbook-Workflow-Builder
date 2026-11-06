@@ -1,5 +1,5 @@
 import NextAuth, { ISODateString, NextAuthOptions, Session } from 'next-auth'
-import type { Provider } from "next-auth/providers"
+import type { Provider } from "next-auth/providers/index"
 import db from '@/app/db'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import EmailProvider from 'next-auth/providers/email'
@@ -22,16 +22,16 @@ export const authOptions: NextAuthOptions = {
       name: 'Development User',
       credentials: {},
       async authorize(credentials, req) {
-        return await db.objects.user.upsert({
-          where: {
-            id: '00000000-0000-0000-0000-000000000000',
-          },
-          create: {
+        const user = await db.insertInto('user')
+          .values({
             id: '00000000-0000-0000-0000-000000000000',
             name: 'Development User',
             email: '',
-          },
-        })
+          })
+          .onConflict(oc => oc.column('id').doUpdateSet({ id: '00000000-0000-0000-0000-000000000000' }))
+          .returningAll()
+          .executeTakeFirstOrThrow()
+        return { ...user, name: user.name ?? undefined, image: user.image ?? undefined }
       }
     }) : undefined,
     process.env.NEXTAUTH_KEYCLOAK ? KeycloakProvider(JSON.parse(process.env.NEXTAUTH_KEYCLOAK)) : undefined,
@@ -45,11 +45,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     session: async ({ session, token }) => {
       Object.assign(session, {
-        user: await db.objects.user.findUnique({
-          where: {
-            id: token.sub,
-          }
-        })
+        user: token.sub ? await db.selectFrom('user').selectAll().where('id', '=', token.sub).executeTakeFirst() ?? null : null
       })
       return session as SessionWithId
     }

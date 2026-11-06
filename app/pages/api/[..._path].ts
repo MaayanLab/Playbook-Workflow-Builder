@@ -1,21 +1,13 @@
 /**
- * Expose APIs from @/app/api/*
+ * Expose component APIs from @/components/<component>/api/<path>/route.ts
  *
- * The reason for this redirection is to
- *   1. dispatch GET/POST/... to different handlers
- *   2. allow co-locating server route and client code to access that route
+ * Application APIs are served by tRPC (see @/app/trpc).
  */
 import { z } from 'zod'
 import handler, { RouteHandler } from '@/utils/next-rest'
 import { NotFoundError, UnsupportedMethodError } from '@/spec/error'
 import { components } from '@/components'
 import { create_prefix_tree_from_paths, search_prefix_tree } from '@/utils/prefix_tree'
-import APIRouter from '@/core/api/router'
-import * as dict from '@/utils/dict'
-import * as APIs from '@/app/api/server'
-
-const api_router = new APIRouter()
-dict.values(APIs).forEach(api => {api_router.add(api)})
 
 export const config = {
   api: {
@@ -54,13 +46,10 @@ export default handler(async (req, res) => {
   let component_handlers: Record<string, RouteHandler> = {}
   if (!req.method) throw new UnsupportedMethodError()
   try {
-    if (/^v\d+$/.exec(_path[0]) !== null && _path[1] === 'components') {
-      const { prefix: component, path } = search_prefix_tree(component_tree, _path.slice(2).join('/'))
-      if (component === undefined || path === undefined) throw new NotFoundError()
-      Object.assign(component_handlers, await require(`@/components/${component}/api/${path}/route.ts`))
-    } else {
-      Object.assign(component_handlers, { GET: api_router.route, POST: api_router.route })
-    }
+    if (/^v\d+$/.exec(_path[0]) === null || _path[1] !== 'components') throw new NotFoundError()
+    const { prefix: component, path } = search_prefix_tree(component_tree, _path.slice(2).join('/'))
+    if (component === undefined || path === undefined) throw new NotFoundError()
+    Object.assign(component_handlers, await require(`@/components/${component}/api/${path}/route.ts`))
   } catch (e) {
     console.warn(e)
     throw new NotFoundError()

@@ -11,7 +11,8 @@ import { FPL, Process } from '@/core/FPPRG';
 import type { ProcessMetaNode } from "@/spec/metanode"
 import type KRG from "@/core/KRG"
 import pluralize from "pluralize"
-import { PublicPlaybooks, PublicUserPlaybooks } from '@/app/api/server'
+import { createCaller } from '@/app/trpc/router'
+import { createServerContext } from '@/app/trpc/context'
 import { fpl_expand } from '@/core/common';
 
 function options(props: { krg: KRG, heads: FPL[], workflow: FPL[] }) {
@@ -61,6 +62,8 @@ function options(props: { krg: KRG, heads: FPL[], workflow: FPL[] }) {
   })
   return { selections, items }
 }
+
+const trpc = createCaller(createServerContext())
 
 const server = cache('mcp', () => {
   const server = new McpServer({
@@ -284,8 +287,8 @@ const server = cache('mcp', () => {
   }, async (props) => {
     try {
       const matchingPlaybooks = [
-        ...(await PublicPlaybooks.call({ query: { search: props.search, limit: 10 }, body: undefined }, undefined as any, undefined as any)), // none of these undefined params matter, maybe in the future we can fix the typing..
-        ...(await PublicUserPlaybooks.call({ query: { search: props.search, limit: 10 }, body: undefined }, undefined as any, undefined as any)), // none of these undefined params matter, maybe in the future we can fix the typing..
+        ...(await trpc.playbooks.public({ search: props.search, limit: 10 })),
+        ...(await trpc.playbooks.community({ search: props.search, limit: 10 })),
       ]
       const result = matchingPlaybooks.map((p) => ({ workflow_id: 'playbook' in p ? p.playbook : p.id, title: 'label' in p ? p.label : 'title' in p ? p.title : 'Untitled', description: p.description, inputs: p.inputs, outputs: p.outputs }))
       console.debug(JSON.stringify({ search_published: { output: result } }))

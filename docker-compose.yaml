@@ -105,8 +105,8 @@ services:
     - OPENAI_API_KEY
     - OPENAI_MODEL
     logging: *default-logging
-  # the database is used by everything it can be provisioned with
-  #  dbmate (`dbmate up`)
+  # the database is used by everything, apply migrations with
+  #  `DATABASE_URL=postgres://... npm run db:migrate`
   pwb-pg:
     image: postgres:15
     environment:

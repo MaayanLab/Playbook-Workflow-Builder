@@ -9,8 +9,8 @@ import { DataMetaNode } from '@/spec/metanode'
 import { useExRouter } from '@/app/fragments/ex-router'
 
 import classNames from 'classnames'
-import { PublicUserPlaybooks } from '@/app/api/client'
-import { useAPIQuery } from '@/core/api/client'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
@@ -22,16 +22,18 @@ export default function CommunityPlaybooks() {
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
   const [details, setDetails] = React.useState<Record<string, boolean>>({})
   const [search, setSearch] = React.useState('')
-  const { data: playbooks } = useAPIQuery(PublicUserPlaybooks, {
-    search,
-    inputs: dict.items(inputFilters)
-      .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
-      .join(', '),
-    outputs: dict.items(outputFilters)
-      .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
-      .join(', '),
-  }, {
-    keepPreviousData: true,
+  const trpc = useTRPC()
+  const { data: playbooks } = useQuery({
+    ...trpc.playbooks.community.queryOptions({
+      search,
+      inputs: dict.items(inputFilters)
+        .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
+        .join(', '),
+      outputs: dict.items(outputFilters)
+        .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
+        .join(', '),
+    }),
+    placeholderData: keepPreviousData,
   })
   const { allInputs, allOutputs } = React.useMemo(() => {
     const allInputs: Record<string, DataMetaNode> = {}

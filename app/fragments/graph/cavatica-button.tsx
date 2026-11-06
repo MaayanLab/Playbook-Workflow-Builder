@@ -2,8 +2,8 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { connection_icon } from '@/icons'
 import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
-import { useAPIMutation, useAPIQuery } from '@/core/api/client'
-import { UserIntegrationsCAVATICA, UserIntegrationsCAVATICADisconnect, UserIntegrationsCAVATICALaunch } from '@/app/api/client'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import { useExRouter } from '@/app/fragments/ex-router'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -11,9 +11,14 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 export default function CAVATICAButton({ session_id }: { session_id?: string }) {
   const router = useExRouter()
   const userSession = useSessionWithId()
-  const { data: userIntegrations } = useAPIQuery(UserIntegrationsCAVATICA, {}, { shouldRetryOnError: false })
-  const { trigger: launchCAVATICA } = useAPIMutation(UserIntegrationsCAVATICALaunch, {})
-  const { trigger: disconnectCAVATICA } = useAPIMutation(UserIntegrationsCAVATICADisconnect, { session_id })
+  const trpc = useTRPC()
+  const { data: userIntegrations } = useQuery({
+    ...trpc.integrations.cavatica.get.queryOptions(),
+    enabled: !!userSession.data?.user,
+    retry: false,
+  })
+  const { mutateAsync: launchCAVATICA } = useMutation(trpc.integrations.cavatica.launch.mutationOptions())
+  const { mutateAsync: disconnectCAVATICA } = useMutation(trpc.integrations.cavatica.disconnect.mutationOptions())
   return (
     <>
       <button
@@ -26,7 +31,7 @@ export default function CAVATICAButton({ session_id }: { session_id?: string }) 
             const new_session_id = await launchCAVATICA()
             router.push(`/session/[session_id]/graph/extend`, `/session/${new_session_id}/graph/extend`, { shallow: true })
           } else {
-            await disconnectCAVATICA()
+            await disconnectCAVATICA({ session_id })
             router.push(`/graph/extend`, `/graph/extend`, { shallow: true })
           }
         }}

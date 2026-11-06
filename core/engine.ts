@@ -102,7 +102,7 @@ export async function resolve_process(krg: KRG, instanceProcess: Process, notify
  *  be run with several replicas in production.
  */
 export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
-  return db.db.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
+  return db.bus.work('work-queue', { teamSize: n_workers, teamConcurrency: n_workers }, async (job) => {
     // the job.data should contain the process id
     const { data: { id: processId } } = JobC.parse(job)
     console.debug(`checking ${processId}..`)
@@ -112,10 +112,10 @@ export function start_workers(krg: KRG, db: FPPRG, n_workers: number) {
       console.error(`process '${processId}' not found`)
     } else if (instanceProcess.resolved === undefined) {
       console.debug(`resolving ${instanceProcess.type} (${processId})..`)
-      db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, { type: 'progress', percent: 0 })
+      db.bus.notify(`distributed:resolved:${instanceProcess.id}:status`, { type: 'progress', percent: 0 })
       const resolved = await resolve_process(krg, instanceProcess, (update) => {
         // broadcast partial updates through the db
-        db.db.notify(`distributed:resolved:${instanceProcess.id}:status`, update)
+        db.bus.notify(`distributed:resolved:${instanceProcess.id}:status`, update)
       })
       // store the result in the db
       await db.upsertResolved(resolved)

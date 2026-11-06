@@ -9,7 +9,7 @@
         "./types/*"
       ]
     },
-    "target": "es6",
+    "target": "es2022",
     "lib": [
       "dom",
       "dom.iterable",
@@ -22,8 +22,8 @@
     "noEmit": true,
     "incremental": true,
     "esModuleInterop": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -39,19 +39,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "ts-node": {
-    "experimentalResolver": true,
-    "compilerOptions": {
-      "module": "CommonJS",
-      "esModuleInterop": true,
-      "jsx": "react-jsx",
-      "allowJs": true
-    },
-    "require": [
-      "dotenv/config",
-      "tsconfig-paths/register"
-    ]
-  },
   "exclude": [
     "node_modules"
   ]

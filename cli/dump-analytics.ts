@@ -3,7 +3,7 @@ import fpprg from '@/app/fpprg'
 
 async function main() {
   (await Promise.all(
-    (await db.objects.fpl.findMany())
+    (await db.selectFrom('fpl').select(['id', 'hits']).execute())
       .map(async (fpl_record) => {
         const fpl_object = await fpprg.getFPL(fpl_record.id)
         if (fpl_object) return { fpl_record, fpl_object }

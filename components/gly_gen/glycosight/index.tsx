@@ -18,7 +18,6 @@ import { TestGlycoSightAPI,
          UploadAndAnalyze
  } from "./sup_functions";
 import { clientLoadExample } from "@/components/gly_gen/api/glycosight/client";
-import { notify_insertion_trigger } from "@/db";
 
 export const GlycoSightOutputNode = MetaNode("GlycoSightOutputNode")
     .meta({

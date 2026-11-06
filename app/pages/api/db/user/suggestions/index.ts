@@ -7,7 +7,7 @@ export default handler(async (req, res) => {
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
   if (req.method === 'GET') {
-    const suggestions = await db.objects.suggestion.findMany({ where: { user: session.user.id } })
+    const suggestions = await db.selectFrom('suggestion').selectAll().where('user', '=', session.user.id).execute()
     return res.status(200).json(suggestions)
   } else {
     throw new UnsupportedMethodError(req.method)

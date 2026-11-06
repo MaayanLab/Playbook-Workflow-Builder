@@ -14,8 +14,8 @@ export default handler(async (req, res) => {
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
   if (req.method === 'GET') {
-    const user = await db.objects.user.findUnique({ where: { id: session.user.id } })
-    if (user === null) throw new NotFoundError()
+    const user = await db.selectFrom('user').selectAll().where('id', '=', session.user.id).executeTakeFirst()
+    if (user === undefined) throw new NotFoundError()
     return res.status(200).json({
       image: user.image,
       name: user.name,
@@ -23,10 +23,11 @@ export default handler(async (req, res) => {
       affiliation: user.affiliation,
     })
   } else if (req.method === 'POST') {
-    return res.status(200).json(await db.objects.user.update({
-      where: { id: session.user.id },
-      data: BodyType.parse(req.body),
-    }))
+    const data = BodyType.parse(req.body)
+    const query = Object.keys(data).length > 0
+      ? db.updateTable('user').set(data).where('id', '=', session.user.id).returningAll()
+      : db.selectFrom('user').selectAll().where('id', '=', session.user.id)
+    return res.status(200).json(await query.executeTakeFirst() ?? null)
   } else {
     throw new UnsupportedMethodError(req.method)
   }

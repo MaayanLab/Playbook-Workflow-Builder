@@ -1,6 +1,6 @@
 import krg from '@/app/krg'
 import fpprg from '@/app/fpprg'
-import db from '@/app/db'
+import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
 import FPL2BCO from '@/core/fpl2bco'
 import { z } from 'zod'
 import * as dict from '@/utils/dict'
@@ -24,13 +24,12 @@ export default handler(async (req, res) => {
   const fpl = await fpprg.getFPL(fpl_id)
   if (fpl === undefined) throw new NotFoundError()
   const session = await getServerSessionWithId(req, res)
-  const user = (session && session.user) ? (await db.objects.user.findUnique({ where: { id: session.user.id } })) : undefined
+  const user = (session && session.user) ? (await getUser(session.user.id)) : undefined
   if (!user) throw new UnauthorizedError()
   if (!user.name) throw new Error('Name required')
-  // @ts-ignore
-  const userOrcidAccount = await db.objects.account.findUnique({ where: { userId: user.id, provider: 'orcid' } })
+  const userOrcidAccount = await getUserOrcidAccount(user.id)
   if (!userOrcidAccount) throw new UnauthorizedError('ORCID Required')
-  if (Date.now()/1000 > userOrcidAccount.expires_at) throw new UnauthorizedError('ORCID Expired')
+  if (Date.now()/1000 > (userOrcidAccount.expires_at ?? 0)) throw new UnauthorizedError('ORCID Expired')
   if (req.method === 'HEAD') {
     res.status(200).end()
     return
@@ -43,7 +42,7 @@ export default handler(async (req, res) => {
       name: user.name,
       ...dict.filter({
         email: user.email,
-        affiliation: user.affiliation,
+        affiliation: user.affiliation ?? undefined,
         orcid: userOrcidAccount.providerAccountId,
       }),
     },

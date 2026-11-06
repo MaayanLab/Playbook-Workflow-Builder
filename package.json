@@ -4,6 +4,9 @@
   "description": "A repository for the playbook workflow builder collaboration.",
   "private": true,
   "license": "CC-BY-4.0",
+  "engines": {
+    "node": ">=24"
+  },
   "workspaces": [
     "./app",
     "./components/**"
@@ -13,21 +16,21 @@
   },
   "scripts": {
     "build": "npm --workspace=app run build",
-    "codegen:apis": "ts-node cli/sync-api-import.ts",
-    "codegen:citations": "ts-node cli/build-citations.ts",
-    "codegen:components": "ts-node cli/sync-component-import.ts",
+    "codegen:citations": "tsx --env-file-if-exists=.env cli/build-citations.ts",
+    "codegen:components": "tsx --env-file-if-exists=.env cli/sync-component-import.ts",
     "codegen:icons": "python cli/convert-icons.py icons/services/src icons/services/index.ts",
-    "codegen:requirements": "ts-node cli/enumerate-requirements.ts",
-    "codegen:sql": "mkdir -p db/migrations && ts-node cli/build-sql.ts > db/migrations/00_init.sql",
-    "codegen:table": "ts-node cli/build-table.ts > metanodes.tsv",
-    "codegen:use-case-table": "ts-node cli/build-use-case-table.ts > use-cases.tsv",
-    "codegen:analytics": "ts-node cli/dump-analytics.ts > analytics.tsv",
+    "codegen:requirements": "tsx --env-file-if-exists=.env cli/enumerate-requirements.ts",
+    "codegen:table": "tsx --env-file-if-exists=.env cli/build-table.ts > metanodes.tsv",
+    "codegen:use-case-table": "tsx --env-file-if-exists=.env cli/build-use-case-table.ts > use-cases.tsv",
+    "codegen:analytics": "tsx --env-file-if-exists=.env cli/dump-analytics.ts > analytics.tsv",
+    "db:migrate": "tsx --env-file-if-exists=.env cli/migrate.ts",
     "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app dev",
-    "start:worker": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_ENV=production APP_ROOT=$(dirname $(pwd)) ts-node cli/resolve-process-worker.ts",
-    "start:run-wes-worker": "ts-node cli/run-wes-worker.ts",
+    "start:worker": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_ENV=production APP_ROOT=$(dirname $(pwd)) tsx --env-file-if-exists=.env cli/resolve-process-worker.ts",
+    "start:run-wes-worker": "tsx --env-file-if-exists=.env cli/run-wes-worker.ts",
     "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app start",
-    "version": "ts-node cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
-    "postversion": "docker-compose push"
+    "version": "tsx --env-file-if-exists=.env cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
+    "postversion": "docker-compose push",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@blueprintjs/core": "^5.10.2",
@@ -37,8 +40,13 @@
     "@mdi/js": "^7.4.47",
     "@modelcontextprotocol/sdk": "^1.20.1",
     "@socket.io/postgres-adapter": "^0.3.1",
+    "@tanstack/react-query": "^5.106.1",
+    "@trpc/client": "^11.25.0",
+    "@trpc/server": "^11.25.0",
+    "@trpc/tanstack-react-query": "^11.25.0",
     "@types/pluralize": "^0.0.33",
     "axios": "^1.6.8",
+    "better-sqlite3": "^13.0.3",
     "classnames": "^2.5.1",
     "cmd-ts": "^0.13.0",
     "fast-sha256": "^1.3.0",
@@ -46,11 +54,12 @@
     "glob": "^10.3.15",
     "immutable": "^4.3.6",
     "json-canonicalize": "^1.0.6",
-    "jsonld": "^8.3.3",
+    "jsonld": "^9.0.0",
     "jszip": "^3.10.1",
+    "kysely": "^0.29.8",
     "openai": "^6.35.0",
     "pdf-lib": "^1.17.1",
-    "pg": "^8.11.5",
+    "pg": "^8.23.1",
     "pg-boss": "^9.0.3",
     "pg-listen": "^1.7.0",
     "pg-query-stream": "^4.5.5",
@@ -60,23 +69,28 @@
     "react-error-boundary": "^4.0.13",
     "swr": "^2.2.5",
     "ts-dedent": "^2.2.0",
+    "tsx": "^4.23.15",
+    "ws": "^8.22.1",
     "yaml": "^2.4.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
     "@types/glob": "^8.1.0",
     "@types/jsonld": "^1.5.15",
-    "@types/node": "^20.12.12",
+    "@types/node": "^26.6.6",
     "@types/node-fetch": "^2.6.11",
-    "@types/pg": "^8.11.6",
+    "@types/pg": "^8.23.1",
     "@types/react": "^18.3.2",
+    "@types/ws": "^8.18.2",
     "commander": "^12.0.0",
     "concurrently": "^8.2.2",
     "next": "^14.2.5",
     "next-transpile-modules": "^10.0.1",
     "ssl-proxy": "^1.0.3",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.4.5"
+    "typescript": "~5.9"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true
   }
 }

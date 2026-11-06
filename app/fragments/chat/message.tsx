@@ -1,6 +1,6 @@
 import React from "react"
-import { GPTAssistantMessageFeedback } from "@/app/api/client"
-import { useAPIMutation } from "@/core/api/client"
+import { useMutation } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
 import dynamic from "next/dynamic"
 import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
@@ -12,7 +12,8 @@ const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then
 
 export default function Message({ thread_id, message_id, session, role, children }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string, embedded?: boolean }>) {
   const [feedback, setFeedback] = React.useState('')
-  const { trigger } = useAPIMutation(GPTAssistantMessageFeedback, { thread_id, message_id })
+  const trpc = useTRPC()
+  const { mutateAsync: sendFeedback } = useMutation(trpc.chat.feedback.mutationOptions())
   if (role === 'developer' && typeof children === 'string') {
     try {
       const data = JSON.parse(children)
@@ -69,14 +70,14 @@ export default function Message({ thread_id, message_id, session, role, children
             <div
               className={classNames('bp5-icon bp5-icon-thumbs-up', {'text-green-500': feedback === '+1'})}
               onClick={() => {
-                trigger({ body: '+1' }).then(() => setFeedback('+1'))
+                if (thread_id && message_id) sendFeedback({ thread_id, message_id, feedback: '+1' }).then(() => setFeedback('+1'))
               }}
             />
             &nbsp;
             <div
               className={classNames('bp5-icon bp5-icon-thumbs-down', {'text-red-500': feedback === '-1'})}
               onClick={() => {
-                trigger({ body: '-1' }).then(() => setFeedback('-1'))
+                if (thread_id && message_id) sendFeedback({ thread_id, message_id, feedback: '-1' }).then(() => setFeedback('-1'))
               }}
             />
           </div>

@@ -1,6 +1,6 @@
 FROM maayanlab/base:1.6.0 AS base
 USER root
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get update \
   && apt-get -y install \
@@ -20,8 +20,7 @@ RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && rm -rf /var/lib/apt/lists/*
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/google-chrome"
 USER ubuntu
-RUN NODE_VERSION=21.3 /install.sh
-RUN npm i -g ts-node
+RUN NODE_VERSION=26 /install.sh
 
 FROM base AS prepare_src
 COPY --chown=ubuntu . app

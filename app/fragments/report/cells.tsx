@@ -3,8 +3,8 @@ import dynamic from 'next/dynamic'
 import type KRG from '@/core/KRG'
 import { type Metapath, useFPL } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
-import { useAPIMutation, useAPIQuery } from '@/core/api/client'
-import { UpdateUserPlaybook, DeleteUserPlaybook, PublishUserPlaybook, UserPlaybook } from '@/app/api/client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import * as dict from '@/utils/dict'
 import { useExRouter } from '@/app/fragments/ex-router'
 import { Breadcrumbs } from '../breadcrumbs'
@@ -25,11 +25,16 @@ const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
 export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
   const router = useExRouter()
   const { data: metapath } = useFPL(id)
-  const { data: userPlaybook, mutate: mutateUserPlaybook } = useAPIQuery(UserPlaybook, { id })
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: userPlaybook } = useQuery(trpc.playbooks.get.queryOptions({ id }))
+  const mutateUserPlaybook = (value: { public: boolean } | null) => queryClient.setQueryData(trpc.playbooks.get.queryKey({ id }), value)
   const data = React.useMemo(() => metapath ? ({ metapath, userPlaybook }) : undefined, [metapath, userPlaybook])
-  const { trigger: updateUserPlaybook } = useAPIMutation(UpdateUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
-  const { trigger: publishUserPlaybook } = useAPIMutation(PublishUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
-  const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, undefined, { base: session_id ? `/api/socket/${session_id}` : '', throwOnError: true })
+  // in a CAVATICA session, these are handled by the worker
+  const sessionContext = { trpc: { context: { session_id } } }
+  const { mutateAsync: updateUserPlaybook } = useMutation(trpc.playbooks.update.mutationOptions(sessionContext))
+  const { mutateAsync: publishUserPlaybook } = useMutation(trpc.playbooks.publish.mutationOptions(sessionContext))
+  const { mutateAsync: deleteUserPlaybook } = useMutation(trpc.playbooks.delete.mutationOptions(sessionContext))
   const [cellMetadata, setCellMetadata] = React.useState({} as Record<string, Exclude<Metapath['cell_metadata'], null>>)
   const [playbookMetadata, setPlaybookMetadata] = React.useState({
     id: '',
@@ -150,7 +155,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
               krg={krg}
               metapath={metapath}
               playbookMetadata={playbookMetadata}
-              userPlaybook={userPlaybook}
+              userPlaybook={userPlaybook ?? undefined}
               setPlaybookMetadata={setPlaybookMetadata}
               updateRequired={updateRequired}
               toggleSave={() => {
@@ -161,12 +166,10 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                     return { key, value: id ? { id } : meta }
                   }))
                   updateUserPlaybook({
-                    query: { id },
-                    body: {
-                      user_playbook: { public: userPlaybook?.public || false },
-                      playbook_metadata: playbookMetadataId ? { id: playbookMetadataId } : playbook_metadata,
-                      cell_metadata,
-                    },
+                    id,
+                    user_playbook: { public: userPlaybook?.public || false },
+                    playbook_metadata: playbookMetadataId ? { id: playbookMetadataId } : playbook_metadata,
+                    cell_metadata,
                   }).then(id => {
                     mutateUserPlaybook({ public: userPlaybook?.public || false })
                     setPlaybookMetadata(metadata => ({ ...metadata, id: data.metapath[data.metapath.length-1].playbook_metadata?.id || '' }))
@@ -174,11 +177,8 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
                     router.push(`${session_id ? `/session/${session_id}` : ''}/report/${id}`, undefined, { shallow: true, scroll: false })
                   })
                 } else {
-                  deleteUserPlaybook({
-                    query: { id },
-                    body: {},
-                  }).then(id => {
-                    mutateUserPlaybook(undefined)
+                  deleteUserPlaybook({ id }).then(() => {
+                    mutateUserPlaybook(null)
                     setUpdateRequired(false)
                   })
                 }
@@ -186,10 +186,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
               togglePublic={() => {
                 if (!updateRequired && userPlaybook) {
                   const publicPlaybook = !userPlaybook.public
-                  publishUserPlaybook({
-                    query: { id },
-                    body: { public: publicPlaybook },
-                  }).then(id => {
+                  publishUserPlaybook({ id, public: publicPlaybook }).then(() => {
                     mutateUserPlaybook({ public: publicPlaybook })
                     setUpdateRequired(false)
                   })

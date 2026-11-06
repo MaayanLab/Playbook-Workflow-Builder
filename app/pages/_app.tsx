@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 
 const SessionProvider = dynamic(() => import('next-auth/react').then(({ SessionProvider }) => SessionProvider))
 const HotkeysProvider = dynamic(() => import('@blueprintjs/core').then(({ HotkeysProvider }) => HotkeysProvider))
+const TRPCReactProvider = dynamic(() => import('@/app/trpc/client').then(({ TRPCReactProvider }) => TRPCReactProvider))
 const RuntimeConfig = dynamic(() => import('@/app/fragments/config').then(({ RuntimeConfig }) => RuntimeConfig), { ssr: false })
 const Analytics = dynamic(() => import('@/app/fragments/analytics'), { ssr: false })
 
@@ -23,9 +24,11 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       </Head>
       <RuntimeConfig>
         <SessionProvider session={session}>
-          <HotkeysProvider>
-            <Component {...pageProps} />
-          </HotkeysProvider>
+          <TRPCReactProvider>
+            <HotkeysProvider>
+              <Component {...pageProps} />
+            </HotkeysProvider>
+          </TRPCReactProvider>
         </SessionProvider>
         <Analytics />
       </RuntimeConfig>

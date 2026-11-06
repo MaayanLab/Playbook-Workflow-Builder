@@ -17,12 +17,8 @@ export const config = {
 export default async function Forward(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSessionWithId(req, res)
   if (!session || !session.user) throw new UnauthorizedError()
-  const integrations = await db.objects.user_integrations.findUnique({
-    where: {
-      id: session.user.id
-    }
-  })
-  if (integrations === null || !integrations.cavatica_api_key) throw new UnauthorizedError()
+  const integrations = await db.selectFrom('user_integrations').selectAll().where('id', '=', session.user.id).executeTakeFirst()
+  if (integrations === undefined || !integrations.cavatica_api_key) throw new UnauthorizedError()
   const room_id = req.query.id
   const path = `/${((req.query.path ?? []) as string[]).join('/')}`
   const io = global.io

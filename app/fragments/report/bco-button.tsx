@@ -6,8 +6,8 @@ import { fetcherPOST } from '@/utils/next-rest-fetcher'
 import { ResponseCodedError } from '@/spec/error'
 import { signIn, signOut } from 'next-auth/react'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { useAPIQuery } from '@/core/api/client'
-import { UserIntegrationsBioComputePublishedBCO } from '@/app/api/client'
+import { useQuery, skipToken } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 
 const Bp5Popover = dynamic(() => import('@blueprintjs/core').then(({ Popover }) => Popover))
 const Bp5Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
@@ -18,7 +18,11 @@ const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function BCOButton({ session_id, id, metadata, disabled }: { session_id?: string, id?: string, metadata: { title: string, description: string | undefined }, disabled: boolean }) {
   const router = useExRouter()
-  const { data: publishedBCO } = useAPIQuery(UserIntegrationsBioComputePublishedBCO, () => id ? { fpl_id: id } : null, { shouldRetryOnError: false })
+  const trpc = useTRPC()
+  const { data: publishedBCO } = useQuery({
+    ...trpc.integrations.biocompute.published.queryOptions(id ? { fpl_id: id } : skipToken),
+    retry: false,
+  })
   const { trigger, isMutating, error } = useSWRMutation(id ? `${session_id ? `/api/socket/${session_id}` : ''}/api/bco/${id}/draft` : null, fetcherPOST<undefined, { object_id: string }>)
   const [showError, setShowError] = React.useState(false)
   if (!id) return null

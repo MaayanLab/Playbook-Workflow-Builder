@@ -1,6 +1,6 @@
 # Production operation
 
-In production, instead of the in-memory databases, a `postgres` database is used to persist content. Additionally, the application has been architected in a way which supports horizontal scalability. The `docker-compose.yaml` contains the general architecture, namely:
+In production, instead of the sqlite database used in development, a `postgres` database is used to persist content. Additionally, the application has been architected in a way which supports horizontal scalability. The `docker-compose.yaml` contains the general architecture, namely:
 
 - postgres database
 - ui container(s)
@@ -8,7 +8,9 @@ In production, instead of the in-memory databases, a `postgres` database is used
 
 This container references environment variables which can be specified in `.env`, copy `.env.example` to your own `.env` and fill in the applicable variables.
 
-The database should be initialized with the schema which can be generated from the codebase with `npm run codegen:sql` -- the resulting schema at `db/migrations/00_init.sql` can be used to provision the database using `dbmate up`.
+The database schema is managed with [kysely](https://kysely.dev) migrations in `db/migrations`. Apply them with `DATABASE_URL=postgres://... npm run db:migrate` before starting a new version. The baseline migration (`0000_baseline`) is idempotent, so databases previously provisioned with `dbmate` adopt it as a no-op.
+
+Without a postgres `DATABASE_URL`, the app uses sqlite (`DATABASE_URL=sqlite:path/to/db.sqlite`, or in-memory when unset) which is migrated automatically. sqlite is only suitable for a single process (i.e. `N_WORKERS` in the ui process) since events & jobs are dispatched in-process.
 
 ## File Storage
 
@@ -29,7 +31,7 @@ While somewhat elaborate, the benefits of using ufs+drs are:
 
 The way this works is by using WES to start a task in the user's account with their API key. The task runs an in-memory dockerized version of the actual app. Additionally, a websocket connection is made back to the public app acting as a reverse proxy--requests made to `/socket/{session_id}/*` forward the request over the websocket, the worker performs the request and returns the result, allowing the standard front-end to be driven through communications with the backend running on the user's account.
 
-The database used on the worker is an in-memory database rather than the production database. However, files are persisted to & accessed from the user's CAVATICA workspace in realtime over sbfs.
+The database used on the worker is an in-memory sqlite database rather than the production database. However, files are persisted to & accessed from the user's CAVATICA workspace in realtime over sbfs.
 
 ## Learn More
 

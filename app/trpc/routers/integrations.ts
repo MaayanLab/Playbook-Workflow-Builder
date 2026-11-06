@@ -1,0 +1,169 @@
+import { z } from 'zod'
+import { TRPCError } from '@trpc/server'
+import db from '@/app/db'
+import { uuid } from '@/db'
+import { emitter } from '@/app/extensions/socket/cavatica'
+import { run_wes_worker, abort_wes_worker } from '@/app/extensions/cavatica'
+import { getUser, getUserOrcidAccount } from '@/app/extensions/next-auth/user'
+import { authedProcedure, publicProcedure, router } from '../init'
+
+async function getIntegrations(user_id: string) {
+  return await db.selectFrom('user_integrations').selectAll().where('id', '=', user_id).executeTakeFirst()
+}
+
+const notConfigured = () => new TRPCError({ code: 'PAYMENT_REQUIRED', message: 'CAVATICA Integration not configured' })
+
+const cavaticaRouter = router({
+  get: authedProcedure
+    .query(async ({ ctx }) => {
+      const integrations = await getIntegrations(ctx.session.user.id)
+      return {
+        id: ctx.session.user.id,
+        cavatica_api_key: integrations?.cavatica_api_key ?? '',
+        cavatica_default_project: integrations?.cavatica_default_project ?? '',
+      }
+    }),
+
+  update: authedProcedure
+    .input(z.object({
+      cavatica_api_key: z.string(),
+      cavatica_default_project: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      return await db.insertInto('user_integrations')
+        .values({ id: ctx.session.user.id, ...input })
+        .onConflict(oc => oc.column('id').doUpdateSet(input))
+        .returningAll()
+        .executeTakeFirstOrThrow()
+    }),
+
+  launch: authedProcedure
+    .mutation(async ({ ctx }) => {
+      const integrations = await getIntegrations(ctx.session.user.id)
+      if (!integrations?.cavatica_api_key || !integrations?.cavatica_default_project) throw notConfigured()
+      const { cavatica_api_key, cavatica_default_project } = integrations
+      // TODO: spawn with pg-boss
+      const proxy_session = await db.insertInto('proxy_session')
+        .values({ id: uuid(), state: '' })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+      const setState = (data: { state?: string | null, run_id?: string | null }) =>
+        db.updateTable('proxy_session').set(data).where('id', '=', proxy_session.id).execute()
+      ;(async () => {
+        emitter.on(`join:${proxy_session.id}`, async () => {
+          await setState({ state: 'CONNECTED' })
+        })
+        try {
+          for await (const status of run_wes_worker({
+            url: process.env.PUBLIC_URL as string,
+            auth_token: cavatica_api_key,
+            project: cavatica_default_project,
+            session_id: proxy_session.id,
+          })) {
+            await setState(status)
+          }
+        } catch (e) {
+          await setState({ state: 'ERROR' })
+        }
+        await db.deleteFrom('proxy_session').where('id', '=', proxy_session.id).execute()
+      })().catch(error => console.error(error))
+      return proxy_session.id
+    }),
+
+  status: authedProcedure
+    .input(z.object({ session_id: z.string() }))
+    .query(async ({ input }) => {
+      const proxy_session = await db.selectFrom('proxy_session').selectAll().where('id', '=', input.session_id).executeTakeFirst()
+      if (!proxy_session) throw new TRPCError({ code: 'NOT_FOUND' })
+      return proxy_session
+    }),
+
+  disconnect: authedProcedure
+    .input(z.object({ session_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const proxy_session = await db.selectFrom('proxy_session').selectAll().where('id', '=', input.session_id).executeTakeFirst()
+      if (!proxy_session) throw new TRPCError({ code: 'NOT_FOUND' })
+      if (!proxy_session.run_id) throw new TRPCError({ code: 'PAYMENT_REQUIRED', message: 'Not launched yet!' })
+      if (proxy_session.state === 'RUNNING') {
+        emitter.emit(`close:${input.session_id}`)
+      }
+      const integrations = await getIntegrations(ctx.session.user.id)
+      if (!integrations?.cavatica_api_key) throw notConfigured()
+      await abort_wes_worker({
+        run_id: proxy_session.run_id,
+        auth_token: integrations.cavatica_api_key,
+      })
+      return null
+    }),
+})
+
+const BCOListResponseC = z.array(z.array(z.object({
+  contents: z.object({
+    object_id: z.string(),
+    provenance_domain: z.object({
+      derived_from: z.string(),
+    }),
+  }),
+  state: z.enum(['DRAFT', 'PUBLISHED']),
+})))
+
+async function fetchBCOs(fpl_id: string, id_token?: string | null) {
+  const persistent_url = `${process.env.PUBLIC_URL}/report/${fpl_id}`
+  const bcoReq = await fetch(`https://biocomputeobject.org/api/objects/?contents=${encodeURIComponent(persistent_url)}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(id_token ? { 'Authorization': `Bearer ${id_token}` } : {}),
+    },
+  })
+  if (!bcoReq.ok) throw new TRPCError({ code: 'BAD_GATEWAY', message: await bcoReq.text() })
+  return BCOListResponseC.parse(await bcoReq.json())
+    .flatMap(r => r)
+    .filter(item => item.contents.provenance_domain.derived_from === persistent_url)
+}
+
+const biocomputeRouter = router({
+  auth: publicProcedure
+    .query(async ({ ctx }) => {
+      const session = await ctx.getSession()
+      const user = session?.user ? await getUser(session.user.id) : undefined
+      const userOrcidAccount = user ? await getUserOrcidAccount(user.id) : undefined
+      if (!userOrcidAccount) return { orcid: false, biocompute: false }
+      const bcoReq = await fetch('https://biocomputeobject.org/users/orcid/user_info/', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Token ${userOrcidAccount.id_token}`,
+          'Referer': 'https://playbook-workflow-builder.cloud',
+        },
+      })
+      return { orcid: true, biocompute: bcoReq.status === 200 }
+    }),
+
+  /** The published BCO for this playbook, or the user's draft if there's no published BCO */
+  published: publicProcedure
+    .input(z.object({ fpl_id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const session = await ctx.getSession()
+      const userOrcidAccount = session?.user ? await getUserOrcidAccount(session.user.id) : undefined
+      if (userOrcidAccount) {
+        try {
+          // logged in, look for drafts
+          const results = await fetchBCOs(input.fpl_id, userOrcidAccount.id_token)
+          return results.find(result => result.state === 'PUBLISHED')
+            ?? results.find(result => result.state === 'DRAFT')
+            ?? null
+        } catch (e) {
+          console.warn(e)
+        }
+      }
+      // not logged in, find published BCOs
+      const results = await fetchBCOs(input.fpl_id)
+      return results[0] ?? null
+    }),
+})
+
+export const integrationsRouter = router({
+  cavatica: cavaticaRouter,
+  biocompute: biocomputeRouter,
+})

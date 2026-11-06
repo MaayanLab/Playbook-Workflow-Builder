@@ -6,8 +6,8 @@ import { ExLink } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
 import krg from '@/app/krg'
 import { DataMetaNode } from '@/spec/metanode'
-import { PublicPlaybooks } from '@/app/api/client'
-import { useAPIQuery } from '@/core/api/client'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import { useExRouter } from '@/app/fragments/ex-router'
 
 import ARCHS4_icon from '@/app/public/logos/datasources/ARCHS4.png'
@@ -75,19 +75,21 @@ export default function Playbooks() {
   const [outputFilters, setOutputFilters] = React.useState<Record<string, boolean>>({})
   const [details, setDetails] = React.useState<Record<string, boolean>>({})
   const [search, setSearch] = React.useState('')
-  const { data: playbooks } = useAPIQuery(PublicPlaybooks, {
-    search,
-    inputs: dict.items(inputFilters)
-      .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
-      .join(', '),
-    outputs: dict.items(outputFilters)
-      .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
-      .join(', '),
-    dataSources: dict.items(dataSourceFilters)
-      .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
-      .join(', '),
-  }, {
-    keepPreviousData: true,
+  const trpc = useTRPC()
+  const { data: playbooks } = useQuery({
+    ...trpc.playbooks.public.queryOptions({
+      search,
+      inputs: dict.items(inputFilters)
+        .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
+        .join(', '),
+      outputs: dict.items(outputFilters)
+        .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
+        .join(', '),
+      dataSources: dict.items(dataSourceFilters)
+        .reduce((agg, { key, value }) => value ? [...agg, key] : agg, [] as string[])
+        .join(', '),
+    }),
+    placeholderData: keepPreviousData,
   })
   const { allInputs, allOutputs, allDataSources } = React.useMemo(() => {
     const allInputs: Record<string, DataMetaNode> = {}

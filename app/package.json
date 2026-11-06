@@ -7,10 +7,9 @@
   },
   "scripts": {
     "build:next": "NODE_ENV=production DATABASE_URL= next build",
-    "build:server": "NODE_ENV=production tsc --project tsconfig.server.json",
-    "build": "npm run build:next && npm run build:server",
-    "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/app/server/cli.js",
-    "dev": "NODE_ENV=development ts-node server/cli.ts"
+    "build": "npm run build:next",
+    "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) tsx --env-file-if-exists=../.env server/cli.ts",
+    "dev": "NODE_ENV=development tsx --env-file-if-exists=../.env server/cli.ts"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.9",
@@ -24,7 +23,7 @@
     "next-auth": "^4.19.2",
     "nodemailer": "^6.8.0",
     "prismjs": "^1.29.0",
-    "puppeteer": "^22.15.0",
+    "puppeteer": "^25.16.0",
     "raw-body": "^2.5.2",
     "react-markdown": "^8.0.6",
     "react-masonry-css": "^1.0.16",

@@ -1,5 +1,4 @@
-import * as schema from '@/db'
-import type { TypedSchemaRecord } from '@/spec/sql'
+import type { Suggestion } from '@/db'
 import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
 import useSWR from 'swr'
@@ -16,8 +15,8 @@ const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => A
 
 export default function Suggestions() {
   const router = useExRouter()
-  const { data: suggestions, isLoading, mutate } = useSWR<Array<TypedSchemaRecord<typeof schema.suggestion>>>('/api/db/user/suggestions', fetcher)
-  const [suggestionToDelete, setSuggestionToDelete] = React.useState<TypedSchemaRecord<typeof schema.suggestion> | undefined>(undefined)
+  const { data: suggestions, isLoading, mutate } = useSWR<Array<Suggestion>>('/api/db/user/suggestions', fetcher)
+  const [suggestionToDelete, setSuggestionToDelete] = React.useState<Suggestion | undefined>(undefined)
   const { trigger: deleteSuggestion, isMutating } = useSWRMutation(() => suggestionToDelete ? `/api/db/user/suggestions/${suggestionToDelete.id}/delete` : null, fetcherPOST)
   return (
     <>

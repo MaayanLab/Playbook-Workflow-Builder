@@ -1,14 +1,16 @@
 import React from 'react'
-import type { FPL } from '@/core/FPPRG'
+import type { inferRouterOutputs } from '@trpc/server'
+import type { AppRouter } from '@/app/trpc/router'
 import type KRG from '@/core/KRG'
 import * as dict from '@/utils/dict'
-import { io } from 'socket.io-client'
+import { useTRPCClient } from '@/app/trpc/client'
 import cache from '@/utils/cache'
 import { Readable, derived, readable } from '@/utils/store'
 import { useReadable, usePromise } from '@/utils/hooks'
-import type { ResolvedLifecycle } from '@/app/extensions/socket/fpprg'
+import type { ResolvedLifecycle } from '@/app/trpc/routers/fpprg'
 
-export type Metapath = ReturnType<FPL['toJSON']>
+/** An FPL as received by the client (see FPL['toJSON']) */
+export type Metapath = inferRouterOutputs<AppRouter>['fpprg']['fpl'][number]
 
 const MetapathContext = React.createContext({
   fetchFPL: (id: string) => Promise.reject<Metapath[]>('Uninitialized'),
@@ -16,45 +18,29 @@ const MetapathContext = React.createContext({
 })
 
 export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: string }>) {
-  const fetchSocketWithoutRoom = React.useMemo(async () => {
-    const req = await fetch('/api/socket')
-    const { uri, ...opts } = await req.json()
-    return io(uri, opts)
-  }, [props.session_id])
-  const fetchSocket = React.useMemo(async () => (
-    fetchSocketWithoutRoom.then(async (socket) => {
-      if (props.session_id) {
-        await socket.emitWithAck('join', props.session_id)
-      }
-      return socket
-    })
-  ), [fetchSocketWithoutRoom, props.session_id])
-  const fetchFPL = React.useCallback(cache(async (id) => {
+  const trpc = useTRPCClient()
+  const context = React.useMemo(() => ({ session_id: props.session_id }), [props.session_id])
+  const fetchFPL = React.useCallback(cache(async (id: string) => {
     if (id === 'start') return []
-    const socket = await fetchSocket
-    const ret = new Promise<Metapath[]>((resolve, reject) => {
-      socket.once(`${props.session_id ? `ws:` : ''}fpprg:fpl:${id}`, (ret: { error: any } | Metapath[]) => {
-        if ('error' in ret) {
-          reject(ret.error)
-        } else {
-          resolve(ret)
-        }
-      })
-    })
-    socket.emit(`${props.session_id ? `ws:` : ''}fpprg:fpl`, id)
-    return await ret
-  }), [fetchSocket, props.session_id])
-  const fetchResolved = React.useCallback(cache(async (id) => {
-    const socket = await fetchSocket
+    return await trpc.fpprg.fpl.query(id, { context })
+  }), [trpc, context])
+  const fetchResolved = React.useCallback(cache(async (id: string) => {
+    let refresh = () => {}
     const { subscribe } = readable<ResolvedLifecycle>(undefined, (set) => {
-      socket.on(`${props.session_id ? `ws:` : ''}fpprg:resolved:${id}`, value => {
-        set(value)
-      })
-      socket.emit(`${props.session_id ? `ws:` : ''}fpprg:resolved`, id)
-      return () => {socket.off(`${props.session_id ? `ws:` : ''}fpprg:resolved:${id}`, set)}
+      let subscription: { unsubscribe: () => void } | undefined
+      refresh = () => {
+        subscription?.unsubscribe()
+        subscription = trpc.fpprg.resolved.subscribe(id, {
+          context,
+          onData: (value) => { set(value) },
+          onError: (error) => { set({ type: 'error', error: error.message }) },
+        })
+      }
+      refresh()
+      return () => { subscription?.unsubscribe() }
     })
-    return { subscribe, refresh: () => {socket.emit(`${props.session_id ? `ws:` : ''}fpprg:resolved`, id)} }
-  }), [fetchSocket, props.session_id])
+    return { subscribe, refresh: () => refresh() }
+  }), [trpc, context])
   return (
     <MetapathContext.Provider value={{ fetchFPL, fetchResolved }}>
       {props.children}

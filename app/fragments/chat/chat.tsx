@@ -1,11 +1,11 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { GPTAssistantCreate, GPTAssistantMessage, GPTAssistantMessagesList } from "@/app/api/client"
 import classNames from 'classnames'
 import usePublicUrl from '@/utils/next-public-url'
 import { z } from 'zod'
 
-import { useAPIMutation, useAPIQuery } from "@/core/api/client"
+import { useQuery, useMutation, useQueryClient, skipToken } from '@tanstack/react-query'
+import { useTRPC, isTRPCClientError } from '@/app/trpc/client'
 import * as Auth from 'next-auth/react'
 
 import krg from '@/app/krg'
@@ -19,7 +19,6 @@ import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
 import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
-import { UnauthorizedError } from '@/spec/error'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
@@ -32,40 +31,47 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   const [message, setMessage] = React.useState('')
   const { data: session } = Auth.useSession()
   const [thread_id, setThread_id] = React.useState<string | undefined>()
-  const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, () => thread_id ? { thread_id } : null, {
-    refreshInterval: 1000,
-    onSuccess(data) {
-      if (data?.fpl && fpl !== data.fpl) {
-        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${data.fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
-      }
-    }
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: { messages, fpl } = { messages: undefined, fpl: null } } = useQuery({
+    ...trpc.chat.messages.queryOptions(thread_id ? { thread_id } : skipToken),
+    refetchInterval: 1000,
   })
-  const createMessage = useAPIMutation(GPTAssistantMessage, { thread_id })
-  const createChat = useAPIMutation(GPTAssistantCreate)
+  // navigate to the workflow when the assistant moves to a new one
+  const previousFpl = React.useRef(fpl)
+  React.useEffect(() => {
+    if (fpl && previousFpl.current !== fpl) {
+      router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
+    }
+    previousFpl.current = fpl
+  }, [fpl])
+  const createMessage = useMutation(trpc.chat.send.mutationOptions())
+  const createChat = useMutation(trpc.chat.create.mutationOptions())
   const submit = React.useCallback(async ({ thread_id, ...body }: { message: string, graph_id?: string, node_id?: string, thread_id?: string }) => {
     try {
       let thread_id_: string
       if (!thread_id) {
-        thread_id_ = z.string().parse(await createChat.trigger())
+        thread_id_ = z.string().parse(await createChat.mutateAsync())
         setThread_id(thread_id_)
       } else {
         thread_id_ = thread_id
       }
-      const query = { thread_id: thread_id_ }
-      await mutate((current) => ({ messages: [
+      const queryKey = trpc.chat.messages.queryKey({ thread_id: thread_id_ })
+      await queryClient.cancelQueries({ queryKey })
+      queryClient.setQueryData(queryKey, (current) => ({ messages: [
         ...current?.messages ?? [],
-        { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date(), thread: thread_id_, feedback: null },
-      ], fpl: graph_id ?? null }), { revalidate: false })
-      const res = await createMessage.trigger({ query, body })
-      await mutate((current) => ({
+        { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date().toISOString(), thread: thread_id_, feedback: null },
+      ], fpl: graph_id ?? null }))
+      const res = await createMessage.mutateAsync({ thread_id: thread_id_, ...body })
+      queryClient.setQueryData(queryKey, (current) => ({
         messages: array.unique([
           ...(current?.messages ?? []).slice(0, -1),
           ...res?.messages ?? [],
         ], x => x.id),
         fpl: res?.fpl ?? null,
-      }), { revalidate: false })
+      }))
     } catch (e: any) {
-      if (UnauthorizedError.isinstance(e)) {
+      if (isTRPCClientError(e, 'UNAUTHORIZED')) {
         const qs = new URLSearchParams(window.location.search)
         qs.set('message', body.message)
         Auth.signIn(undefined, { callbackUrl: `${window.location.pathname}?${qs.toString()}` })
@@ -194,7 +200,7 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
                   I experienced an error: {createMessage.error instanceof Error ? createMessage.error.message : 'unknown error'}
                 </Message>
                 : null}
-              {createMessage.isMutating ?
+              {createMessage.isPending ?
                 <Message role="assistant" session={session}>
                   <span className="loading loading-dots loading-lg mt-2"></span>
                 </Message>

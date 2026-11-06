@@ -2,6 +2,8 @@ import http from 'http'
 import { io } from 'socket.io-client'
 import * as dict from '@/utils/dict'
 import { z } from 'zod'
+import { WebSocket } from 'ws'
+import { TRPC_WS_PATH } from '@/app/trpc/constants'
 import type { Options } from '..'
 
 async function wsConnect(url: string) {
@@ -75,23 +77,37 @@ export default async function plugin(server: http.Server, opts: z.infer<typeof O
     process.exit(0)
   })
 
-  server.on('listening', async () => {
-    // create a bidirectional channel between the two servers over websocket
-    //  in the public server, this is prefixed by `ws:{id}:` but locally
-    //  this prefix is omitted
-    const privateServerSocket = await wsConnect(`http://${opts.hostname}:${opts.port}`)
-    publicServerSocket.onAny((evt, ...args) => {
-      if (!opts.proxy) return
-      if (evt.startsWith(`ws:`)) {
-        // console.debug(`forwarding ${evt.slice(`ws:`.length)} from public to private`)
-        ctx.lastMessage = Date.now()
-        privateServerSocket.emit(evt.slice(`ws:`.length), ...args)
-      }
+  // tRPC websocket connections tunneled from the public server
+  //  are relayed to a local websocket connection to this server
+  const tunnels = new Map<string, { ws: WebSocket, queue: string[] }>()
+  publicServerSocket.on('tunnel:open', ({ conn }: { conn: string }) => {
+    ctx.lastMessage = Date.now()
+    const ws = new WebSocket(`ws://127.0.0.1:${opts.port}${TRPC_WS_PATH}`)
+    const tunnel = { ws, queue: [] as string[] }
+    tunnels.set(conn, tunnel)
+    ws.on('open', () => {
+      tunnel.queue.forEach(data => ws.send(data))
+      tunnel.queue = []
     })
-    privateServerSocket.onAny((evt, ...args) => {
-      if (!opts.proxy) return
-      // console.debug(`forwarding ${evt} from private to public`)
-      publicServerSocket.emit(`ws:${evt}`, ...args)
+    ws.on('message', (data) => {
+      publicServerSocket.emit('tunnel:recv', { conn, data: data.toString() })
     })
+    ws.on('close', () => {
+      if (tunnels.delete(conn)) publicServerSocket.emit('tunnel:close', { conn })
+    })
+    ws.on('error', (error) => { console.warn(error) })
+  })
+  publicServerSocket.on('tunnel:send', ({ conn, data }: { conn: string, data: string }) => {
+    ctx.lastMessage = Date.now()
+    const tunnel = tunnels.get(conn)
+    if (!tunnel) return
+    if (tunnel.ws.readyState === WebSocket.OPEN) tunnel.ws.send(data)
+    else tunnel.queue.push(data)
+  })
+  publicServerSocket.on('tunnel:close', ({ conn }: { conn: string }) => {
+    const tunnel = tunnels.get(conn)
+    if (!tunnel) return
+    tunnels.delete(conn)
+    tunnel.ws.close()
   })
 }

@@ -109,7 +109,7 @@ export async function ReportNode2TEX(reportOutput: report, fpl_id:string): Promi
   })
   return {
     [`${reportOutput.bundle.filename}`]: retrieeBundleFiles(reportOutput.bundle.url),
-    [`${reportOutput.pdf.filename}`]: pdfDoc.save()
+    [`${reportOutput.pdf.filename}`]: pdfDoc.save().then(bytes => bytes.slice().buffer as ArrayBuffer)
   }
 }
 

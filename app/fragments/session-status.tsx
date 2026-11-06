@@ -1,6 +1,6 @@
 import React from 'react'
-import { useAPIQuery } from '@/core/api/client'
-import { UserIntegrationsCAVATICAStatus } from '../api/client'
+import { useQuery, skipToken } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 
 function SessionStatusMessage({ status, error }: { status?: { state: string | null }, error?: any }) {
   if (!status) {
@@ -21,7 +21,11 @@ function SessionStatusMessage({ status, error }: { status?: { state: string | nu
 }
 
 export default function SessionStatus({ session_id, children }: React.PropsWithChildren<{ session_id?: string }>) {
-  const { data: status, error } = useAPIQuery(UserIntegrationsCAVATICAStatus, () => session_id ? { session_id } : null, { refreshInterval: 5 })
+  const trpc = useTRPC()
+  const { data: status, error } = useQuery({
+    ...trpc.integrations.cavatica.status.queryOptions(session_id ? { session_id } : skipToken),
+    refetchInterval: 5_000,
+  })
   if (!session_id) return <>{children}</>
   const ready = status?.state === 'CONNECTED'
   return <>

@@ -65,10 +65,25 @@ module.exports = {
     ]
   },
   webpack: (config, { isServer, webpack }) => {
-    if (!isServer) {
+    if (isServer) {
+      // database drivers (incl. native modules) are loaded from node_modules at runtime
+      //  rather than bundled, files outside of app/ (externalDir) are otherwise bundled
+      config.externals = [
+        ...[].concat(config.externals ?? []),
+        ...['pg', 'pg-boss', 'pg-listen', 'better-sqlite3', 'kysely', 'kysely/migration', 'ws']
+          .map(pkg => ({ [pkg]: `commonjs ${pkg}` })),
+      ]
+    } else {
+      // server-only modules which end up in the client module graph through
+      //  getServerSideProps re-exports, they're never used client-side
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'better-sqlite3': false,
+      }
       config.resolve.fallback = {
         ...config.resolve.fallback,
         'pg-native': false,
+        'util/types': false,
         tls: false,
         dns: false,
         net: false,

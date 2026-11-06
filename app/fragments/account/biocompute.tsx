@@ -1,5 +1,5 @@
-import { UserIntegrationsBioComputeAuth } from "@/app/api/client"
-import { useAPIQuery } from "@/core/api/client"
+import { useQuery } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
 import { signIn } from "next-auth/react"
 import { useExRouter } from "@/app/fragments/ex-router"
@@ -7,7 +7,8 @@ import React from "react"
 
 export default function BioCompute() {
   const router = useExRouter()
-  const { data: biocomputeAuth } = useAPIQuery(UserIntegrationsBioComputeAuth, {})
+  const trpc = useTRPC()
+  const { data: biocomputeAuth } = useQuery(trpc.integrations.biocompute.auth.queryOptions())
   React.useEffect(() => {
     if (biocomputeAuth?.orcid && biocomputeAuth.biocompute) {
       if (router.query.callback) {

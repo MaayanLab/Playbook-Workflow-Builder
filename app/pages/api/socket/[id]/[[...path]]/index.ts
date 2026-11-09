@@ -5,7 +5,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import getRawBody from 'raw-body'
 import db from '@/app/db'
-import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
+import { getServerSessionWithId } from '@/app/extensions/auth/server'
 import { forward } from '@/app/extensions/cavatica/tunnel'
 import * as dict from '@/utils/dict'
 

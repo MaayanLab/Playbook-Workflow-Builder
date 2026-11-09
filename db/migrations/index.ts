@@ -11,6 +11,7 @@ import * as m0002_system_user from './0002_system_user'
 import * as m0003_pgboss_v12 from './0003_pgboss_v12'
 import * as m0004_proxy_session_user from './0004_proxy_session_user'
 import * as m0005_thread_message_response_item from './0005_thread_message_response_item'
+import * as m0006_better_auth from './0006_better_auth'
 
 const migrations: Record<string, Migration> = {
   '0000_baseline': m0000_baseline,
@@ -19,6 +20,7 @@ const migrations: Record<string, Migration> = {
   '0003_pgboss_v12': m0003_pgboss_v12,
   '0004_proxy_session_user': m0004_proxy_session_user,
   '0005_thread_message_response_item': m0005_thread_message_response_item,
+  '0006_better_auth': m0006_better_auth,
 }
 
 export const migrationProvider: MigrationProvider = {

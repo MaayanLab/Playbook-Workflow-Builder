@@ -5,7 +5,7 @@ import db from "@/app/db"
 import { insertUserUpload } from "@/db/queries"
 import { createHash } from 'crypto'
 import type { Writable, Readable } from 'stream'
-import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
+import type { SessionWithId } from "@/app/auth"
 import { toReadable } from '@/utils/readable'
 import { fileAsStream } from './download'
 import python from '@/utils/python'

@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import { connection_icon } from '@/icons'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useTRPC } from '@/app/trpc/client'
 import { useExRouter } from '@/app/fragments/ex-router'

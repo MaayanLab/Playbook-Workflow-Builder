@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { useQuery, useMutation, useQueryClient, skipToken } from '@tanstack/react-query'
 import { useTRPC, useTRPCClient, isTRPCClientError } from '@/app/trpc/client'
-import * as Auth from 'next-auth/react'
+import * as Auth from '@/app/extensions/auth-client'
 
 import { useFPL, useKRG } from '@/app/fragments/metapath'
 import { useExRouter } from '@/app/fragments/ex-router'

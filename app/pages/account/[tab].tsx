@@ -1,4 +1,4 @@
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import React from 'react'

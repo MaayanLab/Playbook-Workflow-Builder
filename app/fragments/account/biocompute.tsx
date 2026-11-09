@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
-import { signIn } from "next-auth/react"
+import { linkSocial } from "@/app/extensions/auth-client"
 import { useExRouter } from "@/app/fragments/ex-router"
 import React from "react"
 
@@ -30,7 +30,7 @@ export default function BioCompute() {
           <div className="alert alert-success my-2">BioCompute Integration is active</div>
         ) : (
           <div className="flex flex-row gap-2 justify-around">
-            <a onClick={() => {signIn('orcid')}} className={classNames('btn', { 'btn-disabled': biocomputeAuth.orcid })}>Link Playbook Workflow Builder Account with ORCID</a>
+            <a onClick={() => {linkSocial('orcid')}} className={classNames('btn', { 'btn-disabled': biocomputeAuth.orcid })}>Link Playbook Workflow Builder Account with ORCID</a>
             <a href="https://biocomputeobject.org/profile" target="_blank" className={classNames('btn', { 'btn-disabled': biocomputeAuth.biocompute })}>Create BCO Account/Link ORCID</a>
           </div>
         ) : null}

@@ -3,7 +3,7 @@ import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
 import type { IncomingMessage } from 'http'
 import { ResponseCodedError } from '@/spec/error'
 import { SYSTEM_USER_ID } from '@/db/constants'
-import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
+import type { SessionWithId } from '@/app/auth'
 import type { OpenApiMeta } from 'trpc-to-openapi'
 
 export type Context = {

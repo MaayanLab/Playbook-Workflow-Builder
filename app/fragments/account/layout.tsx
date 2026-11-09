@@ -1,7 +1,7 @@
-import * as Auth from 'next-auth/react'
+import * as Auth from '@/app/extensions/auth-client'
 import { useExRouter } from '@/app/fragments/ex-router'
 import React from 'react'
-import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
+import { SessionWithId } from '@/app/auth'
 import dynamic from 'next/dynamic'
 import { Tabs as Bp5Tabs, Tab as Bp5Tab } from '@blueprintjs/core'
 

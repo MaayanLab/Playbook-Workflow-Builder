@@ -1,0 +1,21 @@
+import { SYSTEM_USER_ID } from '@/db/constants'
+import { auth, type SessionWithId } from '@/app/auth'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { fromNodeHeaders } from 'better-auth/node'
+
+export async function getServerSessionWithId(req: NextApiRequest, _res: NextApiResponse): Promise<SessionWithId | null> {
+  const workerToken = process.env.WORKER_AUTH_TOKEN ?? process.env.NEXTAUTH_SECRET ?? process.env.BETTER_AUTH_SECRET
+  if (workerToken && req.headers.authorization === `Token ${workerToken}`) {
+    return {
+      user: { id: SYSTEM_USER_ID },
+      expires: new Date(Date.now() + 1000*60*60*24).toISOString(),
+    } as SessionWithId
+  }
+  const result = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
+  if (!result) return null
+  return {
+    user: result.user,
+    expires: new Date(result.session.expiresAt).toISOString(),
+  } as SessionWithId
+}
+

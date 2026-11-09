@@ -1,6 +1,6 @@
 import React from 'react'
-import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
-import * as Auth from 'next-auth/react'
+import { SessionWithId } from '@/app/auth'
+import * as Auth from '@/app/extensions/auth-client'
 import { useMutation } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'

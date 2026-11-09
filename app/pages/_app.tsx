@@ -7,7 +7,7 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import dynamic from 'next/dynamic'
 
-const SessionProvider = dynamic(() => import('next-auth/react').then(({ SessionProvider }) => SessionProvider))
+const SessionProvider = dynamic(() => import('@/app/extensions/auth-client').then(({ SessionProvider }) => SessionProvider))
 const HotkeysProvider = dynamic(() => import('@blueprintjs/core').then(({ HotkeysProvider }) => HotkeysProvider))
 const TRPCReactProvider = dynamic(() => import('@/app/trpc/client').then(({ TRPCReactProvider }) => TRPCReactProvider))
 const RuntimeConfig = dynamic(() => import('@/app/fragments/config').then(({ RuntimeConfig }) => RuntimeConfig), { ssr: false })

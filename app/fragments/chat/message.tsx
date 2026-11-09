@@ -4,7 +4,7 @@ import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
 import dynamic from "next/dynamic"
 import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
-import type { Session } from 'next-auth'
+import type { Session } from '@/app/extensions/auth-client'
 import { ExLink } from "@/app/fragments/ex-router"
 
 const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })

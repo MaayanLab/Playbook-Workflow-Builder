@@ -2,7 +2,7 @@ import multiparty from "multiparty"
 import path from 'path'
 import handler from '@/utils/next-rest'
 import * as dict from '@/utils/dict'
-import { getServerSessionWithId } from "@/app/extensions/next-auth/helpers"
+import { getServerSessionWithId } from "@/app/extensions/auth/server"
 import { UnauthorizedError, UnsupportedMethodError } from "@/spec/error"
 import { uploadFile } from '@/components/core/file/server/upload'
 

@@ -27,6 +27,45 @@ export interface UserTable {
   image: Nullable<string>
   affiliation: Nullable<string>
   created: CreatedTimestamp
+  authEmailVerified: ColumnType<boolean, boolean | undefined, boolean>
+  authUpdated: Nullable<string>
+  isAnonymous: ColumnType<boolean, boolean | undefined, boolean>
+}
+
+export interface AuthSessionTable {
+  id: string
+  token: string
+  expiresAt: string
+  createdAt: CreatedTimestamp
+  updatedAt: CreatedTimestamp
+  ipAddress: Nullable<string>
+  userAgent: Nullable<string>
+  userId: string
+}
+
+export interface AuthAccountTable {
+  id: string
+  accountId: string
+  providerId: string
+  userId: string
+  accessToken: Nullable<string>
+  refreshToken: Nullable<string>
+  idToken: Nullable<string>
+  accessTokenExpiresAt: Nullable<string>
+  refreshTokenExpiresAt: Nullable<string>
+  scope: Nullable<string>
+  password: Nullable<string>
+  createdAt: CreatedTimestamp
+  updatedAt: CreatedTimestamp
+}
+
+export interface AuthVerificationTable {
+  id: string
+  identifier: string
+  value: string
+  expiresAt: string
+  createdAt: CreatedTimestamp
+  updatedAt: CreatedTimestamp
 }
 
 export interface AccountTable {
@@ -200,6 +239,9 @@ export interface Database {
   account: AccountTable
   session: SessionTable
   verification_token: VerificationTokenTable
+  auth_session: AuthSessionTable
+  auth_account: AuthAccountTable
+  auth_verification: AuthVerificationTable
   user_integrations: UserIntegrationsTable
   proxy_session: ProxySessionTable
   suggestion: SuggestionTable

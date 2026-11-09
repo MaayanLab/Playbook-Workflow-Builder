@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import { save_icon } from '@/icons'
 
 const Icon = dynamic(() => import('@/app/components/icon'))

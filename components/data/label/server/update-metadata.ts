@@ -1,4 +1,4 @@
-import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
+import type { SessionWithId } from "@/app/auth"
 import python from "@/utils/python"
 
 export type UpdateMetadataParams = Parameters<typeof updateMetadataColumn>

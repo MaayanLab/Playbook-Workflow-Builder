@@ -7,10 +7,10 @@ const root = process.env.APP_ROOT
 // create .env from .env.example if not present
 if (!fs.existsSync(path.join(root, '.env'))) {
   const envExample = fs.readFileSync(path.join(root, '.env.example')).toString()
-  // Auto-generate NEXTAUTH_SECRET
+  // Auto-generate the Better Auth secret
   const crypto = require('crypto')
   fs.writeFileSync(path.join(root, '.env'), envExample.replace(
-    /(\n)?#(NEXTAUTH_SECRET=)(\r?\n)/,
+    /(\n)?#(BETTER_AUTH_SECRET=)(\r?\n)/,
     `$1$2${crypto.randomBytes(20).toString('hex')}$3`
   ))
 }
@@ -24,11 +24,10 @@ for (const key in env) {
   }
 }
 
-// sane setup for NEXTAUTH_URL to avoid redundancy
+// sane setup for Better Auth's public URL
 if (!process.env.PUBLIC_URL) process.env.PUBLIC_URL = 'http://127.0.0.1:3000'
 if (!process.env.NEXT_PUBLIC_URL) process.env.NEXT_PUBLIC_URL = process.env.PUBLIC_URL
-if (!process.env.NEXTAUTH_URL_INTERNAL) process.env.NEXTAUTH_URL_INTERNAL = 'http://127.0.0.1:3000'
-if (!process.env.NEXTAUTH_URL) process.env.NEXTAUTH_URL = process.env.PUBLIC_URL
+if (!process.env.BETTER_AUTH_URL) process.env.BETTER_AUTH_URL = process.env.PUBLIC_URL
 if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 

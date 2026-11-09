@@ -1,6 +1,6 @@
 import React from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
+import { SessionWithId } from '@/app/auth'
 import { useTRPC } from '@/app/trpc/client'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { ExLink } from '@/app/fragments/ex-router'
-import * as Auth from 'next-auth/react'
+import * as Auth from '@/app/extensions/auth-client'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
 import ThemeToggle from '@/app/components/ThemeToggle'
@@ -61,7 +61,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
                   <li><ExLink href="/account/suggestions">Suggestions</ExLink></li>
                   <li className="menu-title prose"><span>Account</span></li>
                   <li><ExLink href="/account">Settings</ExLink></li>
-                  <li><ExLink href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
+                  <li><ExLink href="/" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
                 </ul>
               </div>
               : <button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white" onClick={() => {Auth.signIn()}}>Sign in</button>}
@@ -149,14 +149,14 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
                       <span>Account</span>
                     </li>
                     <li><ExLink href="/account">Settings</ExLink></li>
-                    <li><ExLink href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
+                    <li><ExLink href="/" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
               </>
               :
               <>
                 <li className="menu-title prose">
                   <span>Account</span>
                 </li>
-                <li><ExLink href="/api/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</ExLink></li>
+                <li><ExLink href="/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</ExLink></li>
               </>}
         </ul>
       </div>

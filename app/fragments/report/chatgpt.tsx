@@ -1,6 +1,6 @@
 import React from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import { useTRPC, useTRPCClient } from '@/app/trpc/client'
 
 /**

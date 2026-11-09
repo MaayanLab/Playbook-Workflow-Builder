@@ -1,7 +1,7 @@
 import db from "@/app/db"
 import { insertUserUpload } from "@/db/queries"
 import python from "@/utils/python"
-import type { SessionWithId } from "@/app/pages/api/auth/[...nextauth]"
+import type { SessionWithId } from "@/app/auth"
 
 export type FetchFileResponse = Awaited<ReturnType<typeof fetchFile>>
 

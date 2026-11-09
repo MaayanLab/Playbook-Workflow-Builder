@@ -1,6 +1,6 @@
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
-import { getServerSessionWithId } from '@/app/extensions/next-auth/helpers'
-import type { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
+import { getServerSessionWithId } from '@/app/extensions/auth/server'
+import type { SessionWithId } from '@/app/auth'
 import type { Context } from './init'
 
 function lazy<T>(fn: () => Promise<T>) {

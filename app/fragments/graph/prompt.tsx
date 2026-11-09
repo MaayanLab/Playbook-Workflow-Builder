@@ -29,7 +29,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
   return (
     <div className="flex-grow flex flex-col">
       <div className="mb-4">
-        <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
+        <h2 className="bp6-heading">{processNode.meta.label || processNode.spec}</h2>
         <Abstract story={{ ...story, ast: astFiltered }} />
       </div>
       {error ? <div className="alert alert-error prose max-w-none">{error.toString()}</div> : null}

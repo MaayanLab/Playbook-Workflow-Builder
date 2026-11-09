@@ -7,7 +7,7 @@ import { useExRouter } from '@/app/fragments/ex-router'
 import { useMutation, useQuery, skipToken } from '@tanstack/react-query'
 import { useTRPC } from '@/app/trpc/client'
 
-const Bp5Popover = dynamic(() => import('@blueprintjs/core').then(({ Popover }) => Popover))
+const BpPopoverNext = dynamic(() => import('@blueprintjs/core').then(({ PopoverNext }) => PopoverNext))
 const Bp5Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
 const Bp5MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 const Bp5Spinner = dynamic(() => import('@blueprintjs/core').then(({ Spinner }) => Spinner))
@@ -28,14 +28,14 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
   return (
     <>
     {publishedBCO ?
-      <a className="bp5-button bp5-minimal" href={`https://biocomputeobject.org/${publishedBCO.state === 'PUBLISHED' ? 'viewer' : 'builder'}?${publishedBCO.contents.object_id}`} target="_blank">
+      <a className="bp6-button bp6-minimal" href={`https://biocomputeobject.org/${publishedBCO.state === 'PUBLISHED' ? 'viewer' : 'builder'}?${publishedBCO.contents.object_id}`} target="_blank">
         <Icon
           icon={biocompute_icon}
           className={publishedBCO.state === 'PUBLISHED' ? 'fill-green-500' : 'fill-yellow-400'}
           title="View in BioCompute Portal"
         />
       </a>
-      : <Bp5Popover
+      : <BpPopoverNext
         className={disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
         disabled={disabled}
         content={
@@ -81,7 +81,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
           className={publishedBCO ? 'fill-green-500' : disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
           title={disabled ? 'Save to Create BioCompute Object' : 'Create BioCompute Object, a standardized way of representing a computational workflow (click for options)'}
         />
-      </Bp5Popover>}
+      </BpPopoverNext>}
       <Bp5Alert
         confirmButtonText="Okay"
         icon="error"

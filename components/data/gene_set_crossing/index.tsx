@@ -360,13 +360,13 @@ export const SelectGeneSetCrossing = MetaNode('SelectGeneSetCrossing')
             </tbody>
           </table>
         </div>
-        <div className="bp5-navbar-group">
+        <div className="bp6-navbar-group">
           <span className="prose max-w-none">
             Shape: ({shape.map((dim, i) => `${i > 0 ? ', ' : ''}${dim}`).join('')})
           </span>
         </div>
         <button
-          className="bp5-button bp5-large"
+          className="bp6-button bp6-large"
           disabled={selected === null}
           onClick={() => {
             if (selected !== null) props.submit(crossings[selected]!)
@@ -405,7 +405,7 @@ export const ExtractCrossingTermGeneSet = MetaNode('ExtractCrossingTermGeneSet')
       <div className="space-y-2">
       
       <select
-        className="bp5-select w-full"
+        className="bp6-select w-full"
         value={selected}
         onChange={e => setSelected(Number(e.target.value))}
       >
@@ -416,7 +416,7 @@ export const ExtractCrossingTermGeneSet = MetaNode('ExtractCrossingTermGeneSet')
         ))}
       </select>
         <button
-          className="bp5-button bp5-large"
+          className="bp6-button bp6-large"
           disabled={selected === null}
           onClick={() => {
             if (selected !== null) {

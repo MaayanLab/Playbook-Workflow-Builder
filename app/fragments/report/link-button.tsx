@@ -18,7 +18,7 @@ export default function LinkButton({ session_id, id, disabled }: { session_id?: 
   React.useEffect(() => { if (share) { onClick() } }, [share])
   if (!share) {
     return (
-      <button className="bp5-button bp5-minimal" disabled={disabled} onClick={() => {setShare(true)}}>
+      <button className="bp6-button bp6-minimal" disabled={disabled} onClick={() => {setShare(true)}}>
         <Icon
           icon={link_icon}
           className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'}
@@ -28,10 +28,10 @@ export default function LinkButton({ session_id, id, disabled }: { session_id?: 
     )
   } else {
     return (
-      <div className={classNames('bp5-control-group inline-block', { 'hidden': !share })}>
-        <input id="graph-url" type="text" className="bp5-input" value={`${publicUrl}${session_id ? `/session/${session_id}` : ''}/report${id ? `/${id}` : ''}`} readOnly />
-        <button className="bp5-button bp5-icon-clipboard" onClick={onClick} />
-        <button className="bp5-button bp5-icon-cross" onClick={() => {setShare(false)}} />
+      <div className={classNames('bp6-control-group inline-block', { 'hidden': !share })}>
+        <input id="graph-url" type="text" className="bp6-input" value={`${publicUrl}${session_id ? `/session/${session_id}` : ''}/report${id ? `/${id}` : ''}`} readOnly />
+        <button className="bp6-button bp6-icon-clipboard" onClick={onClick} />
+        <button className="bp6-button bp6-icon-cross" onClick={() => {setShare(false)}} />
       </div>
     )
   }

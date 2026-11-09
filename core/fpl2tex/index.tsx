@@ -10,7 +10,8 @@ import cache from '@/utils/global_cache'
 import { DataMetaNode } from "@/spec/metanode"
 import { PDFDocument,rgb,StandardFonts } from 'pdf-lib'
 
-const puppeteerSingleton = cache('puppeteer', () => puppeteer.launch())
+/** The browser is launched on first use (not on import, e.g. during builds) and then reused */
+const puppeteerSingleton = () => cache('puppeteer', () => puppeteer.launch())
 
 type File = {
   url: string,
@@ -30,7 +31,7 @@ function hasReportOutputType(metanode:DataMetaNode): boolean {
 }
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
-  const browser = await puppeteerSingleton
+  const browser = await puppeteerSingleton()
   const ctx = await browser.createBrowserContext()
   const page = await ctx.newPage()
   await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`)

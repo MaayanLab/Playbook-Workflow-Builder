@@ -1,13 +1,12 @@
 import { initTRPC, TRPCError } from '@trpc/server'
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
-import type { IncomingMessage } from 'http'
 import { ResponseCodedError } from '@/spec/error'
 import { SYSTEM_USER_ID } from '@/db/constants'
 import type { SessionWithId } from '@/app/auth'
 import type { OpenApiMeta } from 'trpc-to-openapi'
 
 export type Context = {
-  req?: IncomingMessage
+  req?: { headers: { authorization?: string } }
   /** resolved lazily, only procedures which need the session pay for it */
   getSession: () => Promise<SessionWithId | null>
 }

@@ -33,7 +33,7 @@ export default function CAVATICA() {
   }, [userIntegrations])
   return (
     <>
-      <h3 className="bp5-heading">CAVATICA Integration</h3>
+      <h3 className="bp6-heading">CAVATICA Integration</h3>
       <form
         className="prose prose-lg max-w-none"
         onSubmit={async (evt) => {

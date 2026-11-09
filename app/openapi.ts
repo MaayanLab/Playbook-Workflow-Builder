@@ -1,17 +1,19 @@
-import { createOpenApiNextHandler, generateOpenApiDocument } from 'trpc-to-openapi'
+import { createOpenApiFetchHandler, generateOpenApiDocument } from 'trpc-to-openapi'
 import { appRouter } from '@/app/trpc/router'
-import { createNextContext } from '@/app/trpc/context'
+import { createFetchContext } from '@/app/trpc/context'
 import packageJson from '@/package.json'
 
-export const openApiHandler = createOpenApiNextHandler({
-  router: appRouter,
-  createContext: createNextContext,
-  // Preserve the legacy workflow-import limit for POST /db/fpl.
-  maxBodySize: 8 * 1024 * 1024,
-  onError: ({ error, path }) => {
-    if (error.code === 'INTERNAL_SERVER_ERROR') console.error(`[openapi] ${path}:`, error)
-  },
-})
+export function openApiFetchHandler(req: Request) {
+  return createOpenApiFetchHandler({
+    router: appRouter,
+    req,
+    endpoint: '/api',
+    createContext: () => createFetchContext(req),
+    onError: ({ error, path }) => {
+      if (error.code === 'INTERNAL_SERVER_ERROR') console.error(`[openapi] ${path}:`, error)
+    },
+  })
+}
 
 export function openApiDocument() {
   return generateOpenApiDocument(appRouter, {

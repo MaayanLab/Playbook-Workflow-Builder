@@ -13,7 +13,7 @@ export default function Playbooks() {
   const { mutateAsync: deleteUserPlaybook } = useMutation(trpc.playbooks.delete.mutationOptions())
   return (
     <>
-      <h3 className="bp5-heading">Playbooks</h3>
+      <h3 className="bp6-heading">Playbooks</h3>
       <div className="overflow-x-auto">
         <table className="table table-compact w-full text-black dark:text-white">
           <thead>

@@ -3,11 +3,11 @@ import { useMutation } from '@tanstack/react-query'
 import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
 import dynamic from "next/dynamic"
-import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
+import type { Options as ReactMarkdownOptions } from 'react-markdown'
 import type { Session } from '@/app/extensions/auth-client'
 import { ExLink } from "@/app/fragments/ex-router"
 
-const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })
+const ReactMarkdown = dynamic<ReactMarkdownOptions>(() => import('react-markdown'), { ssr: false })
 const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then(({ UserDisplay }) => UserDisplay))
 
 export default function Message({ thread_id, message_id, session, role, children }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string, embedded?: boolean }>) {
@@ -64,18 +64,18 @@ export default function Message({ thread_id, message_id, session, role, children
         {role === 'assistant' ?
           <div className={classNames('chat-footer text-lg cursor-pointer')}>
             {/* <div
-              className={classNames('bp5-icon bp5-icon-link', {'text-green-500': feedback === '+1'})}
+              className={classNames('bp6-icon bp6-icon-link', {'text-green-500': feedback === '+1'})}
             /> */}
             &nbsp;
             <div
-              className={classNames('bp5-icon bp5-icon-thumbs-up', {'text-green-500': feedback === '+1'})}
+              className={classNames('bp6-icon bp6-icon-thumbs-up', {'text-green-500': feedback === '+1'})}
               onClick={() => {
                 if (thread_id && message_id) sendFeedback({ thread_id, message_id, feedback: '+1' }).then(() => setFeedback('+1'))
               }}
             />
             &nbsp;
             <div
-              className={classNames('bp5-icon bp5-icon-thumbs-down', {'text-red-500': feedback === '-1'})}
+              className={classNames('bp6-icon bp6-icon-thumbs-down', {'text-red-500': feedback === '-1'})}
               onClick={() => {
                 if (thread_id && message_id) sendFeedback({ thread_id, message_id, feedback: '-1' }).then(() => setFeedback('-1'))
               }}

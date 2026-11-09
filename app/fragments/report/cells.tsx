@@ -22,7 +22,47 @@ const CAVATICAButton = dynamic(() => import('@/app/fragments/graph/cavatica-butt
 const RestartButton = dynamic(() => import('@/app/fragments/graph/restart-button'))
 const GraphButton = dynamic(() => import('@/app/fragments/report/graph-button'))
 
+type ReportDraft = {
+  cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>
+  playbookMetadata: Exclude<Metapath['playbook_metadata'], null>
+  cells?: Array<{
+    processType: string
+    metadata: Exclude<Metapath['cell_metadata'], null>
+  }>
+}
+
+// App Router pages may remount when moving between graph/report URLs. Keep
+// unsaved report presentation changes alive for the duration of this tab.
+const reportDrafts = new Map<string, ReportDraft>()
+
+function readReportDraft(key: string) {
+  const memory = reportDrafts.get(key)
+  if (memory) return memory
+  if (typeof window === 'undefined') return undefined
+  try {
+    const value = window.sessionStorage.getItem(`pwb:report:${key}`)
+    return value ? JSON.parse(value) as ReportDraft : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function writeReportDraft(key: string, draft: ReportDraft, metapath?: Metapath[]) {
+  const value = metapath ? {
+    ...draft,
+    cells: metapath.flatMap(step => {
+      const metadata = draft.cellMetadata[step.id]
+      return metadata ? [{ processType: step.process.type, metadata }] : []
+    }),
+  } : draft
+  reportDrafts.set(key, value)
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(`pwb:report:${key}`, JSON.stringify(value))
+  }
+}
+
 export default function Cells({ session_id, krg, id }: { session_id?: string, krg: KRG, id: string }) {
+  const draftKey = `${session_id ?? 'local'}:${id}`
   const router = useExRouter()
   const { data: metapath } = useFPL(id)
   const trpc = useTRPC()
@@ -44,8 +84,8 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
     gpt_summary: '',
   } as Exclude<Metapath['playbook_metadata'], null>)
   const [updateRequired, setUpdateRequired] = React.useState(false)
-  const previousMetapath = React.useRef<Metapath[]>()
-  const pendingRebaseHead = React.useRef<string>()
+  const previousMetapath = React.useRef<Metapath[] | undefined>(undefined)
+  const pendingRebaseHead = React.useRef<string | undefined>(undefined)
   React.useEffect(() => {
     if (!data) return
     setUpdateRequired(
@@ -53,8 +93,8 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
       || data.metapath.some(cell => cell.cell_metadata?.id !== cellMetadata[cell.id]?.id)
     )
   }, [data, cellMetadata, playbookMetadata, userPlaybook])
-  React.useEffect(() => {
-    if (!metapath) return
+  React.useLayoutEffect(() => {
+    if (!metapath?.length) return
     const {
       id = '',
       title = '',
@@ -62,7 +102,8 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
       summary = 'auto',
       gpt_summary = '',
     } = metapath[metapath.length-1].playbook_metadata ?? {}
-    setPlaybookMetadata({ id, title, description, summary, gpt_summary })
+    const draft = readReportDraft(draftKey)
+    setPlaybookMetadata(draft?.playbookMetadata ?? { id, title, description, summary, gpt_summary })
     // Snapshot this before enqueueing the state update. Reading the ref from
     // inside the updater races with the assignment below and can make the new
     // metapath masquerade as the previous one.
@@ -85,7 +126,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
       // path is too strict. An unchanged step is enough to establish that this
       // is another revision of the graph currently on screen.
       const typeCounts = new Map<string, number>()
-      return dict.init(metapath.map((element, index) => {
+      const next = dict.init(metapath.map((element, index) => {
         const {
           id = '',
           label = '',
@@ -102,12 +143,37 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
         // across a content-addressed input rebase, whose FPL ids all change.
         return { key: element.id, value: localValue?.id === '' ? localValue : serverValue }
       }))
+      if (!draft) return next
+      const draftTypeCounts = new Map<string, number>()
+      const draftBySlot = new Map(draft.cells?.map(cell => {
+        const occurrence = draftTypeCounts.get(cell.processType) ?? 0
+        draftTypeCounts.set(cell.processType, occurrence + 1)
+        return [`${cell.processType}:${occurrence}`, cell.metadata] as const
+      }))
+      const currentTypeCounts = new Map<string, number>()
+      return dict.init(metapath.map(step => {
+        const occurrence = currentTypeCounts.get(step.process.type) ?? 0
+        currentTypeCounts.set(step.process.type, occurrence + 1)
+        return {
+          key: step.id,
+          value: draft.cellMetadata[step.id]
+            ?? draftBySlot.get(`${step.process.type}:${occurrence}`)
+            ?? next[step.id],
+        }
+      }))
     })
     if (pendingRebaseHead.current === metapath[metapath.length - 1]?.id) {
       pendingRebaseHead.current = undefined
     }
     previousMetapath.current = metapath
-  }, [metapath])
+  }, [metapath, draftKey])
+  React.useLayoutEffect(() => {
+    // Do not overwrite the incoming draft with the previous render's metadata
+    // while the initialization effect is remapping the new workflow IDs.
+    if (!metapath?.length || metapath[metapath.length - 1].id !== id
+      || metapath.some(step => !(step.id in cellMetadata))) return
+    writeReportDraft(draftKey, { cellMetadata, playbookMetadata }, metapath)
+  }, [draftKey, metapath, cellMetadata, playbookMetadata])
   const process_to_step = React.useMemo(() => metapath ? dict.init(metapath.map(h => ({ key: h.process.id, value: `${h.id}:${h.process.id}` }))) : {}, [metapath])
   const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   const { waypoints, scrollTo } = useWaypoints()
@@ -230,16 +296,20 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
               }}
             />
           </Waypoint>
-          {(data.metapath||[]).filter(head => head.id in cellMetadata).map((head, index) => (
+          {(data.metapath||[]).map((head, index) => (
             <Cell
               key={`${head.process.type}:${index}`}
               session_id={session_id}
               krg={krg}
               id={id}
               head={head}
+              collapseKey={`${session_id ?? 'local'}:${head.process.type}:${index}`}
               cellMetadata={cellMetadata}
               setCellMetadata={setCellMetadata}
-              onRebase={headId => { pendingRebaseHead.current = headId }}
+              onRebase={headId => {
+                pendingRebaseHead.current = headId
+                writeReportDraft(`${session_id ?? 'local'}:${headId}`, { cellMetadata, playbookMetadata }, metapath)
+              }}
             />
           ))}
           <References />

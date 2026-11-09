@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTRPCClient, httpBatchLink, httpSubscriptionLink, splitLink, TRPCClientError, type TRPCLink } from '@trpc/client'
@@ -6,7 +8,11 @@ import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
 import type { AppRouter } from './router'
 import { TRPC_HTTP_PATH } from './constants'
 
-export const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>()
+// named exports (not destructured) so that they're visible to the client reference transform
+const trpcContext = createTRPCContext<AppRouter>()
+export const TRPCProvider = trpcContext.TRPCProvider
+export const useTRPC = trpcContext.useTRPC
+export const useTRPCClient = trpcContext.useTRPCClient
 
 declare module '@trpc/client' {
   interface OperationContext {

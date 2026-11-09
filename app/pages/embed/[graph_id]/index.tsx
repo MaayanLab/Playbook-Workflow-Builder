@@ -1,1 +1,0 @@
-export { getServerSideProps, default } from '@/app/fragments/embed'

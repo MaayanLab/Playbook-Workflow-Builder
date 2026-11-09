@@ -38,7 +38,7 @@ export default function Uploads() {
   const extend = useMutation(trpc.fpprg.extend.mutationOptions())
   return (
     <>
-      <h3 className="bp5-heading">Uploads</h3>
+      <h3 className="bp6-heading">Uploads</h3>
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || deleteUpload.isPending || extend.isPending) })}></progress>
       {uploads ? (
         <div className="overflow-x-auto">

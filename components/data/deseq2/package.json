@@ -5,9 +5,9 @@
   "author": "Daniel Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
   "dependencies": {
-    "react": "^18.2.0"
+    "react": "^19.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.21"
+    "@types/react": "^19.0.0"
   }
 }

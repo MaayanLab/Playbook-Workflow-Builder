@@ -38,9 +38,6 @@ module.exports = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    externalDir: true,
-  },
   typescript: {
     ignoreBuildErrors: process.env.STRICT_TS!=='true',
   },
@@ -65,25 +62,37 @@ module.exports = {
       },
     ]
   },
-  webpack: (config, { isServer, webpack }) => {
-    if (isServer) {
-      // database drivers (incl. native modules) are loaded from node_modules at runtime
-      //  rather than bundled, files outside of app/ (externalDir) are otherwise bundled
-      config.externals = [
-        ...[].concat(config.externals ?? []),
-        ...['pg', 'pg-boss', 'pg-listen', 'better-sqlite3', 'kysely', 'kysely/migration']
-          .map(pkg => ({ [pkg]: `commonjs ${pkg}` })),
-      ]
-    } else {
-      // Component packages intentionally co-locate their browser UI and server
-      // resolver in one MetaNode DSL definition. Project resolver closures out
-      // of component entrypoints before Next constructs the browser graph.
-      config.module.rules.unshift({
-        test: /components[\\/].+\.tsx?$/,
-        use: [{ loader: path.join(root, 'cli', 'metanode-client-loader.cjs') }],
-      })
-      // server-only modules which end up in the client module graph through
-      //  getServerSideProps re-exports, they're never used client-side
+  // database drivers (incl. native modules) are loaded from node_modules at runtime rather than bundled
+  serverExternalPackages: ['pg', 'pg-boss', 'pg-listen', 'better-sqlite3', 'kysely'],
+  turbopack: {
+    // the app imports code from outside of app/ (components/, core/, db/, ...)
+    root,
+    // Component packages intentionally co-locate their browser UI and server resolver
+    //  in one MetaNode DSL definition: the browser build projects resolvers out of
+    //  component entrypoints, the server build projects React views & prompts out.
+    rules: Object.fromEntries(['*.ts', '*.tsx'].map(glob => [glob, [
+      {
+        condition: { all: ['browser', { path: /components[\\/].+\.tsx?$/ }] },
+        loaders: [{ loader: path.join(root, 'cli', 'metanode-client-loader.cjs'), options: { target: 'client' } }],
+      },
+      {
+        condition: { all: [{ not: 'browser' }, { path: /components[\\/].+\.tsx?$/ }] },
+        loaders: [{ loader: path.join(root, 'cli', 'metanode-client-loader.cjs'), options: { target: 'server' } }],
+      },
+    ]])),
+  },
+  // Production currently uses webpack because the full external component graph
+  // can stall Turbopack's optimizer. Keep this equivalent to the rules above.
+  webpack: (config, { isServer }) => {
+    config.module.rules.unshift({
+      enforce: 'pre',
+      test: /components[\\/].+\.tsx?$/,
+      use: [{
+        loader: path.join(root, 'cli', 'metanode-client-loader.cjs'),
+        options: { target: isServer ? 'server' : 'client' },
+      }],
+    })
+    if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
         'better-sqlite3': false,
@@ -99,8 +108,8 @@ module.exports = {
         fs: false,
         child_process: false,
         stream: false,
-      };
+      }
     }
     return config
-  }
+  },
 }

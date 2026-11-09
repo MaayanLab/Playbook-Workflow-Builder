@@ -1,6 +1,6 @@
+'use client'
+
 import React from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useTRPC } from '@/app/trpc/client'
 
 const fallbackRuntimeConfig = {
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL ? process.env.NEXT_PUBLIC_URL : '',
@@ -8,11 +8,13 @@ const fallbackRuntimeConfig = {
 }
 const RuntimeConfigContext = React.createContext(fallbackRuntimeConfig)
 
-export function RuntimeConfig({ children }: React.PropsWithChildren<{}>) {
-  const trpc = useTRPC()
-  const { data: runtimeConfig } = useQuery({ ...trpc.system.runtimeConfig.queryOptions(), staleTime: Infinity })
+/**
+ * Provides the runtime configuration (see @/app/runtime-config), passed down from the root layout
+ */
+export function RuntimeConfig({ value, children }: React.PropsWithChildren<{ value: Record<string, string> }>) {
+  const runtimeConfig = React.useMemo(() => ({ ...fallbackRuntimeConfig, ...value }), [value])
   return (
-    <RuntimeConfigContext.Provider value={{ ...fallbackRuntimeConfig, ...runtimeConfig }}>
+    <RuntimeConfigContext.Provider value={runtimeConfig}>
       {children}
     </RuntimeConfigContext.Provider>
   )

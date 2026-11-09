@@ -1,10 +1,9 @@
 import React from 'react'
-import type { GetServerSidePropsContext } from 'next'
 import { useExRouter } from '@/app/fragments/ex-router'
-import fpprg from '@/app/fpprg'
 import { z } from 'zod'
 import dynamic from 'next/dynamic'
 import { MetapathProvider, useKRG } from '@/app/fragments/metapath'
+import { usePathname } from 'next/navigation'
 
 const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Cells = dynamic(() => import('@/app/fragments/report/cells'))
@@ -15,20 +14,6 @@ const QueryType = z.object({
   session_id: z.string().optional(),
   thread_id: z.string().optional(),
 })
-
-export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-  const params = QueryType.parse(ctx.params || {})
-  if (!params.id || params.session_id !== undefined) {
-    return {
-      props: {}
-    }
-  }
-  const fpl = await fpprg.getFPL(params.id)
-  if (fpl === undefined) {
-    return { notFound: true }
-  }
-  return { props: {} }
-}
 
 function Report({ params }: { params: z.infer<typeof QueryType> }) {
   const krg = useKRG()
@@ -49,9 +34,17 @@ function Report({ params }: { params: z.infer<typeof QueryType> }) {
   )
 }
 
-export default function App() {
+export default function App({ routeParams }: { routeParams?: z.infer<typeof QueryType> } = {}) {
   const router = useExRouter()
-  const params = React.useMemo(() => QueryType.parse(router.query), [router.query])
+  const pathname = usePathname()
+  // Input edits update browser history without remounting this report page.
+  // Route props retain their server value until the next server navigation.
+  const params = React.useMemo(() => {
+    const match = pathname?.match(/^(?:\/session\/([^/]+))?\/report(?:\/([^/]+))?\/?$/)
+    return QueryType.parse(match
+      ? { ...(routeParams ?? router.query), session_id: match[1], id: match[2] }
+      : routeParams ?? router.query)
+  }, [pathname, routeParams, router.query])
   return (
     <MetapathProvider session_id={params.session_id}>
       <Report params={params} />

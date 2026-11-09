@@ -3,25 +3,13 @@ import dynamic from 'next/dynamic'
 import krg from "@/app/krg"
 import { func_icon, variable_icon } from '@/icons'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
+import { metanodeType as getMetaNodeType } from '@/app/metanode-type'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export function metanodeType(metanode: MetaNode) {
-  if (metanode.kind === 'data') {
-    const terminal = krg.getNextProcess(metanode.spec).length === 0
-    if (terminal) return 'Viewer'
-    else return 'Data'
-  } else {
-    const terminal = krg.getNextProcess(metanode.output.spec).length === 0
-    if ('prompt' in metanode) {
-      if (terminal) return 'Interactive Viewer'
-      else return 'Prompt'
-    } else {
-      if (terminal) return 'View Resolver'
-      else return 'Resolver'
-    }
-  }
+  return getMetaNodeType(krg, metanode)
 }
 
 export default function MetaNodeListing({ metanodes }: { metanodes: { metanode: (DataMetaNode | ProcessMetaNode), multi?: boolean, type?: string, }[] }) {

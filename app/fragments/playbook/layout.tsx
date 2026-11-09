@@ -15,7 +15,13 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
   const publicUrl = usePublicUrl()
   const { data: session } = Auth.useSession()
   const runtimeConfig = useRuntimeConfig()
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.sessionStorage.getItem('pwb:chat-collapsed') === 'true'
+  })
+  React.useEffect(() => {
+    window.sessionStorage.setItem('pwb:chat-collapsed', String(isSidebarCollapsed))
+  }, [isSidebarCollapsed])
   return (
     <div className="drawer w-screen h-screen">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
@@ -116,7 +122,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           {sidebar && <>
             <div className="flex flex-col sm:flex-row-reverse">
               <div className={classNames("self-center relative")}>
-                <button className={classNames("absolute btn btn-xs sm:rotate-90 sm:active:focus:rotate-90 whitespace-nowrap sm:-left-2 left-[25vw]", { "-top-4 sm:top-0 sm:-left-9": !isSidebarCollapsed,  "-top-6 sm:top-0 sm:-left-2": isSidebarCollapsed })}  onClick={evt => {setIsSidebarCollapsed(!isSidebarCollapsed)}}>
+                <button className={classNames("absolute btn btn-xs sm:rotate-90 sm:active:focus:rotate-90 whitespace-nowrap sm:-left-2 left-[25vw]", { "-top-4 sm:top-0 sm:-left-9": !isSidebarCollapsed,  "-top-6 sm:top-0 sm:-left-2": isSidebarCollapsed })} onClick={() => {setIsSidebarCollapsed(collapsed => !collapsed)}}>
                   {isSidebarCollapsed ? 'Chat' : 'Hide Chat'}
                 </button>
               </div>

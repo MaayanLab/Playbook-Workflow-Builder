@@ -294,7 +294,7 @@ export const SetFromScoredT = [
               cellRenderer={row => <Cell key={row+''}>{set[row]}</Cell>}
             />
           </Table>
-          <button className="bp5-button bp5-large" onClick={async () => {
+          <button className="bp6-button bp6-large" onClick={async () => {
             props.submit(selected)
           }}>Submit</button>
         </>

@@ -15,7 +15,7 @@ function DeleteAccount({ session }: { session: SessionWithId }) {
   const deleteUser = useMutation(trpc.users.delete.mutationOptions())
   return (
     <>
-      <h3 className="bp5-heading text-red-600">Delete Account</h3>
+      <h3 className="bp6-heading text-red-600">Delete Account</h3>
       <progress className={classNames('progress w-full', { 'hidden': !deleteUser.isPending })}></progress>
       <Bp5Button
         intent="danger"

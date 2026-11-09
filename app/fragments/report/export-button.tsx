@@ -5,14 +5,14 @@ import usePublicUrl from '@/utils/next-public-url'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-const Bp5Popover = dynamic(() => import('@blueprintjs/core').then(({ Popover }) => Popover))
+const BpPopoverNext = dynamic(() => import('@blueprintjs/core').then(({ PopoverNext }) => PopoverNext))
 const Bp5Menu = dynamic(() => import('@blueprintjs/core').then(({ Menu }) => Menu))
 const Bp5MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
 
 export default function ExportButton({ session_id, id, metadata }: { session_id?: string, id: string, metadata: { title: string, description: string | undefined } }) {
   const publicUrl = usePublicUrl({ absolute: true })
   return (
-    <Bp5Popover
+    <BpPopoverNext
       className={'cursor-pointer'}
       content={
         <Bp5Menu>
@@ -100,6 +100,6 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
         className={'fill-black dark:fill-white'}
         title="Export workflow to several formats (click for options)"
       />
-    </Bp5Popover>
+    </BpPopoverNext>
   )
 }

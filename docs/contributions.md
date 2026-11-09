@@ -117,6 +117,13 @@ by those closures before Next.js constructs the client module graph. The
 resulting resolver property is a compatibility stub: browser code must execute
 processes through the resolution API, not call `MetaNode.resolve` locally.
 
+The inverse projection applies to server builds: `.view(...)` and
+`.prompt(...)` implementations and their exclusive imports are removed, while
+resolvers, codecs, and stories remain available. Presentation-only `meta.icon`
+and `meta.logo` fields are also omitted. This prevents browser hooks or rendering
+libraries from leaking into React Server Component routes that use the server
+KRG.
+
 This means server-only dependencies such as Python, database clients, and the
 filesystem may be used inside a resolver in the same component file as React
 views. They must not be used by a view, prompt, story, codec, or module-level
@@ -167,7 +174,7 @@ await trpc.components.mycomponent.save.mutate(
 )
 ```
 
-Use tRPC for JSON queries, mutations, and subscriptions. Keep an HTTP route only when HTTP itself is part of the required interface, such as multipart file uploads, streaming or binary downloads, redirects, or webhooks. Transport routes live at the application boundary under `app/pages/api`; reusable component implementation remains with its owner (typically in `client/` or `server/`). Do not create component-local `api/` route trees or duplicate a tRPC procedure with HTTP.
+Use tRPC for JSON queries, mutations, and subscriptions. Keep an HTTP route only when HTTP itself is part of the required interface, such as multipart file uploads, streaming or binary downloads, redirects, or webhooks. Transport routes are App Router route handlers (`route.ts`) at the application boundary under `app/app/api`; reusable component implementation remains with its owner (typically in `client/` or `server/`). Do not create component-local `api/` route trees or duplicate a tRPC procedure with HTTP.
 
 ### Exposing a Public REST API
 
@@ -186,7 +193,7 @@ publicProcedure
   .query(async ({ input }) => getExample(input.id))
 ```
 
-The catch-all route at `app/pages/api/[...trpc].ts` exposes these procedures below `/api` while `app/pages/api/openapi.json.ts` serves their generated OpenAPI 3.1 document. Paths in procedure metadata therefore omit the `/api` prefix.
+The catch-all route handler at `app/app/api/[...trpc]/route.ts` exposes these procedures below `/api` while `app/app/api/openapi.json/route.ts` serves their generated OpenAPI 3.1 document. Paths in procedure metadata therefore omit the `/api` prefix.
 
 Do not annotate private application procedures merely to make them callable over REST. Keep the public surface in `publicApiRouter`, with explicit output validation and stable paths. When an endpoint supports both JSON and a binary representation, route its JSON mode through the OpenAPI handler and retain a thin native handler for the binary response. BCO `HEAD`, CWL/RO-Crate ZIP downloads, DRS data streams, multipart uploads, sockets, MCP, and authentication are examples that still require native HTTP handling.
 

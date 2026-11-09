@@ -82,11 +82,11 @@ export function FigureCaption({ id, story }: { id: string, story: ReturnType<typ
 export function References() {
   const story = useStory()
   return  (
-    <div className="flex-grow flex-shrink bp5-card p-0">
+    <div className="flex-grow flex-shrink bp6-card p-0">
       <div className="p-3">
         <div className="flex flex-row gap-2">
           <Icon icon={references_icon} className="fill-black dark:fill-white" />
-          <h2 className="bp5-heading w-full">
+          <h2 className="bp6-heading w-full">
             References
           </h2>
         </div>

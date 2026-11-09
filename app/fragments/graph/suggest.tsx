@@ -1,5 +1,4 @@
-import { NextRouter } from 'next/router'
-import { useExRouter } from '@/app/fragments/ex-router'
+import { useExRouter, type ExRouter } from '@/app/fragments/ex-router'
 import type { Metapath } from '@/app/fragments/metapath'
 import React from 'react'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
@@ -20,7 +19,7 @@ const ControlGroup = dynamic(() => import('@blueprintjs/core').then(({ ControlGr
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 const TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
-const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
+const BpSuggest = dynamic(() => import('@blueprintjs/select').then(({ Suggest }) => Suggest))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const Suggestion = MetaNode('Suggestion')
@@ -37,18 +36,18 @@ const Suggestion = MetaNode('Suggestion')
   }))
   .view(suggestion => (
     <div>
-      <div className="bp5-card">
-        <h4 className="bp5-heading">{suggestion.name}</h4>
-        <p className="bp5-text-large">{suggestion.description}</p>
-        <div className="bp5-callout">
-          <h5 className="bp5-heading">Author</h5>
+      <div className="bp6-card">
+        <h4 className="bp6-heading">{suggestion.name}</h4>
+        <p className="bp6-text-large">{suggestion.description}</p>
+        <div className="bp6-callout">
+          <h5 className="bp6-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div>
         {/* <br />
-        <h5 className="bp5-heading"><i>Comments</i></h5>
-        <div className="bp5-callout">
-          <p className="bp5-text-large">My comment is important</p>
-          <h5 className="bp5-heading">Author</h5>
+        <h5 className="bp6-heading"><i>Comments</i></h5>
+        <div className="bp6-callout">
+          <p className="bp6-text-large">My comment is important</p>
+          <h5 className="bp6-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div> */}
       </div>
@@ -103,7 +102,7 @@ export function SuggestionEdges(input?: DataMetaNode) {
   }
   return suggestion_edges.map(element => ({
     ...element,
-    onClick: ({ router, id, head }: { router: NextRouter, id: string, head: Metapath }) => {
+    onClick: ({ router, id, head }: { router: ExRouter, id: string, head: Metapath }) => {
       router.push(`/graph/${id}${head ? head.id !== id ? `/node/${head.id}` : '' : '/node/start'}/suggest`, undefined, { shallow: true })
     }
   }))
@@ -167,7 +166,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
               labelInfo="(required)"
               helperText="The output of this component"
             >
-              <Suggest2
+              <BpSuggest
                 fill
                 closeOnSelect
                 selectedItem={suggestion.output}
@@ -208,7 +207,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
       >
         <TextArea
           placeholder={`Your component description goes here`}
-          growVertically
+          autoResize
           fill
           large
           intent="primary"

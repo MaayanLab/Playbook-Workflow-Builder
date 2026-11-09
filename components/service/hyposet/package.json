@@ -5,10 +5,10 @@
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
   "dependencies": {
-    "react": "^18.2.0",
+    "react": "^19.0.0",
     "react-supervenn": "github:maayanlab/react-supervenn"
   },
   "devDependencies": {
-    "@types/react": "^18.0.21"
+    "@types/react": "^19.0.0"
   }
 }

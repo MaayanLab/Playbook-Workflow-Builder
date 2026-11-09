@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import { ExLink } from '@/app/fragments/ex-router'
-import Head from 'next/head'
+import DocumentTitle from '@/app/fragments/document-title'
 import { view_in_graph_icon, fork_icon, start_icon, share_icon, extend_icon, func_icon, variable_icon } from '@/icons'
 import { useStory } from '@/app/fragments/story'
 import { useChatGPT } from '@/app/fragments/report/chatgpt'
@@ -44,15 +44,13 @@ export default function Introduction({
   const story = useStory()
   return (
     <>
-      <Head>
-        <title>Playbook Report{playbookMetadata.title ? `: ${playbookMetadata.title}` : null}</title>
-      </Head>
-      <div className="flex-grow flex-shrink bp5-card p-0">
+      <DocumentTitle title={`Playbook Report${playbookMetadata.title ? `: ${playbookMetadata.title}` : ''}`} />
+      <div className="flex-grow flex-shrink bp6-card p-0">
         {error ? <div className="alert alert-error prose max-w-none">{error}</div> : null}
         <div className="p-3">
           <div className="flex flex-row gap-2">
             <Icon icon={start_icon} className="fill-black dark:fill-white" />
-            <h2 className="bp5-heading w-full">
+            <h2 className="bp6-heading w-full">
               <EditableText
                 multiline
                 placeholder="Playbook title"
@@ -107,12 +105,12 @@ export default function Introduction({
         </div>
         <div className="border-t-secondary border-t-2 mt-2">
           <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`} shallow>
-            <button className="bp5-button bp5-minimal">
+            <button className="bp6-button bp6-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </button>
           </ExLink>
           <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`} shallow>
-            <button className="bp5-button bp5-minimal">
+            <button className="bp6-button bp6-minimal">
               <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </button>
           </ExLink>
@@ -121,7 +119,7 @@ export default function Introduction({
             userPlaybook={userPlaybook}
             updateRequired={updateRequired}
           />
-          <button className="bp5-button bp5-minimal" disabled={!userPlaybook} onClick={() => {togglePublic()}}>
+          <button className="bp6-button bp6-minimal" disabled={!userPlaybook} onClick={() => {togglePublic()}}>
             <Icon
               icon={share_icon}
               className={!userPlaybook ? 'fill-gray-400' : userPlaybook.public ? 'fill-green-500' : 'fill-black dark:fill-white'}

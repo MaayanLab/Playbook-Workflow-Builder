@@ -15,7 +15,7 @@ const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Prompt = dynamic(() => import('@/app/fragments/report/prompt'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
-export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata, onRebase = () => {} }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>>, onRebase?: (headId: string) => void }) {
+export default function Cell({ session_id, krg, id, head, cellMetadata, setCellMetadata, onRebase = () => {}, collapseKey }: { session_id?: string, krg: KRG, id: string, head: Metapath, cellMetadata: Record<string, Exclude<Metapath['cell_metadata'], null>>, setCellMetadata: React.Dispatch<React.SetStateAction<Record<string, Exclude<Metapath['cell_metadata'], null>>>>, onRebase?: (headId: string) => void, collapseKey?: string }) {
   const router = useExRouter()
   const { data: { outputNode = undefined, output = undefined } = {}, status, isLoading } = useMetapathOutput({ krg, head })
   const story = useStory()
@@ -25,13 +25,14 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
   return (
     <>
       <Waypoint id={`${head.id}:process`}>
-        {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0">
-          <div className="collapse collapse-arrow text-black dark:text-white">
-            <input type="checkbox" checked={currentCellMetadata.process_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...currentCellMetadata, process_visible: evt.target.checked, id: '' } }))}} />
-            <div className="collapse-title flex flex-col gap-2">
+        {!('prompt' in processNode) ? <div className="flex-grow flex-shrink items-center overflow-auto bp6-card p-0">
+          <div className={classNames("collapse collapse-arrow text-black dark:text-white", { "collapse-open": currentCellMetadata.process_visible })}>
+            <div className="collapse-title flex flex-col gap-2 cursor-pointer" role="button" tabIndex={0} aria-expanded={!!currentCellMetadata.process_visible}
+              onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.currentTarget.click() } }}
+              onClick={event => {if (!(event.target as HTMLElement).closest('a')) setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...currentCellMetadata, process_visible: !currentCellMetadata.process_visible, id: '' } }))}}>
               <div className="flex flex-row gap-2 z-10">
                 <Icon icon={processNode.meta.icon || func_icon} title={processNode.meta.label} className="fill-black dark:fill-white" />
-                <h2 className="bp5-heading">
+                <h2 className="bp6-heading">
                   {currentCellMetadata.label ? currentCellMetadata.label
                     : processNode.meta.label ? processNode.meta.label
                     : processNode.spec}
@@ -40,15 +41,15 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               <AbstractPart id={head.id} story={story} />
             </div>
             <div className="collapse-content">
-              <p className="bp5-ui-text">
+              <div className="bp6-ui-text">
                 {currentCellMetadata.description ? <Markdown>{currentCellMetadata.description}</Markdown> : null}
                 <Methods id={head.id} story={story} />
-              </p>
+              </div>
             </div>
           </div>
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !currentCellMetadata.process_visible })}>
             <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`} shallow>
-              <button className="bp5-button bp5-minimal">
+              <button className="bp6-button bp6-minimal">
                 <Icon icon={view_in_graph_icon} />
               </button>
             </ExLink>
@@ -56,7 +57,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
         </div> : null}
       </Waypoint>
       <Waypoint id={`${head.id}:data`}>
-        <div className="flex-grow flex-shrink items-center overflow-auto bp5-card p-0">
+        <div className="flex-grow flex-shrink items-center overflow-auto bp6-card p-0">
           {'prompt' in processNode ?
             <Prompt
               session_id={session_id}
@@ -68,20 +69,22 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
               output={output}
               status={status}
               onRebase={onRebase}
+              collapseKey={collapseKey ?? `${session_id ?? 'local'}:${head.process.type}`}
             />
-            : <div className="collapse collapse-arrow text-black dark:text-white">
-            <input type="checkbox" checked={currentCellMetadata.data_visible} onChange={evt => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...currentCellMetadata, data_visible: evt.target.checked, id: '' } }))}} />
-            <div className="collapse-title flex flex-col gap-2 overflow-visible">
+            : <div className={classNames("collapse collapse-arrow text-black dark:text-white", { "collapse-open": currentCellMetadata.data_visible })}>
+            <div className="collapse-title flex flex-col gap-2 overflow-visible cursor-pointer" role="button" tabIndex={0} aria-expanded={!!currentCellMetadata.data_visible}
+              onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.currentTarget.click() } }}
+              onClick={() => {setCellMetadata((cellMetadata) => ({ ...cellMetadata, [head.id]: { ...currentCellMetadata, data_visible: !currentCellMetadata.data_visible, id: '' } }))}}>
               <div className="flex flex-row gap-2 z-10">
                 {outputNode ?
                   <>
                     <Icon icon={outputNode.meta.icon || variable_icon} title={outputNode.meta.label} className="fill-black dark:fill-white" />
-                    <h2 className="bp5-heading">{outputNode.meta.label}</h2>
+                    <h2 className="bp6-heading">{outputNode.meta.label}</h2>
                   </>
                   :
                   <>
                     <Icon icon={processNode.output.meta.icon || variable_icon} title={processNode.output.meta.label} className="fill-black dark:fill-white" />
-                    <h2 className="bp5-heading">{processNode.output.meta.label}</h2>
+                    <h2 className="bp6-heading">{processNode.output.meta.label}</h2>
                   </>}
               </div>
             </div>
@@ -100,16 +103,16 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !currentCellMetadata.data_visible })}>
             <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`} shallow>
-              <button className="bp5-button bp5-minimal">
+              <button className="bp6-button bp6-minimal">
                 <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
               </button>
             </ExLink>
             <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}/extend`} shallow>
-              <button className="bp5-button bp5-minimal">
+              <button className="bp6-button bp6-minimal">
                 <Icon icon={fork_icon} className="fill-black dark:fill-white" />
               </button>
             </ExLink>
-            <button className="bp5-button bp5-minimal" disabled>
+            <button className="bp6-button bp6-minimal" disabled>
               {isLoading ?
                 <Icon icon={status_waiting_icon} className="fill-yellow-500" />
                 : (outputNode ?

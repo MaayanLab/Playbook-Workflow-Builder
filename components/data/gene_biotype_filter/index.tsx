@@ -61,7 +61,7 @@ export const FilterAnnDataByGeneBiotype = MetaNode('FilterAnnDataByGeneBiotype')
             cellRenderer={row => <Cell key={row + ''}>{set[row]}</Cell>}
           />
         </Table>
-        <button className="bp5-button bp5-large" onClick={() => 
+        <button className="bp6-button bp6-large" onClick={() =>
           props.submit({ biotypes,species})
           
         }>

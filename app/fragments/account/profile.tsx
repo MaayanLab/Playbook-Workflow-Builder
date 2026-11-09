@@ -28,7 +28,7 @@ export default function Profile({ session }: { session: SessionWithId }) {
   }, [userProfile])
   return (
     <>
-      <h3 className="bp5-heading">Profile Settings</h3>
+      <h3 className="bp6-heading">Profile Settings</h3>
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || updateProfile.isPending) })}></progress>
       <form onSubmit={async (evt) => {
         evt.preventDefault()

@@ -63,7 +63,7 @@ export function References({ story }: { story: ReturnType<typeof extractCitation
     <div className="prose max-w-none">
       <strong>References</strong>
       <p className="text-sm text-justify whitespace-pre-line my-2 flex flex-col">{storyFiltered.map((part, i) =>
-        part.type === 'bibitem' ? <a key={i} id={part.ref} className="no-underline text-neutral-focus hover:text-neutral hover:no-underline hover:cursor-text"><Linkify>{part.text}</Linkify></a>
+        part.type === 'bibitem' ? <span key={i} id={part.ref} className="text-neutral-focus"><Linkify>{part.text}</Linkify></span>
         : null
       )}</p>
     </div>

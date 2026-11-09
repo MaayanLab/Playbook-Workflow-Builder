@@ -6,10 +6,10 @@
     "private": true,
     "dependencies": {
         "plotly": "^1.0.0",
-        "react": "^18.2.0",
+        "react": "^19.0.0",
         "react-plotly.js": "2.6.0"
     },
     "devDependencies": {
-        "@types/react": "^18.0.21"
+        "@types/react": "^19.0.0"
     }
 }

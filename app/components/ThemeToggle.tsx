@@ -24,11 +24,11 @@ export default function ThemeToggle() {
     if (currentTheme === 'dark') {
       document.getElementsByTagName('html')[0].setAttribute('data-theme', 'dark')
       document.getElementsByTagName('html')[0].classList.add('dark')
-      document.getElementsByTagName('html')[0].classList.add('bp5-dark')
+      document.getElementsByTagName('html')[0].classList.add('bp6-dark')
     } else {
       document.getElementsByTagName('html')[0].setAttribute('data-theme', 'light')
       document.getElementsByTagName('html')[0].classList.remove('dark')
-      document.getElementsByTagName('html')[0].classList.remove('bp5-dark')
+      document.getElementsByTagName('html')[0].classList.remove('bp6-dark')
     }
   }, [currentTheme])
   return (

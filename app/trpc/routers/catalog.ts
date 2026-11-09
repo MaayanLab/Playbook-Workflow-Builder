@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { getComponentKRG } from '@/app/server-krg'
 import db from '@/app/db'
-import { metanodeType } from '@/app/fragments/components/listing'
+import { metanodeType } from '@/app/metanode-type'
 import * as dict from '@/utils/dict'
 import { publicProcedure, router } from '../init'
 
@@ -12,7 +12,7 @@ type CatalogMetaNode = ReturnType<CatalogKRG['getDataNodes']>[number]
 
 function summary(metanode: CatalogMetaNode) {
   const { spec: id, meta: { icon: _, ...meta }, kind } = metanode
-  return { id, kind, type: metanodeType(metanode), meta }
+  return { id, kind, type: metanodeType(getComponentKRG(), metanode), meta }
 }
 
 /**

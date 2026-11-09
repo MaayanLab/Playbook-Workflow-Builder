@@ -135,12 +135,12 @@ export function FilePrompt(props: {
               </div>
             </div>
             <div className={classNames({ 'hidden': tab !== 'url' })}>
-              <div className="bp5-input-group">
+              <div className="bp6-input-group">
                 <input
                   type="text"
-                  className="bp5-input w-full"
+                  className="bp6-input w-full"
                   placeholder="e.g. drs://somehost/id"
-                  value={currentFile.url}
+                  value={currentFile.url ?? ''}
                   onChange={evt => {
                     setCurrentFile(({ url: _, ...file }) => ({ ...file, url: evt.target.value }))
                   }}
@@ -148,11 +148,11 @@ export function FilePrompt(props: {
               </div>
             </div>
           </div>
-          <div className="bp5-input-group">
+          <div className="bp6-input-group">
             <input
               type="text"
               name="description"
-              className="bp5-input"
+              className="bp6-input"
               placeholder={`File description`}
               onChange={evt => {setCurrentFile(({ description: _, ...file }) => ({ ...file, description: evt.target.value }))}}
               value={currentFile.description||''}

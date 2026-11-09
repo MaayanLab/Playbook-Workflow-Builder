@@ -23,7 +23,7 @@ export default function Suggestions() {
   const extend = useMutation(trpc.fpprg.extend.mutationOptions())
   return (
     <>
-      <h3 className="bp5-heading">Suggestions</h3>
+      <h3 className="bp6-heading">Suggestions</h3>
       <progress className={classNames('progress w-full', { 'hidden': !(isLoading || deleteSuggestion.isPending || extend.isPending) })}></progress>
       {suggestions ? (
         <div className="overflow-x-auto">

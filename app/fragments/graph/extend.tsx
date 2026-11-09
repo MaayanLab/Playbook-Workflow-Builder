@@ -1,6 +1,5 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { NextRouter, useRouter } from 'next/router'
 import type KRG from '@/core/KRG'
 import { start_icon, rightarrow_icon, func_icon, variable_icon } from '@/icons'
 import { ProcessMetaNode } from '@/spec/metanode'
@@ -9,7 +8,7 @@ import { SuggestionEdges } from '@/app/fragments/graph/suggest'
 import * as dict from '@/utils/dict'
 import * as array from '@/utils/array'
 import pathWeights from '@/app/public/weights.json'
-import Head from 'next/head'
+import DocumentTitle from '@/app/fragments/document-title'
 import classNames from 'classnames'
 import pluralize from 'pluralize'
 import { useExRouter } from "@/app/fragments/ex-router"
@@ -65,10 +64,8 @@ export default function Extend({ session_id, krg, id, heads, metapath }: { sessi
   }, [metapath])
   return (
     <>
-      <Head>
-        <title>Playbook: Extend{processNode?.output.meta.label ? ` from ${processNode?.output.meta.label}` : null}</title>
-      </Head>
-      <Catalog<ProcessMetaNode & ({}|{ onClick: (_: { router: NextRouter, id: string, head: Metapath }) => void })>
+      <DocumentTitle title={`Playbook: Extend${processNode?.output.meta.label ? ` from ${processNode?.output.meta.label}` : ''}`} />
+      <Catalog<ProcessMetaNode & ({}|{ onClick: (_: { router: ReturnType<typeof useExRouter>, id: string, head: Metapath }) => void })>
         items={items}
         serialize={item => [
           item.spec,

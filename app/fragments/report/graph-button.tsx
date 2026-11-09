@@ -10,7 +10,7 @@ export default function GraphButton({ session_id, graph_id }: { session_id?: str
   const disabled = router.asPath.endsWith('/graph') || router.asPath.endsWith('/graph/start') || router.asPath.endsWith('/graph/extend') || router.asPath.endsWith('/graph/start/extend')
   return (
     <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${graph_id === 'start' ? `/` : `/${graph_id}`}/extend`} shallow>
-      <button className='bp5-button bp5-minimal' disabled={disabled}>
+      <button className='bp6-button bp6-minimal' disabled={disabled}>
         <Icon icon={view_in_graph_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
       </button>
     </ExLink>

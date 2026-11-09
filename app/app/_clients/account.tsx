@@ -1,0 +1,22 @@
+'use client'
+
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
+import dynamic from 'next/dynamic'
+import React from 'react'
+
+const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
+const AccountLayout = dynamic(() => import('@/app/fragments/account/layout'))
+
+export default function Account() {
+  const { data: session } = useSessionWithId({ required: true })
+  return (
+    <Layout>
+
+      <main className="flex-grow container mx-auto py-4 flex flex-row">
+        {(session && session.user) ?
+          <AccountLayout session={session} />
+          : null}
+      </main>
+    </Layout>
+  )
+}

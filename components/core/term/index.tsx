@@ -6,7 +6,7 @@ import { Gene, Protein, Glycan, Variant, RegulatoryElement, Drug, Primative, Met
 import dynamic from 'next/dynamic'
 import { input_icon } from '@/icons'
 
-const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
+const Suggest = dynamic(() => import('@blueprintjs/select').then(({ Suggest }) => Suggest))
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
@@ -84,7 +84,7 @@ const Input_Term_T = (T: Primative, Term_T: DataMetaNode<InternalDataMetaNode & 
     return (
       <div>
         {T.extra?.term?.autocomplete ?
-          <Suggest2
+          <Suggest
             fill
             closeOnSelect
             query={item}

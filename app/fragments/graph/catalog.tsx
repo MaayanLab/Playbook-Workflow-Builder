@@ -135,9 +135,10 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                 <div className="col-span-2">{group}</div>
                 {dict.keys(group_values[group])
                   .map(value => (
-                    <label key={value} className="contents">
-                      <label className="bp5-control bp5-switch">
+                    <div key={value} className="contents">
+                      <label className="bp6-control bp6-switch my-0">
                         <input
+                          className="bp6-control-input"
                           type="checkbox"
                           checked={(filters[group] || {})[value] === 1}
                           onChange={evt => {
@@ -161,11 +162,11 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                             setFilters(_filters)
                           }}
                         />
-                        <span className="bp5-control-indicator"></span>
+                        <span className="bp6-control-indicator"></span>
                         <span>{value}</span>
                       </label>
-                      <span>({(group_values_filtered[group]||{})[value]||0} / {group_values[group][value]})</span>
-                    </label>
+                      <span className="whitespace-nowrap">({(group_values_filtered[group]||{})[value]||0} / {group_values[group][value]})</span>
+                    </div>
                 ))}
               </React.Fragment>
             )

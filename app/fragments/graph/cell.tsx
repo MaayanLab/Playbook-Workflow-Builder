@@ -2,7 +2,7 @@ import React from 'react'
 import type KRG from '@/core/KRG'
 import dynamic from 'next/dynamic'
 import { Metapath, useMetapathOutput } from '@/app/fragments/metapath'
-import Head from 'next/head'
+import DocumentTitle from '@/app/fragments/document-title'
 import { useExRouter } from '@/app/fragments/ex-router'
 import { useStory } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
@@ -20,9 +20,7 @@ export default function Cell({ session_id, krg, id, head, metapath }: { session_
   const astFiltered = React.useMemo(() => story.ast.filter(part => part.tags.some(tag => metapath.some(p => tag === p.id))), [story])
   return (
     <>
-      <Head>
-        <title>Playbook: {processNode.meta.label}</title>
-      </Head>
+      <DocumentTitle title={`Playbook: ${processNode.meta.label}`} />
       <div className="flex-grow flex flex-col">
         {'prompt' in processNode ?
           <Prompt
@@ -38,7 +36,7 @@ export default function Cell({ session_id, krg, id, head, metapath }: { session_
           />
           : <>
           <div className="mb-4">
-            <h2 className="bp5-heading">{processNode.meta.label || processNode.spec}</h2>
+            <h2 className="bp6-heading">{processNode.meta.label || processNode.spec}</h2>
             <Abstract story={{ ...story, ast: astFiltered }} />
             <Methods id={head.id} story={{ ...story, ast: astFiltered }} />
           </div>

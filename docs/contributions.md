@@ -103,6 +103,21 @@ This regenerates:
 
 Both files are generated artifacts and should not be edited manually. Commit their regenerated contents with the component change.
 
+Components that must preserve historical public example-file URLs can add a
+`legacy-api.ts` manifest beside their `package.json`. Keys are URL paths relative
+to `/api/v1/components/{component path}/`; values are asset paths relative to the
+component directory. These compatibility assets remain owned by the component:
+
+```ts
+export default {
+  'example.tsv': 'assets/example.tsv',
+} satisfies Record<string, string>
+```
+
+`npm run codegen:components` composes these manifests into the generated
+`components/legacy-api.ts` registry. The app compatibility handler is generic
+and must not contain component-specific paths.
+
 In React code, use the generated typed client through TanStack Query:
 
 ```tsx

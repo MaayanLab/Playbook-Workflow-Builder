@@ -1,6 +1,5 @@
 import React from 'react'
 import * as Bokeh from '@bokeh/bokehjs'
-import useAsyncEffect from 'use-async-effect'
 
 /**
  * Use bokeh embed_item on a div with a unique id.
@@ -9,19 +8,24 @@ import useAsyncEffect from 'use-async-effect'
  */
 function BokehEmbeddedItem({ plot }: { plot: any }) {
     const id = React.useId()
-    useAsyncEffect(async () => {
+    React.useEffect(() => {
         if (!plot) return
-        try {
-            // Give the element to bokeh to manage
-            const views = await Bokeh.embed.embed_item(plot, id)
-            return () => {
-                // on unmount, we tell bokeh to stop managing this element
-                if (views) views.forEach(item => item.remove())
-            }
-        } catch (e) {
-            console.warn(e)
+        let cancelled = false
+        let views: Awaited<ReturnType<typeof Bokeh.embed.embed_item>> | undefined
+        // Give the element to bokeh to manage
+        Bokeh.embed.embed_item(plot, id)
+            .then(embedded => {
+                views = embedded
+                // unmounted before the plot finished embedding
+                if (cancelled && views) views.forEach(item => item.remove())
+            })
+            .catch(e => console.warn(e))
+        return () => {
+            cancelled = true
+            // on unmount, we tell bokeh to stop managing this element
+            if (views) views.forEach(item => item.remove())
         }
-    }, [plot])
+    }, [plot, id])
     return <div id={id} />
 }
 

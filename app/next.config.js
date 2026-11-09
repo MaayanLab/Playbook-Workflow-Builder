@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const dotenv = require('dotenv')
+const { parseEnv } = require('util')
 if (!process.env.APP_ROOT) process.env.APP_ROOT = path.dirname(__dirname)
 const root = process.env.APP_ROOT
 
@@ -16,7 +16,7 @@ if (!fs.existsSync(path.join(root, '.env'))) {
 }
 
 // update environment with .env
-const env = dotenv.parse(fs.readFileSync(path.join(root, '.env')))
+const env = parseEnv(fs.readFileSync(path.join(root, '.env'), 'utf8'))
 env.PYTHON_ROOT = env.PYTHON_ROOT || root
 for (const key in env) {
   if (!(key in process.env)) {
@@ -62,8 +62,9 @@ module.exports = {
       },
     ]
   },
-  // database drivers (incl. native modules) are loaded from node_modules at runtime rather than bundled
-  serverExternalPackages: ['pg', 'pg-boss', 'pg-listen', 'better-sqlite3', 'kysely'],
+  // pg-listen's dependency pg-format reads a file at a path computed at runtime, which can't be bundled
+  //  (pg & better-sqlite3 are external by default, see next/dist/lib/server-external-packages.jsonc)
+  serverExternalPackages: ['pg-listen'],
   turbopack: {
     // the app imports code from outside of app/ (components/, core/, db/, ...)
     root,
@@ -80,36 +81,5 @@ module.exports = {
         loaders: [{ loader: path.join(root, 'cli', 'metanode-client-loader.cjs'), options: { target: 'server' } }],
       },
     ]])),
-  },
-  // Production currently uses webpack because the full external component graph
-  // can stall Turbopack's optimizer. Keep this equivalent to the rules above.
-  webpack: (config, { isServer }) => {
-    config.module.rules.unshift({
-      enforce: 'pre',
-      test: /components[\\/].+\.tsx?$/,
-      use: [{
-        loader: path.join(root, 'cli', 'metanode-client-loader.cjs'),
-        options: { target: isServer ? 'server' : 'client' },
-      }],
-    })
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'better-sqlite3': false,
-        'pg-boss': false,
-      }
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        'pg-native': false,
-        'util/types': false,
-        tls: false,
-        dns: false,
-        net: false,
-        fs: false,
-        child_process: false,
-        stream: false,
-      }
-    }
-    return config
   },
 }

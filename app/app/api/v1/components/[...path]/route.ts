@@ -25,6 +25,6 @@ export async function GET(_request: Request, props: { params: Promise<{ path: st
   const params = await props.params;
   return routeResponse(async () => {
     const { file, stat } = await asset(params)
-    return nodeStreamResponse(fs.createReadStream(file), { headers: { 'Content-Length': String(stat.size) } })
+    return nodeStreamResponse(fs.createReadStream(/*turbopackIgnore: true*/ file), { headers: { 'Content-Length': String(stat.size) } })
   })
 }

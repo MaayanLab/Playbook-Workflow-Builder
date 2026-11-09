@@ -2,44 +2,32 @@
   "name": "app",
   "version": "1.0.0",
   "private": true,
-  "browser": {
-    "child_process": false
-  },
   "scripts": {
-    "build:next": "NODE_ENV=production DATABASE_URL= next build --webpack",
+    "build:next": "NODE_ENV=production DATABASE_URL= next build",
     "build": "npm run build:next",
     "start": "NODE_ENV=production APP_ROOT=$(dirname $(pwd)) next start -p ${PORT:-3000}",
     "dev": "NODE_ENV=development next dev -p ${PORT:-3000}"
   },
   "dependencies": {
-    "@tailwindcss/typography": "^0.5.9",
+    "@tailwindcss/typography": "^0.5.20",
     "better-auth": "^1.7.18",
-    "d3": "^7.8.2",
-    "daisyui": "^2.50.0",
-    "dotenv": "^16.0.3",
+    "d3": "^7.9.2",
+    "daisyui": "^2.52.0",
     "events": "^3.3.0",
-    "jwt-decode": "^3.1.2",
-    "multiparty": "^4.2.3",
-    "next": "^16.4.5",
-    "nodemailer": "^8.0.11",
-    "prismjs": "^1.29.0",
+    "next": "^16.4.6",
+    "nodemailer": "^10.4.0",
+    "prismjs": "^1.30.0",
     "puppeteer": "^25.16.0",
-    "raw-body": "^2.5.2",
     "react-markdown": "^10.1.0",
     "react-masonry-css": "^1.0.16",
-    "react-simple-code-editor": "^0.13.1",
-    "sharp": "^0.32.6",
-    "use-async-effect": "^2.2.7",
-    "uuid": "^9.0.0"
+    "react-simple-code-editor": "^0.14.1"
   },
   "devDependencies": {
-    "@types/d3": "^7.4.0",
-    "@types/multiparty": "^0.0.33",
+    "@types/d3": "^7.4.3",
     "@types/nodemailer": "^8.0.2",
     "@types/react-dom": "^19.3.0",
-    "@types/uuid": "^9.0.0",
-    "autoprefixer": "^10.4.13",
-    "postcss": "^8.4.21",
-    "tailwindcss": "^3.2.4"
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^3.4.19"
   }
 }

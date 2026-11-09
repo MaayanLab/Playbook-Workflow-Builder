@@ -1,5 +1,5 @@
 import { Hash } from "fast-sha256"
-import { canonicalize } from 'json-canonicalize'
+import { canonicalize } from '@/utils/canonicalize'
 
 /**
  * Obtain a unique hash for arbitrary data

@@ -5,14 +5,13 @@
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
   "dependencies": {
-    "cytoscape": "^3.25.0",
+    "cytoscape": "^3.34.4",
     "cytoscape-cola": "^2.5.1",
     "react": "^19.0.0",
     "react-cytoscapejs": "^2.0.0"
   },
   "devDependencies": {
-    "@types/cytoscape": "^3.19.9",
     "@types/react": "^19.0.0",
-    "@types/react-cytoscapejs": "^1.2.2"
+    "@types/react-cytoscapejs": "^1.2.6"
   }
 }

@@ -5,10 +5,11 @@ module.exports = {
   mode: 'jit',
   darkMode: 'class',
   content: [
-    "../app/pages/**/*.{js,ts,jsx,tsx}",
+    "../app/app/**/*.{js,ts,jsx,tsx}",
     "../app/components/**/*.{js,ts,jsx,tsx}",
     "../app/fragments/**/*.{js,ts,jsx,tsx}",
     "../components/**/*.{js,ts,jsx,tsx}",
+    "!../components/**/node_modules/**",
   ],
   theme: {
     fontFamily: {

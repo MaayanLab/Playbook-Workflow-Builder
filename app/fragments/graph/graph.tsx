@@ -5,7 +5,6 @@ import { useExRouter } from '@/app/fragments/ex-router'
 import { type Metapath, useFPL, useKRG } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
-import { Set } from 'immutable'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs').then(({ Breadcrumbs }) => Breadcrumbs))
 const DataBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ DataBreadcrumb }) => DataBreadcrumb))
@@ -73,7 +72,8 @@ export default function Graph(props: GraphProps) {
     suggest: props.suggest,
     metapath: fpl.data ?? [],
   }
-  const node_ids = React.useMemo(() => Set(node_id.split(',')), [node_id])
+  const node_ids = React.useMemo(() => new Set(node_id.split(',')), [node_id])
+  const toggleNodeId = React.useCallback((id: string) => node_ids.has(id) ? [...node_ids].filter(other => other !== id).join(',') : [...node_ids, id].join(','), [node_ids])
   const heads = React.useMemo(() => {
     return metapath.filter(({ id }) => node_ids.has(id))
   }, [metapath, node_ids])
@@ -111,7 +111,7 @@ export default function Graph(props: GraphProps) {
                   parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
                   onClick={(evt) => {
                     if (evt.shiftKey) {
-                      const new_node_id = node_ids.has(step.id) ? node_ids.delete(step.id).join(',') : node_ids.add(step.id).join(',')
+                      const new_node_id = toggleNodeId(step.id)
                       if (new_node_id) {
                         router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}/node/${new_node_id}/extend`, undefined, { shallow: true })
                       }
@@ -131,7 +131,7 @@ export default function Graph(props: GraphProps) {
                   parents={[step.id]}
                   onClick={(evt) => {
                     if (evt.shiftKey) {
-                      const new_node_id = node_ids.has(step.id) ? node_ids.delete(step.id).join(',') : node_ids.add(step.id).join(',')
+                      const new_node_id = toggleNodeId(step.id)
                       if (new_node_id) {
                         router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}/node/${new_node_id}/extend`, undefined, { shallow: true })
                       }

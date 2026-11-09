@@ -1,6 +1,6 @@
 import React from 'react'
-import { Map } from 'immutable'
 import * as dict from '@/utils/dict'
+import { mapDelete, mapSet } from '@/utils/map'
 
 export type BreadcrumbNode = {
   id: string,
@@ -14,13 +14,13 @@ export type BreadcrumbNode = {
  *  through node children where steps down the tree expand in the x direction
  *  and steps over in the tree expand in the y direction.
  */
-function layout(graph: Map<string, BreadcrumbNode>) {
+function layout(graph: ReadonlyMap<string, BreadcrumbNode>) {
   // Construct C -- a mapping from id to children
   //         & G -- a mapping from id to node
   const C: Record<string, string[]> = {}
   if (graph.size === 0) return { P: {}, E: [], W: 0, H: 0 }
   const G = dict.init(
-    graph.valueSeq().sort((a, b) => a.index - b.index).toArray()
+    [...graph.values()].sort((a, b) => a.index - b.index)
       .map((node) => {
         (node.parents??[]).forEach(pid => {
           if (!(pid in C)) C[pid] = []
@@ -83,7 +83,7 @@ const BreadcrumbContext = React.createContext(undefined as {
 } | undefined)
 
 export function Breadcrumbs({ children }: React.PropsWithChildren<{}>) {
-  const [graph, setGraph] = React.useState(Map<string, BreadcrumbNode>())
+  const [graph, setGraph] = React.useState<ReadonlyMap<string, BreadcrumbNode>>(() => new Map())
   const { P, E, top, left, w, h } = React.useMemo(() => {
     const { P, E, W, H } = layout(graph)
     let top = 1
@@ -100,8 +100,8 @@ export function Breadcrumbs({ children }: React.PropsWithChildren<{}>) {
     }
     return { P, E, top, left, w, h }
   }, [graph])
-  const add = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => graph.set(node.id, node))}, [setGraph])
-  const del = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => graph.delete(node.id))}, [setGraph])
+  const add = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => mapSet(graph, node.id, node))}, [setGraph])
+  const del = React.useCallback((node: BreadcrumbNode) => {setGraph(graph => mapDelete(graph, node.id))}, [setGraph])
   const pos = React.useCallback((node: BreadcrumbNode) => node.id in P ? { x: P[node.id].x, y: P[node.id].y } : undefined, [P])
   return (
     <svg

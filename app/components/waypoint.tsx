@@ -9,11 +9,13 @@
  * - bottom: bottom of the page
  */
 import React from 'react'
-import { Map } from 'immutable'
+import { mapDelete, mapSet, mapValues } from '@/utils/map'
+
+type WaypointState = { scrollMarginTop: string, active: boolean }
 
 const WaypointsContext = React.createContext({
-  refs: Map<string, HTMLDivElement>(),
-  waypoints: Map<string, { scrollMarginTop: string, active: boolean }>(),
+  refs: new Map() as ReadonlyMap<string, HTMLDivElement>,
+  waypoints: new Map() as ReadonlyMap<string, WaypointState>,
   set: (id: string, ref: HTMLDivElement) => {},
   del: (id: string) => {},
 })
@@ -25,7 +27,7 @@ export function useWaypoints() {
     window.dispatchEvent(new Event('hashchange'))
   }, [])
   return {
-    waypoints: waypoints.mapEntries(([key, value]) => [key, { ...value, ref: refs.get(key) }]),
+    waypoints: React.useMemo(() => mapValues(waypoints, (value, key) => ({ ...value, ref: refs.get(key) })), [refs, waypoints]),
     scrollTo,
   }
 }
@@ -33,13 +35,13 @@ export function useWaypoints() {
 export function Waypoints(props: React.PropsWithChildren<{ className?: string }>) {
   const ref = React.useRef<HTMLDivElement>(null)
   const first = React.useRef(true)
-  const [waypointRefs, setWaypointRefs] = React.useState(Map<string, HTMLDivElement>())
-  const [waypoints, setWaypoints] = React.useState(Map<string, { scrollMarginTop: string, active: boolean }>())
+  const [waypointRefs, setWaypointRefs] = React.useState<ReadonlyMap<string, HTMLDivElement>>(() => new Map())
+  const [waypoints, setWaypoints] = React.useState<ReadonlyMap<string, WaypointState>>(() => new Map())
   const set = React.useCallback((id: string, setRef: HTMLDivElement) => {
-    setWaypointRefs(waypoints => waypoints.set(id, setRef))
+    setWaypointRefs(waypoints => mapSet(waypoints, id, setRef))
   }, [])
   const del = React.useCallback((id: string) => {
-    setWaypointRefs(waypoints => waypoints.delete(id))
+    setWaypointRefs(waypoints => mapDelete(waypoints, id))
   }, [])
   React.useEffect(() => {
     if (!ref.current || waypointRefs.size === 0) return
@@ -49,11 +51,11 @@ export function Waypoints(props: React.PropsWithChildren<{ className?: string }>
       const scrollBottom = scrollTop + window.innerHeight/2
       const head = waypointRefs.get('head')
       const scrollMarginTop = head ? `${head.clientHeight + 2}px` : `0px`
-      setWaypoints(() => waypointRefs.mapEntries(([key, value]) => {
+      setWaypoints(() => mapValues(waypointRefs, (value) => {
         const elTop = value.offsetTop
         const elBottom = value.offsetTop + value.clientHeight
         const active = (scrollTop < elBottom && scrollBottom > elTop)
-        return [key, { scrollMarginTop, active }]
+        return { scrollMarginTop, active }
       }))
     }
     ref.current.addEventListener('scroll', listener)

@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
-    "@types/react-plotly.js": "^2.5.2"
+    "@types/react-plotly.js": "^2.6.4"
   }
 }

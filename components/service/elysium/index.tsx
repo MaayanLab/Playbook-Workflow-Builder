@@ -2,7 +2,6 @@ import React from 'react'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { v4 as uuid4 } from 'uuid'
 import python from '@/utils/python'
 import SafeRender from '@/utils/saferender'
 import * as Auth from '@/app/extensions/auth-client'
@@ -29,7 +28,7 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
   .prompt(props => {
     const trpc = useTRPCClient()
     const { data: session } = useSessionWithId()
-    const [uid, _] = React.useState(() => uuid4())
+    const [uid, _] = React.useState(() => crypto.randomUUID())
     const organism = 'human'
     const [error, setError] = React.useState<string>()
     const [uploads, setUploads] = React.useState<Record<string, { progress: number, xhr?: XMLHttpRequest, error?: string }>>({})

@@ -61,7 +61,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       update "auth_account" as target
       set "accessTokenExpiresAt" = to_timestamp(source."expires_at")
       from "account" as source
-      where target."id" = source."id" and source."expires_at" is not null
+      where target."id" = source."id"::text and source."expires_at" is not null
     `.execute(db)
   } else {
     await sql`

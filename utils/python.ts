@@ -39,7 +39,7 @@ export default function python<T>(pathspec: string, args: { kargs?: unknown[], k
     }
     if (typeof spawn === 'undefined') throw new Error("python is server side only")
     if (typeof path === 'undefined') throw new Error("python is server side only")
-    const proc = spawn(process.env.PYTHON_BIN || 'python3', [
+    const proc = spawn(/*turbopackIgnore: true*/ process.env.PYTHON_BIN || 'python3', [
       path.join(process.env.PYTHON_ROOT || '', 'utils', 'helper.py'),
       pathspec,
     ], { env: { ...process.env } })
@@ -78,7 +78,7 @@ export function pythonStream(pathspec: string, args: { kargs?: unknown[], kwargs
   }
   if (typeof spawn === 'undefined') throw new Error("python is server side only")
   if (typeof path === 'undefined') throw new Error("python is server side only")
-  const proc = spawn(process.env.PYTHON_BIN || 'python3', [
+  const proc = spawn(/*turbopackIgnore: true*/ process.env.PYTHON_BIN || 'python3', [
     path.join(process.env.PYTHON_ROOT || '', 'utils', 'helper.py'),
     pathspec,
   ], { env: { ...process.env } })

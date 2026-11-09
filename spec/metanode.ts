@@ -250,6 +250,22 @@ export type ProcessMetaNode = PromptMetaNode | ResolveMetaNode
 export type MetaNode = DataMetaNode | ProcessMetaNode
 
 /**
+ * Browser projection of the MetaNode contract.
+ *
+ * Component authors continue to define a complete MetaNode in one DSL chain.
+ * The client build replaces `resolve` implementations before bundling, so its
+ * callable shape remains compatible while server-only resolver closures and
+ * their exclusive imports are absent from the browser graph.
+ */
+export type ClientDataMetaNode<T = InternalDataMetaNode> = DataMetaNode<T>
+export type ClientResolveMetaNode<T = InternalProcessMetaNode> =
+  Omit<ResolveMetaNode<T>, 'resolve'> & Pick<ResolveMetaNode<T>, 'resolve'>
+export type ClientPromptMetaNode<T = InternalDataMetaNode & InternalProcessMetaNode> =
+  Omit<PromptMetaNode<T>, 'resolve'> & Pick<PromptMetaNode<T>, 'resolve'>
+export type ClientProcessMetaNode = ClientPromptMetaNode | ClientResolveMetaNode
+export type ClientMetaNode = ClientDataMetaNode | ClientProcessMetaNode
+
+/**
  * An incremental builder which constructs the various metanode types preserving type safety
  */
 export function MetaNode<ID extends InternalIdentifiableMetaNode['spec']>(spec: ID) {

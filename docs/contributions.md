@@ -98,8 +98,29 @@ npm run codegen:components
 
 This regenerates:
 
-- `components/index.ts`, containing the MetaNode registry.
+- `components/index.ts`, containing the complete MetaNode registry.
+- `components/client.ts` and `components/server.ts`, the explicitly targeted
+  registry entrypoints used by browser and server code respectively.
 - `components/trpc.ts`, containing only the composition of discovered component routers.
+
+### Client and server projection
+
+A component should remain a cohesive MetaNode DSL definition. Its `view`,
+`prompt`, `resolve`, and `story` methods may live in the same `index.tsx`; do not
+split a component into client and server source files merely to satisfy the web
+framework's module boundary.
+
+Browser code imports the registry through `@/components/client`, while server
+execution imports `@/components/server`. During a browser build, the component
+projection removes every `.resolve(...)` closure and imports used exclusively
+by those closures before Next.js constructs the client module graph. The
+resulting resolver property is a compatibility stub: browser code must execute
+processes through the resolution API, not call `MetaNode.resolve` locally.
+
+This means server-only dependencies such as Python, database clients, and the
+filesystem may be used inside a resolver in the same component file as React
+views. They must not be used by a view, prompt, story, codec, or module-level
+initialization because those portions are retained in the browser projection.
 
 Both files are generated artifacts and should not be edited manually. Commit their regenerated contents with the component change.
 

@@ -4,12 +4,25 @@
  *  be added & removed at any time, by any instance).
  */
 import db from '@/app/db'
-import krg from '@/app/krg'
+import KRG from '@/core/KRG'
+import { metanodes } from '@/components/server'
 import { withSuggestions } from '@/app/extensions/suggestions'
+import cache from '@/utils/global_cache'
+
+const componentKRG = cache('server-component-krg', () => {
+  const krg = new KRG()
+  metanodes.forEach(metanode => krg.add(metanode))
+  return krg
+})
+
+/** Complete component registry, without database-owned user suggestions. */
+export function getComponentKRG() {
+  return componentKRG
+}
 
 export async function getKRG() {
   const suggestions = await db.selectFrom('suggestion')
     .select(['name', 'inputs', 'output', 'description', 'user'])
     .execute()
-  return withSuggestions(krg, suggestions)
+  return withSuggestions(componentKRG, suggestions)
 }

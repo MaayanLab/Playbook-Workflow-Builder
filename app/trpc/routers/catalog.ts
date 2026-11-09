@@ -1,12 +1,16 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import krg from '@/app/krg'
+import { getComponentKRG } from '@/app/server-krg'
 import db from '@/app/db'
 import { metanodeType } from '@/app/fragments/components/listing'
 import * as dict from '@/utils/dict'
 import { publicProcedure, router } from '../init'
 
-function summary(metanode: ReturnType<typeof krg.getDataNodes>[number] | ReturnType<typeof krg.getProcessNodes>[number]) {
+type CatalogKRG = ReturnType<typeof getComponentKRG>
+type CatalogMetaNode = ReturnType<CatalogKRG['getDataNodes']>[number]
+  | ReturnType<CatalogKRG['getProcessNodes']>[number]
+
+function summary(metanode: CatalogMetaNode) {
   const { spec: id, meta: { icon: _, ...meta }, kind } = metanode
   return { id, kind, type: metanodeType(metanode), meta }
 }
@@ -29,17 +33,23 @@ export const catalogRouter = router({
       inputs: z.record(z.string(), z.unknown()),
     }))
     .mutation(async ({ input }) => {
+      const krg = getComponentKRG()
       const process = krg.getProcessNode(input.spec)
+      if (!process) throw new TRPCError({ code: 'NOT_FOUND' })
       const output = await process.resolve({ data: input.data, inputs: input.inputs, notify: () => {} })
       return process.output.codec.encode(output)
     }),
 
   list: publicProcedure
-    .query(() => [...krg.getDataNodes(), ...krg.getProcessNodes()].map(summary)),
+    .query(async () => {
+      const krg = getComponentKRG()
+      return [...krg.getDataNodes(), ...krg.getProcessNodes()].map(summary)
+    }),
 
   get: publicProcedure
     .input(z.string())
-    .query(({ input: spec }) => {
+    .query(async ({ input: spec }) => {
+      const krg = getComponentKRG()
       const data = krg.getDataNode(spec)
       if (data) return summary(data)
       const process = krg.getProcessNode(spec)
@@ -57,9 +67,9 @@ export const catalogRouter = router({
 
   next: publicProcedure
     .input(z.string())
-    .query(({ input }) => krg.getNextProcess(input).map(summary)),
+    .query(({ input }) => getComponentKRG().getNextProcess(input).map(summary)),
 
   previous: publicProcedure
     .input(z.string())
-    .query(({ input }) => krg.getPrevProcess(input).map(summary)),
+    .query(({ input }) => getComponentKRG().getPrevProcess(input).map(summary)),
 })

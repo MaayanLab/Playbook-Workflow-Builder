@@ -5,10 +5,12 @@ RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get update \
   && apt-get -y install \
     biber \
+    build-essential \
     curl \
     git \
     gnupg \
     latexmk \
+    python3 \
     texlive-bibtex-extra \
     texlive-fonts-extra \
     texlive-latex-extra \

@@ -6,7 +6,7 @@ import { file_icon, input_icon } from '@/icons'
 import * as Auth from '@/app/extensions/auth-client'
 import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import classNames from 'classnames'
-import { clientUploadFile } from './client/upload'
+import { uploadFile } from './client/upload'
 import { useTRPCClient } from '@/app/trpc/client'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
@@ -53,6 +53,8 @@ export function FilePrompt(props: {
   const [currentFile, setCurrentFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const [tab, setTab] = React.useState<'upload' | 'url'>('upload')
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  // the fraction uploaded while uploading, and the error if it failed
+  const [upload, setUpload] = React.useState<{ progress?: number, verifying?: boolean, error?: string }>({})
   const { data: session } = useSessionWithId()
   const output = React.useMemo(() => props.data || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.data])
   React.useEffect(() => {
@@ -84,8 +86,21 @@ export function FilePrompt(props: {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
               const description = rawDescription === null ? undefined : rawDescription.toString()
-              const { file: [record] } = await clientUploadFile(formData, props.session_id)
-              props.submit({ description, ...record }, true)
+              const file = fileInputRef.current?.files?.[0]
+              if (!file) return
+              // the file is uploaded directly to storage (in parts), see ./client/upload.ts
+              setUpload({ progress: 0 })
+              try {
+                const record = await uploadFile({
+                  trpc, file, session_id: props.session_id,
+                  onProgress: progress => setUpload({ progress }),
+                  onVerifying: () => setUpload({ verifying: true }),
+                })
+                setUpload({})
+                props.submit({ description, ...record }, true)
+              } catch (e) {
+                setUpload({ error: e instanceof Error ? e.message : String(e) })
+              }
             } else if (currentFile.url) {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
@@ -158,6 +173,12 @@ export function FilePrompt(props: {
               value={currentFile.description||''}
             />
           </div>
+          {upload.verifying ?
+            <div className="my-1"><progress className="progress progress-primary w-full" /><span className="text-sm">Verifying…</span></div>
+            : upload.progress !== undefined ?
+            <progress className="progress progress-primary w-full my-1" value={upload.progress} max={1} />
+            : upload.error ? <div className="alert alert-error my-1">{upload.error}</div>
+            : null}
           <div className="inline-flex flex-row">
             {props.example ?
               <Bp5Button
@@ -173,7 +194,8 @@ export function FilePrompt(props: {
             <Bp5Button
               large
               disabled={
-                currentFile.url === undefined
+                upload.progress !== undefined || upload.verifying
+                || currentFile.url === undefined
                 || (
                   currentFile.description === output.description
                   && currentFile.url === output.url

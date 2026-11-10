@@ -43,3 +43,36 @@ def put(key: str, path: str):
 def delete(key: str):
   file = _find(key)
   if file: file.delete()
+
+def copy(src_key: str, dst_key: str):
+  ''' Copy a file within the project (the platform copies it, nothing is transferred) '''
+  if _find(dst_key) is not None: return
+  file = _find(src_key)
+  if file is None: raise FileNotFoundError(src_key)
+  file.copy(os.environ['CAVATICA_STORAGE_PROJECT'], name=dst_key)
+
+# Multipart uploads (parts are PUT to the platform's own presigned urls, e.g. directly by the browser)
+
+def create_multipart(key: str, size: int, part_size: int):
+  res = _api().post('/upload/multipart', data=dict(
+    project=os.environ['CAVATICA_STORAGE_PROJECT'],
+    name=key,
+    size=size,
+    part_size=part_size,
+  )).json()
+  return dict(upload_id=res['upload_id'], part_size=res.get('part_size') or part_size)
+
+def part_url(upload_id: str, part_number: int):
+  res = _api().get(f'/upload/multipart/{upload_id}/part/{part_number}').json()
+  return dict(url=res['url'], headers=res.get('headers') or {})
+
+def complete_multipart(upload_id: str, parts: list):
+  for part in parts:
+    _api().post(f'/upload/multipart/{upload_id}/part', data=dict(
+      part_number=part['part_number'],
+      response=dict(headers=dict(ETag=part['etag'])),
+    ))
+  _api().post(f'/upload/multipart/{upload_id}/complete')
+
+def abort_multipart(upload_id: str):
+  _api().delete(f'/upload/multipart/{upload_id}')

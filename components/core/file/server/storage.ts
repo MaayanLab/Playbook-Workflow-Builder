@@ -13,7 +13,12 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
-import { S3Client, GetObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { pipeline } from 'stream/promises'
+import {
+  S3Client, GetObjectCommand, HeadObjectCommand, DeleteObjectCommand,
+  CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, ListPartsCommand,
+  CopyObjectCommand, UploadPartCopyCommand,
+} from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import python from '@/utils/python'
@@ -33,6 +38,49 @@ export interface StorageBackend {
   /** A url which can be used (for a limited time) to GET the object directly (supporting Range) */
   presignedGet?(key: string, opts: { filename?: string, contentType?: string, expiresIn?: number }): Promise<string>
   delete(key: string): Promise<void>
+  /** Copy an object within storage (without transferring it through the app) */
+  copy(srcKey: string, dstKey: string): Promise<void>
+
+  /**
+   * Multipart uploads, used to upload files from the browser in parts (see ./direct-upload.ts).
+   *  Parts are PUT directly to storage where the backend can give out urls for them (S3, CAVATICA),
+   *  or sent through the app otherwise (or when PUTting them directly fails).
+   */
+  createMultipart(key: string, size: number): Promise<{ uploadId: string, partSize: number }>
+  /** A url (& headers) to PUT a part to directly, undefined if parts must go through `uploadPart` */
+  partUrl(key: string, uploadId: string, partNumber: number): Promise<{ url: string, headers: Record<string, string> } | undefined>
+  /** Upload a part through the app, returning its etag */
+  uploadPart(key: string, uploadId: string, partNumber: number, body: Readable, size: number): Promise<string>
+  /** Assemble the object from its parts (a part's etag may be missing where the backend can look it up) */
+  completeMultipart(key: string, uploadId: string, parts: MultipartPart[]): Promise<void>
+  abortMultipart(key: string, uploadId: string): Promise<void>
+}
+
+export type MultipartPart = { partNumber: number, etag?: string }
+
+const MiB = 1024 * 1024
+/** S3 (& S3 based services) limit multipart uploads to 10000 parts of at least 5MiB */
+export const partSizeFor = (size: number, minimum: number) => Math.max(minimum, Math.ceil(size / 10000 / MiB) * MiB)
+
+/** PUT a part to a (presigned) url, returning its etag */
+async function putPart(url: string, headers: Record<string, string>, body: Readable, size: number) {
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Length': String(size) },
+    body: Readable.toWeb(body) as ReadableStream,
+    // @ts-ignore -- required by node to stream a request body
+    duplex: 'half',
+  })
+  if (!res.ok) throw new ResponseCodedError(res.status, await res.text())
+  const etag = res.headers.get('etag')
+  if (!etag) throw new Error('Part upload returned no etag')
+  return etag
+}
+
+const uploadIdC = /^[A-Za-z0-9._~-]+$/
+function checkUploadId(uploadId: string) {
+  if (!uploadIdC.test(uploadId)) throw new Error(`Invalid upload id ${JSON.stringify(uploadId)}`)
+  return uploadId
 }
 
 /** `storage://<key>` => `<key>` */
@@ -69,6 +117,56 @@ export class FilesystemStorage implements StorageBackend {
     else await moveFile(localPath, this.path(key))
   }
   delete = async (key: string) => { await fs.promises.rm(this.path(key), { force: true }) }
+  copy = async (srcKey: string, dstKey: string) => {
+    // a hard link doesn't take up any more space
+    await fs.promises.link(this.path(srcKey), this.path(dstKey)).catch(async (e: any) => {
+      if (e?.code === 'EEXIST') return
+      await fs.promises.copyFile(this.path(srcKey), this.path(dstKey))
+    })
+  }
+
+  // parts are staged in a directory, then concatenated
+  private staging = (uploadId: string) => path.join(this.root, '.multipart', checkUploadId(uploadId))
+  createMultipart = async (_key: string, size: number) => {
+    await this.sweepAbandoned()
+    const uploadId = crypto.randomUUID()
+    await fs.promises.mkdir(this.staging(uploadId), { recursive: true })
+    // parts go through the app, so they're kept small enough to upload quickly
+    return { uploadId, partSize: partSizeFor(size, 8 * MiB) }
+  }
+  /** remove the parts of uploads which were never completed (upload tokens are valid for a day) */
+  private sweepAbandoned = async () => {
+    const root = path.join(this.root, '.multipart')
+    const entries = await fs.promises.readdir(root).catch(() => [] as string[])
+    for (const entry of entries) {
+      const stat = await fs.promises.stat(path.join(root, entry)).catch(() => undefined)
+      if (stat && Date.now() - stat.mtimeMs > 2 * 24 * 60 * 60 * 1000) {
+        await fs.promises.rm(path.join(root, entry), { recursive: true, force: true })
+      }
+    }
+  }
+  partUrl = async () => undefined
+  uploadPart = async (_key: string, uploadId: string, partNumber: number, body: Readable, size: number) => {
+    const partPath = path.join(this.staging(uploadId), String(partNumber))
+    await pipeline(body, fs.createWriteStream(partPath))
+    const { size: written } = await fs.promises.stat(partPath)
+    if (written !== size) throw new ResponseCodedError(400, `Part ${partNumber} is ${written} bytes, expected ${size}`)
+    return `"${partNumber}-${size}"`
+  }
+  completeMultipart = async (key: string, uploadId: string, parts: MultipartPart[]) => {
+    const staging = this.staging(uploadId)
+    const assembled = path.join(staging, 'assembled')
+    const out = fs.createWriteStream(assembled)
+    for (const { partNumber } of [...parts].sort((a, b) => a.partNumber - b.partNumber)) {
+      await pipeline(fs.createReadStream(path.join(staging, String(partNumber))), out, { end: false })
+    }
+    await new Promise<void>((resolve, reject) => out.end((err?: Error | null) => err ? reject(err) : resolve()))
+    await moveFile(assembled, this.path(key))
+    await fs.promises.rm(staging, { recursive: true, force: true })
+  }
+  abortMultipart = async (_key: string, uploadId: string) => {
+    await fs.promises.rm(this.staging(uploadId), { recursive: true, force: true })
+  }
 }
 
 export type S3StorageConfig = {
@@ -90,6 +188,10 @@ export class S3Storage implements StorageBackend {
       // S3 compatible services (minio, ...) are typically addressed by path
       forcePathStyle: config.endpoint !== undefined && !/(^|\.)amazonaws\.com(:\d+)?$/.test(new URL(config.endpoint).host),
       credentials: config.credentials,
+      // by default the SDK adds checksums to requests, presigned upload urls would then carry
+      //  the checksum of an empty body (& S3 compatible services don't all support them)
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
     })
   }
   private key = (key: string) => `${this.config.prefix}${storageKey(`storage://${key}`)}`
@@ -131,6 +233,75 @@ export class S3Storage implements StorageBackend {
   delete = async (key: string) => {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: this.key(key) }))
   }
+  copy = async (srcKey: string, dstKey: string) => {
+    const CopySource = `${this.config.bucket}/${this.key(srcKey)}`
+    const size = (await this.stat(srcKey))?.size
+    if (size === undefined) throw new NotFoundError()
+    if (size <= 5 * 1024 * MiB) {
+      await this.client.send(new CopyObjectCommand({ Bucket: this.config.bucket, Key: this.key(dstKey), CopySource }))
+      return
+    }
+    // larger objects are copied in parts
+    const { uploadId, partSize } = await this.createMultipart(dstKey, size)
+    try {
+      const parts: MultipartPart[] = []
+      for (let partNumber = 1, start = 0; start < size; partNumber++, start += partSize) {
+        const res = await this.client.send(new UploadPartCopyCommand({
+          Bucket: this.config.bucket, Key: this.key(dstKey), UploadId: uploadId, PartNumber: partNumber,
+          CopySource, CopySourceRange: `bytes=${start}-${Math.min(start + partSize, size) - 1}`,
+        }))
+        parts.push({ partNumber, etag: res.CopyPartResult?.ETag })
+      }
+      await this.completeMultipart(dstKey, uploadId, parts)
+    } catch (e) {
+      await this.abortMultipart(dstKey, uploadId).catch(() => {})
+      throw e
+    }
+  }
+
+  createMultipart = async (key: string, size: number) => {
+    const res = await this.client.send(new CreateMultipartUploadCommand({ Bucket: this.config.bucket, Key: this.key(key) }))
+    if (!res.UploadId) throw new Error('S3 returned no upload id')
+    return { uploadId: res.UploadId, partSize: partSizeFor(size, 16 * MiB) }
+  }
+  partUrl = async (key: string, uploadId: string, partNumber: number) => ({
+    url: await getSignedUrl(this.client, new UploadPartCommand({
+      Bucket: this.config.bucket, Key: this.key(key), UploadId: uploadId, PartNumber: partNumber,
+    }), { expiresIn: 60 * 60 }),
+    headers: {},
+  })
+  uploadPart = async (key: string, uploadId: string, partNumber: number, body: Readable, size: number) => {
+    const res = await this.client.send(new UploadPartCommand({
+      Bucket: this.config.bucket, Key: this.key(key), UploadId: uploadId, PartNumber: partNumber,
+      Body: body, ContentLength: size,
+    }))
+    if (!res.ETag) throw new Error('S3 returned no etag')
+    return res.ETag
+  }
+  completeMultipart = async (key: string, uploadId: string, parts: MultipartPart[]) => {
+    // the browser can only read etags if the bucket's CORS configuration exposes them, so
+    //  the uploaded parts are looked up instead
+    const etags = new Map<number, string>()
+    let marker: string | undefined
+    do {
+      const res = await this.client.send(new ListPartsCommand({ Bucket: this.config.bucket, Key: this.key(key), UploadId: uploadId, PartNumberMarker: marker }))
+      for (const part of res.Parts ?? []) if (part.PartNumber && part.ETag) etags.set(part.PartNumber, part.ETag)
+      marker = res.IsTruncated ? res.NextPartNumberMarker : undefined
+    } while (marker)
+    await this.client.send(new CompleteMultipartUploadCommand({
+      Bucket: this.config.bucket, Key: this.key(key), UploadId: uploadId,
+      MultipartUpload: {
+        Parts: [...parts].sort((a, b) => a.partNumber - b.partNumber).map(({ partNumber, etag }) => {
+          const ETag = etags.get(partNumber) ?? etag
+          if (!ETag) throw new ResponseCodedError(400, `Part ${partNumber} wasn't uploaded`)
+          return { PartNumber: partNumber, ETag }
+        }),
+      },
+    }))
+  }
+  abortMultipart = async (key: string, uploadId: string) => {
+    await this.client.send(new AbortMultipartUploadCommand({ Bucket: this.config.bucket, Key: this.key(key), UploadId: uploadId }))
+  }
 }
 
 /**
@@ -140,9 +311,15 @@ export class S3Storage implements StorageBackend {
 export class CavaticaStorage implements StorageBackend {
   readonly type = 'cavatica'
   stat = async (key: string) => await python<{ size: number } | null>('components.core.file.cavatica_storage.stat', { kargs: [storageKey(`storage://${key}`)] }) ?? undefined
+  // download urls are reused for a few minutes (well within their expiry), reading an object in
+  //  chunks would otherwise ask the API for one per chunk (it's limited to 1000 requests / 5 min)
+  private downloadUrls = new Map<string, { url: string, expires: number }>()
   private downloadUrl = async (key: string) => {
+    const cached = this.downloadUrls.get(key)
+    if (cached && cached.expires > Date.now()) return cached.url
     const url = await python<string | null>('components.core.file.cavatica_storage.download_url', { kargs: [storageKey(`storage://${key}`)] })
     if (!url) throw new NotFoundError()
+    this.downloadUrls.set(key, { url, expires: Date.now() + 5 * 60 * 1000 })
     return url
   }
   read = async (key: string, range?: ByteRange) => {
@@ -158,6 +335,33 @@ export class CavaticaStorage implements StorageBackend {
   // (the platform controls the downloaded file's name)
   presignedGet = async (key: string) => await this.downloadUrl(key)
   delete = async (key: string) => { await python('components.core.file.cavatica_storage.delete', { kargs: [storageKey(`storage://${key}`)] }) }
+  copy = async (srcKey: string, dstKey: string) => {
+    await python('components.core.file.cavatica_storage.copy', { kargs: [storageKey(`storage://${srcKey}`), storageKey(`storage://${dstKey}`)] })
+  }
+
+  createMultipart = async (key: string, size: number) => {
+    const { upload_id, part_size } = await python<{ upload_id: string, part_size: number }>('components.core.file.cavatica_storage.create_multipart', {
+      kargs: [storageKey(`storage://${key}`), size, partSizeFor(size, 16 * MiB)],
+    })
+    return { uploadId: upload_id, partSize: part_size }
+  }
+  partUrl = async (_key: string, uploadId: string, partNumber: number) =>
+    await python<{ url: string, headers: Record<string, string> }>('components.core.file.cavatica_storage.part_url', { kargs: [checkUploadId(uploadId), partNumber] })
+  uploadPart = async (key: string, uploadId: string, partNumber: number, body: Readable, size: number) => {
+    const { url, headers } = await this.partUrl(key, uploadId, partNumber)
+    return await putPart(url, headers, body, size)
+  }
+  completeMultipart = async (_key: string, uploadId: string, parts: MultipartPart[]) => {
+    // the platform needs every part's etag reported
+    const missing = parts.find(part => !part.etag)
+    if (missing) throw new ResponseCodedError(400, `Part ${missing.partNumber} has no etag`)
+    await python('components.core.file.cavatica_storage.complete_multipart', {
+      kargs: [checkUploadId(uploadId), parts.map(({ partNumber, etag }) => ({ part_number: partNumber, etag }))],
+    })
+  }
+  abortMultipart = async (_key: string, uploadId: string) => {
+    await python('components.core.file.cavatica_storage.abort_multipart', { kargs: [checkUploadId(uploadId)] })
+  }
 }
 
 type UfsConfig = { cls: string, [key: string]: any }

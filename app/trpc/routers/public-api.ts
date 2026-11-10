@@ -4,8 +4,8 @@ import fpprg from '@/app/fpprg'
 import { getKRG } from '@/app/server-krg'
 import packageJson from '@/package.json'
 import { getUser, getUserOrcidAccount } from '@/app/extensions/auth/user'
-import { selectUserUploadComplete } from '@/db/queries'
 import storage, { storageKey } from '@/components/core/file/server/storage'
+import { drsUrl, resolveDrsObject } from '@/components/core/file/server/drs'
 import FPL2BCO from '@/core/fpl2bco'
 import fpl2json from '@/core/fpl2json'
 import { cwl_for_playbook } from '@/core/fpl2cwl'
@@ -119,13 +119,12 @@ export const publicApiRouter = router({
     .input(z.object({ object_id: z.string() }))
     .output(DrsObject)
     .query(async ({ input }) => {
-      const upload = await selectUserUploadComplete(db)
-        .where('user_upload.id', '=', input.object_id).executeTakeFirst()
+      const upload = await resolveDrsObject(input.object_id)
       if (!upload) throw new NotFoundError()
       return {
         id: upload.id,
         name: upload.filename,
-        self_uri: `${(process.env.PUBLIC_URL || '').replace(/^https?:/, 'drs:').replace(/\/$/, '')}/${upload.id}`,
+        self_uri: drsUrl(upload.id),
         size: upload.size,
         created_time: upload.created,
         checksums: [{ type: 'sha-256', checksum: upload.sha256 }],
@@ -145,8 +144,7 @@ export const publicApiRouter = router({
     .output(z.object({ url: z.string() }))
     .query(async ({ input }) => {
       if (input.access_id !== 'https') throw new NotFoundError()
-      const upload = await selectUserUploadComplete(db)
-        .where('user_upload.id', '=', input.object_id).executeTakeFirst()
+      const upload = await resolveDrsObject(input.object_id)
       if (!upload) throw new NotFoundError()
       return { url: await uploadAccessUrl(upload) }
     }),

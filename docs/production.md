@@ -27,6 +27,14 @@ Files are stored content-addressed (by their sha256, as `storage://<sha256>`) by
 3. The upload is recorded in the database (uploads & user uploads) and a `drs` link to it is returned.
 4. DRS clients get a direct (presigned) url to objects in S3 or CAVATICA, the server otherwise streams them, supporting HTTP Range requests either way.
 
+Files uploaded in the browser are sent directly to storage, in parts (`components/core/file/client/upload.ts` & `server/direct-upload.ts`): the server starts a multipart upload & gives out presigned urls for its parts (S3, CAVATICA), the browser PUTs them (computing the file's sha256 as it reads it), and the server completes the upload & records it. Parts go through the app instead for the filesystem, or when PUTting a part directly fails (e.g. because the bucket doesn't allow the app's origin), so uploads work either way, but for direct uploads:
+- the S3 bucket's CORS configuration should allow `PUT` from the app's origin (`PUBLIC_URL`), exposing the `ETag` header, e.g. `[{"AllowedOrigins": ["https://playbook-workflow-builder.cloud"], "AllowedMethods": ["PUT"], "AllowedHeaders": ["*"], "ExposeHeaders": ["ETag"]}]`
+- a lifecycle rule should abort incomplete multipart uploads (e.g. after 2 days), to remove the parts of abandoned uploads.
+
+Browser uploads are stored under a random key at first (rather than their sha256): the checksum the browser computes can't be verified before the data is stored, so it mustn't determine which stored content an upload refers to. The workers then verify & deduplicate them (`components/core/file/server/dedupe.ts`): the stored object is hashed (correcting the recorded checksum if it was wrong), copied within storage to `<sha256>` unless an identical file is already stored, and the upload is pointed there. The random key copy is removed after `STORAGE_DELETE_DELAY_SECONDS` (default 2 hours, longer than presigned urls remain valid).
+
+Stored files are given out as content addressed urls, `drs://{host}/{sha256}`, once their checksum is verified (immediately for files the server stores, once the workers have verified them for browser uploads, which the browser waits for). Identical files are thus identical inputs to the (content addressed) process graph, so processes using the same file (with the same name & description) are reused rather than recomputed. Uploads' own `drs://{host}/{upload id}` urls (still used for files registered by url) remain valid.
+
 Python components read files with `file_as_stream` (sequentially) or `file_as_seekable` (random access, e.g. for HDF5 & excel files) from `components.core.file`, which resolve `drs://` urls to their access url and read them with Range requests: only the parts of a file which are read are transferred, files are never copied in full. New files are created with `upsert_file`.
 
 ## CAVATICA Integration

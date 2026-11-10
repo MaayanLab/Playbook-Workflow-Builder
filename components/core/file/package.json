@@ -5,6 +5,7 @@
   "author": "Daniel J. B. Clarke <danieljbclarkemssm@gmail.com>",
   "private": true,
   "dependencies": {
+    "hash-wasm": "^4.13.0",
     "react": "^19.0.0"
   },
   "devDependencies": {

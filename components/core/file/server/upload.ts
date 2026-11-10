@@ -9,6 +9,7 @@ import type { SessionWithId } from "@/app/auth"
 import { toReadable } from '@/utils/readable'
 import { fileAsStream } from './download'
 import storage from './storage'
+import { drsUrl } from './drs'
 import { fileURLToPath } from 'url'
 
 function statsFromStream(reader: Readable, writer?: Writable) {
@@ -57,5 +58,12 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
     file.url = `storage://${file.sha256}`
   }
   const user_upload = await insertUserUpload(db, { ...file, sha256: file.sha256 as string, size: file.size as number }, session?.user?.id ?? null)
-  return { id: user_upload.id, url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
+  return {
+    id: user_upload.id,
+    // stored files are referred to by their (verified) hash, so identical files are identical inputs
+    url: drsUrl(file.url === `storage://${file.sha256}` ? file.sha256 as string : user_upload.id),
+    filename: file.filename,
+    sha256: file.sha256,
+    size: file.size,
+  }
 }

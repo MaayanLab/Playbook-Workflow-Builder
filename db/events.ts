@@ -30,8 +30,8 @@ export interface EventBus {
   notify: <T>(evt: string, data: T) => void
   /** Announce that a row was inserted into `table`, emitted to listeners of `insert:${table}` */
   inserted: (table: string, id: string) => void
-  /** Submit work to a queue, each id is processed by only one worker */
-  send: (queue: string, work: { id: string, priority?: number }) => Promise<void>
+  /** Submit work to a queue, each id is processed by only one worker (after `delaySeconds`, if given) */
+  send: (queue: string, work: { id: string, priority?: number, delaySeconds?: number }) => Promise<void>
   work: (queue: string, opts: WorkOptions, cb: (work: { data: { id: string } }) => Promise<void>) => Promise<() => void>
   /** Recent jobs in a queue (only tracked with postgres) */
   jobs: (queue: string) => Promise<Job[]>
@@ -70,8 +70,13 @@ export class LocalEventBus implements EventBus {
   listen = <T>(evt: string, cb: (data: T) => void) => this.listeners.add(evt, cb as (data: unknown) => void).remove as () => void
   notify = <T>(evt: string, data: T) => { this.listeners.emit(evt, data) }
   inserted = (table: string, id: string) => { this.notify(`insert:${table}`, { id }) }
-  send = async (queue: string, work: { id: string, priority?: number }) => {
-    this.notify(`boss:${queue}`, work)
+  send = async (queue: string, work: { id: string, priority?: number, delaySeconds?: number }) => {
+    if (work.delaySeconds) {
+      // (in process: delayed work doesn't survive a restart)
+      setTimeout(() => this.notify(`boss:${queue}`, { id: work.id, priority: work.priority }), work.delaySeconds * 1000).unref()
+    } else {
+      this.notify(`boss:${queue}`, work)
+    }
   }
   work = async (queue: string, _opts: WorkOptions, cb: (work: { data: { id: string } }) => Promise<void>) => {
     return this.listen(`boss:${queue}`, async (data) => {
@@ -184,9 +189,13 @@ export class PgEventBus implements EventBus {
     return created
   }
 
-  send = async (queue: string, work: { id: string, priority?: number }) => {
+  send = async (queue: string, work: { id: string, priority?: number, delaySeconds?: number }) => {
     await this.queue(queue)
-    await this.boss.send(queue, { id: work.id }, { singletonKey: work.id, priority: work.priority ?? 0 })
+    await this.boss.send(queue, { id: work.id }, {
+      singletonKey: work.id,
+      priority: work.priority ?? 0,
+      ...(work.delaySeconds ? { startAfter: work.delaySeconds } : {}),
+    })
   }
 
   work = async (queue: string, opts: WorkOptions, cb: (work: { data: { id: string } }) => Promise<void>) => {

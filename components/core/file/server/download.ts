@@ -1,7 +1,6 @@
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import db from '@/app/db'
-import { selectUserUploadComplete } from '@/db/queries'
+import { resolveDrsObject } from './drs'
 import { NotFoundError, ResponseCodedError } from '@/spec/error'
 import { toReadable } from '@/utils/readable'
 import type { Readable } from 'stream'
@@ -69,7 +68,7 @@ export async function fileAsStream(file: { url: string }, range?: ByteRange): Pr
   } else if (url.startsWith('drs://')) {
     const id = localDrsObjectId(url)
     if (id !== undefined) {
-      const upload = await selectUserUploadComplete(db).where('user_upload.id', '=', id).executeTakeFirst()
+      const upload = await resolveDrsObject(id)
       if (!upload) throw new NotFoundError()
       return await fileAsStream(upload, range)
     }

@@ -61,9 +61,7 @@ RUN echo "Installing dev dependencies..." \
     libcurl4-gnutls-dev \
   && rm -rf /var/lib/apt/lists/*
 USER ubuntu
-RUN PYTHON_VERSION=3.13 R_VERSION=4.5.3 /install.sh
-COPY --chown=ubuntu cli/setup.R app/setup.R
-RUN echo "Running setup.R..." && R -e "source('app/setup.R')" && rm app/setup.R
+RUN PYTHON_VERSION=3.13 /install.sh
 COPY --from=prepare_requirements_txt_complete --chown=ubuntu /home/ubuntu/app app
 RUN echo "Installing python dependencies..." && pip install -r app/requirements.txt && rm app/requirements.txt
 COPY --from=prepare_build --chown=ubuntu /home/ubuntu/app app

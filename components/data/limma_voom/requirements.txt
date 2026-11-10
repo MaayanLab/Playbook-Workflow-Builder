@@ -1,3 +1,2 @@
-maayanlab-bioinformatics[limma_voom] @ git+https://github.com/Maayanlab/maayanlab-bioinformatics@v0.9.5
+maayanlab-bioinformatics[limma_voom] @ git+https://github.com/Maayanlab/maayanlab-bioinformatics@v0.10.0
 pandas
-rpy2

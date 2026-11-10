@@ -5,7 +5,7 @@
   "author": "Juncheng Pan <pan_juncheng@yahoo.com>",
   "private": true,
   "dependencies": {
-    "@bokeh/bokehjs": "^2.4.3",
+    "@bokeh/bokehjs": "3.10.2",
     "react": "^19.0.0"
   },
   "devDependencies": {

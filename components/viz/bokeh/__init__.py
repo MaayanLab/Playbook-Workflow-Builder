@@ -1,4 +1,6 @@
-from bokeh.plotting import figure, show
+# NOTE: plots are rendered in the browser with BokehJS (components/viz/bokeh/bokeh.tsx), its version
+#  (@bokeh/bokehjs in package.json) must match the bokeh version in requirements.txt
+from bokeh.plotting import figure
 from bokeh.transform import factor_cmap
 from bokeh.models import ColumnDataSource, Select, NumeralTickFormatter
 from bokeh.models.callbacks import CustomJS
@@ -26,7 +28,7 @@ def interactive_circle_plot(input_df, x_lab, y_lab, feature):
     p = figure(height=400,tooltips=TOOLTIPS,x_axis_label=x_lab, y_axis_label=y_lab,sizing_mode="scale_width")
     point_size = 10 if input_df.shape[0] < 100 else 5
     color = generate_colors(input_df, feature)
-    p1 = p.circle('x', 'y', size=point_size, source=source, legend_field='legend',fill_color= color, line_color=color)
+    p1 = p.scatter('x', 'y', marker='circle', size=point_size, source=source, legend_field='legend', fill_color=color, line_color=color)
     p.add_layout(p.legend[0], 'right')
 
     p.output_backend = "svg"
@@ -51,14 +53,14 @@ def generate_plot(p, p_circle, source_data, input_df):
     arg = dict(colors=my_colors, plot=p_circle, source = source_data,
            data_category = input_df.reset_index().to_dict(orient='list'), feature = input_df.columns[-2])
 
-    select = Select(title="Plot to show:", options=column_options, width=800)
+    select = Select(title="Plot to show:", options=column_options, value=column_options[0] if column_options else '', width=800)
     select.js_on_change("value", CustomJS(args=arg, code="""
-
-    plot.glyph.line_color = colors[this.value]
-    plot.glyph.fill_color = colors[this.value]
-    source.data['legend'] = data_category[this.value]
-    source.data[feature] = data_category[this.value]
-
+    const value = cb_obj.value
+    plot.glyph.line_color = colors[value]
+    plot.glyph.fill_color = colors[value]
+    source.data['legend'] = data_category[value]
+    source.data[feature] = data_category[value]
+    source.change.emit()
     """))
 
     layout = column(select, p)

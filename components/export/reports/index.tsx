@@ -12,6 +12,10 @@ import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
 import { ScoredGenes } from '@/components/core/scored'
 import { useExRouter, ExLink } from '@/app/fragments/ex-router'
+import { useOptionalMetapath } from '@/app/fragments/metapath'
+import { useExport } from '@/app/fragments/report/use-export'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
+import * as Auth from '@/app/extensions/auth-client'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import { GeneSetCrossing } from '@/components/data/gene_set_crossing'
 import { CFDEDataset, CFDEGMTs } from '@/components/service/cfde-gse'
@@ -294,9 +298,15 @@ export const ReportPDF = MetaNode(`ReportPDF`)
   .view(results => {
     const router = useExRouter()
     const fpl_id = React.useMemo(() => {
-      const m = /^\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
+      const m = /^(?:\/session\/[^/]+)?\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
       if (m !== null) return m[2]
     }, [router.asPath])
+    // producing the report can take longer than a request may, so it's an export job
+    //  (see app/exports.ts) which requires signing in, the pdf is kept with the user's uploads
+    const session_id = useOptionalMetapath()?.session_id
+    const startExport = useExport(session_id)
+    const userSession = useSessionWithId()
+    const signedIn = !!userSession.data?.user
     return (
       <>
         <div className="flex flex-column m-30 h-[calc(100vh-80px)]">
@@ -312,7 +322,13 @@ export const ReportPDF = MetaNode(`ReportPDF`)
           />
         </div>
         <div className="flex justify-center p-5">
-          <a href={`/api/v1/tex/${fpl_id}?format=pdf`}><button className="btn btn-success center">Download Report</button></a>
+          {signedIn ?
+            <button
+              className="btn btn-success center"
+              disabled={!fpl_id}
+              onClick={() => { if (fpl_id) startExport({ fpl_id, format: 'tex-pdf', label: 'Report PDF' }) }}
+            >Download Report</button>
+            : <button className="btn center" onClick={() => { Auth.signIn() }}>Sign in to download the report</button>}
         </div>
       </>
     )

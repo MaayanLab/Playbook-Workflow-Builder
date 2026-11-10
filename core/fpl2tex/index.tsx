@@ -33,15 +33,18 @@ function hasReportOutputType(metanode:DataMetaNode): boolean {
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
   const browser = await puppeteerSingleton()
   const ctx = await browser.createBrowserContext()
-  const page = await ctx.newPage()
-  await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`)
-  await page.waitForSelector('div.embed-ready')
-  await page.waitForNetworkIdle({ idleTime: 500 })
-  const body = await page.$('body')
-  const boundingBox = await body?.boundingBox()
-  const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height, format: 'letter' } : { width: 2551, height: 3295, format: 'letter' })
-  await ctx.close()
-  return pdf
+  try {
+    const page = await ctx.newPage()
+    // render the figure with this server (next sets PORT to the port it listens on)
+    await page.goto(`http://localhost:${process.env.PORT || 3000}/embed/${graph_id}/node/${node_id}`)
+    await page.waitForSelector('div.embed-ready')
+    await page.waitForNetworkIdle({ idleTime: 500 })
+    const body = await page.$('body')
+    const boundingBox = await body?.boundingBox()
+    return await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height, format: 'letter' } : { width: 2551, height: 3295, format: 'letter' })
+  } finally {
+    await ctx.close()
+  }
 }
 
 function latexEscape(s: string) {

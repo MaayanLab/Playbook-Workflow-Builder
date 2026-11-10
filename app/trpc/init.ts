@@ -11,7 +11,15 @@ export type Context = {
   getSession: () => Promise<SessionWithId | null>
 }
 
-const t = initTRPC.context<Context>().meta<OpenApiMeta>().create()
+const t = initTRPC.context<Context>().meta<OpenApiMeta>().create({
+  sse: {
+    // proxies (e.g. our cloud ingress) drop connections which are idle for too long (60s),
+    //  so subscriptions waiting on long running work send pings to keep them open
+    ping: { enabled: true, intervalMs: 15_000 },
+    // and the client reconnects if it hasn't heard anything (incl. pings) for a while
+    client: { reconnectAfterInactivityMs: 45_000 },
+  },
+})
 
 const codeForStatus: Record<number, TRPC_ERROR_CODE_KEY> = {
   400: 'BAD_REQUEST',

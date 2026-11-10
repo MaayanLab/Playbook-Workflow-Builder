@@ -10,6 +10,7 @@ import { systemRouter } from './routers/system'
 import { catalogRouter } from './routers/catalog'
 import { publicApiRouter } from './routers/public-api'
 import { tunnelRouter } from './routers/tunnel'
+import { exportsRouter } from './routers/exports'
 
 export const appRouter = router({
   admin: adminRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   catalog: catalogRouter,
   publicApi: publicApiRouter,
   tunnel: tunnelRouter,
+  exports: exportsRouter,
 })
 
 export type AppRouter = typeof appRouter

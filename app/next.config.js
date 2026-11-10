@@ -35,6 +35,9 @@ if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE 
 module.exports = {
   // a separate build directory lets a local CAVATICA worker (`next dev`) run alongside the app
   distDir: process.env.NEXT_DIST_DIR || '.next',
+  // `next dev` only trusts localhost for its dev resources (e.g. hot reloading), also trust the
+  //  host the app is configured to be served at (PUBLIC_URL defaults to http://127.0.0.1:3000)
+  allowedDevOrigins: [...new Set(['127.0.0.1', new URL(process.env.PUBLIC_URL).hostname])],
   images: {
     unoptimized: true,
   },

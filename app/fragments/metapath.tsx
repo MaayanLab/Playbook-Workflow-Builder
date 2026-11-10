@@ -43,6 +43,11 @@ export function MetapathProvider(props: React.PropsWithChildren<{ session_id?: s
   )
 }
 
+/** The metapath context if there is one (e.g. views also render in embeds without one) */
+export function useOptionalMetapath() {
+  return React.useContext(MetapathContext)
+}
+
 export function useMetapath() {
   const context = React.useContext(MetapathContext)
   if (!context) throw new Error('useMetapath must be used inside MetapathProvider')

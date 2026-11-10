@@ -2,6 +2,9 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { export_icon } from '@/icons'
 import usePublicUrl from '@/utils/next-public-url'
+import { useExport } from '@/app/fragments/report/use-export'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
+import * as Auth from '@/app/extensions/auth-client'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -11,11 +14,24 @@ const Bp5MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }
 
 export default function ExportButton({ session_id, id, metadata }: { session_id?: string, id: string, metadata: { title: string, description: string | undefined } }) {
   const publicUrl = usePublicUrl({ absolute: true })
+  // these can take a while to produce, so they're produced in the background (see use-export)
+  //  & kept as the user's uploads, which requires signing in
+  const startExport = useExport(session_id)
+  const userSession = useSessionWithId()
+  const signedIn = !!userSession.data?.user
+  const signInTip = 'Sign in to produce this export, it will be kept with your uploads'
   return (
     <BpPopoverNext
       className={'cursor-pointer'}
       content={
         <Bp5Menu>
+          {!signedIn && userSession.status !== 'loading' ?
+            <Bp5MenuItem
+              icon="log-in"
+              text="Sign in to export as CWL, RO-Crate, LaTeX or PDF"
+              onClick={() => { Auth.signIn() }}
+            />
+            : null}
           <div className="tooltip block text-left" data-tip="Download the workflow steps encoded as JSON">
             <Bp5MenuItem
               icon="document"
@@ -40,20 +56,20 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               download={`bco-${id}.json`}
             />
           </div>
-          <div className="tooltip block text-left" data-tip="Download a bundle of CWL documents which can be used to execute this workflow with a CWL runner">
+          <div className="tooltip block text-left" data-tip={signedIn ? "Download a bundle of CWL documents which can be used to execute this workflow with a CWL runner" : signInTip}>
             <Bp5MenuItem
+              disabled={!signedIn}
               icon="document"
               text="Common Workflow Language (CWL) Bundle"
-              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/cwl/${id}`}
-              download={`cwl-${id}.zip`}
+              onClick={() => startExport({ fpl_id: id, format: 'cwl-zip', label: 'CWL Bundle' })}
             />
           </div>
-          <div className="tooltip block text-left" data-tip="Download RO-Crate object bundle for this workflow">
+          <div className="tooltip block text-left" data-tip={signedIn ? "Download RO-Crate object bundle for this workflow" : signInTip}>
             <Bp5MenuItem
+              disabled={!signedIn}
               icon="document"
               text="Research Object Crate (RO-Crate)"
-              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/ro-crate/${id}?format=zip`}
-              download={`ro-crate.zip`}
+              onClick={() => startExport({ fpl_id: id, format: 'ro-crate-zip', label: 'Research Object Crate' })}
             />
           </div>
           <div className="tooltip block text-left" data-tip="Download RO-Crate JSON object metadata for this workflow">
@@ -64,30 +80,30 @@ export default function ExportButton({ session_id, id, metadata }: { session_id?
               download={`ro-crate-metadata.json`}
             />
           </div>
-          <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
+          <div className="tooltip block text-left" data-tip={signedIn ? "Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete." : signInTip}>
             <Bp5MenuItem
+              disabled={!signedIn}
               icon="document"
               text="LaTeX Bundle (BETA)"
-              href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
-              download={`${id}.zip`}
+              onClick={() => startExport({ fpl_id: id, format: 'tex-zip', metadata, label: 'LaTeX Bundle' })}
             />
           </div>
-          {publicUrl ? <div className="tooltip block text-left" data-tip="Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete.">
+          {publicUrl ? <div className="tooltip block text-left" data-tip={signedIn ? "Download a latex rendering of the playbook for creating a paper. This feature is in early BETA and is currently incomplete." : signInTip}>
             <Bp5MenuItem
+              disabled={!signedIn}
               icon="document"
               text="LaTeX Bundle in Overleaf (BETA)"
-              href={`https://www.overleaf.com/docs?snip_uri=${encodeURIComponent(`${publicUrl}/${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=zip&metadata=${encodeURIComponent(JSON.stringify(metadata))}`)}`}
-              target='_blank'
+              onClick={() => startExport({ fpl_id: id, format: 'tex-zip', metadata, label: 'LaTeX Bundle', then: 'overleaf' })}
             />
           </div>
           : null}
           <div>
-            <div className="tooltip block text-left" data-tip="Download a PDF rendering of the playbook report. This feature is in early BETA and is currently incomplete.">
+            <div className="tooltip block text-left" data-tip={signedIn ? "Download a PDF rendering of the playbook report. This feature is in early BETA and is currently incomplete." : signInTip}>
               <Bp5MenuItem
+                disabled={!signedIn}
                 icon="document"
                 text="Report PDF (BETA)"
-                href={`${session_id ? `/api/socket/${session_id}` : ''}/api/v1/tex/${id}?format=pdf&metadata=${encodeURIComponent(JSON.stringify(metadata))}`}
-                download={`${id}.pdf`}
+                onClick={() => startExport({ fpl_id: id, format: 'tex-pdf', metadata, label: 'Report PDF' })}
               />
             </div>
           </div>

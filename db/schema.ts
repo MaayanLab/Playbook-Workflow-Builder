@@ -215,6 +215,21 @@ export interface UserUploadTable {
   created: CreatedTimestamp
 }
 
+export type FplExportStatus = 'queued' | 'running' | 'complete' | 'error'
+
+export interface FplExportTable {
+  id: string
+  fpl: string
+  user: string
+  format: string
+  params: string
+  status: FplExportStatus
+  error: Nullable<string>
+  upload: Nullable<string>
+  created: CreatedTimestamp
+  updated: CreatedTimestamp
+}
+
 export interface ThreadTable {
   id: string
   user: Nullable<string>
@@ -255,6 +270,7 @@ export interface Database {
   user_playbook: UserPlaybookTable
   upload: UploadTable
   user_upload: UserUploadTable
+  fpl_export: FplExportTable
   thread: ThreadTable
   thread_message: ThreadMessageTable
 }

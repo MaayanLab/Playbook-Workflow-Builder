@@ -38,7 +38,10 @@ export async function fileFromStream(reader_: Readable | ReadableStream<Uint8Arr
 
 export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>
 
-export async function uploadFile(file: { url: string, size?: number, sha256?: string, filename: string }, session?: SessionWithId) {
+/**
+ * Store a file & record it as an upload of the session's user (or anonymously)
+ */
+export async function uploadFile(file: { url: string, size?: number, sha256?: string, filename: string }, session?: Pick<SessionWithId, 'user'> | null) {
   if (!file.sha256 || !file.size) {
     const stats = await statsFromStream(await fileAsStream(file))
     file.sha256 = stats.sha256
@@ -58,5 +61,5 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
     })
   }
   const user_upload = await insertUserUpload(db, { ...file, sha256: file.sha256 as string, size: file.size as number }, session?.user?.id ?? null)
-  return { url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
+  return { id: user_upload.id, url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }
 }

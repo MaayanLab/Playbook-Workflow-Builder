@@ -9,6 +9,7 @@ const Bp5Icon = dynamic(() => import('@blueprintjs/core').then(({ Icon }) => Ico
 
 const AccountProfile = dynamic(() => import('@/app/fragments/account/profile'))
 const AccountSettings = dynamic(() => import('@/app/fragments/account/settings'))
+const AccountApiKeys = dynamic(() => import('@/app/fragments/account/api-keys'))
 const AccountUploads = dynamic(() => import('@/app/fragments/account/uploads'))
 const AccountPlaybooks = dynamic(() => import('@/app/fragments/account/playbooks'))
 const AccountSuggestions = dynamic(() => import('@/app/fragments/account/suggestions'))
@@ -36,6 +37,7 @@ export default function Layout({ session }: { session: SessionWithId }) {
       <span className='font-bold'>{session.user?.email ?? null}</span>
       <Bp5Tab id="profile" title={<><Bp5Icon icon="person" />&nbsp;Profile</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountProfile session={session}  />} />
       <Bp5Tab id="settings" title={<><Bp5Icon icon="cog" />&nbsp;Settings</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountSettings session={session}  />} />
+      <Bp5Tab id="api-keys" title={<><Bp5Icon icon="key" />&nbsp;API Keys</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountApiKeys />} />
       <hr className="h-px my-1 border-0 bg-secondary w-full" />
       <span className='font-bold'>Data</span>
       <Bp5Tab id="uploads" title={<><Bp5Icon icon="upload" />&nbsp;Uploads</>} panelClassName="flex-grow flex flex-col overflow-hidden" panel={<AccountUploads />} />

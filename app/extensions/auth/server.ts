@@ -9,7 +9,8 @@ export async function getRequestSessionWithId(request: Request): Promise<Session
       expires: new Date(Date.now() + 1000*60*60*24).toISOString(),
     } as SessionWithId
   }
-  const result = await auth.api.getSession({ headers: request.headers })
+  // (an invalid or expired API key is an error, rather than no session)
+  const result = await auth.api.getSession({ headers: request.headers }).catch(() => null)
   if (!result) return null
   return {
     user: result.user,

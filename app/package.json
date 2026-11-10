@@ -9,8 +9,9 @@
     "dev": "NODE_ENV=development next dev -p ${PORT:-3000}"
   },
   "dependencies": {
+    "@better-auth/api-key": "^1.7.20",
     "@tailwindcss/typography": "^0.5.20",
-    "better-auth": "^1.7.18",
+    "better-auth": "^1.7.20",
     "d3": "^7.9.2",
     "daisyui": "^2.52.0",
     "events": "^3.3.0",

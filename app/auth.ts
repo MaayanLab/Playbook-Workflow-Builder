@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { anonymous, genericOAuth, keycloak, magicLink } from 'better-auth/plugins'
+import { apiKey } from '@better-auth/api-key'
 import nodemailer from 'nodemailer'
 import db, { dialect } from '@/app/db'
 
@@ -59,6 +60,22 @@ export const auth = betterAuth({
       },
     })] : []),
     ...(process.env.NODE_ENV === 'development' ? [anonymous()] : []),
+    // API keys (created on the account page) act as their user, given in the `x-api-key` header
+    //  or as `Authorization: Bearer <key>` (docs/user/api.md)
+    apiKey({
+      schema: { apikey: { modelName: 'auth_api_key' } },
+      enableSessionForAPIKeys: true,
+      defaultPrefix: 'pwb_',
+      customAPIKeyGetter: (ctx) => {
+        const header = ctx.headers?.get('x-api-key')
+        if (header) return header
+        const bearer = /^Bearer\s+(pwb_\S+)$/.exec(ctx.headers?.get('authorization') ?? '')
+        return bearer ? bearer[1] : null
+      },
+      // (the default allows 10 requests a day, an upload alone takes several)
+      rateLimit: { enabled: false },
+      keyExpiration: { defaultExpiresIn: null, maxExpiresIn: 365 },
+    }),
   ],
   advanced: {
     database: {

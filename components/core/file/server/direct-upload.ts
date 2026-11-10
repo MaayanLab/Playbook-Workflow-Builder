@@ -87,7 +87,10 @@ export async function uploadPartUrls(signed: string, partNumbers: number[], user
   return await Promise.all(partNumbers.map(async (partNumber) => {
     partLength(token, partNumber)
     const direct = await storage().partUrl(token.key, token.uploadId, partNumber)
-    return direct ? { partNumber, ...direct, proxy: false as const } : { partNumber, proxy: true as const }
+    if (direct) return { partNumber, ...direct, proxy: false as const }
+    // the part is uploaded through this app
+    const url = `${(process.env.PUBLIC_URL || '').replace(/\/$/, '')}/api/file/upload/part?token=${encodeURIComponent(signed)}&part=${partNumber}`
+    return { partNumber, url, headers: {} as Record<string, string>, proxy: true as const }
   }))
 }
 

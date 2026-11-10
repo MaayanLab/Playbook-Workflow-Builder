@@ -148,3 +148,16 @@ export async function waitForVerifiedUpload(userUploadId: string, user: string, 
     signal?.removeEventListener('abort', onAbort)
   }
 }
+
+/** Whether user upload `userUploadId` (of `user`) has been verified (& its record if so) */
+export async function uploadStatus(userUploadId: string, user: string) {
+  const row = await db.selectFrom('user_upload')
+    .innerJoin('upload', 'upload.id', 'user_upload.upload')
+    .select(['user_upload.filename', 'upload.url', 'upload.sha256', 'upload.size'])
+    .where('user_upload.id', '=', userUploadId)
+    .where('user_upload.user', '=', user)
+    .executeTakeFirst()
+  if (!row) throw new NotFoundError()
+  if (row.url !== `storage://${row.sha256}`) return { status: 'verifying' as const, id: userUploadId }
+  return { status: 'verified' as const, id: userUploadId, url: drsUrl(row.sha256), filename: row.filename, sha256: row.sha256, size: row.size }
+}

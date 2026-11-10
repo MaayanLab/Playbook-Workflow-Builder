@@ -50,20 +50,12 @@ function startApp(): ChildProcess {
       NODE_ENV: dev ? 'development' : 'production',
       // the worker uses its own in-memory database (set empty, next.config.js would load a missing one from .env)
       DATABASE_URL: '',
-      UFS_STORAGE: JSON.stringify({
-        "cls": "ufs.impl.prefix.Prefix",
-        "ufs": {
-          "cls": "ufs.impl.sync.Sync",
-          "ufs": {
-            "cls": "ufs.impl.sbfs.SBFS",
-            "auth_token": config.auth_token,
-            "api_endpoint": "https://cavatica-api.sbgenomics.com",
-            "drs_endpoint": "drs://cavatica-ga4gh-api.sbgenomics.com",
-            "ttl": 60,
-          },
-        },
-        "prefix": `/${config.project}`,
-      }),
+      // files are stored in (& read from) the user's project (components/core/file/cavatica_storage.py)
+      CAVATICA_STORAGE_PROJECT: config.project,
+      CAVATICA_API_TOKEN: config.auth_token,
+      CAVATICA_API_URL: process.env.CAVATICA_API_URL ?? 'https://cavatica-api.sbgenomics.com/v2',
+      S3_BUCKET: '',
+      UFS_STORAGE: '',
       N_WORKERS: '50',
       // requests forwarded by the public server carry this as `Authorization: Token ...`
       NEXTAUTH_SECRET: config.auth_token,

@@ -1,5 +1,5 @@
 from components.data.gene_count_matrix import anndata_from_file
-from components.core.file import upsert_file,file_as_path
+from components.core.file import upsert_file,file_as_stream
 
 import html
 import io
@@ -1390,12 +1390,12 @@ def render_georeanalysis_report(report):
         urllib.request.urlretrieve(f"{public_url}/geo-report/maayan-lab-logo.png", f"{texdir}/maayan-lab-logo.png")
         os.makedirs(f"{texdir}/figures", exist_ok=True)
         for figure,figurefile in report["figures"].items():
-            with file_as_path(figurefile["file"]) as path:
-                shutil.copy(path, f"{texdir}/figures/{figure}.pdf")
+            with file_as_stream(figurefile["file"]) as fr, open(f"{texdir}/figures/{figure}.pdf", "wb") as fw:
+                shutil.copyfileobj(fr, fw)
         os.makedirs(f"{texdir}/tables", exist_ok=True)
         for table,tablefile in report["tables"].items():
-            with file_as_path(tablefile["file"]) as path:
-                shutil.copy(path, f"{texdir}/tables/{table}.tsv")
+            with file_as_stream(tablefile["file"]) as fr, open(f"{texdir}/tables/{table}.tsv", "wb") as fw:
+                shutil.copyfileobj(fr, fw)
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(texdir),
             variable_start_string='(((',
@@ -2099,8 +2099,8 @@ def render_crossing_report(report):
         urllib.request.urlretrieve(f"{public_url}/crossing-report/maayan-lab-logo.png", f"{texdir}/maayan-lab-logo.png")
         os.makedirs(f"{texdir}/figures", exist_ok=True)
         for figure,figurefile in report["figures"].items():
-            with file_as_path(figurefile["file"]) as path:
-                shutil.copy(path, f"{texdir}/figures/{figure}.pdf")
+            with file_as_stream(figurefile["file"]) as fr, open(f"{texdir}/figures/{figure}.pdf", "wb") as fw:
+                shutil.copyfileobj(fr, fw)
         os.makedirs(f"{texdir}/tables", exist_ok=True)
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(texdir),

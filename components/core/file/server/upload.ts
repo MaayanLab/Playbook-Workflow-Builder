@@ -8,7 +8,8 @@ import type { Writable, Readable } from 'stream'
 import type { SessionWithId } from "@/app/auth"
 import { toReadable } from '@/utils/readable'
 import { fileAsStream } from './download'
-import python from '@/utils/python'
+import storage from './storage'
+import { fileURLToPath } from 'url'
 
 function statsFromStream(reader: Readable, writer?: Writable) {
   return new Promise<{ sha256: string, size: number }>((resolve, reject) => {
@@ -51,14 +52,9 @@ export async function uploadFile(file: { url: string, size?: number, sha256?: st
     file.size = stats.size
   }
   if (file.url.startsWith('file://')) {
-    const origFile = {...file}
+    // local files are moved into (content addressed) storage
+    await storage().putFile(file.sha256, fileURLToPath(file.url))
     file.url = `storage://${file.sha256}`
-    await python('components.core.file.file_move', {
-      kargs: [
-        origFile,
-        file
-      ],
-    })
   }
   const user_upload = await insertUserUpload(db, { ...file, sha256: file.sha256 as string, size: file.size as number }, session?.user?.id ?? null)
   return { id: user_upload.id, url: `${(process.env.PUBLIC_URL||'').replace(/^https?:/, 'drs:')}/${user_upload.id}`, filename: file.filename, sha256: file.sha256, size: file.size }

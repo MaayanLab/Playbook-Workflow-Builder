@@ -1,7 +1,7 @@
 import typing
 import numpy as np
 import anndata as ad
-from components.core.file import File, file_as_path, file_as_stream, upsert_file
+from components.core.file import File, file_as_seekable, file_as_stream, upsert_file
 
 class GeneCountMatrix(File, typing.TypedDict):
   shape: typing.Tuple[int, int]
@@ -11,7 +11,7 @@ class GeneCountMatrix(File, typing.TypedDict):
   ellipses: typing.Tuple[typing.Union[int, None], typing.Union[int, None]]
 
 def anndata_from_gctx(file: File):
-  with file_as_path(file, 'r') as fr:
+  with file_as_seekable(file) as fr:
     import h5py
     f = h5py.File(fr, 'r')
     return ad.AnnData(
@@ -36,7 +36,7 @@ def anndata_from_file(file: File):
   ''' Read from a bunch of different formats, get an anndata file
   '''
   if file['filename'].endswith('.h5ad'):
-    with file_as_path(file, 'r') as fr:
+    with file_as_seekable(file) as fr:
       return ad.read_h5ad(fr)
   elif file['filename'].endswith('.csv'):
     with file_as_stream(file, 'r') as fr:
@@ -61,14 +61,14 @@ def anndata_from_file(file: File):
       except Exception as e:
         raise Exception(f"Failed to read {file['filename']} as a matrix (please use .csv, or .tsv)") from e
   elif file['filename'].endswith('.xlsx'):
-    with file_as_path(file, 'r') as fr:
+    with file_as_seekable(file) as fr:
       return ad.read_excel(fr).transpose()
   elif file['filename'].endswith('.gctx'):
     return anndata_from_gctx(file)
   elif file['filename'].endswith('.gct'):
     return anndata_from_gct(file)
   elif file['filename'].endswith('.h5'):
-    with file_as_path(file, 'r') as fr:
+    with file_as_seekable(file) as fr:
       try:
         return ad.read_hdf(fr).transpose()
       except Exception as e:

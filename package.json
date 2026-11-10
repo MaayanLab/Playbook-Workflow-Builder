@@ -33,6 +33,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1166.0",
+    "@aws-sdk/lib-storage": "^3.1166.0",
+    "@aws-sdk/s3-request-presigner": "^3.1166.0",
     "@blueprintjs/core": "^6.22.0",
     "@blueprintjs/icons": "^6.15.0",
     "@blueprintjs/select": "^6.4.1",

@@ -5,6 +5,7 @@ import { getKRG } from '@/app/server-krg'
 import packageJson from '@/package.json'
 import { getUser, getUserOrcidAccount } from '@/app/extensions/auth/user'
 import { selectUserUploadComplete } from '@/db/queries'
+import storage, { storageKey } from '@/components/core/file/server/storage'
 import FPL2BCO from '@/core/fpl2bco'
 import fpl2json from '@/core/fpl2json'
 import { cwl_for_playbook } from '@/core/fpl2cwl'
@@ -74,6 +75,20 @@ export async function getWorkflowExport(fplId: string) {
   return { data, workflow, metadata: fpl.playbook_metadata?.toJSON() }
 }
 
+/**
+ * Where an upload can be read from: directly from storage when it can give out (time limited)
+ *  urls, e.g. presigned S3 urls, or from its source if it's remote, otherwise from this server.
+ */
+async function uploadAccessUrl(upload: { id: string, url: string, filename: string }) {
+  if (upload.url.startsWith('storage://')) {
+    const backend = storage()
+    if (backend.presignedGet) return await backend.presignedGet(storageKey(upload.url), { filename: upload.filename })
+  } else if (upload.url.startsWith('https://')) {
+    return upload.url
+  }
+  return `${process.env.PUBLIC_URL || ''}/api/ga4gh/drs/v1/objects/${upload.id}/access/https/data`
+}
+
 export const publicApiRouter = router({
   drsServiceInfo: publicProcedure
     .meta({ openapi: {
@@ -133,7 +148,7 @@ export const publicApiRouter = router({
       const upload = await selectUserUploadComplete(db)
         .where('user_upload.id', '=', input.object_id).executeTakeFirst()
       if (!upload) throw new NotFoundError()
-      return { url: `${process.env.PUBLIC_URL || ''}/api/ga4gh/drs/v1/objects/${input.object_id}/access/https/data` }
+      return { url: await uploadAccessUrl(upload) }
     }),
 
   bco: publicProcedure

@@ -16,18 +16,18 @@ Without a postgres `DATABASE_URL`, the app uses sqlite (`DATABASE_URL=sqlite:pat
 
 ## File Storage
 
-Cloud-agnostic file storage is achieved with a helper python library we made, [ufs](https://github.com/maayanlab/ufs). The code is in different places, spanning javascript and nodejs, and mostly contained in `components/core/file` but I explain the gist of it here:
+Files are stored content-addressed (by their sha256, as `storage://<sha256>`) by the storage module (`components/core/file/server/storage.ts`), and served through a GA4GH compatible DRS API as `drs://` urls:
 
-1. File uploads are sent to the NextJS Web Server and stored locally in a temporary file.
-2. We compute that file's sha256 checksum, and then we use ufs to move it from its temporary location to the storage provider configured in `UFS_STORAGE` (if not specified, this will be a local directory: `data/ufs`, ufs can be used to store those files even in cloud locations).
-3. We add the file path and metadata to the database (uploads table) and potentially the (user uploads).
-4. We create a new file object using the uuid of the file in the uploads table, and return a `drs` link.
-5. The instance serves a ga4gh compatible DRS API, it reads provided opaque drs ids from the database and can use ufs to stream the files from their cloud source.
+1. File uploads are sent to the web server and stored in a temporary file while their sha256 checksum is computed.
+2. The file is moved into storage, which is selected by the environment:
+   - S3 (or an S3 compatible service): `S3_BUCKET`, optionally `S3_PREFIX`, `S3_ENDPOINT` & `S3_REGION`, with credentials from the standard `AWS_*` variables.
+     A `UFS_STORAGE` configuration of an S3 bucket (what we used before) is understood as well and maps to the same objects (`<prefix>/<sha256>`), so existing files remain available.
+   - The local filesystem otherwise (`STORAGE_PATH`, default `data/ufs`).
+   - A CAVATICA project (`CAVATICA_STORAGE_PROJECT`, with `CAVATICA_API_TOKEN` & optionally `CAVATICA_API_URL`), through Seven Bridges' API client ([sevenbridges-python](https://github.com/sbg/sevenbridges-python), see `components/core/file/cavatica_storage.py`). CAVATICA workers use this to keep files in the user's project.
+3. The upload is recorded in the database (uploads & user uploads) and a `drs` link to it is returned.
+4. DRS clients get a direct (presigned) url to objects in S3 or CAVATICA, the server otherwise streams them, supporting HTTP Range requests either way.
 
-While somewhat elaborate, the benefits of using ufs+drs are:
-- cloud agnostic file storage persistence across runs
-- file accessibility in distributed scenarios
-- compatibility with cloud workspaces like CAVATICA
+Python components read files with `file_as_stream` (sequentially) or `file_as_seekable` (random access, e.g. for HDF5 & excel files) from `components.core.file`, which resolve `drs://` urls to their access url and read them with Range requests: only the parts of a file which are read are transferred, files are never copied in full. New files are created with `upsert_file`.
 
 ## CAVATICA Integration
 
@@ -35,7 +35,7 @@ The way this works is by using WES to start a task in the user's account with th
 
 To try this locally without CAVATICA, set `CAVATICA_LOCAL_WORKER=1`: sessions then run the worker on your machine (port 3001, with its own `next dev` build directory).
 
-The database used on the worker is an in-memory sqlite database rather than the production database. However, files are persisted to & accessed from the user's CAVATICA workspace in realtime over sbfs.
+The database used on the worker is an in-memory sqlite database rather than the production database. However, files are persisted to & accessed from the user's CAVATICA project (named by their sha256, through the Seven Bridges API, see File Storage).
 
 ## Learn More
 

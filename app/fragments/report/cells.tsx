@@ -89,7 +89,7 @@ export default function Cells({ session_id, krg, id }: { session_id?: string, kr
   React.useEffect(() => {
     if (!data) return
     setUpdateRequired(
-      playbookMetadata?.id !== data.metapath[data.metapath.length-1].playbook_metadata?.id
+      playbookMetadata?.id !== data.metapath.at(-1)?.playbook_metadata?.id
       || data.metapath.some(cell => cell.cell_metadata?.id !== cellMetadata[cell.id]?.id)
     )
   }, [data, cellMetadata, playbookMetadata, userPlaybook])

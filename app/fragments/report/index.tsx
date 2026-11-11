@@ -19,7 +19,7 @@ function Report({ params }: { params: z.infer<typeof QueryType> }) {
   const krg = useKRG()
   return (
     <Layout
-      sidebar={<Chat mode="report" graph_id={params.id} embedded />}
+      sidebar={<Chat mode="report" graph_id={params.id} thread_id={params.thread_id} embedded />}
     >
       <main className="grow flex flex-col mx-4">
         {params.id ?
@@ -42,8 +42,8 @@ export default function App({ routeParams }: { routeParams?: z.infer<typeof Quer
   const params = React.useMemo(() => {
     const match = pathname?.match(/^(?:\/session\/([^/]+))?\/report(?:\/([^/]+))?\/?$/)
     return QueryType.parse(match
-      ? { ...(routeParams ?? router.query), session_id: match[1], id: match[2] }
-      : routeParams ?? router.query)
+      ? { ...router.query, ...routeParams, session_id: match[1], id: match[2] }
+      : { ...router.query, ...routeParams })
   }, [pathname, routeParams, router.query])
   return (
     <MetapathProvider session_id={params.session_id}>

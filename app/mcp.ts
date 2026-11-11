@@ -125,7 +125,7 @@ const server = cache('mcp', () => {
         description: z.string(),
         arguments: z.record(z.string(), z.object({ type: z.string(), description: z.string() }).describe('output types this step allows'))
       }).array().optional(),
-      error: z.any().or(z.undefined()),
+      error: z.string().optional(),
     },
   }, async (props) => {
     try {
@@ -189,7 +189,7 @@ const server = cache('mcp', () => {
     },
     outputSchema: {
       result: z.object({ workflow_id: z.string(), step_id: z.string(), type: z.string(), description: z.string() /*value: z.any()*/ }).optional(),
-      error: z.any().or(z.undefined()),
+      error: z.string().optional(),
     },
   }, async (props) => {
     try {
@@ -283,7 +283,7 @@ const server = cache('mcp', () => {
     },
     outputSchema: {
       result: z.object({ workflow_id: z.string(), title: z.string(), description: z.string().optional(), dataSources: z.string().optional(), inputs: z.string().optional(), outputs: z.string().optional() }).array().optional(),
-      error: z.any().or(z.undefined()),
+      error: z.string().optional(),
     },
   }, async (props) => {
     try {
@@ -320,7 +320,7 @@ const server = cache('mcp', () => {
         type: z.string(),
         description: z.string(),
       }).array().optional(),
-      error: z.any().or(z.undefined()),
+      error: z.string().optional(),
     },
   }, async (props) => {
     try {

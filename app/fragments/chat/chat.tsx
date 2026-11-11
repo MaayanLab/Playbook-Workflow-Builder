@@ -23,13 +23,13 @@ const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
-export default function Page({ mode, session_id, graph_id, node_id, embedded = false }: { mode: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
+export default function Page({ mode, session_id, graph_id, node_id, thread_id: initialThreadId, embedded = false }: { mode: string, session_id?: string, graph_id?: string, node_id?: string, thread_id?: string, embedded?: boolean }) {
   const krg = useKRG()
   const router = useExRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
   const { data: session } = Auth.useSession()
-  const [thread_id, setThread_id] = React.useState<string | undefined>()
+  const [thread_id, setThread_id] = React.useState<string | undefined>(initialThreadId)
   const trpc = useTRPC()
   const trpcClient = useTRPCClient()
   const queryClient = useQueryClient()
@@ -106,8 +106,8 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   const { waypoints, scrollTo } = useWaypoints()
   React.useEffect(() => {
-    setThread_id(router.query.thread_id as string | undefined)
-  }, [router.query.thread_id])
+    setThread_id((router.query.thread_id as string | undefined) ?? initialThreadId)
+  }, [initialThreadId, router.query.thread_id])
   React.useEffect(() => {
     if (typeof router.query.message === 'string') {
       submit({ message: router.query.message, graph_id, node_id })

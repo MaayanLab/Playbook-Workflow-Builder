@@ -38,19 +38,25 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
     refetchInterval: 1000,
   })
   const { messages, fpl } = data ?? { messages: undefined, fpl: null }
-  // navigate to the workflow when the assistant moves the thread to a new one: the workflow the
-  //  thread is on when it's first loaded is where it was, not a move (the person may be viewing
-  //  any of the thread's workflows, or one in another mode, on purpose)
+  // navigate to the workflow when the assistant moves the thread to a new one (from the graph, to
+  //  its report): the workflow an existing thread is on when it's first loaded is where it was, not
+  //  a move (the person may be viewing any of the thread's workflows, or one in another mode, on
+  //  purpose), while a thread started here starts from no workflow
   const previousFpl = React.useRef<string | null | undefined>(undefined)
+  const startedThread = React.useRef<string | undefined>(undefined)
   // a different thread starts over
-  React.useEffect(() => { previousFpl.current = undefined }, [thread_id])
   React.useEffect(() => {
-    if (!isFetched) return
-    if (previousFpl.current !== undefined && fpl && previousFpl.current !== fpl) {
-      router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}${mode !== 'chat' ? `/${fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
+    previousFpl.current = thread_id && thread_id === startedThread.current ? null : undefined
+  }, [thread_id])
+  React.useEffect(() => {
+    if (!data) return
+    const current = fpl && fpl !== 'start' ? fpl : null
+    if (previousFpl.current !== undefined && current && previousFpl.current !== current) {
+      router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${current}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
     }
-    previousFpl.current = fpl
-  }, [isFetched, fpl])
+    // (an existing thread's workflow is only known once it's fetched)
+    if (isFetched || previousFpl.current !== undefined) previousFpl.current = current
+  }, [data, isFetched, fpl])
   const createChat = useMutation(trpc.chat.create.mutationOptions())
   const [sendPending, setSendPending] = React.useState(false)
   const [sendError, setSendError] = React.useState<Error | null>(null)
@@ -59,6 +65,7 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
       let thread_id_: string
       if (!thread_id) {
         thread_id_ = z.string().parse(await createChat.mutateAsync())
+        startedThread.current = thread_id_
         setThread_id(thread_id_)
       } else {
         thread_id_ = thread_id

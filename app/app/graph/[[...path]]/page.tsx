@@ -18,7 +18,7 @@ function parse(encoded: string[] = []) {
     node_id = remaining.shift()
   }
   if (remaining[0] === 'extend' || remaining[0] === 'suggest') mode = remaining.shift() as typeof mode
-  if (remaining.length || (path.length && !node_id && !mode && graph_id === 'start')) return undefined
+  if (remaining.length) return undefined
   return { graph_id, node_id, mode }
 }
 

@@ -1,33 +1,4 @@
-version: '3.9'
-x-logging:
-  &default-logging
-  driver: 'json-file'
-  options:
-    max-size: '100k'
-    max-file: '10'
 services:
-  # ingress in front of the app for TLS termination among other uses
-  ingress:
-    image: traefik:v2.9
-    x-kubernetes:
-      exclude: true
-    command: >
-      --providers.docker=true
-      --providers.docker.exposedByDefault=false
-      --entrypoints.web.address=:80
-      --entrypoints.web.http.redirections.entrypoint.to=websecure
-      --entrypoints.web.http.redirections.entrypoint.scheme=https
-      --entrypoints.websecure.address=:443
-      --certificatesresolvers.letsencrypt-prod.acme.email=${LETSENCRYPT_EMAIL}
-      --certificatesresolvers.letsencrypt-prod.acme.storage=/data/acme.json
-      --certificatesresolvers.letsencrypt-prod.acme.tlschallenge=true
-    ports:
-    - 80:80
-    - 443:443
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - ./data/ingress:/data
-    logging: *default-logging
   # app serves the UI & API, it registers user interactions into the database (pg)
   pwb-app:
     image: maayanlab/playbook-partnership:0.81.0-ui
@@ -69,21 +40,6 @@ services:
       imagePullPolicy: IfNotPresent
       annotations:
         maayanlab.cloud/ingress: ${PUBLIC_URL}
-    labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.app.rule=Host(`${SERVER_NAME}`)"
-    - "traefik.http.services.app.loadbalancer.server.port=3000"
-    - "traefik.http.routers.app.tls=true"
-    - "traefik.http.routers.app.tls.certresolver=letsencrypt-prod"
-    - "traefik.http.routers.app.tls.domains[0].main=${SERVER_NAME}"
-    - "traefik.http.routers.app.middlewares=app-headers@docker"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolallowmethods=HEAD,GET,POST,OPTIONS"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolallowheaders=*"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolalloworiginlist=*"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolmaxage=100"
-    - "traefik.http.middlewares.app-headers.headers.addvaryheader=true"
-    - "traefik.http.middlewares.app-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-    logging: *default-logging
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   pwb-worker:
@@ -109,7 +65,6 @@ services:
     - N_WORKERS=5
     - OPENAI_API_KEY
     - OPENAI_MODEL
-    logging: *default-logging
   # the database is used by everything, apply migrations with
   #  `DATABASE_URL=postgres://... npm run db:migrate`
   pwb-pg:
@@ -122,10 +77,12 @@ services:
     - 5432:5432
     volumes:
     - pwb-pg:/var/lib/postgresql/data
-    logging: *default-logging
   # app-dev serves a dev version of the app
   app-dev:
     image: maayanlab/playbook-partnership:0.81.1-dev
+    x-kubernetes:
+      annotations:
+        maayanlab.cloud/ingress: https://dev.playbook-workflow-builder.cloud
     build:
       context: .
       dockerfile: Dockerfile
@@ -157,14 +114,6 @@ services:
     - N_WORKERS
     x-kubernetes:
       exclude: true
-    labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.app-dev.rule=Host(`dev.${SERVER_NAME}`)"
-    - "traefik.http.services.app-dev.loadbalancer.server.port=3000"
-    - "traefik.http.routers.app-dev.tls=true"
-    - "traefik.http.routers.app-dev.tls.certresolver=letsencrypt-prod"
-    - "traefik.http.routers.app-dev.tls.domains[0].main=dev.${SERVER_NAME}"
-    logging: *default-logging
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
@@ -183,9 +132,12 @@ services:
     user: "${DOCKER_USER}"
     volumes:
     - ./:/app
-    logging: *default-logging
 volumes:
   pwb-pg:
     x-kubernetes:
       size: 5Gi
       class: ${KUBE_STORAGE_CLASS:-}
+
+x-kubernetes:
+  name: pwb
+  namespace: pwb

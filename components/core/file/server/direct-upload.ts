@@ -40,7 +40,7 @@ const TOKEN_TTL_MS = 24 * 60 * 60 * 1000
 
 let processSecret: string | undefined
 function secret() {
-  const configured = process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || process.env.WORKER_AUTH_TOKEN
+  const configured = process.env.BETTER_AUTH_SECRET || process.env.WORKER_AUTH_TOKEN
   if (configured) return configured
   // without a configured secret tokens are only valid within this process
   return processSecret ??= crypto.randomBytes(32).toString('hex')

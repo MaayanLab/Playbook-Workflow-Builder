@@ -89,7 +89,7 @@ async function extras() {
 export async function retrieeBundleFiles(fileURL: string): Promise<string | ArrayBuffer> {
   const objecturl = fileURL.replace(
     /^drs:\/\/([^\/]+)\/(.+)$/,
-    `${process.env.NEXT_PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`
+    `${process.env.PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`
   )
   return fetch(objecturl).then(r => r.arrayBuffer())
 }
@@ -101,7 +101,7 @@ export async function ReportNode2TEX(reportOutput: report, fpl_id:string): Promi
   const pages = pdfDoc.getPages()
   const firstPage = pages[0]
   const { width, height } = firstPage.getSize()
-  const reportURL = `${process.env.NEXT_PUBLIC_URL||''}/report/${fpl_id}`
+  const reportURL = `${process.env.PUBLIC_URL||''}/report/${fpl_id}`
   const fontSize = 10
   const reportURLWidth = helveticaFont.widthOfTextAtSize(reportURL, fontSize)
   firstPage.drawText(reportURL, {

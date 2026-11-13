@@ -14,6 +14,10 @@ The `0003_pgboss_v12` migration upgrades the job queue from pg-boss 9 by moving 
 
 Without a postgres `DATABASE_URL`, the app uses sqlite (`DATABASE_URL=sqlite:path/to/db.sqlite`, or in-memory when unset) which is migrated automatically. sqlite is only suitable for a single process (i.e. `N_WORKERS` in the ui process) since events & jobs are dispatched in-process.
 
+## Configuration
+
+The same build (& docker image) can be deployed anywhere: the public url & other settings are read when the server starts rather than when the app is built, e.g. `PUBLIC_URL=https://playbook-workflow-builder.cloud`, `LANDING_PAGE=/graph/extend`, and any `NEXT_PUBLIC_*` variables (e.g. `NEXT_PUBLIC_MATOMO_URL`), which are passed to the browser by `app/runtime-config.ts`. So code mustn't read `process.env.NEXT_PUBLIC_*` directly (next inlines those when building): the browser uses `useRuntimeConfig()` (`app/fragments/config.tsx`), the server `process.env.PUBLIC_URL`.
+
 ## File Storage
 
 Files are stored content-addressed (by their sha256, as `storage://<sha256>`) by the storage module (`components/core/file/server/storage.ts`), and served through a GA4GH compatible DRS API as `drs://` urls:

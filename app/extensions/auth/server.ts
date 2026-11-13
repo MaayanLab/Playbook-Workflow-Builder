@@ -2,7 +2,7 @@ import { SYSTEM_USER_ID } from '@/db/constants'
 import { auth, type SessionWithId } from '@/app/auth'
 
 export async function getRequestSessionWithId(request: Request): Promise<SessionWithId | null> {
-  const workerToken = process.env.WORKER_AUTH_TOKEN ?? process.env.NEXTAUTH_SECRET ?? process.env.BETTER_AUTH_SECRET
+  const workerToken = process.env.WORKER_AUTH_TOKEN ?? process.env.BETTER_AUTH_SECRET
   if (workerToken && request.headers.get('authorization') === `Token ${workerToken}`) {
     return {
       user: { id: SYSTEM_USER_ID },

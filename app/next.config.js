@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const { PHASE_DEVELOPMENT_SERVER } = require('next/constants')
 const { parseEnv } = require('util')
 if (!process.env.APP_ROOT) process.env.APP_ROOT = path.dirname(__dirname)
 const root = process.env.APP_ROOT
@@ -24,35 +25,26 @@ for (const key in env) {
   }
 }
 
+// these are read at runtime (by the server, & passed to the browser by app/runtime-config.ts), so
+//  that one build can be deployed at different urls: nothing may depend on them at build time
 // sane setup for Better Auth's public URL
-if (!process.env.PUBLIC_URL) process.env.PUBLIC_URL = 'http://127.0.0.1:3000'
+if (!process.env.PUBLIC_URL) process.env.PUBLIC_URL = 'http://localhost:3000'
 if (!process.env.NEXT_PUBLIC_URL) process.env.NEXT_PUBLIC_URL = process.env.PUBLIC_URL
 if (!process.env.BETTER_AUTH_URL) process.env.BETTER_AUTH_URL = process.env.PUBLIC_URL
 if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
 if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 
 /** @type {import('next').NextConfig} */
-module.exports = {
+const config = {
   // a separate build directory lets a local CAVATICA worker (`next dev`) run alongside the app
   distDir: process.env.NEXT_DIST_DIR || '.next',
-  // `next dev` only trusts localhost for its dev resources (e.g. hot reloading), also trust the
-  //  host the app is configured to be served at (PUBLIC_URL defaults to http://127.0.0.1:3000)
-  allowedDevOrigins: [...new Set(['127.0.0.1', new URL(process.env.PUBLIC_URL).hostname])],
   images: {
     unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: process.env.STRICT_TS!=='true',
   },
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: process.env.LANDING_PAGE ?? '/graph/extend',
-        permanent: false,
-      },
-    ]
-  },
+  // (redirects are resolved when building, the landing page redirect is at runtime: app/app/page.tsx)
   async rewrites() {
     return [
       {
@@ -86,3 +78,10 @@ module.exports = {
     ]])),
   },
 }
+
+module.exports = (phase) => phase === PHASE_DEVELOPMENT_SERVER ? {
+  ...config,
+  // `next dev` only trusts localhost for its dev resources (e.g. hot reloading): also trust the host
+  //  the app is served at, e.g. an https tunnel (which the chatbot needs: OpenAI calls `${PUBLIC_URL}/mcp`)
+  allowedDevOrigins: [new URL(process.env.PUBLIC_URL).hostname],
+} : config

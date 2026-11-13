@@ -8,6 +8,7 @@ import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import classNames from 'classnames'
 import { uploadFile } from './client/upload'
 import { useTRPCClient } from '@/app/trpc/client'
+import { useRuntimeConfig } from '@/app/fragments/config'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -56,14 +57,15 @@ export function FilePrompt(props: {
   // the fraction uploaded while uploading, and the error if it failed
   const [upload, setUpload] = React.useState<{ progress?: number, verifying?: boolean, error?: string }>({})
   const { data: session } = useSessionWithId()
+  const runtimeConfig = useRuntimeConfig()
   const output = React.useMemo(() => props.data || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.data])
   React.useEffect(() => {
     setCurrentFile(output)
-    if (output && output.url && !output.url.startsWith((process.env.NEXT_PUBLIC_URL as string).replace(/https?:/, 'drs:'))) {
+    if (output && output.url && !output.url.startsWith((runtimeConfig.NEXT_PUBLIC_URL || '').replace(/https?:/, 'drs:'))) {
       // only go to url when the url isn't our DRS server
       setTab('url')
     }
-  }, [output])
+  }, [output, runtimeConfig])
   return (
     <div>
       {!session || !session.user ? (

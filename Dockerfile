@@ -53,7 +53,7 @@ RUN mv app/requirements.txt /tmp/requirements.txt \
 
 FROM prepare_src AS prepare_build
 COPY --from=prepare_npm_i --chown=ubuntu /home/ubuntu/app app
-RUN echo "Building app..." && cd app && LANDING_PAGE=/graph/extend PUBLIC_URL=https://playbook-workflow-builder.cloud npm run build
+RUN echo "Building app..." && cd app && npm run build
 
 # TARGET: app -- production server with dependencies to run everything
 FROM base AS app

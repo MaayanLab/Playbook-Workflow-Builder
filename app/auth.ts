@@ -7,9 +7,9 @@ import db, { dialect } from '@/app/db'
 type ProviderOptions = { clientId: string, clientSecret: string, issuer?: string }
 const parseProvider = (value?: string): ProviderOptions | undefined => value ? JSON.parse(value) : undefined
 
-const google = parseProvider(process.env.BETTER_AUTH_GOOGLE ?? process.env.NEXTAUTH_GOOGLE)
-const keycloakOptions = parseProvider(process.env.BETTER_AUTH_KEYCLOAK ?? process.env.NEXTAUTH_KEYCLOAK)
-const orcid = parseProvider(process.env.BETTER_AUTH_ORCID ?? process.env.NEXTAUTH_ORCID)
+const google = parseProvider(process.env.BETTER_AUTH_GOOGLE)
+const keycloakOptions = parseProvider(process.env.BETTER_AUTH_KEYCLOAK)
+const orcid = parseProvider(process.env.BETTER_AUTH_ORCID)
 const oauthProviders = [
   keycloakOptions?.issuer ? keycloak({ ...keycloakOptions, issuer: keycloakOptions.issuer }) : undefined,
   orcid ? {
@@ -33,8 +33,8 @@ export const auth = betterAuth({
   // Better Auth's built-in adapter is Kysely-based. Supplying the explicit
   // dialect avoids relying on runtime detection of an already-created Kysely.
   database: { db, type: dialect },
-  secret: process.env.BETTER_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? process.env.PUBLIC_URL,
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL ?? process.env.PUBLIC_URL,
   user: {
     fields: {
       emailVerified: 'authEmailVerified',

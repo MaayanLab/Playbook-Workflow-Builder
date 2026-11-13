@@ -61,11 +61,11 @@ export default function Uploads() {
                 <tr key={upload.id}>
                   <td></td>
                   <td><a
-                    href={`${process.env.NEXT_PUBLIC_URL}/ga4gh/drs/v1/objects/${upload.id}/access/https/data`}
+                    href={`/ga4gh/drs/v1/objects/${upload.id}/access/https/data`}
                     download={upload.filename}
                   >{upload.filename}</a></td>
                   <td><a
-                    href={`${process.env.NEXT_PUBLIC_URL}/ga4gh/drs/v1/objects/${upload.id}`}
+                    href={`/ga4gh/drs/v1/objects/${upload.id}`}
                   >{upload.url}</a></td>
                   <td>{upload.sha256.slice(0, 5)}...{upload.sha256.slice(-5)}</td>
                   <td>{humanSize(upload.size)}</td>

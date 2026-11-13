@@ -1,9 +1,12 @@
+import { runtimeConfig } from '@/app/fragments/config'
+
 export function downloadUrl(url: string, filename?: string) {
-  if (url.startsWith('drs://localhost:3000') || url.startsWith((process.env.NEXT_PUBLIC_URL||'').replace(/^https?:/, 'drs:'))) {
+  const publicUrl = runtimeConfig().NEXT_PUBLIC_URL || ''
+  if (url.startsWith('drs://localhost:3000') || url.startsWith(publicUrl.replace(/^https?:/, 'drs:'))) {
     const session_match = /^\/session\/([^\/]+)/.exec(window.location.pathname)
     url = url.replace(
       /^drs:\/\/([^\/]+)\/(.+)$/,
-      `${process.env.NEXT_PUBLIC_URL||''}${
+      `${publicUrl}${
         session_match !== null ? `/api/socket/${session_match[1]}`: ''
       }/ga4gh/drs/v1/objects/$2/access/https/data`
     )

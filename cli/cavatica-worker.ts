@@ -58,7 +58,9 @@ function startApp(): ChildProcess {
       UFS_STORAGE: '',
       N_WORKERS: '50',
       // requests forwarded by the public server carry this as `Authorization: Token ...`
-      NEXTAUTH_SECRET: config.auth_token,
+      WORKER_AUTH_TOKEN: config.auth_token,
+      // (the worker's own app signs its sessions with it too)
+      BETTER_AUTH_SECRET: config.auth_token,
       PUBLIC_URL: appUrl,
       NEXT_PUBLIC_URL: appUrl,
     },

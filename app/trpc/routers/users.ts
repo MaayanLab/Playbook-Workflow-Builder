@@ -1,3 +1,4 @@
+import { drsUrl } from '@/components/core/file/server/drs'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import db from '@/app/db'
@@ -84,7 +85,7 @@ export const usersRouter = router({
       const uploads = await selectUserUploadComplete(db).where('user_upload.user', '=', ctx.session.user.id).execute()
       return uploads.map(upload => ({
         ...upload,
-        url: `${process.env.NEXT_PUBLIC_URL?.replace(/https?:\/\//, 'drs://')}/${upload.id}`,
+        url: drsUrl(upload.id),
       }))
     }),
 

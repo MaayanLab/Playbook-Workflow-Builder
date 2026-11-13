@@ -10,20 +10,34 @@ services:
     cap_add:
     - SYS_ADMIN
     platform: linux/amd64
+    x-kubernetes:
+      imagePullPolicy: IfNotPresent
+      annotations:
+        maayanlab.cloud/ingress: ${PROD_PUBLIC_URL}
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+    ports:
+    - 3000
     deploy:
-      # this can be safely replicated if necessary but an ingress will be required
+      # unsure if this can be replicated atm
       replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2048M
+        reservations:
+          cpus: '0.25'
+          memory: 1024M
     environment:
-    - PUBLIC_URL
+    - PUBLIC_URL=${PROD_PUBLIC_URL}
     - LANDING_PAGE
     - BETTER_AUTH_SECRET
     - BETTER_AUTH_GOOGLE
     - BETTER_AUTH_ORCID
     - BETTER_AUTH_KEYCLOAK
-    - NEXTAUTH_SECRET
-    - NEXTAUTH_GOOGLE
-    - NEXTAUTH_ORCID
-    - NEXTAUTH_KEYCLOAK
+    - BETTER_AUTH_SECRET
+    - BETTER_AUTH_GOOGLE
+    - BETTER_AUTH_ORCID
+    - BETTER_AUTH_KEYCLOAK
     - EMAIL_SERVER
     - EMAIL_FROM
     - DATABASE_URL
@@ -34,12 +48,6 @@ services:
     - ELYSIUM_USERNAME
     - ELYSIUM_PASSWORD
     - N_WORKERS=0
-    ports:
-      - 3000
-    x-kubernetes:
-      imagePullPolicy: IfNotPresent
-      annotations:
-        maayanlab.cloud/ingress: ${PUBLIC_URL}
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   pwb-worker:
@@ -52,14 +60,20 @@ services:
     x-kubernetes:
       imagePullPolicy: IfNotPresent
     deploy:
-      # this can be safely replicated as necessary
-      replicas: 2
+      replicas: 4
+      resources:
+        limits:
+          memory: 4096M
+          cpus: '1'
+        reservations:
+          memory: 1024M
+          cpus: '0.25'
     command: ["npm", "run", "start:worker"]
     environment:
-    - PUBLIC_URL
+    - PUBLIC_URL=${PROD_PUBLIC_URL}
     - DATABASE_URL
     - BETTER_AUTH_SECRET
-    - NEXTAUTH_SECRET
+    - BETTER_AUTH_SECRET
     - ELYSIUM_USERNAME
     - ELYSIUM_PASSWORD
     - N_WORKERS=5
@@ -69,6 +83,7 @@ services:
   #  `DATABASE_URL=postgres://... npm run db:migrate`
   pwb-pg:
     image: postgres:15
+    restart: unless-stopped
     environment:
     - POSTGRES_DB
     - POSTGRES_USER
@@ -82,7 +97,7 @@ services:
     image: maayanlab/playbook-partnership:0.81.1-dev
     x-kubernetes:
       annotations:
-        maayanlab.cloud/ingress: https://dev.playbook-workflow-builder.cloud
+        maayanlab.cloud/ingress: ${DEV_PUBLIC_URL}
     build:
       context: .
       dockerfile: Dockerfile
@@ -95,16 +110,16 @@ services:
       # this can be safely replicated if necessary but an ingress will be required
       replicas: 0
     environment:
-    - PUBLIC_URL
+    - PUBLIC_URL=${DEV_PUBLIC_URL}
     - LANDING_PAGE
     - BETTER_AUTH_SECRET
     - BETTER_AUTH_GOOGLE
     - BETTER_AUTH_ORCID
     - BETTER_AUTH_KEYCLOAK
-    - NEXTAUTH_SECRET
-    - NEXTAUTH_GOOGLE
-    - NEXTAUTH_ORCID
-    - NEXTAUTH_KEYCLOAK
+    - BETTER_AUTH_SECRET
+    - BETTER_AUTH_GOOGLE
+    - BETTER_AUTH_ORCID
+    - BETTER_AUTH_KEYCLOAK
     - EMAIL_SERVER
     - EMAIL_FROM
     - DATABASE_URL
@@ -112,8 +127,6 @@ services:
     - NEXT_PUBLIC_MATOMO_SITE_ID
     - OPENAI_API_KEY
     - N_WORKERS
-    x-kubernetes:
-      exclude: true
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
@@ -132,6 +145,7 @@ services:
     user: "${DOCKER_USER}"
     volumes:
     - ./:/app
+
 volumes:
   pwb-pg:
     x-kubernetes:

@@ -12,6 +12,7 @@ import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
 import { ScoredGenes } from '@/components/core/scored'
 import { useExRouter, ExLink } from '@/app/fragments/ex-router'
+import { runtimeConfig } from '@/app/fragments/config'
 import { useOptionalMetapath } from '@/app/fragments/metapath'
 import { useExport } from '@/app/fragments/report/use-export'
 import { useSessionWithId } from '@/app/extensions/auth/hooks'
@@ -27,7 +28,7 @@ const ReportFile = z.object({
 
 const resolveDRSURL = (fileURL:string) => {
   return fileURL.replace(/^drs:\/\/([^\/]+)\/(.+)$/,
-  `${process.env.NEXT_PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`)
+  `${runtimeConfig().NEXT_PUBLIC_URL || ''}/ga4gh/drs/v1/objects/$2/access/https/data`)
 }
 
 export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)

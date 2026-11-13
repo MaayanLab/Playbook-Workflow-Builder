@@ -31,8 +31,9 @@ for (const key in env) {
 if (!process.env.PUBLIC_URL) process.env.PUBLIC_URL = 'http://localhost:3000'
 if (!process.env.NEXT_PUBLIC_URL) process.env.NEXT_PUBLIC_URL = process.env.PUBLIC_URL
 if (!process.env.BETTER_AUTH_URL) process.env.BETTER_AUTH_URL = process.env.PUBLIC_URL
-if (!process.env.LANDING_PAGE) process.env.LANDING_PAGE = '/graph/extend'
-if (!process.env.NEXT_PUBLIC_LANDING_PAGE) process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
+// `/` itself redirects to the landing page, so it can't be the landing page
+if (!process.env.LANDING_PAGE || process.env.LANDING_PAGE === '/') process.env.LANDING_PAGE = '/graph/extend'
+if (!process.env.NEXT_PUBLIC_LANDING_PAGE || process.env.NEXT_PUBLIC_LANDING_PAGE === '/') process.env.NEXT_PUBLIC_LANDING_PAGE = process.env.LANDING_PAGE
 
 /** @type {import('next').NextConfig} */
 const config = {

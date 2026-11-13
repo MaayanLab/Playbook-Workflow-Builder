@@ -45,23 +45,29 @@ export function Waypoints(props: React.PropsWithChildren<{ className?: string }>
   }, [])
   React.useEffect(() => {
     if (!ref.current || waypointRefs.size === 0) return
+    // the page scrolls within a descendant (scroll events don't bubble, but they can be captured),
+    //  waypoints are active when they're in the middle half of the window
     const listener = () => {
-      if (!ref.current) return
-      const scrollTop = ref.current.scrollTop + window.innerHeight/4
+      const scrollTop = window.innerHeight/4
       const scrollBottom = scrollTop + window.innerHeight/2
       const head = waypointRefs.get('head')
       const scrollMarginTop = head ? `${head.clientHeight + 2}px` : `0px`
-      setWaypoints(() => mapValues(waypointRefs, (value) => {
-        const elTop = value.offsetTop
-        const elBottom = value.offsetTop + value.clientHeight
+      const next = mapValues(waypointRefs, (value) => {
+        const { top: elTop, bottom: elBottom } = value.getBoundingClientRect()
         const active = (scrollTop < elBottom && scrollBottom > elTop)
         return { scrollMarginTop, active }
-      }))
+      })
+      // keep the state when nothing changed (this runs on every scroll event)
+      setWaypoints(prev => prev.size === next.size && Array.from(next).every(([key, value]) => {
+        const prevValue = prev.get(key)
+        return prevValue?.active === value.active && prevValue.scrollMarginTop === value.scrollMarginTop
+      }) ? prev : next)
     }
-    ref.current.addEventListener('scroll', listener)
+    const el = ref.current
+    el.addEventListener('scroll', listener, { capture: true, passive: true })
     listener()
     return () => {
-      ref.current?.removeEventListener('scroll', listener)
+      el.removeEventListener('scroll', listener, { capture: true })
     }
   }, [ref, waypointRefs])
   React.useEffect(() => {

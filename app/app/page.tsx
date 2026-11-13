@@ -4,5 +4,6 @@ import { redirect } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 export default function Page() {
-  redirect(process.env.LANDING_PAGE || '/graph/extend')
+  const landingPage = process.env.LANDING_PAGE
+  redirect(landingPage && landingPage !== '/' ? landingPage : '/graph/extend')
 }

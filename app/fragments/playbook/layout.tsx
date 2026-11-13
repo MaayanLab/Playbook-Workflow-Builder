@@ -26,7 +26,6 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
     <div className="drawer w-screen h-screen">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
       <Waypoints className="drawer-content flex flex-col w-screen h-screen overflow-hidden">
-        <Waypoint id="top" />
         <div className="navbar bg-primary gap-2">
           <div className="flex-grow flex-none">
             <div className="flex-none xl:hidden">
@@ -76,6 +75,8 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
 
         <div className="grow flex flex-col sm:flex-row-reverse justify-stretch overflow-hidden">
           <div className="grow flex flex-col sm:h-full overflow-auto">
+            {/* within the container that scrolls, so that scrolling to it scrolls the page */}
+            <Waypoint id="top" />
             <div className="container mx-auto my-2 flex flex-col gap-2">
               <DismissableAlert id="plos" style={{ backgroundColor: '#d4fb79' }}>
                 <ExLink href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">

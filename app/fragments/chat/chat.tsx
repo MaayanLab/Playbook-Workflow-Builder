@@ -33,18 +33,24 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
   const trpc = useTRPC()
   const trpcClient = useTRPCClient()
   const queryClient = useQueryClient()
-  const { data: { messages, fpl } = { messages: undefined, fpl: null } } = useQuery({
+  const { data, isFetched } = useQuery({
     ...trpc.chat.messages.queryOptions(thread_id ? { thread_id } : skipToken),
     refetchInterval: 1000,
   })
-  // navigate to the workflow when the assistant moves to a new one
-  const previousFpl = React.useRef(fpl)
+  const { messages, fpl } = data ?? { messages: undefined, fpl: null }
+  // navigate to the workflow when the assistant moves the thread to a new one: the workflow the
+  //  thread is on when it's first loaded is where it was, not a move (the person may be viewing
+  //  any of the thread's workflows, or one in another mode, on purpose)
+  const previousFpl = React.useRef<string | null | undefined>(undefined)
+  // a different thread starts over
+  React.useEffect(() => { previousFpl.current = undefined }, [thread_id])
   React.useEffect(() => {
-    if (fpl && previousFpl.current !== fpl) {
-      router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
+    if (!isFetched) return
+    if (previousFpl.current !== undefined && fpl && previousFpl.current !== fpl) {
+      router.push(`${session_id ? `/session/${session_id}` : ''}/${mode}${mode !== 'chat' ? `/${fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
     }
     previousFpl.current = fpl
-  }, [fpl])
+  }, [isFetched, fpl])
   const createChat = useMutation(trpc.chat.create.mutationOptions())
   const [sendPending, setSendPending] = React.useState(false)
   const [sendError, setSendError] = React.useState<Error | null>(null)

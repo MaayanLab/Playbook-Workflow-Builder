@@ -14,6 +14,7 @@ import * as m0005_thread_message_response_item from './0005_thread_message_respo
 import * as m0006_better_auth from './0006_better_auth'
 import * as m0007_fpl_export from './0007_fpl_export'
 import * as m0008_api_keys from './0008_api_keys'
+import * as m0009_auth_id_defaults from './0009_auth_id_defaults'
 
 const migrations: Record<string, Migration> = {
   '0000_baseline': m0000_baseline,
@@ -25,6 +26,7 @@ const migrations: Record<string, Migration> = {
   '0006_better_auth': m0006_better_auth,
   '0007_fpl_export': m0007_fpl_export,
   '0008_api_keys': m0008_api_keys,
+  '0009_auth_id_defaults': m0009_auth_id_defaults,
 }
 
 export const migrationProvider: MigrationProvider = {

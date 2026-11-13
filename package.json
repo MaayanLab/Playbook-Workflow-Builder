@@ -25,7 +25,7 @@
     "codegen:analytics": "tsx --env-file-if-exists=.env cli/dump-analytics.ts > analytics.tsv",
     "db:migrate": "tsx --env-file-if-exists=.env cli/migrate.ts",
     "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app dev",
-    "start:worker": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_ENV=production APP_ROOT=$(dirname $(pwd)) tsx --env-file-if-exists=.env cli/resolve-process-worker.ts",
+    "start:worker": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_ENV=production APP_ROOT=$(pwd) tsx --env-file-if-exists=.env cli/resolve-process-worker.ts",
     "start:run-wes-worker": "tsx --env-file-if-exists=.env cli/run-wes-worker.ts",
     "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app start",
     "version": "tsx --env-file-if-exists=.env cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",

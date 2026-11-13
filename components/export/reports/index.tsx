@@ -13,7 +13,6 @@ import { FileC } from '@/components/core/file'
 import { ScoredGenes } from '@/components/core/scored'
 import { useExRouter, ExLink } from '@/app/fragments/ex-router'
 import { runtimeConfig } from '@/app/fragments/config'
-import { useOptionalMetapath } from '@/app/fragments/metapath'
 import { useExport } from '@/app/fragments/report/use-export'
 import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import * as Auth from '@/app/extensions/auth-client'
@@ -298,13 +297,14 @@ export const ReportPDF = MetaNode(`ReportPDF`)
   .codec(z.object({ bundle: FileC, pdf: FileC,}))
   .view(results => {
     const router = useExRouter()
-    const fpl_id = React.useMemo(() => {
-      const m = /^(?:\/session\/[^/]+)?\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
-      if (m !== null) return m[2]
+    // (from the url: this view mustn't import app fragments which import the component registry,
+    //  e.g. the metapath context, as servers loading the registry with tsx would import them too)
+    const { fpl_id, session_id } = React.useMemo(() => {
+      const m = /^(?:\/session\/([^/]+))?\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
+      return m !== null ? { session_id: m[1], fpl_id: m[3] } : { session_id: undefined, fpl_id: undefined }
     }, [router.asPath])
     // producing the report can take longer than a request may, so it's an export job
     //  (see app/exports.ts) which requires signing in, the pdf is kept with the user's uploads
-    const session_id = useOptionalMetapath()?.session_id
     const startExport = useExport(session_id)
     const userSession = useSessionWithId()
     const signedIn = !!userSession.data?.user

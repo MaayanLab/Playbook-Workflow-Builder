@@ -1,7 +1,7 @@
 services:
   # app serves the UI & API, it registers user interactions into the database (pg)
   pwb-app:
-    image: maayanlab/playbook-partnership:0.81.3-ui
+    image: maayanlab/playbook-partnership:0.81.4-ui
     build:
       context: .
       dockerfile: Dockerfile
@@ -54,7 +54,7 @@ services:
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   pwb-worker:
-    image: maayanlab/playbook-partnership:0.81.3
+    image: maayanlab/playbook-partnership:0.81.4
     build:
       context: .
       dockerfile: Dockerfile
@@ -102,7 +102,7 @@ services:
     - pwb-pg:/var/lib/postgresql/data
   # app-dev serves a dev version of the app
   app-dev:
-    image: maayanlab/playbook-partnership:0.81.3-dev
+    image: maayanlab/playbook-partnership:0.81.4-dev
     x-kubernetes:
       exclude: true
       annotations:

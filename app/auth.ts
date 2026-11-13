@@ -11,7 +11,8 @@ const google = parseProvider(process.env.BETTER_AUTH_GOOGLE)
 const keycloakOptions = parseProvider(process.env.BETTER_AUTH_KEYCLOAK)
 const orcid = parseProvider(process.env.BETTER_AUTH_ORCID)
 const oauthProviders = [
-  keycloakOptions?.issuer ? keycloak({ ...keycloakOptions, issuer: keycloakOptions.issuer }) : undefined,
+  // (the configuration may also have display options, e.g. `name` & `style`, see app/app/auth/signin/page.tsx)
+  keycloakOptions?.issuer ? keycloak({ clientId: keycloakOptions.clientId, clientSecret: keycloakOptions.clientSecret, issuer: keycloakOptions.issuer }) : undefined,
   orcid ? {
     providerId: 'orcid' as const,
     name: 'ORCID',

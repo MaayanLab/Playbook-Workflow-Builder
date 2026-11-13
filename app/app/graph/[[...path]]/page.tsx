@@ -3,8 +3,11 @@ import { notFound } from 'next/navigation'
 import Graph from '@/app/app/_clients/graph'
 import { workflowNodeExists } from '@/app/app/_lib/validate-workflow'
 import ClientPage from '@/app/app/_clients/client-page'
+import { decodeParam } from '@/app/app/_lib/params'
 
-function parse(path: string[] = []) {
+function parse(encoded: string[] = []) {
+  // (page params arrive url encoded, e.g. the `,` between several nodes as `%2C`)
+  const path = encoded.map(decodeParam)
   let graph_id = 'start'
   let node_id: string | undefined
   let mode: 'extend' | 'suggest' | undefined

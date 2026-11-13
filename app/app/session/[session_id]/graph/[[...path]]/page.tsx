@@ -2,8 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Graph from '@/app/app/_clients/graph'
 import ClientPage from '@/app/app/_clients/client-page'
+import { decodeParam } from '@/app/app/_lib/params'
 
-function parse(path: string[] = []) {
+function parse(encoded: string[] = []) {
+  // (page params arrive url encoded, e.g. the `,` between several nodes as `%2C`)
+  const path = encoded.map(decodeParam)
   let graph_id = 'start'
   let node_id: string | undefined
   let mode: 'extend' | 'suggest' | undefined
@@ -29,5 +32,5 @@ export default async function SessionGraphPage(props: { params: Promise<{ sessio
   const params = await props.params;
   const route = parse(params.path)
   if (!route) notFound()
-  return <ClientPage><Graph routeParams={{ session_id: params.session_id, graph_id: route.graph_id, node_id: route.node_id }} mode={route.mode} /></ClientPage>
+  return <ClientPage><Graph routeParams={{ session_id: decodeParam(params.session_id), graph_id: route.graph_id, node_id: route.node_id }} mode={route.mode} /></ClientPage>
 }

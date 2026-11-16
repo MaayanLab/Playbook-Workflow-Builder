@@ -2,3 +2,5 @@
 data
 dist
 .next-*
+# managed by next (rewritten by each next dev/build, see its docs)
+next-env.d.ts

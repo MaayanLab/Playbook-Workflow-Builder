@@ -38,14 +38,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next-probe/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    ".next-explore-debug/types/**/*.ts",
-    ".next-explore-debug/dev/types/**/*.ts",
-    ".next-icon-debug/types/**/*.ts",
-    ".next-icon-debug/dev/types/**/*.ts",
-    ".next-verify/types/**/*.ts",
-    ".next-verify/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

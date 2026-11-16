@@ -9,11 +9,8 @@ export default function ReportButton({ session_id, graph_id }: { session_id?: st
   return (
     <ExLink
       href={`${session_id ? `/session/${session_id}` : ''}/report${graph_id === 'start' ? `/` : `/${graph_id}`}`}
-      shallow
-    >
-      <button className='bp6-button bp6-minimal' disabled={disabled}>
+      shallow className='bp6-button bp6-minimal' disabled={disabled}>
         <Icon icon={view_report_icon} className={disabled ? 'fill-gray-400' : 'fill-black dark:fill-white'} />
-      </button>
     </ExLink>
   )
 }

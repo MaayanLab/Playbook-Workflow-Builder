@@ -68,7 +68,7 @@ export default function Suggestions() {
                 </tr>
               ))}
               <tr><td colSpan={7} align="center">
-                <ExLink href="/graph/start/node/start/suggest" shallow><button className="btn btn-primary btn-sm">Suggest a core data type</button></ExLink>
+                <ExLink href="/graph/start/node/start/suggest" shallow className="btn btn-primary btn-sm">Suggest a core data type</ExLink>
               </td></tr>
             </tbody>
           </table>

@@ -52,7 +52,12 @@ export function useExRouter() {
 
 export type ExRouter = ReturnType<typeof useExRouter>
 
-export function ExLink({ href, shallow, ...props }: React.ComponentProps<typeof Link> & { href: string }) {
+/**
+ * A link: use it (styled as a button where it's meant to look like one, rather than nesting a
+ *  <button> in it) so that it behaves as one, e.g. shift/ctrl/middle click opens it elsewhere.
+ * `disabled` links don't navigate (anchors have no disabled attribute).
+ */
+export function ExLink({ href, shallow, disabled, className, onClick, ...props }: React.ComponentProps<typeof Link> & { href: string, disabled?: boolean }) {
   const router = useExRouter()
   const newUrl = React.useMemo(() => {
     const newUrl = new URL(href, window.location.origin)
@@ -66,5 +71,15 @@ export function ExLink({ href, shallow, ...props }: React.ComponentProps<typeof 
     }
     return newUrl.toString()
   }, [href, shallow, router.query])
-  return <Link href={newUrl} {...props} />
+  if (disabled) {
+    return <Link
+      href={newUrl}
+      {...props}
+      aria-disabled
+      tabIndex={-1}
+      className={`${className ?? ''} bp6-disabled btn-disabled pointer-events-none`.trim()}
+      onClick={evt => evt.preventDefault()}
+    />
+  }
+  return <Link href={newUrl} className={className} onClick={onClick} {...props} />
 }

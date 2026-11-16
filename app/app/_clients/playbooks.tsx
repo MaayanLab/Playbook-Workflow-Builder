@@ -321,11 +321,9 @@ export default function Playbooks() {
                   <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Actions</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="flex flex-row gap-2 justify-center">
-                      <button disabled={playbook.disabled} onClick={() => {
-                        if (!playbook.disabled) router.push(`/report/${playbook.id}`)
-                      }}>
+                      <ExLink href={`/report/${playbook.id}`} disabled={playbook.disabled}>
                         <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
-                      </button>
+                      </ExLink>
                     </div>
                   </div>
                   <div className={classNames('bg-secondary font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
@@ -345,7 +343,7 @@ export default function Playbooks() {
                       <p><b>Published</b>: {playbook.published}</p>
                       <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
                       <p><b>Description</b>: {playbook.description.split('\n')[0]}</p>
-                      <ExLink href={`/report/${playbook.id}`}><button disabled={playbook.disabled} className="bp6-button bp6-large">Launch</button></ExLink>
+                      <ExLink href={`/report/${playbook.id}`} className="bp6-button bp6-large" disabled={playbook.disabled}>Launch</ExLink>
                     </div>
                   </div>
                   <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
@@ -356,10 +354,8 @@ export default function Playbooks() {
           </div>
           : null}
         </div>
-        <ExLink href="/playbooks/community" className="place-self-center">
-          <button className="btn btn-primary w-min whitespace-nowrap">
+        <ExLink href="/playbooks/community" className="place-self-center btn btn-primary w-min whitespace-nowrap">
             Click for Additional Playbooks Contributed by Other Users
-          </button>
         </ExLink>
       </main>
     </Layout>

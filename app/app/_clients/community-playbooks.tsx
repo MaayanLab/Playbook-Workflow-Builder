@@ -205,11 +205,9 @@ export default function CommunityPlaybooks() {
                 <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Actions</div>
                 <div className="col-span-1 row-span-1 p-3">
                   <div className="flex flex-row gap-2 justify-center">
-                    <button onClick={() => {
-                      router.push(`/report/${playbook.playbook}`)
-                    }}>
+                    <ExLink href={`/report/${playbook.playbook}`}>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" title="Launch Playbook" />
-                    </button>
+                    </ExLink>
                   </div>
                 </div>
               {/* </div> */}
@@ -226,7 +224,7 @@ export default function CommunityPlaybooks() {
                   <p><b>Published</b>: {playbook.created.toString()}</p>
                   <p><b>Authors</b>:<br /><UserIdentity user={playbook.user} /></p>
                   {playbook.description ? <p><b>Description</b>: {playbook.description.split('\n')[0]}</p> : null}
-                  <ExLink href={`/report/${playbook.playbook}`}><button className="bp6-button bp6-large">Launch</button></ExLink>
+                  <ExLink href={`/report/${playbook.playbook}`} className="bp6-button bp6-large">Launch</ExLink>
                 </div>
               </div>
               <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
@@ -237,10 +235,8 @@ export default function CommunityPlaybooks() {
           </div>
           : null}
         </div>
-        <ExLink href="/playbooks" className="place-self-center">
-          <button className="btn btn-primary w-min whitespace-nowrap">
+        <ExLink href="/playbooks" className="place-self-center btn btn-primary w-min whitespace-nowrap">
             Click for Playbooks Curated by the Playbook Partnership
-          </button>
         </ExLink>
       </main>
     </Layout>

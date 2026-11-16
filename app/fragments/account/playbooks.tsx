@@ -42,14 +42,10 @@ export default function Playbooks() {
                 <td>{playbook.clicks}</td>
                 <td className="flex flex-row gap-2">
                   <ExLink href={`/report/${playbook.playbook}`} shallow>
-                    <button>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" />
-                    </button>
                   </ExLink>
                   <ExLink href={`/graph/${playbook.playbook}`} shallow>
-                    <button>
                       <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
-                    </button>
                   </ExLink>
                   <button onClick={() => {
                     deleteUserPlaybook({ id: playbook.playbook })
@@ -66,10 +62,8 @@ export default function Playbooks() {
             <tr>
               <td></td>
               <td colSpan={7} align="center">
-                <ExLink href="/graph/extend" shallow>
-                  <button className="btn btn-primary btn-sm">
+                <ExLink href="/graph/extend" shallow className="btn btn-primary btn-sm">
                     Create a new playbook
-                  </button>
                 </ExLink>
               </td>
               <td></td>

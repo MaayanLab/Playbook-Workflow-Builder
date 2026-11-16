@@ -5,6 +5,7 @@ import React from 'react'
 //  NOTE: the version of @bokeh/bokehjs must match the python bokeh (requirements.txt)
 import { embed } from '@bokeh/bokehjs/build/js/lib/main'
 import '@bokeh/bokehjs/build/js/lib/models/widgets/main'
+import { version as bokehVersion } from '@bokeh/bokehjs/build/js/lib/version'
 
 /**
  * Use bokeh embed_item on a div with a unique id.
@@ -13,6 +14,7 @@ import '@bokeh/bokehjs/build/js/lib/models/widgets/main'
  */
 function BokehEmbeddedItem({ plot }: { plot: any }) {
     const id = React.useId()
+    const [error, setError] = React.useState<string | undefined>()
     React.useEffect(() => {
         if (!plot) return
         let cancelled = false
@@ -25,14 +27,23 @@ function BokehEmbeddedItem({ plot }: { plot: any }) {
                 // unmounted before the plot finished embedding
                 if (cancelled) remove()
             })
-            .catch(e => console.warn(e))
+            .catch(e => {
+                console.warn(e)
+                if (!cancelled) setError(String(e?.message ?? e))
+            })
         return () => {
             cancelled = true
             // on unmount, we tell bokeh to stop managing this element
             remove()
         }
     }, [plot, id])
-    return <div id={id} />
+    return <>
+        {error ? <div className="alert alert-error prose max-w-none">
+            The plot could not be displayed ({error}).
+            {(plot?.version ?? plot?.doc?.version) && (plot.version ?? plot.doc.version) !== bokehVersion ? ` It was created with Bokeh ${plot.version ?? plot.doc.version} while this page uses Bokeh ${bokehVersion}: recompute it to update it.` : null}
+        </div> : null}
+        <div id={id} />
+    </>
 }
 
 /**

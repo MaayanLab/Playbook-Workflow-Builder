@@ -46,11 +46,11 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           </div>
           <div className="navbar-end hidden md:flex">
             <div className="hidden xl:flex">
-              <ExLink href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></ExLink>
-              <ExLink href="/chat" shallow><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></ExLink>
-              <ExLink href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></ExLink>
-              <ExLink href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></ExLink>
-              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
+              <ExLink href="/playbooks" className="btn btn-ghost shrink text-black dark:text-white">Published Playbooks</ExLink>
+              <ExLink href="/chat" shallow className="btn btn-ghost shrink text-black dark:text-white">Text to Workflow</ExLink>
+              <ExLink href="/components" className="btn btn-ghost shrink text-black dark:text-white">Component Catalog</ExLink>
+              <ExLink href="/explore" className="btn btn-ghost shrink text-black dark:text-white">Component Graph</ExLink>
+              <a className="btn btn-ghost shrink text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank">User Guide</a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">

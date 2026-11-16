@@ -80,7 +80,8 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
               const url = new URL(window.location.href)
               url.pathname = `${session_id ? `/session/${session_id}` : ''}/report/${res.head}`
               url.hash = ''
-              window.history.pushState(null, '', url)
+              // (a rebase to the same playbook doesn't add a history entry, back would seem to do nothing)
+              if (url.href !== window.location.href) window.history.pushState(null, '', url)
             }}
           />
           : <div className="prose max-w-none">Waiting for input</div>}

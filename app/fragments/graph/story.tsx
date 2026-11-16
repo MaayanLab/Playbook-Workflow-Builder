@@ -3,6 +3,7 @@ import extractCitations from "@/utils/citations";
 import dynamic from 'next/dynamic';
 
 const Linkify = dynamic(() => import('@/utils/linkify'))
+const Bibliography = dynamic(() => import('@/app/fragments/bibliography'))
 
 export function Abstract({ story }: { story: ReturnType<typeof extractCitations> }) { 
   const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => part.tags.includes('abstract')), [story.ast])
@@ -62,10 +63,7 @@ export function References({ story }: { story: ReturnType<typeof extractCitation
   return (
     <div className="prose max-w-none">
       <strong>References</strong>
-      <p className="text-sm text-justify whitespace-pre-line my-2 flex flex-col">{storyFiltered.map((part, i) =>
-        part.type === 'bibitem' ? <span key={i} id={part.ref} className="text-neutral-focus"><Linkify>{part.text}</Linkify></span>
-        : null
-      )}</p>
+      <Bibliography className="text-sm my-2 text-neutral-focus" items={storyFiltered.flatMap(part => part.type === 'bibitem' ? [part] : [])} />
     </div>
   )
 }

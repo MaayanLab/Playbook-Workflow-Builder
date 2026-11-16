@@ -11,6 +11,7 @@ import MetaNodeListing, { metanodeType } from '@/app/fragments/components/listin
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
 const Icon = dynamic(() => import('@/app/components/icon'))
+const ComponentStory = dynamic(() => import('@/app/fragments/components/story'))
 
 export default function ComponentPage({ params }: { params: { spec: string } }) {
   const router = useExRouter()
@@ -28,7 +29,9 @@ export default function ComponentPage({ params }: { params: { spec: string } }) 
   if (metanode === undefined) return <div>Not found</div>
   return (
     <>
-      <div className="container flex-grow self-center flex flex-col py-5 overflow-hidden">
+      {/* (no overflow clipping here: the listing's toolbar sticks to the top of the page's scroll) */}
+      <div className="container mx-auto px-4 flex-grow flex flex-col py-5">
+        <div><ExLink href="/components" className="btn btn-sm" shallow>&lt;- All Components</ExLink></div>
         <div className="flex flex-row items-center gap-2 m-2">
           <Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} size={3} title={null} />
           <div className="flex flex-col prose max-w-none">
@@ -39,15 +42,17 @@ export default function ComponentPage({ params }: { params: { spec: string } }) 
         {metanode.meta.version ? <p className="prose max-w-none"><strong>Version</strong>: {metanode.meta.version}</p> : null}
         {metanode.meta.author ? <p className="prose max-w-none"><strong>Author</strong>: {metanode.meta.author}</p> : null}
         {metanode.meta.license ? <p className="prose max-w-none"><strong>License</strong>: {metanode.meta.license}</p> : null}
-        {metanode.meta.tags ? <p className="prose max-w-none"><strong>Tags</strong>: <div className="inline-flex flex-row gap-2 flex-wrap">{dict.items(metanode.meta.tags).flatMap(({ key, value }) => dict.keys(value).map(v => `${v} (${key})`)).map(tag =>
-          <div className="badge badge-secondary prose max-w-none" key={tag}>{tag}</div>
-        )}</div>
-        </p> : null}
+        {/* (a div: the badges are blocks, which a <p> can't contain) */}
+        {metanode.meta.tags ? <div className="prose max-w-none my-2"><strong>Tags</strong>: <span className="inline-flex flex-row gap-2 flex-wrap align-middle">{dict.items(metanode.meta.tags).flatMap(({ key, value }) => dict.keys(value).map(v => `${v} (${key})`)).map(tag =>
+          <span className="badge badge-secondary prose max-w-none" key={tag}>{tag}</span>
+        )}</span>
+        </div> : null}
         <Markdown components={{
           p(props: React.PropsWithChildren<{}>) {
             return <p className="prose max-w-none" {...props}>{props.children}</p>
           }
         }}>{`**Description**: ${metanode.meta.description}`}</Markdown>
+        <ComponentStory metanode={metanode} />
           <MetaNodeListing
             metanodes={[
               ...inputMetanodes ? dict.items(inputMetanodes)
@@ -59,7 +64,6 @@ export default function ComponentPage({ params }: { params: { spec: string } }) 
               ...nextMetanodes ? nextMetanodes.map(metanode => ({ metanode, type: `Next ${metanodeType(metanode)}` })) : [],
             ]}
           />
-        <div className="justify-self-end"><ExLink href="/components" className="btn btn-sm" shallow>&lt;- All Components</ExLink></div>
       </div>
     </>
   )

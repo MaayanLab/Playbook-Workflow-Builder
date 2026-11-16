@@ -3,11 +3,12 @@ import { appRouter } from '@/app/trpc/router'
 import { createFetchContext } from '@/app/trpc/context'
 import packageJson from '@/package.json'
 
-export function openApiFetchHandler(req: Request) {
+/** Serve the OpenAPI procedures, at their paths within `endpoint` (e.g. `/api/bco/...`, `/` for the site's root) */
+export function openApiFetchHandler(req: Request, endpoint: `/${string}` = '/api') {
   return createOpenApiFetchHandler({
     router: appRouter,
     req,
-    endpoint: '/api',
+    endpoint,
     createContext: () => createFetchContext(req),
     onError: ({ error, path }) => {
       if (error.code === 'INTERNAL_SERVER_ERROR') console.error(`[openapi] ${path}:`, error)

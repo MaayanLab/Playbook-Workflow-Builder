@@ -73,7 +73,7 @@ export function useExport(session_id?: string) {
             fail('the file is no longer available')
           } else if (state.status === 'complete' && state.download) {
             subscription?.unsubscribe()
-            const href = `${prefix}/api/ga4gh/drs/v1/objects/${state.download.id}/access/https/data`
+            const href = `${prefix}/ga4gh/drs/v1/objects/${state.download.id}/access/https/data`
             if (then === 'overleaf') {
               // overleaf fetches the bundle itself, so it needs an absolute url
               const snip_uri = `${publicUrl ?? ''}${href}`

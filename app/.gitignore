@@ -1,5 +1,6 @@
 .next
-data
+# (anchored: only this directory, local data; a bare `data` would also ignore e.g. routes named data)
+/data
 dist
 .next-*
 # managed by next (rewritten by each next dev/build, see its docs)

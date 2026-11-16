@@ -46,18 +46,6 @@ const config = {
     ignoreBuildErrors: process.env.STRICT_TS!=='true',
   },
   // (redirects are resolved when building, the landing page redirect is at runtime: app/app/page.tsx)
-  async rewrites() {
-    return [
-      {
-        source: '/ga4gh/:path*',
-        destination: '/api/ga4gh/:path*', // The :path parameter isn't used here so will be automatically passed in the query
-      },
-      {
-        source: '/mcp',
-        destination: '/api/mcp', // The :path parameter isn't used here so will be automatically passed in the query
-      },
-    ]
-  },
   // pg-listen's dependency pg-format reads a file at a path computed at runtime, which can't be bundled
   //  (pg & better-sqlite3 are external by default, see next/dist/lib/server-external-packages.jsonc)
   serverExternalPackages: ['pg-listen'],

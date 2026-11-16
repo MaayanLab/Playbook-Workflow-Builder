@@ -9,21 +9,6 @@ RUN echo "Installing system dependencies (git+puppeteer deps)..." \
     curl \
     git \
     gnupg \
-  && rm -rf /var/lib/apt/lists/*
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-RUN echo "Installing puppeteer dependencies..." \
-  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dl-google.gpg \
-  && sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/dl-google.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-  && apt-get update \
-  && apt-get install google-chrome-stable -y --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/*
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/google-chrome"
-
-RUN echo "Installing latex dependencies..." \
-  && apt-get update \
-  && apt-get -y install \
-    biber \
     latexmk \
     python3 \
     texlive-bibtex-extra \
@@ -36,7 +21,7 @@ RUN echo "Installing latex dependencies..." \
   && apt-get update \
   && apt-get install google-chrome-stable -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
-
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/google-chrome"
 USER ubuntu
 RUN NODE_VERSION=26 /install.sh
 

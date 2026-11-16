@@ -10,12 +10,24 @@ import { attachmentHeaders, nodeStreamResponse, routeResponse } from '@/app/app/
 
 type Params = { params: Promise<{ object_id: string, access_id: string }> }
 
-async function getUpload(props: Params) {
+/**
+ * The name to download the object as: a verified upload is stored (& served) by its hash, as its
+ *  content may have been uploaded under several names, so the link (e.g. the app's download
+ *  buttons, see utils/download) can name it with `?filename=` (only a name, not a path).
+ */
+function requestedFilename(request: Request) {
+  const filename = new URL(request.url).searchParams.get('filename')
+  if (!filename) return undefined
+  const name = filename.split(/[\\/]/).pop()!.replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, 255)
+  return name && name !== '.' && name !== '..' ? name : undefined
+}
+
+async function getUpload(request: Request, props: Params) {
   const params = await props.params
   if (params.access_id !== 'https') throw new NotFoundError()
   const upload = await resolveDrsObject(params.object_id)
   if (!upload) throw new NotFoundError()
-  return upload
+  return { ...upload, filename: requestedFilename(request) ?? upload.filename }
 }
 
 /** a single `bytes=start-end` range (suffix & multiple ranges aren't supported) */
@@ -28,9 +40,9 @@ function parseRange(header: string | null, size: number) {
   return { start, end }
 }
 
-export async function HEAD(_request: Request, props: Params) {
+export async function HEAD(request: Request, props: Params) {
   return routeResponse(async () => {
-    const upload = await getUpload(props)
+    const upload = await getUpload(request, props)
     return new Response(null, { headers: { ...attachmentHeaders(upload.filename, upload.size), 'Accept-Ranges': 'bytes' } })
   })
 }
@@ -38,7 +50,7 @@ export async function HEAD(_request: Request, props: Params) {
 async function handler(request: Request, props: Params) {
   return routeResponse(async () => {
     if (request.method === 'POST') await request.json()
-    const upload = await getUpload(props)
+    const upload = await getUpload(request, props)
     const backend = storage()
     if (upload.url.startsWith('storage://') && backend.presignedGet) {
       // the client (incl. its Range header) is redirected to the object itself

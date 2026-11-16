@@ -10,6 +10,8 @@ export function downloadUrl(url: string, filename?: string) {
         session_match !== null ? `/api/socket/${session_match[1]}`: ''
       }/ga4gh/drs/v1/objects/$2/access/https/data`
     )
+    // the server names the download (verified uploads are stored by their hash, see the DRS data route)
+    if (filename) url += `?filename=${encodeURIComponent(filename)}`
   }
   const a = document.createElement('a')
   a.href = url

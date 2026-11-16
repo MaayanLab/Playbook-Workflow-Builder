@@ -86,7 +86,7 @@ async function uploadAccessUrl(upload: { id: string, url: string, filename: stri
   } else if (upload.url.startsWith('https://')) {
     return upload.url
   }
-  return `${process.env.PUBLIC_URL || ''}/api/ga4gh/drs/v1/objects/${upload.id}/access/https/data`
+  return `${process.env.PUBLIC_URL || ''}/ga4gh/drs/v1/objects/${upload.id}/access/https/data`
 }
 
 export const publicApiRouter = router({
@@ -130,7 +130,7 @@ export const publicApiRouter = router({
         checksums: [{ type: 'sha-256', checksum: upload.sha256 }],
         access_methods: [
           { type: 'https', access_id: 'https' },
-          { type: 'https', access_url: `${process.env.PUBLIC_URL || ''}/api/ga4gh/drs/v1/objects/${input.object_id}/access/https/data` },
+          { type: 'https', access_url: `${process.env.PUBLIC_URL || ''}/ga4gh/drs/v1/objects/${input.object_id}/access/https/data` },
         ],
       }
     }),

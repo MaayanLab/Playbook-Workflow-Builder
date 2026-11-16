@@ -104,7 +104,8 @@ export default function Extend({ session_id, krg, id, heads, metapath }: { sessi
                 backgroundColor: item.output.meta.color || 'lightgrey',
                 opacity: disabled ? 0.75 : 1,
               }}
-              className={classNames('text-left', { 'pointer-events-none': disabled })}
+              // (the components' colors are light in both themes)
+              className={classNames('text-left text-black', { 'pointer-events-none': disabled })}
               onClick={async () => {
                 if (disabled) return
                 if ('onClick' in item) {

@@ -225,13 +225,13 @@ export default function Playbooks() {
           />
         </div>
         <div className="grid grid-rows-2 grid-cols-[min-content_max-content] md:grid-cols-7 md:grid-rows-[min-content_max-content]">
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden rounded-tl-lg"></div>
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Playbook</div>
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Inputs</div>
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Outputs</div>
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Sources</div>
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden">Clicks</div>
-          <div className="bg-secondary font-bold p-3 text-center md:block hidden rounded-tr-lg">Actions</div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden rounded-tl-lg"></div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden">Playbook</div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden">Inputs</div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden">Outputs</div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden">Sources</div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden">Clicks</div>
+          <div className="bg-secondary text-secondary-content font-bold p-3 text-center md:block hidden rounded-tr-lg">Actions</div>
           {playbooks ?
             playbooks.length > 0 ?
               playbooks.map(playbook =>
@@ -246,11 +246,11 @@ export default function Playbooks() {
                       >{details[playbook.id] ? '-' : '+'}</button>
                     </div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 text-center md:hidden rounded-t-lg')}>Playbook</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="prose max-w-none">{playbook.label}</div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Inputs</div>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 text-center md:hidden')}>Inputs</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="flex flex-row flex-wrap gap-2 justify-center">
                       {(playbook.inputs||'').split(', ').map(spec => krg.getDataNode(spec)).filter(node => node).map((input, i) => (
@@ -274,7 +274,7 @@ export default function Playbooks() {
                       ))}
                     </div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Outputs</div>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 text-center md:hidden')}>Outputs</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="flex flex-row flex-wrap gap-2 justify-center">
                       {(playbook.outputs||'').split(', ').map(spec => krg.getDataNode(spec)).filter(node => node).map((output, i) => (
@@ -299,7 +299,7 @@ export default function Playbooks() {
                       ))}
                     </div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Sources</div>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 text-center md:hidden')}>Sources</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="flex flex-row flex-wrap gap-2 justify-center">
                       {(playbook.dataSources||'').split(', ').map(dataSource => (
@@ -311,13 +311,13 @@ export default function Playbooks() {
                       ))}
                     </div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Clicks</div>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 text-center md:hidden')}>Clicks</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="prose max-w-none text-center md:h-12">
                       {playbook.clicks}
                     </div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 text-center md:hidden')}>Actions</div>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 text-center md:hidden')}>Actions</div>
                   <div className="col-span-1 row-span-1 p-3">
                     <div className="flex flex-row gap-2 justify-center">
                       <ExLink href={`/report/${playbook.id}`} disabled={playbook.disabled}>
@@ -325,7 +325,7 @@ export default function Playbooks() {
                       </ExLink>
                     </div>
                   </div>
-                  <div className={classNames('bg-secondary font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
+                  <div className={classNames('bg-secondary text-secondary-content font-bold p-3 row-span-1 col-span-1 text-center md:hidden rounded-b-lg')}>
                     <button
                       className="btn btn-ghost text-4xl text-black dark:text-white"
                       onClick={evt => {
@@ -342,7 +342,7 @@ export default function Playbooks() {
                       <p><b>Published</b>: {playbook.published}</p>
                       <p><b>Authors</b>:<br />{playbook.authors.join(', ')}</p>
                       <p><b>Description</b>: {playbook.description.split('\n')[0]}</p>
-                      <ExLink href={`/report/${playbook.id}`} className="bp6-button bp6-large" disabled={playbook.disabled}>Launch</ExLink>
+                      <ExLink href={`/report/${playbook.id}`} className="not-prose bp6-button bp6-large" disabled={playbook.disabled}>Launch</ExLink>
                     </div>
                   </div>
                   <div className="col-span-2 row-span-1 md:hidden my-2">&nbsp;</div>
@@ -353,7 +353,7 @@ export default function Playbooks() {
           </div>
           : null}
         </div>
-        <ExLink href="/playbooks/community" className="place-self-center btn btn-primary w-min whitespace-nowrap">
+        <ExLink href="/playbooks/community" className="not-prose place-self-center btn btn-primary w-min whitespace-nowrap">
             Click for Additional Playbooks Contributed by Other Users
         </ExLink>
       </main>

@@ -38,7 +38,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
               className="flex flex-row items-center hover:no-underline"
             >
               <img
-                className="p-2 max-w-16 cursor-pointer dark:stroke-white"
+                className="p-2 max-w-16 cursor-pointer dark:invert"
                 src={`${publicUrl}/PWB-logo.svg`}
               />
               <h1 className="text-black dark:text-white text-lg sm:text-2xl md:text-4xl font-bold p-2 cursor-pointer "><span className="text-[140%]">P</span>laybook <span className="text-[140%]">W</span>orkflow <span className="text-[140%]">B</span>uilder</h1>
@@ -46,11 +46,11 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           </div>
           <div className="navbar-end hidden md:flex">
             <div className="hidden xl:flex">
-              <ExLink href="/playbooks" className="btn btn-ghost shrink text-black dark:text-white">Published Playbooks</ExLink>
-              <ExLink href="/chat" shallow className="btn btn-ghost shrink text-black dark:text-white">Text to Workflow</ExLink>
-              <ExLink href="/components" className="btn btn-ghost shrink text-black dark:text-white">Component Catalog</ExLink>
-              <ExLink href="/explore" className="btn btn-ghost shrink text-black dark:text-white">Component Graph</ExLink>
-              <a className="btn btn-ghost shrink text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank">User Guide</a>
+              <ExLink href="/playbooks" className="not-prose btn btn-ghost shrink text-black dark:text-white">Published Playbooks</ExLink>
+              <ExLink href="/chat" shallow className="not-prose btn btn-ghost shrink text-black dark:text-white">Text to Workflow</ExLink>
+              <ExLink href="/components" className="not-prose btn btn-ghost shrink text-black dark:text-white">Component Catalog</ExLink>
+              <ExLink href="/explore" className="not-prose btn btn-ghost shrink text-black dark:text-white">Component Graph</ExLink>
+              <a className="not-prose btn btn-ghost shrink text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank">User Guide</a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -78,7 +78,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
             {/* within the container that scrolls, so that scrolling to it scrolls the page */}
             <Waypoint id="top" />
             <div className="container mx-auto my-2 flex flex-col gap-2">
-              <DismissableAlert id="plos" style={{ backgroundColor: '#d4fb79' }}>
+              <DismissableAlert id="plos" className="text-black" style={{ backgroundColor: '#d4fb79' }}>
                 <ExLink href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">
                   An article that describes the Playbook Workflow Builder project is now published in PLOS Computational Biology!
                 </ExLink>
@@ -99,13 +99,13 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
                 </a>
               </div>
               <div className="flex flex-col grid-cols-1 gap-1">
-                <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/MaayanLab/Playbook-Workflow-Builder" target="_blank">
+                <a className="not-prose btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/MaayanLab/Playbook-Workflow-Builder" target="_blank">
                   <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
-                  <span className="flex-grow text-black dark:text-white">View source code</span>
+                  <span className="flex-grow text-secondary-content">View source code</span>
                 </a>
-                <a className="btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/issues/new" target="_blank">
+                <a className="not-prose btn btn-xs btn-secondary rounded-lg gap-1" href="https://github.com/MaayanLab/Playbook-Workflow-Builder/issues/new" target="_blank">
                   <img className="rounded-md w-4 justify-self-start" src={`${publicUrl}/GitHub-Mark.png`} />
-                  <span className="flex-grow text-black dark:text-white">Submit an issue</span>
+                  <span className="flex-grow text-secondary-content">Submit an issue</span>
                 </a>
                 <div className="flex self-center gap-2 items-center">
                   <span className="prose max-w-none">Light</span>
@@ -114,7 +114,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
                 </div>
               </div>
             </div>
-            <div className="prose prose-sm max-w-none prose-p:m-0 alert bg-secondary flex-col gap-1 rounded-none">
+            <div className="prose prose-sm max-w-none prose-p:m-0 alert bg-secondary text-secondary-content prose-p:text-secondary-content prose-a:text-secondary-content dark:[&_a]:text-secondary-content flex-col gap-1 rounded-none">
               <p className="flex-col font-bold">Please acknowledge Playbook Workflow Builder in your publications by citing the following reference:</p>
               <p className="inline text-center">Clarke, D. J. B. et al. Playbook workflow builder: Interactive construction of bioinformatics workflows. PLOS Computational Biology vol. 21 e1012901 (2025). <a href="https://doi.org/10.1371/journal.pcbi.1012901" target="_blank">doi:10.1371/journal.pcbi.1012901</a></p>
             </div>

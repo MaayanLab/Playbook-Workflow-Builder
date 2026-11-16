@@ -12,6 +12,20 @@
   }
 }
 
+/* Blueprint sets a fixed (light theme) text color on body: follow the theme (light & dark) instead */
+@layer base {
+  body {
+    @apply text-base-content;
+  }
+}
+
+/* Blueprint colors every link in dark mode (`.bp6-dark a`): links styled as buttons keep their button's colors */
+.bp6-dark a.btn { color: hsl(var(--nc)); }
+.bp6-dark a.btn-primary { color: hsl(var(--pc)); }
+.bp6-dark a.btn-secondary { color: hsl(var(--sc)); }
+.bp6-dark a.btn-accent { color: hsl(var(--ac)); }
+.bp6-dark a.btn-ghost { color: inherit; }
+
 body, html {
   height: 100vh;
   width: 100vw;

@@ -28,7 +28,7 @@ export default function BCOButton({ session_id, id, metadata, disabled }: { sess
   return (
     <>
     {publishedBCO ?
-      <a className="bp6-button bp6-minimal" href={`https://biocomputeobject.org/${publishedBCO.state === 'PUBLISHED' ? 'viewer' : 'builder'}?${publishedBCO.contents.object_id}`} target="_blank">
+      <a className="not-prose bp6-button bp6-minimal" href={`https://biocomputeobject.org/${publishedBCO.state === 'PUBLISHED' ? 'viewer' : 'builder'}?${publishedBCO.contents.object_id}`} target="_blank">
         <Icon
           icon={biocompute_icon}
           className={publishedBCO.state === 'PUBLISHED' ? 'fill-green-500' : 'fill-yellow-400'}

@@ -31,12 +31,12 @@ export default function ComponentPage({ params }: { params: { spec: string } }) 
     <>
       {/* (no overflow clipping here: the listing's toolbar sticks to the top of the page's scroll) */}
       <div className="container mx-auto px-4 flex-grow flex flex-col py-5">
-        <div><ExLink href="/components" className="btn btn-sm" shallow>&lt;- All Components</ExLink></div>
+        <div><ExLink href="/components" className="not-prose btn btn-sm" shallow>&lt;- All Components</ExLink></div>
         <div className="flex flex-row items-center gap-2 m-2">
           <Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} size={3} title={null} />
           <div className="flex flex-col prose max-w-none">
             <h1 className="m-0 whitespace-pre-wrap">{metanode.meta.label}</h1>
-            <h2 className="m-0 text-gray-500">{metanodeType(metanode)}</h2>
+            <h2 className="m-0 text-gray-500 dark:text-gray-400">{metanodeType(metanode)}</h2>
           </div>
         </div>
         {metanode.meta.version ? <p className="prose max-w-none"><strong>Version</strong>: {metanode.meta.version}</p> : null}

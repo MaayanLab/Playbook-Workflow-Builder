@@ -157,7 +157,7 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
         <StoryProvider krg={krg} metapath={metapath ?? []}>
           {!embedded && metapath ?
           <>
-            <Waypoint id="head" className="sticky top-0 left-0 z-20 bg-white dark:bg-current w-full flex flex-row place-items-center">
+            <Waypoint id="head" className="sticky top-0 left-0 z-20 bg-base-100 w-full flex flex-row place-items-center">
             <Breadcrumbs>
               <DataBreadcrumb
                 key="start"
@@ -224,7 +224,7 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
           : null}
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
-            <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>
+            <div className={classNames('flex flex-col-reverse px-2 bg-base-100 overflow-auto')}>
               {sendError ?
                 <Message role="assistant" session={session}>
                   I experienced an error: {sendError.message}
@@ -282,7 +282,7 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
               </Message>
               <div className={classNames("flex-grow max-w-none flex flex-col justify-center items-center")}>
                 <img
-                  className="w-32"
+                  className="w-32 dark:invert"
                   src={`${publicUrl}/PWB-logo.svg`}
                 />
                 <div className="prose text-center">

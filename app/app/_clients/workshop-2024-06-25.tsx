@@ -20,7 +20,7 @@ export default function WorkshopPage() {
         <div className="flex flex-col place-items-center bg-primary p-4">
           <div className="flex flex-row items-center">
             <img
-              className="p-2 w-24 cursor-pointer dark:stroke-white"
+              className="p-2 w-24 cursor-pointer dark:invert"
               src={`/PWB-logo.svg`}
             />
             <h1 className="text-black dark:text-white text-4xl font-bold p-2 cursor-pointer">P<span className="text-2xl">laybook</span> W<span className="text-2xl">orkflow</span> B<span className="text-2xl">uilder</span></h1>
@@ -62,7 +62,7 @@ export default function WorkshopPage() {
             </div>
           </div>
           <div className="flex flex-col items-center gap-2" style={{ flex: '1 0 20em' }}>
-            <div className="card bg-secondary rounded-xl p-4 prose" style={{ width: '25rem' }}>
+            <div className="card bg-secondary text-secondary-content rounded-xl p-4 prose" style={{ width: '25rem' }}>
               <div className="card-title justify-center text-3xl">
                 WHERE
               </div>
@@ -77,7 +77,7 @@ export default function WorkshopPage() {
                 1:00 PM - 2:00 PM ET
               </div>
             </div>
-            <div className="card bg-secondary rounded-xl p-4 prose" style={{ width: '25rem' }}>
+            <div className="card bg-secondary text-secondary-content rounded-xl p-4 prose" style={{ width: '25rem' }}>
               <div className="card-title justify-center text-3xl">
                 REGISTRATION
               </div>
@@ -86,7 +86,7 @@ export default function WorkshopPage() {
                 <a href="https://mssm.zoom.us/webinar/register/WN_nB40DQScS9y2klZ6frk8JQ#/registration">mssm.zoom.us/webinar/register/WN_<br />nB40DQScS9y2klZ6frk8JQ#/registration</a>
               </div>
             </div>
-            <div className="card bg-secondary rounded-xl p-4 prose" style={{ width: '25rem' }}>
+            <div className="card bg-secondary text-secondary-content rounded-xl p-4 prose" style={{ width: '25rem' }}>
               <div className="card-title justify-center text-3xl">
                 FIND OUT MORE
               </div>

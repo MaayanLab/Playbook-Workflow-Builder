@@ -48,7 +48,7 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             </div>
           </div>
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !currentCellMetadata.process_visible })}>
-            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`} shallow className="bp6-button bp6-minimal">
+            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`} shallow className="not-prose bp6-button bp6-minimal">
                 <Icon icon={view_in_graph_icon} />
             </ExLink>
           </div>
@@ -100,10 +100,10 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
             </div>
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !currentCellMetadata.data_visible })}>
-            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`} shallow className="bp6-button bp6-minimal">
+            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}`} shallow className="not-prose bp6-button bp6-minimal">
                 <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
             </ExLink>
-            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}/extend`} shallow className="bp6-button bp6-minimal">
+            <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph/${id}/node/${head.id}/extend`} shallow className="not-prose bp6-button bp6-minimal">
                 <Icon icon={fork_icon} className="fill-black dark:fill-white" />
             </ExLink>
             <button className="bp6-button bp6-minimal" disabled>

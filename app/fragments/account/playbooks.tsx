@@ -62,7 +62,7 @@ export default function Playbooks() {
             <tr>
               <td></td>
               <td colSpan={7} align="center">
-                <ExLink href="/graph/extend" shallow className="btn btn-primary btn-sm">
+                <ExLink href="/graph/extend" shallow className="not-prose btn btn-primary btn-sm">
                     Create a new playbook
                 </ExLink>
               </td>

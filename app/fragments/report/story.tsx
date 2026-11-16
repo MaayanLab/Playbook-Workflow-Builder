@@ -32,7 +32,7 @@ export function AbstractPart({ id, story }: { id: string, story: ReturnType<type
   const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => part.tags.includes('abstract') && part.tags.includes(id)), [story.ast])
   if (!storyFiltered.length) return null
   return (
-    <p className="prose max-w-none text-justify">
+    <p className="prose max-w-none text-justify text-current">
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>
         : part.type === 'cite' ? <span key={i}> [<a key={i} href={`#${part.ref}`}>{story.bibitems.get(part.ref)}</a>]</span>
@@ -48,7 +48,7 @@ export function Methods({ id, story }: { id: string, story: ReturnType<typeof ex
   const storyFiltered = React.useMemo(() => story.ast.filter((part, i) => part.tags.includes('methods') && part.tags.includes(id)), [id, story.ast])
   if (!storyFiltered.length) return null
   return (
-    <p className="prose max-w-none text-justify">
+    <p className="prose max-w-none text-justify text-current">
       <strong>Method </strong>
       {storyFiltered.map((part, i) =>
         part.type === 'text' ? <Linkify key={i}>{part.text}</Linkify>

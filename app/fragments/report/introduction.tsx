@@ -104,10 +104,10 @@ export default function Introduction({
           </div>
         </div>
         <div className="border-t-secondary border-t-2 mt-2">
-          <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`} shallow className="bp6-button bp6-minimal">
+          <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start` : ``}`} shallow className="not-prose bp6-button bp6-minimal">
               <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
           </ExLink>
-          <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`} shallow className="bp6-button bp6-minimal">
+          <ExLink href={`${session_id ? `/session/${session_id}` : ''}/graph${id ? `/${id}/node/start/extend` : `/start/extend`}`} shallow className="not-prose bp6-button bp6-minimal">
               <Icon icon={fork_icon} className="fill-black dark:fill-white" />
           </ExLink>
           <SaveButton

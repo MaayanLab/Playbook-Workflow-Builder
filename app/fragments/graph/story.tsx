@@ -63,7 +63,7 @@ export function References({ story }: { story: ReturnType<typeof extractCitation
   return (
     <div className="prose max-w-none">
       <strong>References</strong>
-      <Bibliography className="text-sm my-2 text-neutral-focus" items={storyFiltered.flatMap(part => part.type === 'bibitem' ? [part] : [])} />
+      <Bibliography className="text-sm my-2 opacity-80" items={storyFiltered.flatMap(part => part.type === 'bibitem' ? [part] : [])} />
     </div>
   )
 }

@@ -18,6 +18,8 @@ def limma_voom(anndata):
   ctrl_mask = [x in ctrl_ids for x in anndata.obs_names]
   case_ids = anndata.obs[anndata.obs[col] == grp_ids[1]].index.tolist()
   case_mask = [x in case_ids for x in anndata.obs_names]
+  if not any(ctrl_mask) or not any(case_mask):
+    raise ValueError(f"Expected samples in both groups ({grp_ids[0]} & {grp_ids[1]}) of '{col}': label the samples (e.g. as Control or Perturbation) first")
 
   ctrl_df = pd.DataFrame(
     data = anndata.X[ctrl_mask, :],

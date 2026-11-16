@@ -20,6 +20,8 @@ def cd_signature(anndata):
   ctrl_mask = [x in ctrl_ids for x in anndata.obs_names]
   case_ids = anndata.obs[anndata.obs[col] == grp_ids[1]].index.tolist()
   case_mask = [x in case_ids for x in anndata.obs_names]
+  if not any(ctrl_mask) or not any(case_mask):
+    raise ValueError(f"Expected samples in both groups ({grp_ids[0]} & {grp_ids[1]}) of '{col}': label the samples (e.g. as Control or Perturbation) first")
 
   ctrl_df = pd.DataFrame(
     data = anndata.X[ctrl_mask, :],
@@ -33,6 +35,9 @@ def cd_signature(anndata):
     columns = anndata.var_names
   ).T
 
+  # (the results are aligned by gene: a gene named more than once is summed, as in the biotype filter)
+  ctrl_df = ctrl_df.groupby(level=0).sum()
+  case_df = case_df.groupby(level=0).sum()
   signature = pd.concat([
     characteristic_direction(
       ctrl_df,

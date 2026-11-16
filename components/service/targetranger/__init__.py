@@ -38,7 +38,6 @@ def targetscreener(m: t.Union[AnnDataFile, GeneCountMatrix], *, bg):
   res = res.rename({'t': 'zscore', 'gene': 'term'}, axis=1)
   # Translate response into output
   res = res.sort_values('zscore', ascending=False)
-  res['zscore'].replace(np.nan, 'nan', inplace=True)
-  res['zscore'].replace(np.inf, 'inf', inplace=True)
-  res['zscore'].replace(-np.inf, '-inf', inplace=True)
+  # (assigned: with pandas' copy-on-write, replacing inplace on a column doesn't change the frame)
+  res['zscore'] = res['zscore'].replace({np.nan: 'nan', np.inf: 'inf', -np.inf: '-inf'})
   return res[['term', 'zscore']].to_dict(orient='records')

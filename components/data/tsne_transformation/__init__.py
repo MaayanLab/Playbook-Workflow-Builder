@@ -11,7 +11,7 @@ def tsne_transformation(gene_count_matrix: GeneCountMatrix):
 
   # t-SNE
   sc.pp.pca(df)
-  tsne = TSNE(n_components=3)
+  tsne = TSNE(n_components=3, perplexity=min(30., df.n_obs - 1.))
   df.obsm['X_tsne'] = tsne.fit_transform(df.obsm['X_pca'])
 
   # leiden coloring

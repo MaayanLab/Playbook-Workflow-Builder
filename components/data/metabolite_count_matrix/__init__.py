@@ -1,6 +1,8 @@
 import typing
 import numpy as np
 import anndata as ad
+import anndata.io as anndata_io
+import pandas as pd
 from components.core.file import File, file_as_seekable, file_as_stream, upsert_file
 from components.data.gene_count_matrix import np_jsonifyable
 
@@ -19,19 +21,20 @@ def metanndata_from_file(file: File):
       return ad.read_h5ad(fr)
   elif file['filename'].endswith('.csv'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter=',').transpose()
+      return anndata_io.read_text(fr, delimiter=',').transpose()
   elif file['filename'].endswith('.tsv'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter='\t').transpose()
+      return anndata_io.read_text(fr, delimiter='\t').transpose()
   elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter=None).transpose()
+      return anndata_io.read_text(fr, delimiter=None).transpose()
   elif file['filename'].endswith('.xlsx'):
     with file_as_seekable(file) as fr:
-      return ad.read_excel(fr).transpose()
+      # (anndata's read_excel only reads paths, this is a file: the first sheet, first column the index)
+      return ad.AnnData(pd.read_excel(fr, sheet_name=0, index_col=0).apply(pd.to_numeric)).transpose()
   elif file['filename'].endswith('.h5'):
     with file_as_seekable(file) as fr:
-      return ad.read_hdf(fr).transpose()
+      return anndata_io.read_hdf(fr).transpose()
   else:
     raise NotImplementedError
 

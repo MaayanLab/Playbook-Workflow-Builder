@@ -1,6 +1,8 @@
 import typing
 import numpy as np
 import anndata as ad
+import anndata.io as anndata_io
+import pandas as pd
 from components.core.file import File, file_as_seekable, file_as_stream, upsert_file
 
 class GeneCountMatrix(File, typing.TypedDict):
@@ -11,26 +13,50 @@ class GeneCountMatrix(File, typing.TypedDict):
   ellipses: typing.Tuple[typing.Union[int, None], typing.Union[int, None]]
 
 def anndata_from_gctx(file: File):
-  with file_as_seekable(file) as fr:
-    import h5py
-    f = h5py.File(fr, 'r')
-    return ad.AnnData(
-      X=f['0']['DATA']['0']['MATRIX'],
-      obs=f['0']['META']['0']['ROW'],
-      var=f['0']['META']['0']['COL'],
-    )
+  ''' GCTX (the HDF5 GCT): the matrix (`0/DATA/0/matrix`, or `MATRIX`), the samples' ids &
+  metadata (`0/META/COL`, or `0/META/0/COL`) & the genes' (`0/META/ROW`, or `0/META/0/ROW`).
+  As in GCT, the columns are the samples. The matrix's orientation is that of the ids (cmapPy's
+  files store it as samples x genes), strings are stored as bytes.
+  '''
+  import h5py
+  def first(f, *paths):
+    for p in paths:
+      if p in f: return f[p]
+    raise KeyError(f"Not a GCTX file: none of {', '.join(paths)} found")
+  def values(dataset):
+    v = dataset[()]
+    return v.astype(str) if v.dtype.kind == 'S' else v
+  def meta(group):
+    return pd.DataFrame({k: values(group[k]) for k in group if k != 'id'}, index=pd.Index(values(group['id'])))
+  with file_as_seekable(file) as fr, h5py.File(fr, 'r') as f:
+    matrix = first(f, '0/DATA/0/matrix', '0/DATA/0/MATRIX')[()]
+    samples = meta(first(f, '0/META/COL', '0/META/0/COL'))
+    genes = meta(first(f, '0/META/ROW', '0/META/0/ROW'))
+  if matrix.shape == (samples.shape[0], genes.shape[0]):
+    X = matrix
+  elif matrix.shape == (genes.shape[0], samples.shape[0]):
+    X = matrix.T
+  else:
+    raise ValueError(f"The GCTX matrix {matrix.shape} doesn't match its {samples.shape[0]} column & {genes.shape[0]} row ids")
+  return ad.AnnData(X=X, obs=samples, var=genes)
 
 def anndata_from_gct(file: File):
+  ''' GCT: `#1.2` (or `#1.3`), the dimensions (1.3: also the number of row & column metadata),
+  then a table of genes x samples, after its row metadata columns (1.2: Description) & column
+  metadata rows (1.3, which are the samples' metadata)
+  '''
+  import pandas as pd
   with file_as_stream(file, 'r') as fr:
-    import pandas as pd
     version = fr.readline()
-    shape = list(map(int, fr.readline().split('\t')))
-    columns = fr.readline().split('\t')
-    df = pd.read_csv(fr, sep='\t', header=columns)
-    return ad.AnnData(
-      X=df.iloc[-shape[1]:],
-      obs=df.iloc[:-shape[1]],
-    )
+    dims = list(map(int, fr.readline().split()))
+    n_row_meta = dims[2] if len(dims) > 2 else 1
+    n_col_meta = dims[3] if len(dims) > 3 else 0
+    df = pd.read_csv(fr, sep='\t', index_col=0)
+  values = df.iloc[n_col_meta:, n_row_meta:].apply(pd.to_numeric)
+  d = ad.AnnData(values.T)
+  if n_col_meta:
+    d.obs = df.iloc[:n_col_meta, n_row_meta:].T.reindex(d.obs_names)
+  return d
 
 def anndata_from_file(file: File):
   ''' Read from a bunch of different formats, get an anndata file
@@ -40,29 +66,30 @@ def anndata_from_file(file: File):
       return ad.read_h5ad(fr)
   elif file['filename'].endswith('.csv'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter=',').transpose()
+      return anndata_io.read_text(fr, delimiter=',').transpose()
   elif file['filename'].endswith('.csv.gz'):
     import gzip
     with file_as_stream(file, 'rb') as fr_compressed:
       with gzip.open(fr_compressed, 'rt') as fr:
-        return ad.read_text(fr, delimiter=',').transpose()
+        return anndata_io.read_text(fr, delimiter=',').transpose()
   elif file['filename'].endswith('.tsv'):
     with file_as_stream(file, 'r') as fr:
-      return ad.read_text(fr, delimiter='\t').transpose()
+      return anndata_io.read_text(fr, delimiter='\t').transpose()
   elif file['filename'].endswith('.tsv.gz'):
     import gzip
     with file_as_stream(file, 'rb') as fr_compressed:
       with gzip.open(fr_compressed, 'rt') as fr:
-        return ad.read_text(fr, delimiter='\t').transpose()
+        return anndata_io.read_text(fr, delimiter='\t').transpose()
   elif file['filename'].endswith('.txt') or file['filename'].endswith('.tab') or file['filename'].endswith('.data'):
     with file_as_stream(file, 'r') as fr:
       try:
-        return ad.read_text(fr, delimiter=None).transpose()
+        return anndata_io.read_text(fr, delimiter=None).transpose()
       except Exception as e:
         raise Exception(f"Failed to read {file['filename']} as a matrix (please use .csv, or .tsv)") from e
   elif file['filename'].endswith('.xlsx'):
     with file_as_seekable(file) as fr:
-      return ad.read_excel(fr).transpose()
+      # (anndata's read_excel only reads paths, this is a file: the first sheet, first column the index)
+      return ad.AnnData(pd.read_excel(fr, sheet_name=0, index_col=0).apply(pd.to_numeric)).transpose()
   elif file['filename'].endswith('.gctx'):
     return anndata_from_gctx(file)
   elif file['filename'].endswith('.gct'):
@@ -70,7 +97,7 @@ def anndata_from_file(file: File):
   elif file['filename'].endswith('.h5'):
     with file_as_seekable(file) as fr:
       try:
-        return ad.read_hdf(fr).transpose()
+        return anndata_io.read_hdf(fr).transpose()
       except Exception as e:
         raise Exception(f"Failed to read {file['filename']} as a matrix (please use .gctx, or .h5ad)") from e
   else:

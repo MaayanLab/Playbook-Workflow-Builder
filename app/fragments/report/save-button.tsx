@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import { save_icon } from '@/icons'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
@@ -14,7 +14,7 @@ export default function SaveButton({ userPlaybook, toggleSave, updateRequired }:
   return (
     <>
       <button
-        className="bp5-button bp5-minimal"
+        className="bp6-button bp6-minimal"
         disabled={disabled}
         onClick={() => { toggleSave() }}
       >

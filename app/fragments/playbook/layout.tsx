@@ -1,6 +1,6 @@
 import React from 'react'
 import { ExLink } from '@/app/fragments/ex-router'
-import * as Auth from 'next-auth/react'
+import * as Auth from '@/app/extensions/auth-client'
 import { useRuntimeConfig } from '@/app/fragments/config'
 import usePublicUrl from '@/utils/next-public-url'
 import ThemeToggle from '@/app/components/ThemeToggle'
@@ -15,12 +15,17 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
   const publicUrl = usePublicUrl()
   const { data: session } = Auth.useSession()
   const runtimeConfig = useRuntimeConfig()
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.sessionStorage.getItem('pwb:chat-collapsed') === 'true'
+  })
+  React.useEffect(() => {
+    window.sessionStorage.setItem('pwb:chat-collapsed', String(isSidebarCollapsed))
+  }, [isSidebarCollapsed])
   return (
     <div className="drawer w-screen h-screen">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
       <Waypoints className="drawer-content flex flex-col w-screen h-screen overflow-hidden">
-        <Waypoint id="top" />
         <div className="navbar bg-primary gap-2">
           <div className="flex-grow flex-none">
             <div className="flex-none xl:hidden">
@@ -41,11 +46,11 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           </div>
           <div className="navbar-end hidden md:flex">
             <div className="hidden xl:flex">
-              <ExLink href="/playbooks"><button className="btn btn-ghost text-black dark:text-white">Published Playbooks</button></ExLink>
-              <ExLink href="/chat" shallow><button className="btn btn-ghost text-black dark:text-white">Text to Workflow</button></ExLink>
-              <ExLink href="/components"><button className="btn btn-ghost text-black dark:text-white">Component Catalog</button></ExLink>
-              <ExLink href="/explore"><button className="btn btn-ghost text-black dark:text-white">Component Graph</button></ExLink>
-              <a className="text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank"><button className="btn btn-ghost">User Guide</button></a>
+              <ExLink href="/playbooks" className="btn btn-ghost shrink text-black dark:text-white">Published Playbooks</ExLink>
+              <ExLink href="/chat" shallow className="btn btn-ghost shrink text-black dark:text-white">Text to Workflow</ExLink>
+              <ExLink href="/components" className="btn btn-ghost shrink text-black dark:text-white">Component Catalog</ExLink>
+              <ExLink href="/explore" className="btn btn-ghost shrink text-black dark:text-white">Component Graph</ExLink>
+              <a className="btn btn-ghost shrink text-black hover:text-black dark:text-white dark:hover:text-white" href="https://github.com/nih-cfde/playbook-partnership/blob/main/docs/user/index.md" target="_blank">User Guide</a>
             </div>
             {session && session.user ?
               <div className="dropdown dropdown-end">
@@ -61,7 +66,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
                   <li><ExLink href="/account/suggestions">Suggestions</ExLink></li>
                   <li className="menu-title prose"><span>Account</span></li>
                   <li><ExLink href="/account">Settings</ExLink></li>
-                  <li><ExLink href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
+                  <li><ExLink href="/" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
                 </ul>
               </div>
               : <button className="btn btn-ghost text-black hover:text-black dark:text-white dark:hover:text-white" onClick={() => {Auth.signIn()}}>Sign in</button>}
@@ -70,6 +75,8 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
 
         <div className="grow flex flex-col sm:flex-row-reverse justify-stretch overflow-hidden">
           <div className="grow flex flex-col sm:h-full overflow-auto">
+            {/* within the container that scrolls, so that scrolling to it scrolls the page */}
+            <Waypoint id="top" />
             <div className="container mx-auto my-2 flex flex-col gap-2">
               <DismissableAlert id="plos" style={{ backgroundColor: '#d4fb79' }}>
                 <ExLink href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012901" className="dark:text-inherit dark:hover:text-inherit">
@@ -116,7 +123,7 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
           {sidebar && <>
             <div className="flex flex-col sm:flex-row-reverse">
               <div className={classNames("self-center relative")}>
-                <button className={classNames("absolute btn btn-xs sm:rotate-90 sm:active:focus:rotate-90 whitespace-nowrap sm:-left-2 left-[25vw]", { "-top-4 sm:top-0 sm:-left-9": !isSidebarCollapsed,  "-top-6 sm:top-0 sm:-left-2": isSidebarCollapsed })}  onClick={evt => {setIsSidebarCollapsed(!isSidebarCollapsed)}}>
+                <button className={classNames("absolute btn btn-xs sm:rotate-90 sm:active:focus:rotate-90 whitespace-nowrap sm:-left-2 left-[25vw]", { "-top-4 sm:top-0 sm:-left-9": !isSidebarCollapsed,  "-top-6 sm:top-0 sm:-left-2": isSidebarCollapsed })} onClick={() => {setIsSidebarCollapsed(collapsed => !collapsed)}}>
                   {isSidebarCollapsed ? 'Chat' : 'Hide Chat'}
                 </button>
               </div>
@@ -149,14 +156,14 @@ export default function Layout({ children, sidebar }: React.PropsWithChildren<{ 
                       <span>Account</span>
                     </li>
                     <li><ExLink href="/account">Settings</ExLink></li>
-                    <li><ExLink href="/api/auth/signout" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
+                    <li><ExLink href="/" onClick={() => {Auth.signOut()}}>Sign Out</ExLink></li>
               </>
               :
               <>
                 <li className="menu-title prose">
                   <span>Account</span>
                 </li>
-                <li><ExLink href="/api/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</ExLink></li>
+                <li><ExLink href="/auth/signin" onClick={() => {Auth.signIn()}}>Sign in</ExLink></li>
               </>}
         </ul>
       </div>

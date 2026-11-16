@@ -1,0 +1,69 @@
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import db from "@/app/db"
+import { insertUserUpload } from "@/db/queries"
+import { createHash } from 'crypto'
+import type { Writable, Readable } from 'stream'
+import type { SessionWithId } from "@/app/auth"
+import { toReadable } from '@/utils/readable'
+import { fileAsStream } from './download'
+import storage from './storage'
+import { drsUrl } from './drs'
+import { fileURLToPath } from 'url'
+
+function statsFromStream(reader: Readable, writer?: Writable) {
+  return new Promise<{ sha256: string, size: number }>((resolve, reject) => {
+    let size = 0
+    const hash = createHash('sha256')
+    reader
+      .on('error', (err) => reject(err))
+      .on('data', (buf) => {
+        size += buf.length
+        hash.update(buf)
+        if (writer) writer.write(buf, (err) => { if (err) reject(err) })
+      })
+      .on('end', () => {
+        if (writer) writer.end()
+        resolve({ sha256: hash.digest('hex'), size })
+      })
+  })
+}
+
+export async function fileFromStream(reader_: Readable | ReadableStream<Uint8Array>, filename: string) {
+  const reader = await toReadable(reader_)
+  const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ppwb-')), filename)
+  const writer = fs.createWriteStream(tmp)
+  const { sha256, size } = await statsFromStream(reader, writer)
+  return { url: `file://${tmp.split(path.sep).join(path.posix.sep)}`, sha256, size, filename }
+}
+
+export type UploadFileResponse = Awaited<ReturnType<typeof uploadFile>>
+
+/**
+ * Store a file & record it as an upload of the session's user (or anonymously)
+ */
+export async function uploadFile(file: { url: string, size?: number, sha256?: string, filename: string }, session?: Pick<SessionWithId, 'user'> | null) {
+  if (!file.sha256 || !file.size) {
+    const stats = await statsFromStream(await fileAsStream(file))
+    file.sha256 = stats.sha256
+    if (file.size !== undefined && file.size !== stats.size) {
+      console.warn('mismatched filesize')
+    }
+    file.size = stats.size
+  }
+  if (file.url.startsWith('file://')) {
+    // local files are moved into (content addressed) storage
+    await storage().putFile(file.sha256, fileURLToPath(file.url))
+    file.url = `storage://${file.sha256}`
+  }
+  const user_upload = await insertUserUpload(db, { ...file, sha256: file.sha256 as string, size: file.size as number }, session?.user?.id ?? null)
+  return {
+    id: user_upload.id,
+    // stored files are referred to by their (verified) hash, so identical files are identical inputs
+    url: drsUrl(file.url === `storage://${file.sha256}` ? file.sha256 as string : user_upload.id),
+    filename: file.filename,
+    sha256: file.sha256,
+    size: file.size,
+  }
+}

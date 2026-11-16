@@ -354,7 +354,7 @@ export const SelectCFDEGSEDataset = MetaNode('SelectCFDEGSEDataset')
           </select>
         </div>
         <button
-          className="bp5-button bp5-large"
+          className="bp6-button bp6-large"
           disabled={selected === null}
           onClick={() => {
             if (selected !== null) props.submit({ key: selected })
@@ -495,7 +495,7 @@ export const SelectCFDEGSEGMTs = MetaNode('SelectCFDEGSEGMTs')
             }
           </div>
           <button
-            className="bp5-button bp5-large"
+            className="bp6-button bp6-large"
             disabled={!selected0 || !selected1 || !selected2}
             onClick={() => {
               if (!selected0 || !selected1 || !selected2) {

@@ -2,14 +2,14 @@ import React from 'react'
 import { GeneCountMatrix } from '@/components/data/gene_count_matrix'
 import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
-import { v4 as uuid4 } from 'uuid'
 import python from '@/utils/python'
 import SafeRender from '@/utils/saferender'
-import * as Auth from 'next-auth/react'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import * as Auth from '@/app/extensions/auth-client'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import classNames from 'classnames'
 import * as array from '@/utils/array'
 import * as dict from '@/utils/dict'
+import { useTRPCClient } from '@/app/trpc/client'
 
 export const FASTQAlignment = MetaNode(`FASTQAlignment`)
   .meta({
@@ -26,8 +26,9 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
   .inputs()
   .output(GeneCountMatrix)
   .prompt(props => {
+    const trpc = useTRPCClient()
     const { data: session } = useSessionWithId()
-    const [uid, _] = React.useState(() => uuid4())
+    const [uid, _] = React.useState(() => crypto.randomUUID())
     const organism = 'human'
     const [error, setError] = React.useState<string>()
     const [uploads, setUploads] = React.useState<Record<string, { progress: number, xhr?: XMLHttpRequest, error?: string }>>({})
@@ -48,14 +49,10 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
         }
       }
       Promise.all(files.map(async (file) => {
-        const charonSearchParams = new URLSearchParams()
-        charonSearchParams.append('uid', uid)
-        const charonReq = await fetch(`/api/v1/components/service/elysium/charon?${charonSearchParams.toString()}`)
-        if (!charonReq.ok) throw new Error(`${await charonReq.text()}`)
-        const charonRes = await charonReq.json()
+        const charonRes = await trpc.components.elysium.signUpload.mutate({ uid }, { context: { session_id: props.session_id } })
         const charonFormData = new FormData()
-        for (const k in charonRes.formData) {
-          charonFormData.append(k, charonRes.formData[k])
+        for (const [key, value] of Object.entries(charonRes.formData)) {
+          charonFormData.append(key, value)
         }
         charonFormData.append('file', file)
         const s3Req = await new Promise<{ ok: boolean, text: string }>((resolve, reject) => {
@@ -89,7 +86,7 @@ export const FASTQAlignment = MetaNode(`FASTQAlignment`)
         console.error(err.toString())
         setError(err.toString())
       })
-    }, [])
+    }, [trpc, uid, props.session_id, uploads])
     const errorFreeUploads = React.useMemo(() =>
       Object.keys(uploads).filter(filename => !uploads[filename].error)
     , [uploads])

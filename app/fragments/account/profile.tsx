@@ -1,8 +1,7 @@
 import React from 'react'
-import useSWR from 'swr'
-import useSWRMutation from 'swr/mutation'
-import { SessionWithId } from '@/app/pages/api/auth/[...nextauth]'
-import fetcher, { fetcherPOST } from '@/utils/next-rest-fetcher'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { SessionWithId } from '@/app/auth'
+import { useTRPC } from '@/app/trpc/client'
 import dynamic from 'next/dynamic'
 import classNames from 'classnames'
 
@@ -12,8 +11,12 @@ const Bp5InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGro
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
 export default function Profile({ session }: { session: SessionWithId }) {
-  const { data: userProfile, isLoading } = useSWR<{ name: string, affiliation: string }>(`/api/db/user/profile`, fetcher)
-  const { trigger: setUserProfile, isMutating } = useSWRMutation('/api/db/user/profile', fetcherPOST)
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: userProfile, isLoading } = useQuery(trpc.users.me.queryOptions())
+  const updateProfile = useMutation(trpc.users.update.mutationOptions({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.users.me.queryKey() }),
+  }))
   const [userProfileDraft, setUserProfileDraft] = React.useState({
     name: '',
     affiliation: '',
@@ -25,11 +28,11 @@ export default function Profile({ session }: { session: SessionWithId }) {
   }, [userProfile])
   return (
     <>
-      <h3 className="bp5-heading">Profile Settings</h3>
-      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || isMutating) })}></progress>
+      <h3 className="bp6-heading">Profile Settings</h3>
+      <progress className={classNames('progress w-full', { 'hidden': !(isLoading || updateProfile.isPending) })}></progress>
       <form onSubmit={async (evt) => {
         evt.preventDefault()
-        setUserProfile(userProfileDraft, { revalidate: false })
+        updateProfile.mutate(userProfileDraft)
       }} method="POST">
         <Bp5FormGroup
           label="Authorship Information"

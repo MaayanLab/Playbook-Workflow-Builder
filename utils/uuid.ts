@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { canonicalize } from 'json-canonicalize'
+import { canonicalize } from '@/utils/canonicalize'
 
 /**
  * Obtain a unique hash for a arbitrary data

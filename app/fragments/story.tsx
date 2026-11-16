@@ -1,10 +1,9 @@
 /**
  * This is a bit hacky but the nicer way of dealing with stories.
- * The main issue is that useMetapathInputs/useMetapathOutputs relies on SWR which only works
- *  as a React Hook. So it becomes a lot simpler to have independent processes independently
+ * The main issue is that useMetapathInputs/useMetapathOutput are React Hooks (subscribing to
+ *  each step's resolution). So it becomes a lot simpler to have independent processes independently
  *  assemble the story into one element -- then we can just extract the full story from the
- *  parent DOM element. This is nicer than waiting for the full story to be ready and doesn't
- *  require us to re-implement SWR.
+ *  parent DOM element. This is nicer than waiting for the full story to be ready.
  */
 import React from 'react'
 import type KRG from '@/core/KRG'

@@ -1,17 +1,19 @@
 import dynamic from 'next/dynamic'
 import { delete_icon, view_in_graph_icon, view_report_icon } from '@/icons'
-import { useAPIQuery, useAPIMutation } from '@/core/api/client'
-import { DeleteUserPlaybook, UserPlaybooks } from '@/app/api/client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import { ExLink } from '@/app/fragments/ex-router'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function Playbooks() {
-  const { data: playbooks, mutate: mutatePlaybooks } = useAPIQuery(UserPlaybooks, {})
-  const { trigger: deleteUserPlaybook } = useAPIMutation(DeleteUserPlaybook, {})
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: playbooks } = useQuery(trpc.playbooks.mine.queryOptions())
+  const { mutateAsync: deleteUserPlaybook } = useMutation(trpc.playbooks.delete.mutationOptions())
   return (
     <>
-      <h3 className="bp5-heading">Playbooks</h3>
+      <h3 className="bp6-heading">Playbooks</h3>
       <div className="overflow-x-auto">
         <table className="table table-compact w-full text-black dark:text-white">
           <thead>
@@ -40,19 +42,15 @@ export default function Playbooks() {
                 <td>{playbook.clicks}</td>
                 <td className="flex flex-row gap-2">
                   <ExLink href={`/report/${playbook.playbook}`} shallow>
-                    <button>
                       <Icon icon={view_report_icon} className="fill-black dark:fill-white" />
-                    </button>
                   </ExLink>
                   <ExLink href={`/graph/${playbook.playbook}`} shallow>
-                    <button>
                       <Icon icon={view_in_graph_icon} className="fill-black dark:fill-white" />
-                    </button>
                   </ExLink>
                   <button onClick={() => {
-                    deleteUserPlaybook({ query: { id: playbook.playbook }, body: {} })
+                    deleteUserPlaybook({ id: playbook.playbook })
                       .then(() => {
-                        mutatePlaybooks(data => data ? data.filter(({ id }) => id !== playbook.id) : data)
+                        queryClient.setQueryData(trpc.playbooks.mine.queryKey(), data => data ? data.filter(({ id }) => id !== playbook.id) : data)
                       })
                   }}>
                     <Icon icon={delete_icon} className="fill-black dark:fill-white" />
@@ -64,10 +62,8 @@ export default function Playbooks() {
             <tr>
               <td></td>
               <td colSpan={7} align="center">
-                <ExLink href="/graph/extend" shallow>
-                  <button className="btn btn-primary btn-sm">
+                <ExLink href="/graph/extend" shallow className="btn btn-primary btn-sm">
                     Create a new playbook
-                  </button>
                 </ExLink>
               </td>
               <td></td>

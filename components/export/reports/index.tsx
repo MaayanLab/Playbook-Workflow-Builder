@@ -12,6 +12,10 @@ import { AnnData } from '@/components/data/anndata'
 import { FileC } from '@/components/core/file'
 import { ScoredGenes } from '@/components/core/scored'
 import { useExRouter, ExLink } from '@/app/fragments/ex-router'
+import { runtimeConfig } from '@/app/fragments/config'
+import { useExport } from '@/app/fragments/report/use-export'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
+import * as Auth from '@/app/extensions/auth-client'
 import { GMT } from '@/components/data/gene_matrix_transpose'
 import { GeneSetCrossing } from '@/components/data/gene_set_crossing'
 import { CFDEDataset, CFDEGMTs } from '@/components/service/cfde-gse'
@@ -23,7 +27,7 @@ const ReportFile = z.object({
 
 const resolveDRSURL = (fileURL:string) => {
   return fileURL.replace(/^drs:\/\/([^\/]+)\/(.+)$/,
-  `${process.env.NEXT_PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`)
+  `${runtimeConfig().NEXT_PUBLIC_URL || ''}/ga4gh/drs/v1/objects/$2/access/https/data`)
 }
 
 export const GEOReanalysisReport = MetaNode(`GEOReanalysisReport`)
@@ -293,10 +297,17 @@ export const ReportPDF = MetaNode(`ReportPDF`)
   .codec(z.object({ bundle: FileC, pdf: FileC,}))
   .view(results => {
     const router = useExRouter()
-    const fpl_id = React.useMemo(() => {
-      const m = /^\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
-      if (m !== null) return m[2]
+    // (from the url: this view mustn't import app fragments which import the component registry,
+    //  e.g. the metapath context, as servers loading the registry with tsx would import them too)
+    const { fpl_id, session_id } = React.useMemo(() => {
+      const m = /^(?:\/session\/([^/]+))?\/(report|graph)\/(.+?)(\/|$)/.exec(router.asPath)
+      return m !== null ? { session_id: m[1], fpl_id: m[3] } : { session_id: undefined, fpl_id: undefined }
     }, [router.asPath])
+    // producing the report can take longer than a request may, so it's an export job
+    //  (see app/exports.ts) which requires signing in, the pdf is kept with the user's uploads
+    const startExport = useExport(session_id)
+    const userSession = useSessionWithId()
+    const signedIn = !!userSession.data?.user
     return (
       <>
         <div className="flex flex-column m-30 h-[calc(100vh-80px)]">
@@ -312,7 +323,13 @@ export const ReportPDF = MetaNode(`ReportPDF`)
           />
         </div>
         <div className="flex justify-center p-5">
-          <a href={`/api/v1/tex/${fpl_id}?format=pdf`}><button className="btn btn-success center">Download Report</button></a>
+          {signedIn ?
+            <button
+              className="btn btn-success center"
+              disabled={!fpl_id}
+              onClick={() => { if (fpl_id) startExport({ fpl_id, format: 'tex-pdf', label: 'Report PDF' }) }}
+            >Download Report</button>
+            : <button className="btn center" onClick={() => { Auth.signIn() }}>Sign in to download the report</button>}
         </div>
       </>
     )

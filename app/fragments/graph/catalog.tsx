@@ -127,47 +127,57 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
         />
       </FormGroup>
       <div className="flex-grow flex flex-row flex-wrap md:flex-nowrap gap-1">
-        <div className="flex-none w-44 grid grid-cols-[1fr_auto] place-items-start items-start gap-x-1 gap-y-1 self-start">
+        {/* toggle chips: a grid on small screens (touch sized), a column from md up */}
+        <div className="flex-none w-full md:w-44 flex flex-col gap-2 self-start">
           {dict.keys(group_values)
             .filter(group => dict.keys(group_values[group]).length > 1)
             .map(group => (
-              <React.Fragment key={group}>
-                <div className="col-span-2">{group}</div>
-                {dict.keys(group_values[group])
-                  .map(value => (
-                    <label key={value} className="contents">
-                      <label className="bp5-control bp5-switch">
-                        <input
-                          type="checkbox"
-                          checked={(filters[group] || {})[value] === 1}
-                          onChange={evt => {
-                            const _filters = {...filters}
-                            if (!evt.currentTarget.checked) {
-                              if (!(group in _filters)) _filters[group] = {}
-                              else _filters[group] = {...filters[group]}
-                              if (value in _filters[group]) {
-                                delete _filters[group][value]
+              <div key={group} className="flex flex-col gap-1">
+                <div>{group}</div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-1 gap-2 md:gap-1">
+                  {dict.keys(group_values[group])
+                    .map(value => {
+                      const checked = (filters[group] || {})[value] === 1
+                      return (
+                        <label
+                          key={value}
+                          className={`relative flex items-center gap-2 min-w-0 min-h-11 md:min-h-9 px-3 py-1 rounded-lg border cursor-pointer select-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-1 ${checked ? 'bg-primary border-primary text-black' : 'border-current/20 hover:bg-current/5'}`}
+                        >
+                          {/* (visually hidden: the chip shows its state, the checkbox keeps it accessible; the
+                               chip is `relative` so that the hidden checkbox is positioned within it, rather than
+                               against an element outside the page's scrolling, which it'd stretch) */}
+                          <input
+                            className="sr-only"
+                            type="checkbox"
+                            checked={checked}
+                            onChange={evt => {
+                              const _filters = {...filters}
+                              if (!evt.currentTarget.checked) {
+                                if (!(group in _filters)) _filters[group] = {}
+                                else _filters[group] = {...filters[group]}
+                                if (value in _filters[group]) {
+                                  delete _filters[group][value]
+                                }
+                                if (dict.isEmpty(_filters[group])) {
+                                  delete _filters[group]
+                                }
+                              } else {
+                                if (!(group in _filters)) _filters[group] = {}
+                                else _filters[group] = {...filters[group]}
+                                if (!(value in _filters[group])) {
+                                  _filters[group][value] = 1
+                                }
                               }
-                              if (dict.isEmpty(_filters[group])) {
-                                delete _filters[group]
-                              }
-                            } else {
-                              if (!(group in _filters)) _filters[group] = {}
-                              else _filters[group] = {...filters[group]}
-                              if (!(value in _filters[group])) {
-                                _filters[group][value] = 1
-                              }
-                            }
-                            setFilters(_filters)
-                          }}
-                        />
-                        <span className="bp5-control-indicator"></span>
-                        <span>{value}</span>
-                      </label>
-                      <span>({(group_values_filtered[group]||{})[value]||0} / {group_values[group][value]})</span>
-                    </label>
-                ))}
-              </React.Fragment>
+                              setFilters(_filters)
+                            }}
+                          />
+                          <span className="grow min-w-0 leading-tight [overflow-wrap:anywhere]">{value}</span>
+                          <span className={`shrink-0 whitespace-nowrap text-xs ${checked ? '' : 'opacity-70'}`}>{(group_values_filtered[group]||{})[value]||0} / {group_values[group][value]}</span>
+                        </label>
+                      )
+                    })}
+                </div>
+              </div>
             )
           )}
         </div>

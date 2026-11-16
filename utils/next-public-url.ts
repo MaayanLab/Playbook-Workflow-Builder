@@ -22,7 +22,8 @@ export default function usePublicUrl({ absolute }: { absolute?: boolean } = {}) 
         return clientBasePath
       }
     } else {
-      return router.basePath
+      // no basePath is configured (see next.config.js)
+      return ''
     }
   }, [absolute, serverLocation, isReady])
   return publicUrl

@@ -1,4 +1,4 @@
-import type { Session } from 'next-auth'
+import type { Session } from '@/app/extensions/auth-client'
 
 export function UserDisplay({ session }: { session: Session | null }) {
   if (session?.user?.name) {

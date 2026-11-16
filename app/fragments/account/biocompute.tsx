@@ -1,13 +1,14 @@
-import { UserIntegrationsBioComputeAuth } from "@/app/api/client"
-import { useAPIQuery } from "@/core/api/client"
+import { useQuery } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
-import { signIn } from "next-auth/react"
+import { linkSocial } from "@/app/extensions/auth-client"
 import { useExRouter } from "@/app/fragments/ex-router"
 import React from "react"
 
 export default function BioCompute() {
   const router = useExRouter()
-  const { data: biocomputeAuth } = useAPIQuery(UserIntegrationsBioComputeAuth, {})
+  const trpc = useTRPC()
+  const { data: biocomputeAuth } = useQuery(trpc.integrations.biocompute.auth.queryOptions())
   React.useEffect(() => {
     if (biocomputeAuth?.orcid && biocomputeAuth.biocompute) {
       if (router.query.callback) {
@@ -17,7 +18,7 @@ export default function BioCompute() {
   }, [biocomputeAuth, router.query.callback])
   return (
     <div className="prose max-w-none">
-      <h3 className="bp5-heading">BioCompute Integration</h3>
+      <h3 className="bp6-heading">BioCompute Integration</h3>
       <p>
         BioCompute is a standardized way of representing a computational workflow.
         The <a href="https://biocomputeobject.org/">BioCompute portal</a> lets users create, edit, and publish BioCompute Objects (BCOs).
@@ -29,7 +30,7 @@ export default function BioCompute() {
           <div className="alert alert-success my-2">BioCompute Integration is active</div>
         ) : (
           <div className="flex flex-row gap-2 justify-around">
-            <a onClick={() => {signIn('orcid')}} className={classNames('btn', { 'btn-disabled': biocomputeAuth.orcid })}>Link Playbook Workflow Builder Account with ORCID</a>
+            <a onClick={() => {linkSocial('orcid')}} className={classNames('btn', { 'btn-disabled': biocomputeAuth.orcid })}>Link Playbook Workflow Builder Account with ORCID</a>
             <a href="https://biocomputeobject.org/profile" target="_blank" className={classNames('btn', { 'btn-disabled': biocomputeAuth.biocompute })}>Create BCO Account/Link ORCID</a>
           </div>
         ) : null}

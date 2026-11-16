@@ -112,10 +112,10 @@ const Input_Set_T = (T: Primative, SetT: DataMetaNode<InternalDataMetaNode & { d
           onChange={evt => setSet(evt.target.value.replace(/\t/g, '\n'))}
           value={set}
         />
-        <div className="bp5-input-group">
+        <div className="bp6-input-group">
           <input
             type="text"
-            className="bp5-input"
+            className="bp6-input"
             placeholder={`${T.label} Set description`}
             onChange={evt => setDescription(evt.target.value)}
             value={description}

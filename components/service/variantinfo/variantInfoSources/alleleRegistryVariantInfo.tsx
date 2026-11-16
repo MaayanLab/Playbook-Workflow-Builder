@@ -5,7 +5,7 @@ const AlleleRegistryVariantInfoC = z.object({
     '@id': z.string(),
     communityStandardTitle: z.array(z.string()),
     entId: z.string(),
-    externalRecords: z.any({}).optional()
+    externalRecords: z.any().optional()
   })
 export type AlleleRegistryVariantInfo = z.infer<typeof AlleleRegistryVariantInfoC>
 

@@ -1,5 +1,4 @@
-import { NextRouter } from 'next/router'
-import { useExRouter } from '@/app/fragments/ex-router'
+import { useExRouter, type ExRouter } from '@/app/fragments/ex-router'
 import type { Metapath } from '@/app/fragments/metapath'
 import React from 'react'
 import { MetaNode, DataMetaNode, ProcessMetaNode } from '@/spec/metanode'
@@ -8,8 +7,11 @@ import dynamic from 'next/dynamic'
 import * as dict from '@/utils/dict'
 import type KRG from '@/core/KRG'
 import { z_uuid } from '@/utils/zod'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
-import * as Auth from 'next-auth/react'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
+import * as Auth from '@/app/extensions/auth-client'
+import { useQueryClient } from '@tanstack/react-query'
+import { useTRPCClient } from '@/app/trpc/client'
+import { suggestionsQueryKey, withSuggestions } from '@/app/extensions/suggestions'
 
 const Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 const FormGroup = dynamic(() => import('@blueprintjs/core').then(({ FormGroup }) => FormGroup))
@@ -17,7 +19,7 @@ const ControlGroup = dynamic(() => import('@blueprintjs/core').then(({ ControlGr
 const InputGroup = dynamic(() => import('@blueprintjs/core').then(({ InputGroup }) => InputGroup))
 const TextArea = dynamic(() => import('@blueprintjs/core').then(({ TextArea }) => TextArea))
 const MenuItem = dynamic(() => import('@blueprintjs/core').then(({ MenuItem }) => MenuItem))
-const Suggest2 = dynamic(() => import('@blueprintjs/select').then(({ Suggest2 }) => Suggest2))
+const BpSuggest = dynamic(() => import('@blueprintjs/select').then(({ Suggest }) => Suggest))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 const Suggestion = MetaNode('Suggestion')
@@ -34,18 +36,18 @@ const Suggestion = MetaNode('Suggestion')
   }))
   .view(suggestion => (
     <div>
-      <div className="bp5-card">
-        <h4 className="bp5-heading">{suggestion.name}</h4>
-        <p className="bp5-text-large">{suggestion.description}</p>
-        <div className="bp5-callout">
-          <h5 className="bp5-heading">Author</h5>
+      <div className="bp6-card">
+        <h4 className="bp6-heading">{suggestion.name}</h4>
+        <p className="bp6-text-large">{suggestion.description}</p>
+        <div className="bp6-callout">
+          <h5 className="bp6-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div>
         {/* <br />
-        <h5 className="bp5-heading"><i>Comments</i></h5>
-        <div className="bp5-callout">
-          <p className="bp5-text-large">My comment is important</p>
-          <h5 className="bp5-heading">Author</h5>
+        <h5 className="bp6-heading"><i>Comments</i></h5>
+        <div className="bp6-callout">
+          <p className="bp6-text-large">My comment is important</p>
+          <h5 className="bp6-heading">Author</h5>
           <UserIdentity user={suggestion.user} />
         </div> */}
       </div>
@@ -100,13 +102,15 @@ export function SuggestionEdges(input?: DataMetaNode) {
   }
   return suggestion_edges.map(element => ({
     ...element,
-    onClick: ({ router, id, head }: { router: NextRouter, id: string, head: Metapath }) => {
+    onClick: ({ router, id, head }: { router: ExRouter, id: string, head: Metapath }) => {
       router.push(`/graph/${id}${head ? head.id !== id ? `/node/${head.id}` : '' : '/node/start'}/suggest`, undefined, { shallow: true })
     }
   }))
 }
 
 export default function Suggest({ session_id, krg, id, head }: { session_id?: string, krg: KRG, id: string, head: Metapath }) {
+  const trpc = useTRPCClient()
+  const queryClient = useQueryClient()
   const router = useExRouter()
   const { data: userSession } = useSessionWithId()
   const processNode = head ? krg.getProcessNode(head.process.type) : undefined
@@ -162,7 +166,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
               labelInfo="(required)"
               helperText="The output of this component"
             >
-              <Suggest2
+              <BpSuggest
                 fill
                 closeOnSelect
                 selectedItem={suggestion.output}
@@ -203,7 +207,7 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
       >
         <TextArea
           placeholder={`Your component description goes here`}
-          growVertically
+          autoResize
           fill
           large
           intent="primary"
@@ -228,47 +232,10 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
             suggestion_final.output = suggestion.name
           }
           // register the suggestion
-          const kvReq = await fetch(`/api/suggest/`, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify(suggestion_final)
-          })
-          // construct the KRG node locally
-          let OutputNode = krg.getDataNode(suggestion_final.output)
-          if (OutputNode === undefined) {
-            OutputNode = MetaNode(suggestion_final.output)
-              .meta({
-                label: `${suggestion_final.output} (Suggestion)`,
-                description: `A data type, suggested as part of ${suggestion_final.name}`,
-                pagerank: -100,
-              })
-              .codec<any>()
-              .view((props) => {
-                return <div className="prose max-w-none">This data type was suggested as part of {suggestion_final.name}</div>
-              })
-              .build()
-            krg.add(OutputNode)
-          }
-          const ProcessNode = MetaNode(suggestion_final.name)
-            .meta({
-              label: `${suggestion_final.name} (Suggestion)`,
-              description: suggestion_final.description,
-              pagerank: -100,
-            })
-            .inputs(dict.init(suggestion_final.inputs.split(',').filter(s => s != '').map((spec, ind) =>
-            ({ key: ind.toString(), value: krg.getDataNode(spec) })).filter(({ key, value }) => !!value)))
-            .output(OutputNode)
-            .prompt((props) => {
-              return <div className="prose max-w-none">
-                <p>{suggestion.description}</p>
-                <p>This was suggested by {suggestion.user ? <UserIdentity user={suggestion.user} /> : <>a playbook workflow builder user</>}.</p>
-              </div>
-            })
-            .story(props => ({ abstract: `It is suggested that "${suggestion.description}" be applied to the inputs: ${suggestion.inputs} to get a ${OutputNode.meta.label}.` }))
-            .build()
-          krg.add(ProcessNode)
+          await trpc.users.createSuggestion.mutate({ ...suggestion_final, user: userSession.user!.id }, { context: { session_id } })
+          // the KRG (see useKRG) is rebuilt from the database to include the new suggestion
+          await queryClient.invalidateQueries({ queryKey: suggestionsQueryKey(session_id) })
+          const ProcessNode = withSuggestions(krg, [{ ...suggestion_final, user: userSession.user!.id }]).getProcessNode(suggestion_final.name)
           // extend using those nodes
           const inputs: Record<string, { id: string }> = {}
           if (head) {
@@ -276,17 +243,13 @@ export default function Suggest({ session_id, krg, id, head }: { session_id?: st
               inputs[arg] = { id: head.process.id }
             }
           }
-          const extendReq = await fetch(`/api/db/fpl/${id}/extend`, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify({
+          const extendRes = await trpc.fpprg.extend.mutate({
+            fpl_id: id,
+            process: {
               type: ProcessNode.spec,
               inputs,
-            })
-          })
-          const extendRes = z.string().parse(await extendReq.json())
+            },
+          }, { context: { session_id } })
           router.push(`/graph/${extendRes}`, undefined, { shallow: true })
         }}
       />

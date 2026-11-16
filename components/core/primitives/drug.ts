@@ -1,15 +1,22 @@
 import { Primative } from './spec'
-import useSWRImmutable from 'swr/immutable'
+import { useQuery } from '@tanstack/react-query'
 import levenSort from '@/utils/leven-sort'
-import fetcher from '@/utils/next-rest-fetcher'
 import { drug_icon } from '@/icons'
 
-const pubchemFetcher = (url: string) => fetcher<any>(url).then(({ dictionary_terms: { compound } }) => compound)
-
 function usePubchemDrugSuggestions(search: string) {
-  const { data, error } = useSWRImmutable<string[]>(() => search.length >= 3 ? `https://pubchem.ncbi.nlm.nih.gov/rest/autocomplete/compound/${encodeURIComponent(search)}` : null, pubchemFetcher)
+  const { data, error } = useQuery({
+    queryKey: ['pubchem-drug-suggestions', search],
+    enabled: search.length >= 3,
+    queryFn: async () => {
+      const response = await fetch(`https://pubchem.ncbi.nlm.nih.gov/rest/autocomplete/compound/${encodeURIComponent(search)}`)
+      if (!response.ok) throw new Error(await response.text())
+      const { dictionary_terms: { compound } } = await response.json()
+      return compound as string[]
+    },
+    staleTime: Infinity,
+  })
   const items = data ? levenSort(data, search).slice(0, 10) as string[] : []
-  return { items, error }
+  return { items, error: error?.message }
 }
 
 export const Drug = {

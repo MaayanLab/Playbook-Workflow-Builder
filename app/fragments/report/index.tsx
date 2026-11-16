@@ -1,72 +1,30 @@
 import React from 'react'
-import type { GetServerSidePropsContext } from 'next'
-import { useExRouter } from '@/app/fragments/ex-router'
-import fpprg from '@/app/fpprg'
-import krg from '@/app/krg'
-import { z } from 'zod'
-import { SWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
-import fetcher from '@/utils/next-rest-fetcher'
-import { MetapathProvider } from '@/app/fragments/metapath'
+import { usePathname } from 'next/navigation'
+import { useKRG } from '@/app/fragments/metapath'
+import { parsePathname } from '@/app/app/_lib/routes'
 
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Cells = dynamic(() => import('@/app/fragments/report/cells'))
-const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
-const QueryType = z.object({
-  id: z.string().optional(),
-  session_id: z.string().optional(),
-  thread_id: z.string().optional(),
-})
-
-export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-  const params = QueryType.parse(ctx.params || {})
-  if (!params.id || params.session_id !== undefined) {
-    return {
-      props: {
-        fallback: {}
-      }
-    }
-  }
-  const fpl = await fpprg.getFPL(params.id)
-  if (fpl === undefined) {
-    return { notFound: true }
-  }
-  const results = fpl.resolve().map(fpl => fpl.toJSON())
-  const fallback: Record<string, unknown> = {
-    [`/api/db/fpl/${params.id}`]: results
-  }
-  for (const result of results) {
-    const output = await fpprg.getResolved(result.process.id)
-    if (output) fallback[`/api/db/process/${result.process.id}/output`] = output.toJSON().data
-  }
-  return {
-    props: {
-      fallback: JSON.parse(JSON.stringify(fallback)),
-    }
-  }
-}
-
-export default function App({ fallback }: { fallback: any }) {
-  const router = useExRouter()
-  const params = React.useMemo(() => QueryType.parse(router.query), [router.query])
+/**
+ * The report view of the route (rendered by the report layouts, so that it persists while
+ *  navigating; input edits also only change the url, see report/prompt); the shell & playbook
+ *  state are provided by @/app/app/(shell)/layout.
+ */
+export default function App() {
+  const krg = useKRG()
+  const pathname = usePathname() ?? ''
+  const route = React.useMemo(() => parsePathname(pathname), [pathname])
+  if (route.kind !== 'report') return null
   return (
-    <SWRConfig value={{ fallback, fetcher }}>
-      <MetapathProvider session_id={params?.session_id}>
-        <Layout
-          sidebar={<Chat mode="report" graph_id={params.id} embedded />}
-        >
-          <main className="grow flex flex-col mx-4">
-            {params.id ? 
-              <Cells
-                session_id={params?.session_id}
-                krg={krg}
-                id={params.id}
-              />
-              : <div className="alert alert-error">Page not found</div>}
-          </main>
-        </Layout>
-      </MetapathProvider>
-    </SWRConfig>
+    <main className="grow flex flex-col mx-4">
+      {route.id ?
+        <Cells
+          session_id={route.session_id}
+          krg={krg}
+          id={route.id}
+        />
+        : <div className="alert alert-error">Page not found</div>}
+    </main>
   )
 }

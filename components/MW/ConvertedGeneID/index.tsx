@@ -56,8 +56,9 @@ export async function GetGeneSetIDConv(geneset:string[], species_id:string = "hs
   //console.log(gene_id)
   const json_or_txt = "json"
   
-  //const req = await fetch(`https://bdcw.org/geneid/rest/species/${species_id}/GeneIDType/${geneid_type}/GeneListStr/${gene_id}/View/${json_or_txt}`)
-  const req = await fetch(`https://sc-cfdewebdev.sdsc.edu/geneid/rest/species/${species_id}/GeneIDType/${geneid_type}/GeneListStr/${gene_id}/View/${json_or_txt}`)
+  // (the production server: the sc-cfdewebdev.sdsc.edu development server isn't reachable)
+  const req = await fetch(`https://bdcw.org/geneid/rest/species/${species_id}/GeneIDType/${geneid_type}/GeneListStr/${gene_id}/View/${json_or_txt}`)
+  if (!req.ok) throw new Error(`Gene ID conversion service failed (HTTP ${req.status}): ${(await req.text()).slice(0, 200)}`)
   const res = await req.json();
   // Above, try catch is not explicitly needed since metanodes handle that.
   

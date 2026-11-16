@@ -1,10 +1,10 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S npx tsx
 /**
  * Usage:
  * pwb MetaNodeSpec --data=data.json --inputs.key=input-key.json --output=output.json
  * 
  * E.g.
- * alias pwb="ts-node cli/pwb.ts"
+ * alias pwb="npx tsx cli/pwb.ts"
  * pwb GTExTissueExpressionFromGene --inputs.gene=<(pwb Input[Gene] --data=<(echo '"ACE2"') --output=/dev/stdout) --output=/dev/stdout
  */
 import krg from '@/app/krg'

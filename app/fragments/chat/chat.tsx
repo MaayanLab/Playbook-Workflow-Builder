@@ -1,77 +1,113 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { GPTAssistantCreate, GPTAssistantMessage, GPTAssistantMessagesList } from "@/app/api/client"
 import classNames from 'classnames'
 import usePublicUrl from '@/utils/next-public-url'
 import { z } from 'zod'
 
-import { useAPIMutation, useAPIQuery } from "@/core/api/client"
-import * as Auth from 'next-auth/react'
+import { useQuery, useMutation, useQueryClient, skipToken } from '@tanstack/react-query'
+import { useTRPC, useTRPCClient, isTRPCClientError } from '@/app/trpc/client'
+import * as Auth from '@/app/extensions/auth-client'
 
-import krg from '@/app/krg'
+import { useFPL, useKRG } from '@/app/fragments/metapath'
 import { useExRouter } from '@/app/fragments/ex-router'
 import * as dict from '@/utils/dict'
-import * as array from '@/utils/array'
-import { useFPL } from '../metapath'
 import { StoryProvider } from '../story'
 import { Waypoint, useWaypoints } from '@/app/components/waypoint'
 import { Breadcrumbs } from '../breadcrumbs'
 import { DataBreadcrumb, ProcessBreadcrumb } from '@/app/fragments/graph/breadcrumb'
 import { extend_icon, func_icon, start_icon, variable_icon } from '@/icons'
 import ReportButton from '../graph/report-button'
-import { UnauthorizedError } from '@/spec/error'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 const Cell = dynamic(() => import('@/app/fragments/report/cell'))
 const Message = dynamic(() => import('@/app/fragments/chat/message'))
 const SessionStatus = dynamic(() => import('@/app/fragments/session-status'))
 
-export default function Page({ mode, session_id, graph_id, node_id, embedded = false }: { mode: string, session_id?: string, graph_id?: string, node_id?: string, embedded?: boolean }) {
+export default function Page({ mode, session_id, graph_id, node_id, thread_id: initialThreadId, embedded = false }: { mode: string, session_id?: string, graph_id?: string, node_id?: string, thread_id?: string, embedded?: boolean }) {
+  const krg = useKRG()
   const router = useExRouter()
   const publicUrl = usePublicUrl()
   const [message, setMessage] = React.useState('')
   const { data: session } = Auth.useSession()
-  const [thread_id, setThread_id] = React.useState<string | undefined>()
-  const { data: { messages, fpl } = { messages: undefined, fpl: null }, mutate } = useAPIQuery(GPTAssistantMessagesList, () => thread_id ? { thread_id } : null, {
-    refreshInterval: 1000,
-    onSuccess(data) {
-      if (data?.fpl && fpl !== data.fpl) {
-        router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${data.fpl}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
-      }
-    }
+  const [thread_id, setThread_id] = React.useState<string | undefined>(initialThreadId)
+  const trpc = useTRPC()
+  const trpcClient = useTRPCClient()
+  const queryClient = useQueryClient()
+  const { data, isFetched } = useQuery({
+    ...trpc.chat.messages.queryOptions(thread_id ? { thread_id } : skipToken),
+    refetchInterval: 1000,
   })
-  const createMessage = useAPIMutation(GPTAssistantMessage, { thread_id })
-  const createChat = useAPIMutation(GPTAssistantCreate)
+  const { messages, fpl } = data ?? { messages: undefined, fpl: null }
+  // navigate to the workflow when the assistant moves the thread to a new one (from the graph, to
+  //  its report): the workflow an existing thread is on when it's first loaded is where it was, not
+  //  a move (the person may be viewing any of the thread's workflows, or one in another mode, on
+  //  purpose), while a thread started here starts from no workflow
+  const previousFpl = React.useRef<string | null | undefined>(undefined)
+  const startedThread = React.useRef<string | undefined>(undefined)
+  // a different thread starts over
+  React.useEffect(() => {
+    previousFpl.current = thread_id && thread_id === startedThread.current ? null : undefined
+  }, [thread_id])
+  React.useEffect(() => {
+    if (!data) return
+    const current = fpl && fpl !== 'start' ? fpl : null
+    if (previousFpl.current !== undefined && current && previousFpl.current !== current) {
+      router.push(`${session_id ? `/session/${session_id}` : ''}/${mode === 'graph' ? 'report' : mode}${mode !== 'chat' ? `/${current}` : ''}?thread_id=${thread_id}&message=`, undefined, { shallow: true, scroll: false })
+    }
+    // (an existing thread's workflow is only known once it's fetched)
+    if (isFetched || previousFpl.current !== undefined) previousFpl.current = current
+  }, [data, isFetched, fpl])
+  const createChat = useMutation(trpc.chat.create.mutationOptions())
+  const [sendPending, setSendPending] = React.useState(false)
+  const [sendError, setSendError] = React.useState<Error | null>(null)
   const submit = React.useCallback(async ({ thread_id, ...body }: { message: string, graph_id?: string, node_id?: string, thread_id?: string }) => {
     try {
       let thread_id_: string
       if (!thread_id) {
-        thread_id_ = z.string().parse(await createChat.trigger())
+        thread_id_ = z.string().parse(await createChat.mutateAsync())
+        startedThread.current = thread_id_
         setThread_id(thread_id_)
       } else {
         thread_id_ = thread_id
       }
-      const query = { thread_id: thread_id_ }
-      await mutate((current) => ({ messages: [
+      const queryKey = trpc.chat.messages.queryKey({ thread_id: thread_id_ })
+      await queryClient.cancelQueries({ queryKey })
+      queryClient.setQueryData(queryKey, (current) => ({ messages: [
         ...current?.messages ?? [],
-        { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date(), thread: thread_id_, feedback: null },
-      ], fpl: graph_id ?? null }), { revalidate: false })
-      const res = await createMessage.trigger({ query, body })
-      await mutate((current) => ({
-        messages: array.unique([
-          ...(current?.messages ?? []).slice(0, -1),
-          ...res?.messages ?? [],
-        ], x => x.id),
-        fpl: res?.fpl ?? null,
-      }), { revalidate: false })
+        { id: '', role: 'user', content: body.message, fpl: graph_id ?? null, created: new Date().toISOString(), thread: thread_id_, feedback: null },
+      ], fpl: graph_id ?? null }))
+      setSendPending(true)
+      setSendError(null)
+      await new Promise<void>((resolve, reject) => {
+        trpcClient.chat.send.subscribe({ thread_id: thread_id_, ...body }, {
+          onData: (update) => {
+            queryClient.setQueryData(queryKey, (current) => {
+              const updatedIds = new Set(update.messages.map(message => message.id))
+              return {
+                messages: [
+                  ...(current?.messages ?? []).filter(message => message.id !== '' && !updatedIds.has(message.id)),
+                  ...update.messages,
+                ],
+                fpl: update.fpl ?? null,
+              }
+            })
+          },
+          onError: reject,
+          onComplete: resolve,
+        })
+      })
     } catch (e: any) {
-      if (UnauthorizedError.isinstance(e)) {
+      if (isTRPCClientError(e, 'UNAUTHORIZED')) {
         const qs = new URLSearchParams(window.location.search)
         qs.set('message', body.message)
         Auth.signIn(undefined, { callbackUrl: `${window.location.pathname}?${qs.toString()}` })
+      } else {
+        setSendError(e instanceof Error ? e : new Error('unknown error'))
       }
+    } finally {
+      setSendPending(false)
     }
-  }, [])
+  }, [createChat, graph_id, queryClient, trpc, trpcClient])
   const { data: metapath } = useFPL(fpl ? fpl : undefined)
   const { fpl_to_metapath, process_to_step } = React.useMemo(() => metapath ? {
     fpl_to_metapath: dict.init(metapath.map(h => ({ key: h.id, value: h }))),
@@ -83,8 +119,8 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
   const head = React.useMemo(() => metapath ? metapath[metapath.length - 1] : undefined, [metapath])
   const { waypoints, scrollTo } = useWaypoints()
   React.useEffect(() => {
-    setThread_id(router.query.thread_id as string | undefined)
-  }, [router.query.thread_id])
+    setThread_id((router.query.thread_id as string | undefined) ?? initialThreadId)
+  }, [initialThreadId, router.query.thread_id])
   React.useEffect(() => {
     if (typeof router.query.message === 'string') {
       submit({ message: router.query.message, graph_id, node_id })
@@ -189,12 +225,12 @@ export default function Page({ mode, session_id, graph_id, node_id, embedded = f
           <div className={classNames("m-2 grow flex flex-col justify-between overflow-hidden")}>
             {/* reversing elemens here is intentional since it keeps the scroll bar at the bottom */}
             <div className={classNames('flex flex-col-reverse px-2 bg-white dark:bg-current overflow-auto')}>
-              {createMessage.error ?
+              {sendError ?
                 <Message role="assistant" session={session}>
-                  I experienced an error: {createMessage.error instanceof Error ? createMessage.error.message : 'unknown error'}
+                  I experienced an error: {sendError.message}
                 </Message>
                 : null}
-              {createMessage.isMutating ?
+              {sendPending ?
                 <Message role="assistant" session={session}>
                   <span className="loading loading-dots loading-lg mt-2"></span>
                 </Message>

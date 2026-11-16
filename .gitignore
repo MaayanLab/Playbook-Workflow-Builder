@@ -5,3 +5,4 @@
 /requirements.txt
 __pycache__
 node_modules
+*.tsbuildinfo

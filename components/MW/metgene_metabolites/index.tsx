@@ -36,9 +36,11 @@ export const MetgeneMetabolites = MetaNode('MetgeneMetabolites')
 
     const vtf = "jsonfile"; // vtf
     const req = await fetch(`https://bdcw.org/MetGENE/rest/metabolites/species/${species_id}/GeneIDType/${geneID_type}/GeneInfoStr/${gene_ID}/anatomy/NA/disease/NA/phenotype/NA/viewType/${vtf}`)
+    if (!req.ok) throw new Error(`MetGENE failed (HTTP ${req.status}): ${(await req.text()).slice(0, 200)}`)
     const res = await req.json();
     const jsonfileURL = res[0].FileURL;
     const datareq = await fetch(jsonfileURL);
+    if (!datareq.ok) throw new Error(`MetGENE result file failed (HTTP ${datareq.status}): ${(await datareq.text()).slice(0, 200)}`)
     const data = await datareq.json();
     const retobj = {"jsonfile": {"FileDescription": "MetGENE metabolites json file", "FileURL": jsonfileURL},
           "contents": data}
@@ -90,11 +92,13 @@ export const MetgeneMetabolitesGeneSet = MetaNode('MetgeneMetabolitesGeneSet')
     if(debug > 0) {console.log(requrl);}
     const req = await fetch(requrl)
     if(debug > 0) {console.log(req);}
+    if (!req.ok) throw new Error(`MetGENE failed (HTTP ${req.status}): ${(await req.text()).slice(0, 200)}`)
     const res = await req.json();
     if(debug > 0) {console.log(res);}
     const jsonfileURL = res[0].FileURL;
     if(debug > 0) {console.log(jsonfileURL);}
     const datareq = await fetch(jsonfileURL);
+    if (!datareq.ok) throw new Error(`MetGENE result file failed (HTTP ${datareq.status}): ${(await datareq.text()).slice(0, 200)}`)
     const data = await datareq.json();
     const retobj = {"jsonfile": {"FileDescription": "MetGENE metabolites json file", "FileURL": jsonfileURL},
           "contents": data}

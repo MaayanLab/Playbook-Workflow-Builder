@@ -1,9 +1,11 @@
 FROM maayanlab/base:1.6.0 AS base
 USER root
-
-RUN echo "Installing system dependencies..." \
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get update \
   && apt-get -y install \
+    biber \
+    build-essential \
     curl \
     git \
     gnupg \
@@ -23,15 +25,20 @@ RUN echo "Installing latex dependencies..." \
   && apt-get -y install \
     biber \
     latexmk \
+    python3 \
     texlive-bibtex-extra \
     texlive-fonts-extra \
     texlive-latex-extra \
     texlive-luatex \
+  && install -d -m 0755 /etc/apt/keyrings \
+  && curl --location --silent --fail https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
+  && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+  && apt-get update \
+  && apt-get install google-chrome-stable -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 USER ubuntu
-RUN NODE_VERSION=21.3 /install.sh
-RUN npm i -g ts-node
+RUN NODE_VERSION=26 /install.sh
 
 FROM base AS prepare_src
 COPY --chown=ubuntu . app
@@ -61,27 +68,18 @@ RUN mv app/requirements.txt /tmp/requirements.txt \
 
 FROM prepare_src AS prepare_build
 COPY --from=prepare_npm_i --chown=ubuntu /home/ubuntu/app app
-RUN echo "Building app..." && cd app && LANDING_PAGE=/graph/extend PUBLIC_URL=https://playbook-workflow-builder.cloud npm run build
+RUN echo "Building app..." && cd app && npm run build
 
 # TARGET: app -- production server with dependencies to run everything
 FROM base AS app
-USER root
-RUN echo "Installing dev dependencies..." \
-  && apt-get update -y \
-  && apt-get install -y \
-    libcurl4-gnutls-dev \
-  && rm -rf /var/lib/apt/lists/*
 USER ubuntu
-RUN PYTHON_VERSION=3.11 R_VERSION=4.5.3 /install.sh
-COPY --chown=ubuntu cli/setup.R app/setup.R
-RUN echo "Running setup.R..." && R -e "source('app/setup.R')" && rm app/setup.R
+RUN PYTHON_VERSION=3.13 /install.sh
 COPY --from=prepare_requirements_txt_complete --chown=ubuntu /home/ubuntu/app app
 RUN echo "Installing python dependencies..." && pip install -r app/requirements.txt && rm app/requirements.txt
 COPY --from=prepare_build --chown=ubuntu /home/ubuntu/app app
 WORKDIR /home/ubuntu/app
 RUN chmod +x cli/wes-worker.sh cli/pwb.sh
 ENV PORT=3000
-ENV PORT=3005
 ENV PYTHON_BIN=/home/ubuntu/.venv/bin/python
 CMD ["npm", "start"]
 
@@ -114,6 +112,5 @@ RUN echo "Installing dev deps..." \
   && apt-get clean \
   && apt-get autoremove \
   && rm -rf /var/lib/apt/lists/*
-COPY --from=amacneil/dbmate /usr/local/bin/dbmate /usr/local/bin/dbmate
 USER ubuntu
 CMD ["/bin/bash"]

@@ -14,9 +14,8 @@ import uuid from '@/utils/uuid'
 import * as dict from '@/utils/dict'
 import * as math from '@/utils/math'
 import { z } from 'zod'
-import { Db } from '@/utils/orm'
-import * as fpprgSchema from '@/db/fpprg'
-import { TypedSchema } from '@/spec/sql'
+import { sql } from 'kysely'
+import type { DB, EventBus } from '@/db'
 import { NotFoundError, ResponseCodedError, TimeoutError } from '@/spec/error'
 
 /**
@@ -26,7 +25,6 @@ import { NotFoundError, ResponseCodedError, TimeoutError } from '@/spec/error'
  */
 export class Process {
   id: string
-  resolved: Resolved | undefined = undefined
   _dependencies: number | undefined = undefined
 
   constructor(
@@ -108,10 +106,8 @@ export class Process {
    * The output of this process
    */
   output = async () => {
-    if (this.resolved !== undefined) return this.resolved.data
     if (this.db === undefined) throw new Error('Process not attached to a db')
-    this.resolved = await this.db.awaitResolved(this.id)
-    return this.resolved.data
+    return (await this.db.awaitResolved(this.id)).data
   }
 }
 
@@ -300,7 +296,7 @@ export class FPL {
     const now = new Date()
     let head: FPL | undefined = undefined
     for (const el of fplArray) {
-      const existing_resolved = (update[el.process.id] || el.process).resolved
+      const existing_resolved = el.process.db ? await el.process.db.getResolved((update[el.process.id] || el.process).id) : undefined
       const timestamp = existing_resolved?.created ?? now
       let new_proc = new Process(
         (update[el.process.id] || el.process).type,
@@ -379,6 +375,8 @@ export class CellMetadata {
 /**
  * De-coupled metadata for an FPL
  */
+const SummaryC = z.enum(['auto', 'gpt', 'manual'])
+
 export class PlaybookMetadata {
   id: string
 
@@ -459,22 +457,17 @@ export type IdOrProcess = z.infer<typeof IdOrProcessC>
 export type DatabaseKeyedTables = { process: Process, fpl: FPL, data: Data, resolved: Resolved }
 export type DatabaseListenCallback = <T extends keyof DatabaseKeyedTables>(table: T, record: DatabaseKeyedTables[T]) => void
 
-type Schema = Pick<typeof fpprgSchema, 'data' | 'process' | 'process_input' | 'resolved' | 'process_complete' | 'fpl' | 'cell_metadata' | 'playbook_metadata'>
-type TofSchema<T> = T extends TypedSchema<infer T_> ? T_ : never
-type DbSchemaT = { [K in keyof Schema]: TofSchema<Schema[K]> }
-
 /**
  * The database maintains records for each table type
  */
 export default class FPPRG {
   private processTable: Record<string, Process> = {}
   private fplTable: Record<string, FPL> = {}
-  private resolvedTable: Record<string, Resolved> = {}
   private dataTable: Record<string, Data> = {}
   private cellMetadataTable: Record<string, CellMetadata> = {}
   private playbookMetadataTable: Record<string, PlaybookMetadata> = {}
 
-  constructor(public db: Db<DbSchemaT>) {}
+  constructor(public db: DB, public bus: EventBus) {}
 
   resolveProcess = async (process: IdOrProcess): Promise<Process> => {
     if ('id' in process) {
@@ -487,10 +480,10 @@ export default class FPPRG {
       ))
     }
   }
-  getProcess = async (id: string, force = false): Promise<Process | undefined> => {
-    if (!(id in this.processTable) || force) {
-      const result = await this.db.objects.process_complete.findUnique({ where: { id } })
-      if (result !== null) {
+  getProcess = async (id: string): Promise<Process | undefined> => {
+    if (!(id in this.processTable)) {
+      const result = await this.getProcessRecord(id)
+      if (result !== undefined) {
         const process = new Process(
           result.type,
           result.data !== null ? await this.getData(result.data) : undefined,
@@ -500,19 +493,6 @@ export default class FPPRG {
         )
         if (id === process.id) this.processTable[process.id] = process
         else this.processTable[id] = await this.upsertProcess(process)
-        // this process was already resolved?
-        // save that information, saves a lookup or two
-        if (result.resolved) {
-          if (!(id in this.resolvedTable)) {
-            const resolved = new Resolved(
-              process,
-              result.output !== null ? (await this.getData(result.output)) : undefined,
-              result.timestamp !== null ? new Date(result.timestamp) : undefined,
-            )
-            if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
-            else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
-          }
-        }
       }
     }
     return this.processTable[id]
@@ -529,54 +509,27 @@ export default class FPPRG {
         const value = process.inputs[key]
         process.inputs[key] = await this.upsertProcess(value)
       }
-      // TODO:
-      // await this.db.objects.process.upsert({
-      //   where: { id: process.id },
-      //   update: {
-      //     type: process.type,
-      //     data: process.data !== undefined ? process.data.id : null,
-      //   },
-      //   create: {
-      //     id: process.id,
-      //     type: process.type,
-      //     data: process.data !== undefined ? process.data.id : null,
-      //     inputs: dict.sortedItems(process.inputs).map(({ key, value }) => ({
-      //       id: process.id,
-      //       key,
-      //       value: value.id,
-      //     }))
-      //   }
-      // })
-      await this.db.objects.process.upsert({
-        where: { id: process.id },
-        create: {
-          id: process.id,
-          type: process.type,
-          data: process.data !== undefined ? process.data.id : null,
-          timestamp: process.timestamp !== undefined ? process.timestamp : null,
+      await this.db.transaction().execute(async (trx) => {
+        await trx.insertInto('process')
+          .values({
+            id: process.id,
+            type: process.type,
+            data: process.data !== undefined ? process.data.id : null,
+            timestamp: process.timestamp !== undefined ? process.timestamp.toISOString() : null,
+          })
+          .onConflict(oc => oc.column('id').doUpdateSet({ hits: sql`${sql.ref('process.hits')} + 1` }))
+          .execute()
+        const inputs = dict.sortedItems(process.inputs).map(({ key, value }) => ({ id: process.id, key: String(key), value: value.id }))
+        if (inputs.length > 0) {
+          await trx.insertInto('process_input')
+            .values(inputs)
+            .onConflict(oc => oc.columns(['id', 'key']).doNothing())
+            .execute()
         }
       })
-      for (const key in process.inputs) {
-        const value = process.inputs[key]
-        await this.db.objects.process_input.upsert({
-          where: { id: process.id, key },
-          create: {
-            id: process.id,
-            key,
-            value: value.id,
-          }
-        })
-      }
       this.processTable[process.id] = process
     } else {
-      await this.db.objects.process.update({
-        where: {
-          id: process.id
-        },
-        data: {
-          id: process.id
-        }
-      })
+      await this.hit('process', process.id)
     }
     return this.processTable[process.id] as Process
   }
@@ -595,13 +548,13 @@ export default class FPPRG {
   }
   getCellMetadata = async (id: string) => {
     if (!(id in this.cellMetadataTable)) {
-      const result = await this.db.objects.cell_metadata.findUnique({ where: { id } })
-      if (result !== null) {
+      const result = await this.db.selectFrom('cell_metadata').selectAll().where('id', '=', id).executeTakeFirst()
+      if (result !== undefined) {
         const cellMetadata = new CellMetadata(
-          result.label,
-          result.description,
-          result.process_visible,
-          result.data_visible,
+          result.label ?? undefined,
+          result.description ?? undefined,
+          result.process_visible ?? undefined,
+          result.data_visible ?? undefined,
         )
         if (id === cellMetadata.id) this.cellMetadataTable[cellMetadata.id] = cellMetadata
         else this.cellMetadataTable[id] = await this.upsertCellMetadata(cellMetadata)
@@ -611,16 +564,16 @@ export default class FPPRG {
   }
   upsertCellMetadata = async (cell_metadata: CellMetadata) => {
     if (!(cell_metadata.id in this.cellMetadataTable)) {
-      await this.db.objects.cell_metadata.upsert({
-        where: { id: cell_metadata.id },
-        create: {
+      await this.db.insertInto('cell_metadata')
+        .values({
           id: cell_metadata.id,
           label: cell_metadata.label,
           description: cell_metadata.description,
           process_visible: cell_metadata.process_visible,
           data_visible: cell_metadata.data_visible,
-        }
-      })
+        })
+        .onConflict(oc => oc.column('id').doNothing())
+        .execute()
       this.cellMetadataTable[cell_metadata.id] = cell_metadata
     }
     return this.cellMetadataTable[cell_metadata.id] as CellMetadata
@@ -642,13 +595,13 @@ export default class FPPRG {
   }
   getPlaybookMetadata = async (id: string) => {
     if (!(id in this.playbookMetadataTable)) {
-      const result = await this.db.objects.playbook_metadata.findUnique({ where: { id } })
-      if (result !== null) {
+      const result = await this.db.selectFrom('playbook_metadata').selectAll().where('id', '=', id).executeTakeFirst()
+      if (result !== undefined) {
         const playbookMetadata = new PlaybookMetadata(
-          result.title,
-          result.description,
-          result.summary,
-          result.gpt_summary,
+          result.title ?? undefined,
+          result.description ?? undefined,
+          SummaryC.optional().catch(undefined).parse(result.summary ?? undefined),
+          result.gpt_summary ?? undefined,
         )
         if (id === playbookMetadata.id) this.playbookMetadataTable[playbookMetadata.id] = playbookMetadata
         else this.playbookMetadataTable[id] = await this.upsertPlaybookMetadata(playbookMetadata)
@@ -658,16 +611,16 @@ export default class FPPRG {
   }
   upsertPlaybookMetadata = async (playbook_metadata: PlaybookMetadata) => {
     if (!(playbook_metadata.id in this.playbookMetadataTable)) {
-      await this.db.objects.playbook_metadata.upsert({
-        where: { id: playbook_metadata.id },
-        create: {
+      await this.db.insertInto('playbook_metadata')
+        .values({
           id: playbook_metadata.id,
           title: playbook_metadata.title,
           description: playbook_metadata.description,
           summary: playbook_metadata.summary,
           gpt_summary: playbook_metadata.gpt_summary,
-        }
-      })
+        })
+        .onConflict(oc => oc.column('id').doNothing())
+        .execute()
       this.playbookMetadataTable[playbook_metadata.id] = playbook_metadata
     }
     return this.playbookMetadataTable[playbook_metadata.id] as PlaybookMetadata
@@ -685,8 +638,8 @@ export default class FPPRG {
   }
   getData = async (id: string): Promise<Data | undefined> => {
     if (!(id in this.dataTable)) {
-      const result = await this.db.objects.data.findUnique({ where: { id } })
-      if (result !== null) {
+      const result = await this.db.selectFrom('data').select(['type', 'value']).where('id', '=', id).executeTakeFirst()
+      if (result !== undefined) {
         const data = new Data(
           result.type,
           JSON.parse(result.value),
@@ -699,106 +652,87 @@ export default class FPPRG {
   }
   upsertData = async (data: Data): Promise<Data> => {
     if (!(data.id in this.dataTable)) {
-      await this.db.objects.data.upsert({
-        where: { id: data.id },
-        create: {
-          id: data.id,
-          type: data.type,
-          value: JSON.stringify(data.value),
-        }
-      })
+      await this.db.insertInto('data')
+        .values({ id: data.id, type: data.type, value: JSON.stringify(data.value) })
+        .onConflict(oc => oc.column('id').doUpdateSet({ hits: sql`${sql.ref('data.hits')} + 1` }))
+        .execute()
       this.dataTable[data.id] = data
     } else {
-      await this.db.objects.data.update({
-        where: {
-          id: data.id
-        },
-        data: {
-          id: data.id
-        }
-      })
+      await this.hit('data', data.id)
     }
     return this.dataTable[data.id]
   }
 
+  /**
+   * The resolution of a process, if it's resolved.
+   *  Resolutions can be deleted (to recompute them) so unlike the content-addressed
+   *  records, they're always read from the database rather than cached.
+   */
   getResolved = async (id: string): Promise<Resolved | undefined> => {
-    if (!(id in this.resolvedTable)) {
-      const result = await this.db.objects.resolved.findUnique({ where: { id } })
-      if (result !== null) {
-        const process = (await this.getProcess(result.id)) as Process
-        const resolved = new Resolved(
-          process,
-          result.data !== null ? (await this.getData(result.data)) as Data : undefined,
-          result.created !== null ? new Date(result.created) : undefined,
-        )
-        if (id === resolved.id) this.resolvedTable[resolved.id] = process.resolved = resolved
-        else this.resolvedTable[id] = process.resolved = await this.upsertResolved(resolved)
-      }
-    }
-    return this.resolvedTable[id]
+    const result = await this.db.selectFrom('resolved').selectAll().where('id', '=', id).executeTakeFirst()
+    if (result === undefined) return undefined
+    const process = await this.getProcess(result.id)
+    if (process === undefined) return undefined
+    const resolved = new Resolved(
+      process,
+      result.data !== null ? await this.getData(result.data) : undefined,
+      result.created !== null ? new Date(result.created) : undefined,
+    )
+    // the process id changed (e.g. its hashing changed), record it under the new id
+    if (id !== resolved.id) await this.upsertResolved(resolved)
+    return resolved
   }
   /**
    * Like getResolved but if it's not in the db yet, request & wait for it
    */
   awaitResolved = async (id: string): Promise<Resolved> => {
-    const resolved = await this.getResolved(id)
-    if (!resolved) {
-      const process = await this.getProcess(id)
-      if (!process) throw new Error('Not found')
-      await new Promise<void>(async (resolve, reject) => {
-        const ctx = { resolved: false }
-        const unsub = this.db.listen(`insert:resolved`, (data) => {
-          const record = z.object({ id: z.string() }).parse(data)
-          if (record.id === id) {
-            if (!ctx.resolved) {
-              ctx.resolved = true
-              unsub()
-              resolve()
-            }
-          }
-        })
-        console.debug(`awaiting ${process.type} (${id})`)
-        await this.db.send('work-queue', { id, priority: - (await process.dependencies()) })
-        setTimeout(() => {
+    const existing = await this.getResolved(id)
+    if (existing) return existing
+    const process = await this.getProcess(id)
+    if (!process) throw new Error('Not found')
+    await new Promise<void>(async (resolve, reject) => {
+      const ctx = { resolved: false }
+      const unsub = this.bus.listen(`insert:resolved`, (data) => {
+        const record = z.object({ id: z.string() }).parse(data)
+        if (record.id === id) {
           if (!ctx.resolved) {
             ctx.resolved = true
             unsub()
-            reject(new TimeoutError())
+            resolve()
           }
-        }, 5000)
+        }
       })
-      if (await this.getResolved(id) === undefined) {
-        throw new Error(`Received event but not resolved (${id})`)
-      }
-    }
-    return this.resolvedTable[id]
+      console.debug(`awaiting ${process.type} (${id})`)
+      await this.bus.send('work-queue', { id, priority: - (await process.dependencies()) })
+      setTimeout(() => {
+        if (!ctx.resolved) {
+          ctx.resolved = true
+          unsub()
+          reject(new TimeoutError())
+        }
+      }, 5000)
+    })
+    const resolved = await this.getResolved(id)
+    if (resolved === undefined) throw new Error(`Received event but not resolved (${id})`)
+    return resolved
   }
   upsertResolved = async (resolved: Resolved): Promise<Resolved> => {
-    if (!(resolved.id in this.resolvedTable)) {
-      if (resolved.data) {
-        await this.upsertData(resolved.data)
-      }
-      await this.db.objects.resolved.upsert({
-        where: { id: resolved.id },
-        create: {
-          id: resolved.id,
-          data: resolved.data !== undefined ? resolved.data.id : null,
-          created: resolved.created ? resolved.created : new Date(),
-        },
-      })
-      this.resolvedTable[resolved.id] = resolved
-      resolved.process.resolved = resolved
+    if (resolved.data) {
+      await this.upsertData(resolved.data)
     }
-    return this.resolvedTable[resolved.id]
+    const inserted = await this.db.insertInto('resolved')
+      .values({
+        id: resolved.id,
+        data: resolved.data !== undefined ? resolved.data.id : null,
+        created: (resolved.created ?? new Date()).toISOString(),
+      })
+      .onConflict(oc => oc.column('id').doNothing())
+      .executeTakeFirst()
+    if (Number(inserted.numInsertedOrUpdatedRows ?? 0) > 0) this.bus.inserted('resolved', resolved.id)
+    return resolved
   }
   deleteResolved = async (resolved: Resolved) => {
-    if (resolved.id in this.resolvedTable) {
-      await this.db.objects.resolved.delete({ where: { id: resolved.id } })
-      if (resolved.id in this.processTable) {
-        this.processTable[resolved.id].resolved = undefined
-      }
-      delete this.resolvedTable[resolved.id]
-    }
+    await this.db.deleteFrom('resolved').where('id', '=', resolved.id).execute()
   }
 
   resolveFPL = async ({ data = {}, workflow, metadata }: { data?: Record<string, z.infer<typeof DataC>>, workflow: z.infer<typeof IdOrProcessC>[], metadata?: z.infer<typeof IdOrPlaybookMetadataC> }) => {
@@ -846,8 +780,8 @@ export default class FPPRG {
   }
   getFPL = async (id: string): Promise<FPL | undefined> => {
     if (!(id in this.fplTable)) {
-      const result = await this.db.objects.fpl.findUnique({ where: { id } })
-      if (result !== null) {
+      const result = await this.db.selectFrom('fpl').selectAll().where('id', '=', id).executeTakeFirst()
+      if (result !== undefined) {
         const fpl = new FPL(
           (await this.getProcess(result.process)) as Process,
           result.parent !== null ? (await this.getFPL(result.parent)) as FPL : undefined,
@@ -873,39 +807,63 @@ export default class FPPRG {
         fpl.playbook_metadata = await this.upsertPlaybookMetadata(fpl.playbook_metadata)
       }
       try{
-        await this.db.objects.fpl.upsert({
-          where: { id: fpl.id },
-          create: {
+        await this.db.insertInto('fpl')
+          .values({
             id: fpl.id,
             process: fpl.process.id,
             cell_metadata: fpl.cell_metadata !== undefined ? fpl.cell_metadata.id : null,
             playbook_metadata: fpl.playbook_metadata !== undefined ? fpl.playbook_metadata.id : null,
             parent: fpl.parent !== undefined ? fpl.parent.id : null,
-          }
-        })
+          })
+          .onConflict(oc => oc.column('id').doUpdateSet({ hits: sql`${sql.ref('fpl.hits')} + 1` }))
+          .execute()
       }catch(e){
         console.error({ fpl_id: fpl.id, fpl_process_id: fpl.process.id, fpl_parent_id: fpl.parent?.id })
         throw e
       }
       this.fplTable[fpl.id] = fpl
     } else {
-      await this.db.objects.fpl.update({
-        where: {
-          id: fpl.id
-        },
-        data: {
-          id: fpl.id
-        }
-      })
+      await this.hit('fpl', fpl.id)
     }
     return this.fplTable[fpl.id]
+  }
+
+  /**
+   * A process along with its inputs
+   */
+  private getProcessRecord = async (id: string) => {
+    const process = await this.db.selectFrom('process')
+      .select(['id', 'type', 'data', 'timestamp'])
+      .where('id', '=', id)
+      .executeTakeFirst()
+    if (process === undefined) return undefined
+    const inputs = await this.db.selectFrom('process_input')
+      .select(['key', 'value'])
+      .where('id', '=', id)
+      .execute()
+    return {
+      id: process.id,
+      type: process.type,
+      data: process.data,
+      timestamp: process.timestamp,
+      inputs: dict.init(inputs.map(({ key, value }) => ({ key, value }))),
+    }
+  }
+
+  /**
+   * Count a usage of an existing record
+   */
+  private hit = async (table: 'process' | 'data' | 'fpl', id: string) => {
+    await this.db.updateTable(table)
+      .set({ hits: sql`hits + 1` })
+      .where('id', '=', id)
+      .execute()
   }
 
   dump = async () => {
     return {
       dataTable: this.dataTable,
       processTable: this.processTable,
-      resolvedTable: this.resolvedTable,
       fplTable: this.fplTable,
       cellMetadataTable: this.playbookMetadataTable,
       playbookMetadataTable: this.cellMetadataTable,

@@ -3,11 +3,12 @@ import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 import dynamic from 'next/dynamic'
 import { file_icon, input_icon } from '@/icons'
-import * as Auth from 'next-auth/react'
-import { useSessionWithId } from '@/app/extensions/next-auth/hooks'
+import * as Auth from '@/app/extensions/auth-client'
+import { useSessionWithId } from '@/app/extensions/auth/hooks'
 import classNames from 'classnames'
-import { clientUploadFile } from  '@/components/core/file/api/upload/client'
-import { clientFetchFile } from  '@/components/core/file/api/fetch/client'
+import { uploadFile } from './client/upload'
+import { useTRPCClient } from '@/app/trpc/client'
+import { useRuntimeConfig } from '@/app/fragments/config'
 
 const Bp5Button = dynamic(() => import('@blueprintjs/core').then(({ Button }) => Button))
 
@@ -33,12 +34,7 @@ export const FileURL = MetaNode('FileURL')
   .build()
 
 export function FilePrompt(props: {
-  example?(): Promise<{
-    url: string;
-    filename: string;
-    sha256: string;
-    size: number;
-  }>,
+  example?: { asset: string, filename: string },
   data?: {
       url: string;
       filename: string;
@@ -54,18 +50,22 @@ export function FilePrompt(props: {
   }, autoextend?: boolean) => void;
   session_id?: string | undefined;
 }) {
+  const trpc = useTRPCClient()
   const [currentFile, setCurrentFile] = React.useState<{ description?: string | null, url?: string, filename?: string, size?: number }>({})
   const [tab, setTab] = React.useState<'upload' | 'url'>('upload')
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  // the fraction uploaded while uploading, and the error if it failed
+  const [upload, setUpload] = React.useState<{ progress?: number, verifying?: boolean, error?: string }>({})
   const { data: session } = useSessionWithId()
+  const runtimeConfig = useRuntimeConfig()
   const output = React.useMemo(() => props.data || { description: undefined, url: undefined, filename: undefined, size: undefined }, [props.data])
   React.useEffect(() => {
     setCurrentFile(output)
-    if (output && output.url && !output.url.startsWith((process.env.NEXT_PUBLIC_URL as string).replace(/https?:/, 'drs:'))) {
+    if (output && output.url && !output.url.startsWith((runtimeConfig.NEXT_PUBLIC_URL || '').replace(/https?:/, 'drs:'))) {
       // only go to url when the url isn't our DRS server
       setTab('url')
     }
-  }, [output])
+  }, [output, runtimeConfig])
   return (
     <div>
       {!session || !session.user ? (
@@ -88,13 +88,26 @@ export function FilePrompt(props: {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
               const description = rawDescription === null ? undefined : rawDescription.toString()
-              const { file: [record] } = await clientUploadFile(formData, props.session_id)
-              props.submit({ description, ...record }, true)
+              const file = fileInputRef.current?.files?.[0]
+              if (!file) return
+              // the file is uploaded directly to storage (in parts), see ./client/upload.ts
+              setUpload({ progress: 0 })
+              try {
+                const record = await uploadFile({
+                  trpc, file, session_id: props.session_id,
+                  onProgress: progress => setUpload({ progress }),
+                  onVerifying: () => setUpload({ verifying: true }),
+                })
+                setUpload({})
+                props.submit({ description, ...record }, true)
+              } catch (e) {
+                setUpload({ error: e instanceof Error ? e.message : String(e) })
+              }
             } else if (currentFile.url) {
               const formData = new FormData(evt.currentTarget)
               const rawDescription = formData.get('description')
               const description = rawDescription === null ? undefined : rawDescription.toString()
-              const record = await clientFetchFile({ url: currentFile.url }, props.session_id)
+              const record = await trpc.components.file.fetch.mutate({ url: currentFile.url }, { context: { session_id: props.session_id } })
               props.submit({ description, ...record }, true)
             } else {
               console.error('Missing input')
@@ -139,12 +152,12 @@ export function FilePrompt(props: {
               </div>
             </div>
             <div className={classNames({ 'hidden': tab !== 'url' })}>
-              <div className="bp5-input-group">
+              <div className="bp6-input-group">
                 <input
                   type="text"
-                  className="bp5-input w-full"
+                  className="bp6-input w-full"
                   placeholder="e.g. drs://somehost/id"
-                  value={currentFile.url}
+                  value={currentFile.url ?? ''}
                   onChange={evt => {
                     setCurrentFile(({ url: _, ...file }) => ({ ...file, url: evt.target.value }))
                   }}
@@ -152,16 +165,22 @@ export function FilePrompt(props: {
               </div>
             </div>
           </div>
-          <div className="bp5-input-group">
+          <div className="bp6-input-group">
             <input
               type="text"
               name="description"
-              className="bp5-input"
+              className="bp6-input"
               placeholder={`File description`}
               onChange={evt => {setCurrentFile(({ description: _, ...file }) => ({ ...file, description: evt.target.value }))}}
               value={currentFile.description||''}
             />
           </div>
+          {upload.verifying ?
+            <div className="my-1"><progress className="progress progress-primary w-full" /><span className="text-sm">Verifying…</span></div>
+            : upload.progress !== undefined ?
+            <progress className="progress progress-primary w-full my-1" value={upload.progress} max={1} />
+            : upload.error ? <div className="alert alert-error my-1">{upload.error}</div>
+            : null}
           <div className="inline-flex flex-row">
             {props.example ?
               <Bp5Button
@@ -170,14 +189,15 @@ export function FilePrompt(props: {
                 rightIcon="cloud-upload"
                 onClick={async () => {
                   if (!props.example) return
-                  props.submit(await props.example(), true)
+                  props.submit(await trpc.components.file.register.mutate(props.example, { context: { session_id: props.session_id } }), true)
                 }}
               />
               : null}
             <Bp5Button
               large
               disabled={
-                currentFile.url === undefined
+                upload.progress !== undefined || upload.verifying
+                || currentFile.url === undefined
                 || (
                   currentFile.description === output.description
                   && currentFile.url === output.url

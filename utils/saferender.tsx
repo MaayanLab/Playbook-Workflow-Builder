@@ -2,9 +2,9 @@ import dynamic from 'next/dynamic';
 
 const ErrorBoundary = dynamic(() => import('react-error-boundary').then(({ ErrorBoundary }) => ErrorBoundary), { ssr: false })
 
-function fallbackRender({ error }: { error: { message: string } }) {
+function fallbackRender({ error }: { error: unknown }) {
   return (
-    <div className="alert alert-error">Client side error: {error.message}</div>
+    <div className="alert alert-error">Client side error: {error instanceof Error ? error.message : String(error)}</div>
   )
 }
 

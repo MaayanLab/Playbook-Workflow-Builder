@@ -2,11 +2,9 @@ import React from 'react'
 import { start_icon, func_icon, variable_icon, extend_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { useExRouter } from '@/app/fragments/ex-router'
-import { type Metapath, useFPL } from '@/app/fragments/metapath'
-import useKRG from '@/app/fragments/graph/krg'
+import { type Metapath, useFPL, useKRG } from '@/app/fragments/metapath'
 import { StoryProvider } from '@/app/fragments/story'
 import * as dict from '@/utils/dict'
-import { Set } from 'immutable'
 
 const Breadcrumbs = dynamic(() => import('@/app/fragments/breadcrumbs').then(({ Breadcrumbs }) => Breadcrumbs))
 const DataBreadcrumb = dynamic(() => import('@/app/fragments/graph/breadcrumb').then(({ DataBreadcrumb }) => DataBreadcrumb))
@@ -41,11 +39,41 @@ function metapathToHead(metapath: Array<Metapath>, head: Metapath) {
   return metapath.filter(({ id }) => relevant[id] === true)
 }
 
-export default function Graph({ session_id, graph_id, node_id, thread_id, extend, suggest }: { session_id?: string, graph_id: string, node_id: string, thread_id?: string, extend: boolean, suggest: boolean }) {
+type GraphProps = { session_id?: string, graph_id: string, node_id: string, thread_id?: string, extend: boolean, suggest: boolean }
+
+export default function Graph(props: GraphProps) {
+  const { session_id, thread_id } = props
   const router = useExRouter()
-  const krg = useKRG({ session_id })
-  const { data: metapath = [] } = useFPL(graph_id)
-  const node_ids = React.useMemo(() => Set(node_id.split(',')), [node_id])
+  const krg = useKRG()
+  const fpl = useFPL(props.graph_id)
+  const settled = React.useRef({
+    graph_id: props.graph_id,
+    node_id: props.node_id,
+    extend: props.extend,
+    suggest: props.suggest,
+    metapath: [] as Metapath[],
+  })
+  if (!fpl.isPlaceholderData && fpl.data !== undefined) {
+    settled.current = {
+      graph_id: props.graph_id,
+      node_id: props.node_id,
+      extend: props.extend,
+      suggest: props.suggest,
+      metapath: fpl.data,
+    }
+  }
+  // A mutation changes the content-addressed graph id before its immutable FPL
+  // has arrived. Keep rendering the last complete graph instead of briefly
+  // collapsing the breadcrumbs and active cell.
+  const { graph_id, node_id, extend, suggest, metapath } = fpl.isPlaceholderData ? settled.current : {
+    graph_id: props.graph_id,
+    node_id: props.node_id,
+    extend: props.extend,
+    suggest: props.suggest,
+    metapath: fpl.data ?? [],
+  }
+  const node_ids = React.useMemo(() => new Set(node_id.split(',')), [node_id])
+  const toggleNodeId = React.useCallback((id: string) => node_ids.has(id) ? [...node_ids].filter(other => other !== id).join(',') : [...node_ids, id].join(','), [node_ids])
   const heads = React.useMemo(() => {
     return metapath.filter(({ id }) => node_ids.has(id))
   }, [metapath, node_ids])
@@ -83,7 +111,7 @@ export default function Graph({ session_id, graph_id, node_id, thread_id, extend
                   parents={dict.isEmpty(step.process.inputs) ? ['start'] : dict.values(step.process.inputs).map(({ id }) => process_to_step[id])}
                   onClick={(evt) => {
                     if (evt.shiftKey) {
-                      const new_node_id = node_ids.has(step.id) ? node_ids.delete(step.id).join(',') : node_ids.add(step.id).join(',')
+                      const new_node_id = toggleNodeId(step.id)
                       if (new_node_id) {
                         router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}/node/${new_node_id}/extend`, undefined, { shallow: true })
                       }
@@ -103,7 +131,7 @@ export default function Graph({ session_id, graph_id, node_id, thread_id, extend
                   parents={[step.id]}
                   onClick={(evt) => {
                     if (evt.shiftKey) {
-                      const new_node_id = node_ids.has(step.id) ? node_ids.delete(step.id).join(',') : node_ids.add(step.id).join(',')
+                      const new_node_id = toggleNodeId(step.id)
                       if (new_node_id) {
                         router.push(`${session_id ? `/session/${session_id}` : ''}/graph/${graph_id}/node/${new_node_id}/extend`, undefined, { shallow: true })
                       }

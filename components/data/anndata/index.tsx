@@ -8,7 +8,6 @@ import dynamic from 'next/dynamic'
 import { downloadUrl } from '@/utils/download'
 import { GeneCountMatrix } from '../gene_count_matrix'
 import { MetadataMatrix } from '../metadata_matrix'
-import { clientLoadExample } from  '@/components/data/anndata/api/example.h5ad/client'
 import SafeRender from '@/utils/saferender'
 
 const Matrix = dynamic(() => import('@/app/components/Matrix'))
@@ -81,7 +80,7 @@ export const AnnDataFileUpload = MetaNode('AnnDataFileUpload')
   .codec(FileC)
   .inputs()
   .output(AnnData)
-  .prompt(props => <><FilePrompt {...props} example={clientLoadExample} />{props.output ? <SafeRender component={AnnData.view} props={props.output} /> : null}</>)
+  .prompt(props => <><FilePrompt {...props} example={{ asset: 'data/anndata/assets/example.h5ad', filename: 'example.h5ad' }} />{props.output ? <SafeRender component={AnnData.view} props={props.output} /> : null}</>)
   .resolve(async (props) => await python(
     'components.data.anndata.anndata',
     { kargs: [props.data] },

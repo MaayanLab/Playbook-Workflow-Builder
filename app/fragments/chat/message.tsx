@@ -1,18 +1,19 @@
 import React from "react"
-import { GPTAssistantMessageFeedback } from "@/app/api/client"
-import { useAPIMutation } from "@/core/api/client"
+import { useMutation } from '@tanstack/react-query'
+import { useTRPC } from '@/app/trpc/client'
 import classNames from "classnames"
 import dynamic from "next/dynamic"
-import type { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
-import type { Session } from 'next-auth'
+import type { Options as ReactMarkdownOptions } from 'react-markdown'
+import type { Session } from '@/app/extensions/auth-client'
 import { ExLink } from "@/app/fragments/ex-router"
 
-const ReactMarkdown = dynamic(() => import('react-markdown/lib/react-markdown').then(({ ReactMarkdown }) => ReactMarkdown as ((props: ReactMarkdownOptions) => React.ReactNode)), { ssr: false })
+const ReactMarkdown = dynamic<ReactMarkdownOptions>(() => import('react-markdown'), { ssr: false })
 const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then(({ UserDisplay }) => UserDisplay))
 
 export default function Message({ thread_id, message_id, session, role, children }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string, embedded?: boolean }>) {
   const [feedback, setFeedback] = React.useState('')
-  const { trigger } = useAPIMutation(GPTAssistantMessageFeedback, { thread_id, message_id })
+  const trpc = useTRPC()
+  const { mutateAsync: sendFeedback } = useMutation(trpc.chat.feedback.mutationOptions())
   if (role === 'developer' && typeof children === 'string') {
     try {
       const data = JSON.parse(children)
@@ -63,20 +64,20 @@ export default function Message({ thread_id, message_id, session, role, children
         {role === 'assistant' ?
           <div className={classNames('chat-footer text-lg cursor-pointer')}>
             {/* <div
-              className={classNames('bp5-icon bp5-icon-link', {'text-green-500': feedback === '+1'})}
+              className={classNames('bp6-icon bp6-icon-link', {'text-green-500': feedback === '+1'})}
             /> */}
             &nbsp;
             <div
-              className={classNames('bp5-icon bp5-icon-thumbs-up', {'text-green-500': feedback === '+1'})}
+              className={classNames('bp6-icon bp6-icon-thumbs-up', {'text-green-500': feedback === '+1'})}
               onClick={() => {
-                trigger({ body: '+1' }).then(() => setFeedback('+1'))
+                if (thread_id && message_id) sendFeedback({ thread_id, message_id, feedback: '+1' }).then(() => setFeedback('+1'))
               }}
             />
             &nbsp;
             <div
-              className={classNames('bp5-icon bp5-icon-thumbs-down', {'text-red-500': feedback === '-1'})}
+              className={classNames('bp6-icon bp6-icon-thumbs-down', {'text-red-500': feedback === '-1'})}
               onClick={() => {
-                trigger({ body: '-1' }).then(() => setFeedback('-1'))
+                if (thread_id && message_id) sendFeedback({ thread_id, message_id, feedback: '-1' }).then(() => setFeedback('-1'))
               }}
             />
           </div>

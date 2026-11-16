@@ -2,8 +2,8 @@ import React from 'react'
 import { MetaNode } from "@/spec/metanode"
 import { z } from 'zod'
 import { AnnData } from '@/components/data/anndata'
-import { useClientMetadataFromFile } from './api/metadata/client'
-import { updateMetadataColumn } from './api/metadata/update'
+import { useClientMetadataFromFile } from './client/metadata'
+import { updateMetadataColumn } from './server/update-metadata'
 import classNames from 'classnames'
 import { GeneCountMatrix } from '../gene_count_matrix'
 
@@ -138,18 +138,18 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
           </table>
         </div>
         <div className="max-w-sm">
-          <div className="bp5-input-group">
+          <div className="bp6-input-group">
             <input
               type="text"
               name="description"
-              className="bp5-input"
+              className="bp6-input"
               placeholder={`New file description`}
               onChange={evt => {setCurrentDescription(() => evt.target.value)}}
               value={currentDescription || ''}
             />
           </div>
         </div>
-        <button className="bp5-button bp5-large" onClick={() => {
+        <button className="bp6-button bp6-large" onClick={() => {
           props.submit({ description: currentDescription, data: tableData }, true)
         }}>Submit</button>
       </div>

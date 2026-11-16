@@ -1,4 +1,4 @@
-bokeh<3
+bokeh==3.10.2
 leidenalg
 pandas
 umap-learn

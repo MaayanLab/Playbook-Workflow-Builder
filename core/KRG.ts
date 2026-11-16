@@ -19,6 +19,21 @@ export default class KRG {
 
   constructor() {}
 
+  /**
+   * A copy of this KRG which can be extended (e.g. with user suggestions)
+   *  without modifying this one
+   */
+  clone = () => {
+    const krg = new KRG()
+    krg.dataNodes = { ...this.dataNodes }
+    krg.resolveNodes = { ...this.resolveNodes }
+    krg.promptNodes = { ...this.promptNodes }
+    krg.processNodes = { ...this.processNodes }
+    krg.processForInput = dict.init(dict.items(this.processForInput).map(({ key, value }) => ({ key, value: { ...value } })))
+    krg.processForOutput = dict.init(dict.items(this.processForOutput).map(({ key, value }) => ({ key, value: { ...value } })))
+    return krg
+  }
+
   getDataNode = (spec: string) => {
     return this.dataNodes[spec]
   }

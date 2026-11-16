@@ -40,8 +40,8 @@ return f
 Please note only **resolvers** should be operating on files, *views* and *prompts* should operate on prepared datatypes which resolvers could set up. That-is picking options in a way that depends on information in a file would need to prepare those options in a resolver. This is because potentially large files should not be downloaded to an end user's browser which is where views and prompts run.
 
 ```tsx
-import { fileAsStream } from  '@/components/core/file/api/download'
-import { fileFromStream, uploadFile } from  '@/components/core/file/api/upload'
+import { fileAsStream } from  '@/components/core/file/server/download'
+import { fileFromStream, uploadFile } from  '@/components/core/file/server/upload'
 import FormData from 'form-data'
 
 export const SomeFileOp = MetaNode('SomeFileOp')

@@ -1,36 +1,7 @@
-version: '3.9'
-x-logging:
-  &default-logging
-  driver: 'json-file'
-  options:
-    max-size: '100k'
-    max-file: '10'
 services:
-  # ingress in front of the app for TLS termination among other uses
-  ingress:
-    image: traefik:v2.9
-    x-kubernetes:
-      exclude: true
-    command: >
-      --providers.docker=true
-      --providers.docker.exposedByDefault=false
-      --entrypoints.web.address=:80
-      --entrypoints.web.http.redirections.entrypoint.to=websecure
-      --entrypoints.web.http.redirections.entrypoint.scheme=https
-      --entrypoints.websecure.address=:443
-      --certificatesresolvers.letsencrypt-prod.acme.email=${LETSENCRYPT_EMAIL}
-      --certificatesresolvers.letsencrypt-prod.acme.storage=/data/acme.json
-      --certificatesresolvers.letsencrypt-prod.acme.tlschallenge=true
-    ports:
-    - 80:80
-    - 443:443
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - ./data/ingress:/data
-    logging: *default-logging
   # app serves the UI & API, it registers user interactions into the database (pg)
   pwb-app:
-    image: maayanlab/playbook-partnership:0.80.8-ui
+    image: maayanlab/playbook-partnership:0.81.10-ui
     build:
       context: .
       dockerfile: Dockerfile
@@ -39,19 +10,33 @@ services:
     cap_add:
     - SYS_ADMIN
     platform: linux/amd64
+    x-kubernetes:
+      imagePullPolicy: IfNotPresent
+      annotations:
+        maayanlab.cloud/ingress: ${PROD_PUBLIC_URL}
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+    ports:
+    - 3000
     deploy:
-      # this can be safely replicated if necessary but an ingress will be required
+      # unsure if this can be replicated atm
       replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2048M
+        reservations:
+          cpus: '0.25'
+          memory: 1024M
     environment:
-    - PUBLIC_URL
-    - LANDING_PAGE
-    - NEXTAUTH_SECRET
-    - NEXTAUTH_GOOGLE
-    - NEXTAUTH_ORCID
-    - NEXTAUTH_KEYCLOAK
+    - PUBLIC_URL=${PROD_PUBLIC_URL}
+    - LANDING_PAGE=/graph/extend
+    - DATABASE_URL=${PROD_DATABASE_URL:-postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pwb-pg:5432/${POSTGRES_DB:-postgres}}
+    - BETTER_AUTH_SECRET
+    - BETTER_AUTH_GOOGLE
+    - BETTER_AUTH_ORCID
+    - BETTER_AUTH_KEYCLOAK
     - EMAIL_SERVER
     - EMAIL_FROM
-    - DATABASE_URL
     - NEXT_PUBLIC_MATOMO_URL
     - NEXT_PUBLIC_MATOMO_SITE_ID
     - OPENAI_API_KEY
@@ -59,31 +44,17 @@ services:
     - ELYSIUM_USERNAME
     - ELYSIUM_PASSWORD
     - N_WORKERS=0
-    ports:
-      - 3000
-    x-kubernetes:
-      imagePullPolicy: IfNotPresent
-      annotations:
-        maayanlab.cloud/ingress: ${PUBLIC_URL}
-    labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.app.rule=Host(`${SERVER_NAME}`)"
-    - "traefik.http.services.app.loadbalancer.server.port=3000"
-    - "traefik.http.routers.app.tls=true"
-    - "traefik.http.routers.app.tls.certresolver=letsencrypt-prod"
-    - "traefik.http.routers.app.tls.domains[0].main=${SERVER_NAME}"
-    - "traefik.http.routers.app.middlewares=app-headers@docker"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolallowmethods=HEAD,GET,POST,OPTIONS"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolallowheaders=*"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolalloworiginlist=*"
-    - "traefik.http.middlewares.app-headers.headers.accesscontrolmaxage=100"
-    - "traefik.http.middlewares.app-headers.headers.addvaryheader=true"
-    - "traefik.http.middlewares.app-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-    logging: *default-logging
+    - S3_BUCKET
+    - S3_PREFIX
+    - S3_ENDPOINT
+    - S3_REGION
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+
   # the workers should be replicated,
   #   they deal with creating "Resolved" entries for submitted Processes.
   pwb-worker:
-    image: maayanlab/playbook-partnership:0.80.8
+    image: maayanlab/playbook-partnership:0.81.10
     build:
       context: .
       dockerfile: Dockerfile
@@ -92,23 +63,35 @@ services:
     x-kubernetes:
       imagePullPolicy: IfNotPresent
     deploy:
-      # this can be safely replicated as necessary
-      replicas: 2
+      replicas: 1
+      resources:
+        limits:
+          memory: 4096M
+          cpus: '1'
+        reservations:
+          memory: 1024M
+          cpus: '0.25'
     command: ["npm", "run", "start:worker"]
     environment:
-    - PUBLIC_URL
-    - DATABASE_URL
-    - NEXTAUTH_SECRET
+    - PUBLIC_URL=${PROD_PUBLIC_URL}
+    - DATABASE_URL=${PROD_DATABASE_URL:-postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pwb-pg:5432/${POSTGRES_DB:-postgres}}
+    - BETTER_AUTH_SECRET
     - ELYSIUM_USERNAME
     - ELYSIUM_PASSWORD
     - N_WORKERS=5
     - OPENAI_API_KEY
     - OPENAI_MODEL
-    logging: *default-logging
-  # the database is used by everything it can be provisioned with
-  #  dbmate (`dbmate up`)
+    - S3_BUCKET
+    - S3_PREFIX
+    - S3_ENDPOINT
+    - S3_REGION
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+  # the database is used by everything, apply migrations with
+  #  `DATABASE_URL=postgres://... npm run db:migrate`
   pwb-pg:
     image: postgres:15
+    restart: unless-stopped
     environment:
     - POSTGRES_DB
     - POSTGRES_USER
@@ -117,10 +100,13 @@ services:
     - 5432:5432
     volumes:
     - pwb-pg:/var/lib/postgresql/data
-    logging: *default-logging
   # app-dev serves a dev version of the app
   app-dev:
-    image: maayanlab/playbook-partnership:0.80.8-dev
+    image: maayanlab/playbook-partnership:81.10-dev
+    x-kubernetes:
+      exclude: true
+      annotations:
+        maayanlab.cloud/ingress: ${DEV_PUBLIC_URL}
     build:
       context: .
       dockerfile: Dockerfile
@@ -133,29 +119,19 @@ services:
       # this can be safely replicated if necessary but an ingress will be required
       replicas: 0
     environment:
-    - PUBLIC_URL
+    - PUBLIC_URL=${DEV_PUBLIC_URL}
     - LANDING_PAGE
-    - NEXTAUTH_SECRET
-    - NEXTAUTH_GOOGLE
-    - NEXTAUTH_ORCID
-    - NEXTAUTH_KEYCLOAK
+    - BETTER_AUTH_SECRET
+    - BETTER_AUTH_GOOGLE
+    - BETTER_AUTH_ORCID
+    - BETTER_AUTH_KEYCLOAK
     - EMAIL_SERVER
     - EMAIL_FROM
-    - DATABASE_URL
+    - DATABASE_URL=${DEV_DATABASE_URL-postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pwb-pg:5432/${POSTGRES_DB:-postgres}}
     - NEXT_PUBLIC_MATOMO_URL
     - NEXT_PUBLIC_MATOMO_SITE_ID
     - OPENAI_API_KEY
     - N_WORKERS
-    x-kubernetes:
-      exclude: true
-    labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.app-dev.rule=Host(`dev.${SERVER_NAME}`)"
-    - "traefik.http.services.app-dev.loadbalancer.server.port=3000"
-    - "traefik.http.routers.app-dev.tls=true"
-    - "traefik.http.routers.app-dev.tls.certresolver=letsencrypt-prod"
-    - "traefik.http.routers.app-dev.tls.domains[0].main=dev.${SERVER_NAME}"
-    logging: *default-logging
   # a playbook-partnership development environment
   #  doesn't run in production, just for convenience
   dev:
@@ -174,9 +150,13 @@ services:
     user: "${DOCKER_USER}"
     volumes:
     - ./:/app
-    logging: *default-logging
+
 volumes:
   pwb-pg:
     x-kubernetes:
-      size: 5Gi
+      size: 8Gi
       class: ${KUBE_STORAGE_CLASS:-}
+
+x-kubernetes:
+  name: pwb
+  namespace: pwb

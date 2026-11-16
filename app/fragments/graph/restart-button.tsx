@@ -17,7 +17,7 @@ export default function RestartButton({ session_id }: { session_id?: string }) {
   return (
     <>
       <button
-        className="bp5-button bp5-minimal"
+        className="bp6-button bp6-minimal"
         disabled={disabled}
         onClick={evt => {
           if (evt.shiftKey) {

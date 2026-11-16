@@ -26,7 +26,19 @@ export default function Icon({
   container_color?: string,
 }) {
   const tooltipContainerRef = React.useRef<SVGRectElement>(null)
-  const tooltipRef = React.useRef<{ tooltip: HTMLDivElement, listener: (evt: MouseEvent) => void }>(null)
+  const tooltipRef = React.useRef<{ tooltip: HTMLDivElement, listener: (evt: MouseEvent) => void } | null>(null)
+  /**
+   * Remove the tooltip (if any). This may run more than once (the mouse leaving,
+   *  effect cleanups re-running) and the tooltip may already have been detached
+   *  (it's outside of React, which manages <body>), so it must not assume either.
+   */
+  const removeTooltip = React.useCallback(() => {
+    const current = tooltipRef.current
+    if (current === null) return
+    tooltipRef.current = null
+    document.removeEventListener('mousemove', current.listener)
+    current.tooltip.remove()
+  }, [])
   const className = className_ !== undefined ? className_ :  "fill-black"
   const color = color_ !== undefined ? color_ : 'auto'
   const size = size_ !== undefined ? size_ : 1
@@ -80,21 +92,14 @@ export default function Icon({
     const listener = (evt: MouseEvent) => {
       if ((evt.clientX+window.scrollX < left || evt.clientX+window.scrollX > right)
           || (evt.clientY+window.scrollY < top || evt.clientY+window.scrollY > bottom)) {
-        document.removeEventListener('mousemove', listener)
-        document.body.removeChild(tooltip)
-        Object.assign(tooltipRef, { current: null })
+        removeTooltip()
       }
     }
     document.body.append(tooltip)
-    Object.assign(tooltipRef, { current: { tooltip, listener } })
+    tooltipRef.current = { tooltip, listener }
     document.addEventListener('mousemove', listener)
-  }, [tooltipContainerRef, tooltipRef, title])
-  React.useEffect(() => () => {
-    if (tooltipRef.current !== null) {
-      document.removeEventListener('mousemove', tooltipRef.current.listener)
-      document.body.removeChild(tooltipRef.current.tooltip)
-    }
-  }, [])
+  }, [tooltipContainerRef, removeTooltip, title])
+  React.useEffect(() => removeTooltip, [removeTooltip])
   const Svg = without_svg ? (
     ({ children }: { children: ReactNode }) =>
       <g transform={`scale(${size})`}>{children}</g>

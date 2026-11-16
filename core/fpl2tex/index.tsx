@@ -10,7 +10,8 @@ import cache from '@/utils/global_cache'
 import { DataMetaNode } from "@/spec/metanode"
 import { PDFDocument,rgb,StandardFonts } from 'pdf-lib'
 
-const puppeteerSingleton = cache('puppeteer', () => puppeteer.launch())
+/** The browser is launched on first use (not on import, e.g. during builds) and then reused */
+const puppeteerSingleton = () => cache('puppeteer', () => puppeteer.launch())
 
 type File = {
   url: string,
@@ -30,17 +31,20 @@ function hasReportOutputType(metanode:DataMetaNode): boolean {
 }
 
 async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
-  const browser = await puppeteerSingleton
+  const browser = await puppeteerSingleton()
   const ctx = await browser.createBrowserContext()
-  const page = await ctx.newPage()
-  await page.goto(`http://localhost:3000/embed/${graph_id}/node/${node_id}`)
-  await page.waitForSelector('div.embed-ready')
-  await page.waitForNetworkIdle({ idleTime: 500 })
-  const body = await page.$('body')
-  const boundingBox = await body?.boundingBox()
-  const pdf = await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height, format: 'letter' } : { width: 2551, height: 3295, format: 'letter' })
-  await ctx.close()
-  return pdf
+  try {
+    const page = await ctx.newPage()
+    // render the figure with this server (next sets PORT to the port it listens on)
+    await page.goto(`http://localhost:${process.env.PORT || 3000}/embed/${graph_id}/node/${node_id}`)
+    await page.waitForSelector('div.embed-ready')
+    await page.waitForNetworkIdle({ idleTime: 500 })
+    const body = await page.$('body')
+    const boundingBox = await body?.boundingBox()
+    return await page.pdf(boundingBox ? { width: boundingBox.width, height: boundingBox.height, format: 'letter' } : { width: 2551, height: 3295, format: 'letter' })
+  } finally {
+    await ctx.close()
+  }
 }
 
 function latexEscape(s: string) {
@@ -85,7 +89,7 @@ async function extras() {
 export async function retrieeBundleFiles(fileURL: string): Promise<string | ArrayBuffer> {
   const objecturl = fileURL.replace(
     /^drs:\/\/([^\/]+)\/(.+)$/,
-    `${process.env.NEXT_PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`
+    `${process.env.PUBLIC_URL||''}/ga4gh/drs/v1/objects/$2/access/https/data`
   )
   return fetch(objecturl).then(r => r.arrayBuffer())
 }
@@ -97,7 +101,7 @@ export async function ReportNode2TEX(reportOutput: report, fpl_id:string): Promi
   const pages = pdfDoc.getPages()
   const firstPage = pages[0]
   const { width, height } = firstPage.getSize()
-  const reportURL = `${process.env.NEXT_PUBLIC_URL||''}/report/${fpl_id}`
+  const reportURL = `${process.env.PUBLIC_URL||''}/report/${fpl_id}`
   const fontSize = 10
   const reportURLWidth = helveticaFont.widthOfTextAtSize(reportURL, fontSize)
   firstPage.drawText(reportURL, {
@@ -109,7 +113,7 @@ export async function ReportNode2TEX(reportOutput: report, fpl_id:string): Promi
   })
   return {
     [`${reportOutput.bundle.filename}`]: retrieeBundleFiles(reportOutput.bundle.url),
-    [`${reportOutput.pdf.filename}`]: pdfDoc.save()
+    [`${reportOutput.pdf.filename}`]: pdfDoc.save().then(bytes => bytes.slice().buffer as ArrayBuffer)
   }
 }
 

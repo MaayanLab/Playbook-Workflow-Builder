@@ -5,6 +5,7 @@ import { references_icon } from '@/icons';
 import { useStory } from '../story';
 
 const Linkify = dynamic(() => import('@/utils/linkify'))
+const Bibliography = dynamic(() => import('@/app/fragments/bibliography'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export function abstractText(story: ReturnType<typeof extractCitations>) {
@@ -82,20 +83,18 @@ export function FigureCaption({ id, story }: { id: string, story: ReturnType<typ
 export function References() {
   const story = useStory()
   return  (
-    <div className="flex-grow flex-shrink bp5-card p-0">
+    <div className="flex-grow flex-shrink min-w-0 bp6-card p-0">
       <div className="p-3">
         <div className="flex flex-row gap-2">
           <Icon icon={references_icon} className="fill-black dark:fill-white" />
-          <h2 className="bp5-heading w-full">
+          <h2 className="bp6-heading w-full">
             References
           </h2>
         </div>
-        <div className="prose max-w-none text-sm text-justify whitespace-pre-line my-2 flex flex-col">
-          {story.ast.map((part, i) =>
-            part.type === 'bibitem' ? <React.Fragment key={i}><a key={i} id={part.ref} /><Linkify>{part.text}</Linkify></React.Fragment>
-              : null
-          )}
-        </div>
+        <Bibliography
+          className="prose max-w-none text-sm my-2"
+          items={story.ast.flatMap(part => part.type === 'bibitem' ? [part] : [])}
+        />
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import typing
 import numpy as np
 import pandas as pd
-from components.core.file import File, file_as_path, file_as_stream
+from components.core.file import File, file_as_seekable, file_as_stream
 from components.data.gene_count_matrix import np_jsonifyable
 
 class Signature(File, typing.TypedDict):
@@ -24,7 +24,7 @@ def signature_from_file(file: File):
     with file_as_stream(file, 'r') as fr:
       df = pd.read_csv(fr, sep=None, index_col=0, engine='python')
   elif file['filename'].endswith('.xlsx'):
-    with file_as_path(file, 'r') as fr:
+    with file_as_seekable(file) as fr:
       df = pd.read_excel(fr, index_col=0)
   else:
     raise NotImplementedError

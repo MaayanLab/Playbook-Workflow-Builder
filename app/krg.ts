@@ -1,5 +1,5 @@
 import KRG from '@/core/KRG'
-import { metanodes } from '@/components'
+import { metanodes } from '@/components/client'
 import cache from '@/utils/global_cache'
 
 const krg = cache('krg', () => new KRG())

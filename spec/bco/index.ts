@@ -153,12 +153,12 @@ const description_domain_schema = z
 const error_domain_schema = z
   .object({
     empirical_error: z
-      .record(z.any())
+      .record(z.string(), z.any())
       .describe(
         "empirically determined values such as limits of detectability, false positives, false negatives, statistical confidence of outcomes, etc. This can be measured by running the algorithm on multiple data samples of the usability domain or through the use of carefully designed in-silico data."
       ),
     algorithmic_error: z
-      .record(z.any())
+      .record(z.string(), z.any())
       .describe(
         "descriptive of errors that originate by fuzziness of the algorithms, driven by stochastic processes, in dynamically parallelized multi-threaded executions, or in machine learning methodologies where the state of the machine can affect the outcome."
       ),

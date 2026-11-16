@@ -94,6 +94,7 @@
   "overrides": {
     "react-supervenn": {
       "react": "$react"
-    }
+    },
+    "postcss-selector-parser": "^6.1.5"
   }
 }

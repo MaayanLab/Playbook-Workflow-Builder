@@ -9,7 +9,8 @@ const Analytics = dynamic(() => import('@/app/fragments/analytics'), { ssr: fals
 
 /**
  * Providers which can render on the server, browser-only parts are in
- *  @/app/app/_clients/client-page (rendered by each page)
+ *  @/app/app/_clients/shell (the pages within the site's shell, see (shell)/layout) & otherwise
+ *  @/app/app/_clients/client-page (rendered by those pages)
  */
 export default function Providers({ runtimeConfig, children }: PropsWithChildren<{ runtimeConfig: Record<string, string> }>) {
   return (

@@ -10,7 +10,6 @@ import classNames from 'classnames'
 import SafeRender from '@/utils/saferender'
 import { useTRPCClient } from '@/app/trpc/client'
 
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const JsonEditor = dynamic(() => import('@/app/components/JsonEditor'), { ssr: false })
 
 export default function App() {
@@ -146,7 +145,7 @@ export default function App() {
     dataNodeView = <SafeRender component={dataNode.view} props={JSON.parse(currentNode.data)} />
   }
   return (
-    <Layout>
+    <>
       <div className={styles.App}>
         <div className={styles.Process}>
           <progress className="progress w-100 h-6" value={loading ? undefined : 0}></progress>
@@ -350,6 +349,6 @@ export default function App() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

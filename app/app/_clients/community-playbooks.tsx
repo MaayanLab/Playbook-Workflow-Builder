@@ -14,7 +14,6 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { useTRPC } from '@/app/trpc/client'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const UserIdentity = dynamic(() => import('@/app/fragments/graph/useridentity'))
 
 export default function CommunityPlaybooks() {
@@ -54,7 +53,7 @@ export default function CommunityPlaybooks() {
     return { allInputs, allOutputs }
   }, [playbooks])
   return (
-    <Layout>
+    <>
 
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
@@ -239,6 +238,6 @@ export default function CommunityPlaybooks() {
             Click for Playbooks Curated by the Playbook Partnership
         </ExLink>
       </main>
-    </Layout>
+    </>
   )
 }

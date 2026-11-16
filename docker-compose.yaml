@@ -63,7 +63,7 @@ services:
     x-kubernetes:
       imagePullPolicy: IfNotPresent
     deploy:
-      replicas: 4
+      replicas: 1
       resources:
         limits:
           memory: 4096M

@@ -57,12 +57,6 @@ RUN echo "Building app..." && cd app && npm run build
 
 # TARGET: app -- production server with dependencies to run everything
 FROM base AS app
-USER root
-RUN echo "Installing dev dependencies..." \
-  && apt-get update -y \
-  && apt-get install -y \
-    libcurl4-gnutls-dev \
-  && rm -rf /var/lib/apt/lists/*
 USER ubuntu
 RUN PYTHON_VERSION=3.13 /install.sh
 COPY --from=prepare_requirements_txt_complete --chown=ubuntu /home/ubuntu/app app

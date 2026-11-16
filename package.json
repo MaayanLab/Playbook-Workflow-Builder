@@ -89,7 +89,11 @@
     "typescript": "~5.9"
   },
   "allowScripts": {
-    "better-sqlite3@13.0.3": true
+    "better-sqlite3@13.0.3": true,
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true,
+    "puppeteer@25.16.0": true,
+    "es5-ext": true
   },
   "overrides": {
     "react-supervenn": {

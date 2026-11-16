@@ -67,7 +67,6 @@ const dataSourceIcons: Record<string, StaticImageData> = {
 }
 
 const Icon = dynamic(() => import('@/app/components/icon'))
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 
 export default function Playbooks() {
   const router = useExRouter()
@@ -144,7 +143,7 @@ export default function Playbooks() {
     </button>
   ), [dataSourceFilters, setDataSourceFilters])
   return (
-    <Layout>
+    <>
 
       <main className="flex-grow container mx-auto p-4 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
@@ -358,6 +357,6 @@ export default function Playbooks() {
             Click for Additional Playbooks Contributed by Other Users
         </ExLink>
       </main>
-    </Layout>
+    </>
   )
 }

@@ -1,53 +1,30 @@
 import React from 'react'
-import { useExRouter } from '@/app/fragments/ex-router'
-import { z } from 'zod'
 import dynamic from 'next/dynamic'
-import { MetapathProvider, useKRG } from '@/app/fragments/metapath'
 import { usePathname } from 'next/navigation'
+import { useKRG } from '@/app/fragments/metapath'
+import { parsePathname } from '@/app/app/_lib/routes'
 
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Cells = dynamic(() => import('@/app/fragments/report/cells'))
-const Chat = dynamic(() => import('@/app/fragments/chat/chat'))
 
-const QueryType = z.object({
-  id: z.string().optional(),
-  session_id: z.string().optional(),
-  thread_id: z.string().optional(),
-})
-
-function Report({ params }: { params: z.infer<typeof QueryType> }) {
+/**
+ * The report view of the route (rendered by the report layouts, so that it persists while
+ *  navigating; input edits also only change the url, see report/prompt); the shell & playbook
+ *  state are provided by @/app/app/(shell)/layout.
+ */
+export default function App() {
   const krg = useKRG()
+  const pathname = usePathname() ?? ''
+  const route = React.useMemo(() => parsePathname(pathname), [pathname])
+  if (route.kind !== 'report') return null
   return (
-    <Layout
-      sidebar={<Chat mode="report" graph_id={params.id} thread_id={params.thread_id} embedded />}
-    >
-      <main className="grow flex flex-col mx-4">
-        {params.id ?
-          <Cells
-            session_id={params.session_id}
-            krg={krg}
-            id={params.id}
-          />
-          : <div className="alert alert-error">Page not found</div>}
-      </main>
-    </Layout>
-  )
-}
-
-export default function App({ routeParams }: { routeParams?: z.infer<typeof QueryType> } = {}) {
-  const router = useExRouter()
-  const pathname = usePathname()
-  // Input edits update browser history without remounting this report page.
-  // Route props retain their server value until the next server navigation.
-  const params = React.useMemo(() => {
-    const match = pathname?.match(/^(?:\/session\/([^/]+))?\/report(?:\/([^/]+))?\/?$/)
-    return QueryType.parse(match
-      ? { ...router.query, ...routeParams, session_id: match[1], id: match[2] }
-      : { ...router.query, ...routeParams })
-  }, [pathname, routeParams, router.query])
-  return (
-    <MetapathProvider session_id={params.session_id}>
-      <Report params={params} />
-    </MetapathProvider>
+    <main className="grow flex flex-col mx-4">
+      {route.id ?
+        <Cells
+          session_id={route.session_id}
+          krg={krg}
+          id={route.id}
+        />
+        : <div className="alert alert-error">Page not found</div>}
+    </main>
   )
 }

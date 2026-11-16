@@ -10,7 +10,6 @@ import { func_icon, variable_icon } from '@/icons'
 import MetaNodeListing, { metanodeType } from '@/app/fragments/components/listing'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Icon = dynamic(() => import('@/app/components/icon'))
 
 export default function ComponentPage({ params }: { params: { spec: string } }) {
@@ -28,7 +27,7 @@ export default function ComponentPage({ params }: { params: { spec: string } }) 
   }, [router.query.spec, spec])
   if (metanode === undefined) return <div>Not found</div>
   return (
-    <Layout>
+    <>
       <div className="container flex-grow self-center flex flex-col py-5 overflow-hidden">
         <div className="flex flex-row items-center gap-2 m-2">
           <Icon icon={metanode.meta.icon ? metanode.meta.icon : metanode.kind === 'data' ? variable_icon : func_icon} size={3} title={null} />
@@ -62,6 +61,6 @@ export default function ComponentPage({ params }: { params: { spec: string } }) 
           />
         <div className="justify-self-end"><ExLink href="/components" className="btn btn-sm" shallow>&lt;- All Components</ExLink></div>
       </div>
-    </Layout>
+    </>
   )
 }

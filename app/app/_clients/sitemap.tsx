@@ -4,12 +4,11 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { ExLink } from '@/app/fragments/ex-router';
 
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Contributors = dynamic(() => import('@/app/fragments/playbook/contributors'))
 
 export default function SiteMap() {
   return (
-    <Layout>
+    <>
       <main className="flex-grow container mx-auto py-4 flex flex-col">
         <div className="hero">
           <div className="hero-content prose max-w-none">
@@ -64,6 +63,6 @@ export default function SiteMap() {
         <h2 className="text-2xl font-bold mb-2 prose max-w-none">Contributors</h2>
         <Contributors />
       </main>
-    </Layout>
+    </>
   )
 }

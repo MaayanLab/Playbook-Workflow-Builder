@@ -10,7 +10,6 @@ import { func_icon, start_icon, variable_icon } from '@/icons'
 import dynamic from 'next/dynamic'
 import { decodeParam } from '@/app/app/_lib/params'
 
-const Layout = dynamic(() => import('@/app/fragments/playbook/layout'))
 const Bp5Alert = dynamic(() => import('@blueprintjs/core').then(({ Alert }) => Alert))
 
 function Graph<
@@ -199,7 +198,7 @@ export default function Explore({ initialPath }: { initialPath?: string[] }) {
   const nodes = dict.values(nodes_)
   const links = dict.keys(links_).map((id) => ({ ...links_[id], id, source: nodes_[links_[id].source], target: nodes_[links_[id].target] }))
   return (
-    <Layout>
+    <>
       <Graph
         origin={path[path.length-1]}
         nodes={nodes}
@@ -231,6 +230,6 @@ export default function Explore({ initialPath }: { initialPath?: string[] }) {
           Click a circle to add supported operations which can be applied to that datatype to the graph.
         </p>
       </Bp5Alert>
-    </Layout>
+    </>
   )
 }

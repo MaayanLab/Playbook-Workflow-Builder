@@ -1,11 +1,54 @@
 import React from 'react'
-// BokehJS's package entry point imports its modules by bare paths (which only resolve within
-//  its own build), its modules import each other relatively: so the embedding API & the widgets
-//  (registering their models, e.g. Select) are imported from their modules.
+import usePublicUrl from '@/utils/next-public-url'
 //  NOTE: the version of @bokeh/bokehjs must match the python bokeh (requirements.txt)
-import { embed } from '@bokeh/bokehjs/build/js/lib/main'
-import '@bokeh/bokehjs/build/js/lib/models/widgets/main'
-import { version as bokehVersion } from '@bokeh/bokehjs/build/js/lib/version'
+import bokehjsPackage from '@bokeh/bokehjs/package.json'
+
+const bokehVersion: string = bokehjsPackage.version
+
+/**
+ * BokehJS is loaded from its own prebuilt bundles (served by @/app/app/bokehjs) rather than
+ *  bundled with the app: BokehJS identifies its models by their class names, which the app's
+ *  production build minifies away (e.g. "could not resolve type 'DocumentConfig'").
+ */
+type BokehEmbedded = { roots: { remove(): void }[] }
+type BokehGlobal = { embed: { embed_item(item: unknown, target_id: string): Promise<BokehEmbedded> } }
+declare global { interface Window { Bokeh?: BokehGlobal } }
+
+const loaded = new Map<string, Promise<void>>()
+function loadScript(src: string) {
+  let promise = loaded.get(src)
+  if (promise === undefined) {
+    promise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = src
+      script.async = false
+      script.onload = () => resolve()
+      script.onerror = () => { loaded.delete(src); reject(new Error(`Failed to load ${src}`)) }
+      document.head.appendChild(script)
+    })
+    loaded.set(src, promise)
+  }
+  return promise
+}
+
+/** The bundles a plot needs: the main one first, the others extend it */
+function bundlesFor(plot: unknown) {
+  const json = JSON.stringify(plot)
+  return [
+    'bokeh.min.js',
+    'bokeh-widgets.min.js',
+    ...json.includes('"TableColumn"') ? ['bokeh-tables.min.js'] : [],
+    ...json.includes('"webgl"') ? ['bokeh-gl.min.js'] : [],
+  ]
+}
+
+async function loadBokeh(publicUrl: string, plot: unknown) {
+  for (const bundle of bundlesFor(plot)) {
+    await loadScript(`${publicUrl}/bokehjs/${bokehVersion}/${bundle}`)
+  }
+  if (!window.Bokeh) throw new Error('BokehJS did not load')
+  return window.Bokeh
+}
 
 /**
  * Use bokeh embed_item on a div with a unique id.
@@ -14,14 +57,16 @@ import { version as bokehVersion } from '@bokeh/bokehjs/build/js/lib/version'
  */
 function BokehEmbeddedItem({ plot }: { plot: any }) {
     const id = React.useId()
+    const publicUrl = usePublicUrl()
     const [error, setError] = React.useState<string | undefined>()
     React.useEffect(() => {
         if (!plot) return
         let cancelled = false
-        let views: Awaited<ReturnType<typeof embed.embed_item>> | undefined
+        let views: BokehEmbedded | undefined
         const remove = () => { if (views) for (const view of views.roots) view.remove() }
         // Give the element to bokeh to manage
-        embed.embed_item(plot, id)
+        loadBokeh(publicUrl, plot)
+            .then(Bokeh => cancelled ? undefined : Bokeh.embed.embed_item(plot, id))
             .then(embedded => {
                 views = embedded
                 // unmounted before the plot finished embedding
@@ -36,11 +81,12 @@ function BokehEmbeddedItem({ plot }: { plot: any }) {
             // on unmount, we tell bokeh to stop managing this element
             remove()
         }
-    }, [plot, id])
+    }, [plot, id, publicUrl])
+    const plotVersion = plot?.version ?? plot?.doc?.version
     return <>
         {error ? <div className="alert alert-error prose max-w-none">
             The plot could not be displayed ({error}).
-            {(plot?.version ?? plot?.doc?.version) && (plot.version ?? plot.doc.version) !== bokehVersion ? ` It was created with Bokeh ${plot.version ?? plot.doc.version} while this page uses Bokeh ${bokehVersion}: recompute it to update it.` : null}
+            {plotVersion && plotVersion !== bokehVersion ? ` It was created with Bokeh ${plotVersion} while this page uses Bokeh ${bokehVersion}: recompute it to update it.` : null}
         </div> : null}
         <div id={id} />
     </>

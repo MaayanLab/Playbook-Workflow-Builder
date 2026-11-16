@@ -141,9 +141,11 @@ export default function Catalog<T extends { spec: string, meta?: { pagerank?: nu
                       return (
                         <label
                           key={value}
-                          className={`flex items-center gap-2 min-w-0 min-h-11 md:min-h-9 px-3 py-1 rounded-lg border cursor-pointer select-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-1 ${checked ? 'bg-primary border-primary text-black' : 'border-current/20 hover:bg-current/5'}`}
+                          className={`relative flex items-center gap-2 min-w-0 min-h-11 md:min-h-9 px-3 py-1 rounded-lg border cursor-pointer select-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-1 ${checked ? 'bg-primary border-primary text-black' : 'border-current/20 hover:bg-current/5'}`}
                         >
-                          {/* (visually hidden: the chip shows its state, the checkbox keeps it accessible) */}
+                          {/* (visually hidden: the chip shows its state, the checkbox keeps it accessible; the
+                               chip is `relative` so that the hidden checkbox is positioned within it, rather than
+                               against an element outside the page's scrolling, which it'd stretch) */}
                           <input
                             className="sr-only"
                             type="checkbox"

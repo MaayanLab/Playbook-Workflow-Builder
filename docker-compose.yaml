@@ -102,7 +102,7 @@ services:
     - pwb-pg:/var/lib/postgresql/data
   # app-dev serves a dev version of the app
   app-dev:
-    image: maayanlab/playbook-partnership:81.10-dev
+    image: maayanlab/playbook-partnership:0.81.10-dev
     x-kubernetes:
       exclude: true
       annotations:

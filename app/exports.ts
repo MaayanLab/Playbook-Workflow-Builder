@@ -86,9 +86,22 @@ const asBytes = (value: string | ArrayBuffer | Uint8Array): Uint8Array<ArrayBuff
   typeof value === 'string' ? new TextEncoder().encode(value)
   : new Uint8Array(value)
 
-async function zipFiles(files: Record<string, Promise<string | ArrayBuffer> | string | ArrayBuffer>) {
+type PendingFiles = Record<string, Promise<string | ArrayBuffer> | string | ArrayBuffer>
+
+/**
+ * Wait for all the files at once: they're produced concurrently (e.g. the figures' screenshots), so
+ *  awaiting them one at a time leaves the others' failures unhandled, which kills the worker process
+ *  (and, with it, any other export it was running) rather than failing this export.
+ */
+async function settleFiles(files: PendingFiles) {
+  const entries = Object.entries(files)
+  const values = await Promise.all(entries.map(([, value]) => value))
+  return Object.fromEntries(entries.map(([name], i) => [name, values[i]] as const))
+}
+
+async function zipFiles(files: Record<string, string | ArrayBuffer>) {
   const zip = new JSZip()
-  for (const [name, value] of Object.entries(files)) zip.file(name, await value)
+  for (const [name, value] of Object.entries(files)) zip.file(name, value)
   return new Uint8Array(await zip.generateAsync({ type: 'arraybuffer' }))
 }
 
@@ -103,10 +116,10 @@ export async function generateExport({ krg, fpl, format, params }: { krg: KRG, f
     return { filename: `cwl-${fpl.id}.zip`, contentType: 'application/zip', data: new Uint8Array(await zip.generateAsync({ type: 'arraybuffer' })) }
   }
   if (format === 'ro-crate-zip') {
-    const files = await fpl2ro_crate({ krg, fpl })
+    const files = await settleFiles(await fpl2ro_crate({ krg, fpl }))
     return { filename: `ro-crate-${fpl.id}.zip`, contentType: 'application/zip', data: await zipFiles(files) }
   }
-  const files = await FPL2TEX({ krg, fpl, metadata: params.metadata, author: params.author })
+  const files = await settleFiles(await FPL2TEX({ krg, fpl, metadata: params.metadata, author: params.author }))
   const names = Object.keys(files)
   // a report node produces the bundle & pdf itself, they're at the top level
   //  (unlike e.g. figures/1.pdf)
@@ -116,19 +129,19 @@ export async function generateExport({ krg, fpl, format, params }: { krg: KRG, f
     return {
       filename: precomputed ?? `${fpl.id}.zip`,
       contentType: 'application/zip',
-      data: precomputed ? asBytes(await files[precomputed]) : await zipFiles(files),
+      data: precomputed ? asBytes(files[precomputed]) : await zipFiles(files),
     }
   }
   const precomputed = topLevel('.pdf')
-  if (precomputed) return { filename: precomputed, contentType: 'application/pdf', data: asBytes(await files[precomputed]) }
+  if (precomputed) return { filename: precomputed, contentType: 'application/pdf', data: asBytes(files[precomputed]) }
   const main = topLevel('.tex')
   if (!main) throw new Error('No main .tex file found in generated files')
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'tex-'))
   try {
-    for (const [name, pending] of Object.entries(files)) {
+    for (const [name, value] of Object.entries(files)) {
       const filename = path.join(tmp, name)
       await fs.mkdir(path.dirname(filename), { recursive: true })
-      await fs.writeFile(filename, asBytes(await pending))
+      await fs.writeFile(filename, asBytes(value))
     }
     await latexmk(path.join(tmp, main), tmp)
     const filename = main.replace(/\.tex$/, '.pdf')

@@ -28,8 +28,8 @@
     "start:worker": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_ENV=production APP_ROOT=$(pwd) tsx --env-file-if-exists=.env cli/resolve-process-worker.ts",
     "start:run-wes-worker": "tsx --env-file-if-exists=.env cli/run-wes-worker.ts",
     "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npm run --workspace=app start",
-    "version": "tsx --env-file-if-exists=.env cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel",
-    "postversion": "docker-compose push",
+    "version": "tsx --env-file-if-exists=.env cli/version-compose.ts && git add docker-compose.yaml && docker-compose build --parallel pwb-app pwb-worker",
+    "postversion": "docker-compose push pwb-app pwb-worker",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

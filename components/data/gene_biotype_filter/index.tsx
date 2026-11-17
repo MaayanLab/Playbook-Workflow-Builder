@@ -9,7 +9,7 @@ import { FileC } from '@/components/core/file'
 
 export const FilterAnnDataByGeneBiotype = MetaNode('FilterAnnDataByGeneBiotype')
   .meta({
-    label: 'Filter AnnData Matirix by Gene Biotype',
+    label: 'Filter AnnData Matrix by Gene Biotype',
     description: 'Selected gene biotypes to include',
     icon: [filter_icon],
   })
@@ -53,7 +53,8 @@ export const FilterAnnDataByGeneBiotype = MetaNode('FilterAnnDataByGeneBiotype')
             </div>
           }
           numRows={set.length}
-          shape={[Object.keys(biotypes).length]}
+          // (a list of options, not the data: its "shape" isn't the matrix's)
+          shape={null}
           enableGhostCells
         >
           <Column
@@ -61,6 +62,7 @@ export const FilterAnnDataByGeneBiotype = MetaNode('FilterAnnDataByGeneBiotype')
             cellRenderer={row => <Cell key={row + ''}>{set[row]}</Cell>}
           />
         </Table>
+        <p className="prose max-w-none">{biotypes.length} of {set.length} gene biotypes selected: the genes of the other biotypes are removed from the matrix.</p>
         <button className="bp6-button bp6-large" onClick={() =>
           props.submit({ biotypes,species})
           

@@ -15,11 +15,12 @@ export const EditableCell = Bp5EditableCell
 export type Table2Props = Bp5Table2Props & {
   height?: number
   downloads?: Record<string, () => void>,
-  shape?: Array<number>
+  /** the shape shown below the table (by default the rows & columns), `null` for none (e.g. a list of options) */
+  shape?: Array<number> | null
 }
 
 export function Table({ children, height, shape: shape_, downloads, ...props }: Table2Props) {
-  const shape = shape_ ? shape_ : Array.isArray(children) ? [props.numRows, children.length] : [props.numRows]
+  const shape = shape_ === null ? null : shape_ ? shape_ : Array.isArray(children) ? [props.numRows, children.length] : [props.numRows]
   return (
     <>
       <div className="hidden print:block">
@@ -42,8 +43,10 @@ export function Table({ children, height, shape: shape_, downloads, ...props }: 
         <Bp5Table {...props}>{children}</Bp5Table>
       </div>
       <div className="bp6-navbar-group print:hidden">
-        <span className="prose max-w-none">Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
-        <span className="bp6-navbar-divider"></span>
+        {shape ? <>
+          <span className="prose max-w-none">Shape: ({shape.map((dim, i) => <span key={i}>{i>0?', ':''}{dim}</span>)})</span>
+          <span className="bp6-navbar-divider"></span>
+        </> : null}
         {downloads ?
           dict.keys(downloads).length === 1 ?
             <Bp5Button text="Download" icon="download" minimal onClick={() => {

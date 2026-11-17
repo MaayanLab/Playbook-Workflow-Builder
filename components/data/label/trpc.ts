@@ -8,7 +8,8 @@ const file = z.object({
   size: z.number().optional(),
   sha256: z.string().optional(),
   filename: z.string(),
-  description: z.string().optional(),
+  // (null for files without one, as in the file codec, see components/core/file)
+  description: z.string().nullish(),
 })
 
 /** Typed API owned by the label component. */

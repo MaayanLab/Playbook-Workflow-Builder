@@ -35,8 +35,11 @@ export interface StorageBackend {
   read(key: string, range?: ByteRange): Promise<Readable>
   /** Move a local file into storage (it's removed from its local path) */
   putFile(key: string, localPath: string): Promise<void>
-  /** A url which can be used (for a limited time) to GET the object directly (supporting Range) */
-  presignedGet?(key: string, opts: { filename?: string, contentType?: string, expiresIn?: number }): Promise<string>
+  /**
+   * A url which can be used (for a limited time) to GET the object directly (supporting Range),
+   *  served as `contentDisposition` (else downloaded as `filename`) & `contentType` where supported
+   */
+  presignedGet?(key: string, opts: { filename?: string, contentDisposition?: string, contentType?: string, expiresIn?: number }): Promise<string>
   delete(key: string): Promise<void>
   /** Copy an object within storage (without transferring it through the app) */
   copy(srcKey: string, dstKey: string): Promise<void>
@@ -222,11 +225,11 @@ export class S3Storage implements StorageBackend {
     }
     await fs.promises.unlink(localPath)
   }
-  presignedGet = async (key: string, { filename, contentType, expiresIn = 60 * 60 }: { filename?: string, contentType?: string, expiresIn?: number }) => {
+  presignedGet = async (key: string, { filename, contentDisposition, contentType, expiresIn = 60 * 60 }: { filename?: string, contentDisposition?: string, contentType?: string, expiresIn?: number }) => {
     return await getSignedUrl(this.client, new GetObjectCommand({
       Bucket: this.config.bucket,
       Key: this.key(key),
-      ResponseContentDisposition: filename ? `attachment; filename="${filename.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(filename)}` : undefined,
+      ResponseContentDisposition: contentDisposition ?? (filename ? `attachment; filename="${filename.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(filename)}` : undefined),
       ResponseContentType: contentType,
     }), { expiresIn })
   }

@@ -25,13 +25,32 @@ const contentTypes: Record<string, string> = {
   '.csv': 'text/csv',
 }
 
-/** Headers for downloading a file named `filename` */
-export function attachmentHeaders(filename: string, size?: number): Record<string, string> {
+export function contentTypeOf(filename: string) {
   const ext = filename.includes('.') ? filename.slice(filename.lastIndexOf('.')).toLowerCase() : ''
+  return contentTypes[ext] ?? 'application/octet-stream'
+}
+
+/**
+ * The types which may be shown in the page (e.g. a PDF in an iframe) rather than downloaded:
+ *  files are uploaded by users, so not anything which could run scripts (e.g. HTML, SVG).
+ */
+const inlineContentTypes = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'text/plain'])
+
+export type Disposition = 'attachment' | 'inline'
+
+/** `Content-Disposition` for a file named `filename`, inline only for the types which may be */
+export function contentDisposition(filename: string, disposition: Disposition = 'attachment') {
+  const type = disposition === 'inline' && inlineContentTypes.has(contentTypeOf(filename)) ? 'inline' : 'attachment'
+  // the quoted filename is a plain ascii fallback, filename* preserves the original
+  return `${type}; filename="${filename.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+}
+
+/** Headers for downloading a file named `filename` (or showing it, see `contentDisposition`) */
+export function attachmentHeaders(filename: string, size?: number, disposition: Disposition = 'attachment'): Record<string, string> {
   return {
-    'Content-Type': contentTypes[ext] ?? 'application/octet-stream',
-    // the quoted filename is a plain ascii fallback, filename* preserves the original
-    'Content-Disposition': `attachment; filename="${filename.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+    'Content-Type': contentTypeOf(filename),
+    'Content-Disposition': contentDisposition(filename, disposition),
+    'X-Content-Type-Options': 'nosniff',
     ...(size !== undefined ? { 'Content-Length': String(size) } : {}),
   }
 }

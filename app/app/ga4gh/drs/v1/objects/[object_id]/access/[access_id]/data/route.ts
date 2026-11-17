@@ -6,7 +6,7 @@ import { resolveDrsObject } from '@/components/core/file/server/drs'
 import { fileAsStream } from '@/components/core/file/server/download'
 import storage, { storageKey } from '@/components/core/file/server/storage'
 import { NotFoundError } from '@/spec/error'
-import { attachmentHeaders, nodeStreamResponse, routeResponse } from '@/app/app/api/_lib/response'
+import { attachmentHeaders, contentDisposition, contentTypeOf, nodeStreamResponse, routeResponse, type Disposition } from '@/app/app/api/_lib/response'
 
 type Params = { params: Promise<{ object_id: string, access_id: string }> }
 
@@ -20,6 +20,14 @@ function requestedFilename(request: Request) {
   if (!filename) return undefined
   const name = filename.split(/[\\/]/).pop()!.replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, 255)
   return name && name !== '.' && name !== '..' ? name : undefined
+}
+
+/**
+ * `?disposition=inline` shows the object in the page (e.g. a PDF in an iframe) rather than
+ *  downloading it, for the types which may be shown (see contentDisposition)
+ */
+function requestedDisposition(request: Request): Disposition {
+  return new URL(request.url).searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment'
 }
 
 async function getUpload(request: Request, props: Params) {
@@ -43,7 +51,7 @@ function parseRange(header: string | null, size: number) {
 export async function HEAD(request: Request, props: Params) {
   return routeResponse(async () => {
     const upload = await getUpload(request, props)
-    return new Response(null, { headers: { ...attachmentHeaders(upload.filename, upload.size), 'Accept-Ranges': 'bytes' } })
+    return new Response(null, { headers: { ...attachmentHeaders(upload.filename, upload.size, requestedDisposition(request)), 'Accept-Ranges': 'bytes' } })
   })
 }
 
@@ -51,12 +59,17 @@ async function handler(request: Request, props: Params) {
   return routeResponse(async () => {
     if (request.method === 'POST') await request.json()
     const upload = await getUpload(request, props)
+    const disposition = requestedDisposition(request)
     const backend = storage()
     if (upload.url.startsWith('storage://') && backend.presignedGet) {
       // the client (incl. its Range header) is redirected to the object itself
-      return Response.redirect(await backend.presignedGet(storageKey(upload.url), { filename: upload.filename }), 302)
+      return Response.redirect(await backend.presignedGet(storageKey(upload.url), {
+        filename: upload.filename,
+        contentDisposition: contentDisposition(upload.filename, disposition),
+        contentType: contentTypeOf(upload.filename),
+      }), 302)
     }
-    const headers = { ...attachmentHeaders(upload.filename, upload.size), 'Accept-Ranges': 'bytes' }
+    const headers = { ...attachmentHeaders(upload.filename, upload.size, disposition), 'Accept-Ranges': 'bytes' }
     const range = parseRange(request.headers.get('range'), upload.size)
     if (range === null) {
       return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${upload.size}` } })

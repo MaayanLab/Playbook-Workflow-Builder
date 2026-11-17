@@ -1,11 +1,12 @@
 services:
   # app serves the UI & API, it registers user interactions into the database (pg)
+  #  (the same image as the worker: some of the UI runs python, e.g. the label prompt's metadata)
   pwb-app:
-    image: maayanlab/playbook-partnership:0.82.1-ui
+    image: maayanlab/playbook-partnership:0.82.1
     build:
       context: .
       dockerfile: Dockerfile
-      target: app_minimal
+      target: app
     init: true
     cap_add:
     - SYS_ADMIN

@@ -6,3 +6,8 @@
 analysis
 data
 docs
+**/.next-*
+**/.venv
+**/.DS_Store
+*.tsbuildinfo
+.git

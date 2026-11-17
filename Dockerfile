@@ -1,3 +1,8 @@
+# NodeJS, from its official image: copied into the base (below) rather than installed with nvm,
+#  which extracts it with tar: that fails when building for amd64 on Apple Silicon (emulated, tar's
+#  "Cannot open: Function not implemented"), copying doesn't run in the emulated container
+FROM node:26-slim AS node
+
 FROM maayanlab/base:1.6.0 AS base
 USER root
 ENV PUPPETEER_SKIP_DOWNLOAD=true
@@ -10,6 +15,7 @@ RUN echo "Installing system dependencies (git+puppeteer deps)..." \
     git \
     gnupg \
     latexmk \
+    libatomic1 \
     python3 \
     texlive-bibtex-extra \
     texlive-fonts-extra \
@@ -22,8 +28,10 @@ RUN echo "Installing system dependencies (git+puppeteer deps)..." \
   && apt-get install google-chrome-stable -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/google-chrome"
+COPY --from=node /usr/local/bin/ /usr/local/bin/
+COPY --from=node /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
+COPY --from=node /usr/local/include/node/ /usr/local/include/node/
 USER ubuntu
-RUN NODE_VERSION=26 /install.sh
 
 FROM base AS prepare_src
 COPY --chown=ubuntu . app

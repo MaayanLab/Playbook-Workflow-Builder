@@ -21,7 +21,7 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
   .prompt(props => {
     const matrix = props.output ? props.output : props.inputs.matrix
     const [currentDescription, setCurrentDescription] = React.useState(props.data?.description ?? matrix.description ?? undefined)
-    const { data, isLoading } = useClientMetadataFromFile(matrix)
+    const { data, isLoading, error } = useClientMetadataFromFile(matrix)
     const [tableData, setTableData] = React.useState(props.data?.data ? props.data.data : {} as Record<string, Record<string, string>>)
 
     React.useEffect(() => {
@@ -71,6 +71,8 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
     return (
       <div>
         <progress className={classNames('progress w-full', { 'hidden': !isLoading })}></progress>
+        {/* (otherwise the samples just don't show up, & submitting them labels nothing) */}
+        {error ? <div className="alert alert-error prose max-w-none">The samples' metadata could not be loaded: {error.message}</div> : null}
         <div className={classNames("overflow-x-auto", { 'hidden': index.length === 0 || columns.length === 0 })}>
           <table style={{ borderCollapse: 'collapse', border: '1px solid black', width: '100%' }}>
             <thead>
@@ -149,6 +151,10 @@ export const LabelAnnDataMetadata = MetaNode('LabelAnnDataMetadata')
             />
           </div>
         </div>
+        {/* the comparisons (e.g. Limma-Voom) need samples in both groups */}
+        {!error && !isLoading && !(['Control', 'Perturbation'].every(label => Object.values(tableData['Type: Control or Perturbation'] ?? {}).includes(label))) ?
+          <div className="alert alert-warning prose max-w-none">Label at least one sample as Control and one as Perturbation (click the cells of the Type: Control or Perturbation column) for the comparisons, e.g. differential expression.</div>
+          : null}
         <button className="bp6-button bp6-large" onClick={() => {
           props.submit({ description: currentDescription, data: tableData }, true)
         }}>Submit</button>

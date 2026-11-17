@@ -312,8 +312,9 @@ export const ReportPDF = MetaNode(`ReportPDF`)
       <>
         <div className="flex flex-column m-30 h-[calc(100vh-80px)]">
           <iframe
-            // (shown, rather than downloaded each time the page is visited)
-            src={`${resolveDRSURL(results.pdf.url)}?disposition=inline#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+            // (shown, rather than downloaded each time the page is visited: as a pdf, by its name,
+            //  it's stored by its hash which doesn't say what type it is)
+            src={`${resolveDRSURL(results.pdf.url)}?disposition=inline&filename=${encodeURIComponent(results.pdf.filename)}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
             style={{
               flex: 1,
               width: "100%",

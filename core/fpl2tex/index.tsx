@@ -7,6 +7,7 @@ import puppeteer from 'puppeteer'
 import path from 'path'
 import fs from 'fs'
 import cache from '@/utils/global_cache'
+import { limit } from '@/utils/promise'
 import { DataMetaNode } from "@/spec/metanode"
 import { PDFDocument,rgb,StandardFonts } from 'pdf-lib'
 
@@ -30,7 +31,18 @@ function hasReportOutputType(metanode:DataMetaNode): boolean {
   return metanode.spec === 'ReportPDF'
 }
 
-async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: string }) {
+/**
+ * Only a few figures are rendered at once (across all the exports in this process): each is a
+ *  browser tab with the whole app & its plot, rendering them all at once (a playbook can have
+ *  dozens of figures) runs the worker out of memory.
+ */
+const screenshotSlots = cache('fpl2tex-screenshot-slots', () => limit(+(process.env.N_SCREENSHOTS || '2')))
+
+function screenshotOf(props: { graph_id: string, node_id: string }) {
+  return screenshotSlots(() => renderScreenshot(props))
+}
+
+async function renderScreenshot({ graph_id, node_id }: { graph_id: string, node_id: string }) {
   const browser = await puppeteerSingleton()
   const ctx = await browser.createBrowserContext()
   try {

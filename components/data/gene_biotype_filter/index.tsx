@@ -6,6 +6,7 @@ import { filter_icon } from '@/icons'
 import { AnnData } from '../anndata'
 import { Cell, Column, Table } from '@/app/components/Table'
 import { FileC } from '@/components/core/file'
+import SafeRender from '@/utils/saferender'
 
 export const FilterAnnDataByGeneBiotype = MetaNode('FilterAnnDataByGeneBiotype')
   .meta({
@@ -69,6 +70,8 @@ export const FilterAnnDataByGeneBiotype = MetaNode('FilterAnnDataByGeneBiotype')
         }>
           Submit
         </button>
+        {/* the filtered matrix, once submitted (as the prompts show their output, e.g. the file uploads) */}
+        {props.output ? <div className="mt-4"><SafeRender component={AnnData.view} props={props.output} /></div> : null}
       </>
     )
   })

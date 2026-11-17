@@ -75,6 +75,8 @@ services:
     command: ["npm", "run", "start:worker"]
     environment:
     - PUBLIC_URL=${PROD_PUBLIC_URL}
+    # the web server, as the worker reaches it (exports screenshot its figures)
+    - APP_URL=${PROD_APP_URL:-http://pwb-app:3000}
     - DATABASE_URL=${PROD_DATABASE_URL:-postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pwb-pg:5432/${POSTGRES_DB:-postgres}}
     - BETTER_AUTH_SECRET
     - ELYSIUM_USERNAME

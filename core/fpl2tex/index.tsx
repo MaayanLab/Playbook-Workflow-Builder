@@ -35,8 +35,10 @@ async function screenshotOf({ graph_id, node_id }: { graph_id: string, node_id: 
   const ctx = await browser.createBrowserContext()
   try {
     const page = await ctx.newPage()
-    // render the figure with this server (next sets PORT to the port it listens on)
-    await page.goto(`http://localhost:${process.env.PORT || 3000}/embed/${graph_id}/node/${node_id}`)
+    // render the figure with the web server: exports run on the workers, which don't serve the app,
+    //  so it's reached at APP_URL (e.g. the app's service, http://pwb-app:3000) or else PUBLIC_URL
+    const appUrl = (process.env.APP_URL || process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 3000}`).replace(/\/$/, '')
+    await page.goto(`${appUrl}/embed/${graph_id}/node/${node_id}`)
     await page.waitForSelector('div.embed-ready')
     await page.waitForNetworkIdle({ idleTime: 500 })
     const body = await page.$('body')

@@ -6,6 +6,7 @@ This guide is intended for developers contributing components to the platform, t
 - [Background Concepts](./background.md)
 - [Contribution Guide](./contributions.md)
 - [Deploying Platform in Production](./production.md)
+- [MCP Server for Agents](./mcp.md)
 - [Frequently Asked Questions](./faq.md)
 
 Looking for the [User Guide](./user/index.md)?

@@ -35,15 +35,35 @@ export default function Message({ thread_id, message_id, session, role, children
         const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
         if (output.error) {
           return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
-        } else if (output.result.type) {
+        } else if (output.dry_run) {
+          return <div className="p-1 my-1 italic">Checked a step to add to the workflow</div>
+        } else if (output.result?.type) {
           return <div className="p-1 my-1 italic">Added step to workflow to get {output.result.type}</div>
         } else {
           return <div className="p-1 my-1 italic">Adding step to workflow</div>
         }
+      } else if (data.function_call.name === 'plan') {
+        const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
+        if (output.error) {
+          return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
+        } else if (output.dry_run) {
+          return <div className="p-1 my-1 italic">Checked {output.dry_run.steps?.length ?? 'several'} steps to add to the workflow</div>
+        } else {
+          return <div className="p-1 my-1 italic">Added {output.result?.steps?.length ?? 'several'} steps to the workflow</div>
+        }
+      } else if (data.function_call.name === 'set_value') {
+        const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
+        if (output.error) {
+          return <div className="p-1 my-1 italic">Agent experienced an error trying to change an input</div>
+        } else {
+          return <div className="p-1 my-1 italic">Changed the {output.result?.label ?? 'input'} of the workflow</div>
+        }
+      } else if (data.function_call.name === 'find_steps' || data.function_call.name === 'describe' || data.function_call.name === 'help') {
+        return <div className="p-1 my-1 italic">Looked up available capabilities</div>
       } else if (data.function_call.name === 'view') {
         const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
         if (args.workflow_id) {
-          return <div className="p-1 my-1 italic">Viewing <ExLink href={`/report/${args.workflow_id}`}>{args.workflow}</ExLink></div>
+          return <div className="p-1 my-1 italic">Viewing <ExLink href={`/report/${args.workflow_id}`}>the workflow</ExLink></div>
         } else {
           return <div className="p-1 my-1 italic">Attempting to view workflow</div>
         }

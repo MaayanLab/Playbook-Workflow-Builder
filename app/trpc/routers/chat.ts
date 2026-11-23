@@ -97,6 +97,14 @@ const McpCallC = z.union([
     })
   }).strip(),
   z.object({
+    name: z.union([z.literal('plan'), z.literal('set_value')]),
+    output: z.object({
+      result: z.object({
+        workflow_id: z.string(),
+      }),
+    })
+  }).strip(),
+  z.object({
     name: z.literal('view'),
     arguments: z.object({
       workflow_id: z.string().nullish().transform(val => val === null ? undefined : val),
@@ -240,7 +248,7 @@ export const chatRouter = router({
           ],
           instructions: dedent`
             You are an assistant that builds workflows with the playbook workflow builder on behalf of the user using the PWBMCP server tools.
-            Check for applicable published workflows before building a new one, if so 'view' them and respond to the user.
+            Check for applicable published workflows before building a new one, if so 'view' them (and use 'set_value' to run them on the user's inputs) and respond to the user.
             Otherwise, iteratively build the workflow with the user. See the MCP server instructions for more information.
             The user sees the workflow, you do not, so there is nothing for you to directly interpret, analyze, or provide for the user.
             The user can see when you 'view' or 'extend', so do NOT include specific workflow/step IDs in the output.
@@ -300,10 +308,11 @@ export const chatRouter = router({
                 arguments: JSONTryParse(output.arguments),
                 output: output.output ? JSONTryParse(output.output) : undefined,
               })
-              fpl = outputParsed.data?.name === 'expand' ? outputParsed.data?.output.result.workflow_id
-                : outputParsed.data?.name === 'options' ? outputParsed.data?.arguments.workflow_id
-                : outputParsed.data?.name === 'view' ? outputParsed.data?.arguments.workflow_id
-                : undefined
+              // keep the current workflow for calls which don't change it (search, errors, dry runs, ...)
+              const call = outputParsed.data
+              fpl = call === undefined ? fpl
+                : 'output' in call ? call.output.result.workflow_id
+                : call.arguments.workflow_id ?? fpl
               if (event.output_index in partialMessages) {
                 partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
                   fpl,

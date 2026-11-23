@@ -11,6 +11,7 @@ import { EnrichrEnrichmentAnalysis, EnrichrScoredDiseases, EnrichrScoredDrugs, E
 import { GMT } from "@/components/data/gene_matrix_transpose";
 import python from '@/utils/python'
 import SafeRender from "@/utils/saferender";
+import { fetchRetrying } from '@/utils/fetch-retry'
 
 const cfde_gse_url = 'https://gse.cfde.cloud'
 const cfde_gse_enrich_url = 'https://maayanlab.cloud/Enrichr'
@@ -117,7 +118,7 @@ export const CFDEGSEGenesetSearch = MetaNode('CFDEGSEGenesetSearch')
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
     formData.append('description', str.truncate(`playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`, 255))
-    const response = await fetch(`${cfde_gse_enrich_url}/addList`, {
+    const response = await fetchRetrying(`${cfde_gse_enrich_url}/addList`, {
       method: 'post',
       body: formData,
     })

@@ -53,6 +53,7 @@ import pluralize from 'pluralize'
 import python from '@/utils/python'
 import * as str from '@/utils/str'
 import { PlotlyPlot } from '@/components/viz/plotly'
+import { fetchRetrying } from '@/utils/fetch-retry'
 
 const enrichr_url = 'https://maayanlab.cloud/Enrichr'
 
@@ -162,7 +163,7 @@ export const EnrichrScoredMetabolites = EnrichrScored_T(ScoredMetabolites)
 async function resolveGmtChunked({ background, terms }: { background: string, terms: string[] }) {
   const gmt: Record<string, string[]> = {}
   for (const chunk of array.chunked(terms, 100)) {
-    const req = await fetch(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(chunk.join(';'))}`)
+    const req = await fetchRetrying(`https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=json&libraryName=${encodeURIComponent(background)}&term=${encodeURIComponent(chunk.join(';'))}`)
     const res = await req.json()
     Object.assign(gmt, z.record(z.string(), z.array(z.string())).parse(res))
   }
@@ -374,7 +375,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
     const formData = new FormData()
     formData.append('list', props.inputs.geneset.set.join('\n'))
     formData.append('description', str.truncate(`playbook-partnership${props.inputs.geneset.description ? `:${props.inputs.geneset.description}` : ''}`, 255))
-    const response = await fetch(`${enrichr_url}/addList`, {
+    const response = await fetchRetrying(`${enrichr_url}/addList`, {
       method: 'post',
       body: formData,
     })
@@ -392,7 +393,7 @@ export const EnrichrGenesetSearch = MetaNode('EnrichrGenesetSearch')
   .build()
 
 export const resolveEnrichrGenesetSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: { shortId: string, userListId: number }) => {
-  const req = await fetch(
+  const req = await fetchRetrying(
     `${enrichr_url}/enrich?userListId=${encodeURIComponent(searchResults.userListId)}&backgroundType=${encodeURIComponent(bg.name)}`,
   )
   const res = z.object({ [bg.name]: z.array(z.tuple([
@@ -500,7 +501,7 @@ export const EnrichrGeneSearch = MetaNode(`EnrichrGeneSearch`)
   .build()
 
 const resolveEnrichrGeneSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
-  const response = await fetch(
+  const response = await fetchRetrying(
     `${enrichr_url}/genemap?json=true&gene=${encodeURIComponent(searchResults)}`,
   )
   const results = z.object({ gene: z.record(z.string(), z.array(z.string())) }).parse(await response.json())
@@ -605,7 +606,7 @@ export const EnrichrTermTSearch = [
 )
 
 const resolveEnrichrTermSearchResults = async (bg: ValuesOf<typeof backgrounds>, searchResults: string) => {
-  const response = await fetch(
+  const response = await fetchRetrying(
     `${enrichr_url}/termmap?json=true&meta=${encodeURIComponent(searchResults)}`,
   )
   const results = z.object({ terms: z.record(z.string(), z.array(z.string())) }).parse(await response.json())

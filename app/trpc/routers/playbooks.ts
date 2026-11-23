@@ -5,6 +5,7 @@ import db from '@/app/db'
 import { getKRG } from '@/app/server-krg'
 import fpprg from '@/app/fpprg'
 import { uuid, SYSTEM_USER_ID, type UserPlaybook } from '@/db'
+import { indexUserPlaybook, searchUserPlaybooks, splitTypes } from '@/db/queries'
 import * as dict from '@/utils/dict'
 import { IdOrPlaybookMetadataC, IdOrCellMetadataC } from '@/core/FPPRG'
 import { tsvector, tsvector_intersect } from '@/utils/tsvector'
@@ -66,7 +67,7 @@ export const playbooksRouter = router({
         playbooks = playbooks.filter(playbook => search_scores[playbook.id] > 0)
         playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
       }
-      playbooks = playbooks.slice(skip, limit)
+      playbooks = playbooks.slice(skip, skip + limit)
       const userPlaybooks = playbooks.length === 0 ? [] : await db.selectFrom('user_playbook')
         .selectAll()
         .where('playbook', 'in', playbooks.map(({ id }) => id))
@@ -80,17 +81,21 @@ export const playbooksRouter = router({
             fpl.id = playbook.id
             await fpprg.upsertFPL(fpl)
             // registered as public so that views are counted (see `get`)
-            userPlaybookLookup[playbook.id] = await db.insertInto('user_playbook')
-              .values({
-                id: uuid(),
-                user: SYSTEM_USER_ID,
-                playbook: playbook.id,
-                title: playbook.label,
-                description: playbook.description,
-                public: true,
-              })
-              .returningAll()
-              .executeTakeFirstOrThrow()
+            userPlaybookLookup[playbook.id] = await db.transaction().execute(async (trx) => {
+              const userPlaybook = await trx.insertInto('user_playbook')
+                .values({
+                  id: uuid(),
+                  user: SYSTEM_USER_ID,
+                  playbook: playbook.id,
+                  title: playbook.label,
+                  description: playbook.description,
+                  public: true,
+                })
+                .returningAll()
+                .executeTakeFirstOrThrow()
+              await indexUserPlaybook(trx, userPlaybook.id, userPlaybook)
+              return userPlaybook
+            })
           } catch (e) {
             console.error(e)
           }
@@ -118,32 +123,16 @@ export const playbooksRouter = router({
       limit: z.number().optional(),
     }))
     .query(async ({ input }) => {
-      const search = input.search
-      const inputs = input.inputs ? input.inputs.split(', ') : undefined
-      const outputs = input.outputs ? input.outputs.split(', ') : undefined
-      // TODO: filter in DB
-      let playbooks = await db.selectFrom('user_playbook')
-        .selectAll()
-        .where('public', '=', true)
-        .where('user', '!=', SYSTEM_USER_ID)
-        .orderBy('clicks', 'desc')
+      return await searchUserPlaybooks(db, {
+        search: input.search,
+        inputs: splitTypes(input.inputs),
+        outputs: splitTypes(input.outputs),
+      })
+        .where('user_playbook.public', '=', true)
+        .where('user_playbook.user', '!=', SYSTEM_USER_ID)
         .offset(input.skip ?? 0)
         .limit(input.limit ?? 50)
         .execute()
-      if (inputs) playbooks = playbooks.filter(playbook => !inputs.some(spec => !(playbook.inputs||'').split(', ').includes(spec)))
-      if (outputs) playbooks = playbooks.filter(playbook => !outputs.some(spec => !(playbook.outputs||'').split(', ').includes(spec)))
-      if (search) {
-        const search_tsvector = tsvector(search)
-        const search_scores = dict.init(playbooks.map(playbook => {
-          const playbook_tsvector = tsvector([
-            playbook.title || '',
-            playbook.description || '',
-          ].join(' '))
-          return { key: playbook.id, value: tsvector_intersect(search_tsvector, playbook_tsvector).size }
-        }))
-        playbooks.sort((a, b) => search_scores[b.id] - search_scores[a.id])
-      }
-      return playbooks
     }),
 
   /** The current user's saved playbooks */
@@ -233,12 +222,13 @@ export const playbooksRouter = router({
           .set(record)
           .where('user', '=', user)
           .where('playbook', '=', playbook)
+          .returning('id')
           .executeTakeFirst()
-        if (Number(existing.numUpdatedRows) === 0) {
-          await trx.insertInto('user_playbook')
-            .values({ id: uuid(), user, playbook, ...record })
-            .execute()
-        }
+        const id = existing?.id ?? (await trx.insertInto('user_playbook')
+          .values({ id: uuid(), user, playbook, ...record })
+          .returning('id')
+          .executeTakeFirstOrThrow()).id
+        await indexUserPlaybook(trx, id, record)
       })
       return fpl.id
     }),

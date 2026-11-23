@@ -199,6 +199,19 @@ export interface UserPlaybookTable {
   created: CreatedTimestamp
 }
 
+/** The trigrams (see utils/tsvector) of a user_playbook's searchable text, for searching in the db */
+export interface UserPlaybookTrigramTable {
+  user_playbook: string
+  trigram: string
+}
+
+/** The input & output data types of a user_playbook, for filtering in the db */
+export interface UserPlaybookTypeTable {
+  user_playbook: string
+  kind: 'input' | 'output'
+  spec: string
+}
+
 export interface UploadTable {
   id: string
   url: string
@@ -268,6 +281,8 @@ export interface Database {
   playbook_metadata: PlaybookMetadataTable
   fpl: FPLTable
   user_playbook: UserPlaybookTable
+  user_playbook_trigram: UserPlaybookTrigramTable
+  user_playbook_type: UserPlaybookTypeTable
   upload: UploadTable
   user_upload: UserUploadTable
   fpl_export: FplExportTable

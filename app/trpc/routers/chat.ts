@@ -48,15 +48,23 @@ async function updateMessage(id: string, data: Partial<Pick<ThreadMessage, 'fpl'
 
 type ResponseInputItem = OpenAI.Responses.ResponseInputItem
 
+/** The errors which tRPC's subscription link reconnects after (see `retryableRpcCodes`) */
+const retriedCodes: TRPCError['code'][] = ['INTERNAL_SERVER_ERROR', 'BAD_GATEWAY', 'SERVICE_UNAVAILABLE', 'GATEWAY_TIMEOUT']
+
 function inputMessage(role: 'user' | 'developer' | 'system', content: string): ResponseInputItem {
   return { type: 'message', role, content: [{ type: 'input_text', text: content }] }
 }
 
-/** Prefer lossless typed items, falling back to the projection used by old threads. */
+/**
+ * Prefer lossless typed items, falling back to the projection used by old threads.
+ *  Except the model's own output items (which have an `id`, e.g. its tool calls): OpenAI refuses
+ *  them without the reasoning items they were produced with, which aren't kept, so they're given
+ *  as their projection (their content describes them).
+ */
 function messageToResponseInput(message: ThreadMessage): ResponseInputItem {
   if (message.response_item) {
     const item = JSONTryParse(message.response_item)
-    if (item && typeof item === 'object' && typeof item.type === 'string') return item as ResponseInputItem
+    if (item && typeof item === 'object' && typeof item.type === 'string' && !('id' in item)) return item as ResponseInputItem
   }
   const role = message.role === 'assistant' ? 'assistant'
     : message.role === 'user' ? 'user'
@@ -147,155 +155,115 @@ export const chatRouter = router({
       message: z.string(),
     }))
     .subscription(async function* ({ input: { thread_id, message, ...input }, signal }) {
-      const graph_id = input.graph_id !== 'start' ? input.graph_id : undefined
-      const node_id = input.node_id !== 'start' ? input.node_id : undefined
-      const thread = await getThread(thread_id)
-      const currentMessages = await db.selectFrom('thread_message')
-        .selectAll()
-        .where('thread', '=', thread.id)
-        .orderBy('created', 'asc')
-        .execute()
-      const newMessages: ThreadMessage[] = []
-      const steps = currentMessages.flatMap(msg => msg.fpl ? [msg.fpl] : [])
-      if (graph_id && !steps.includes(graph_id)) {
-        const fpl = await fpprg.getFPL(graph_id)
-        if (!fpl) throw new TRPCError({ code: 'NOT_FOUND', message: graph_id })
-        const krg = await getKRG()
-        const graph_steps = fpl.resolve()
-        const newMessageQueue: { fpl: string, role: string, content: string }[] = []
-        for (const step of graph_steps.toReversed()) {
-          if (steps.includes(step.id)) break
-          const metaProcess = krg.getProcessNode(fpl.process.type)
-          newMessageQueue.push({
-            fpl: step.id,
-            role: 'developer',
-            content: `${JSON.stringify({
-              function_call: {
-                name: 'extend',
-                arguments: {
-                  step: {
-                    type: step.process.type,
-                    arguments: Object.fromEntries(Object.entries(step.process.inputs).map(([key, value]) => [key, { id: value.id }])),
-                    value: step.process.data,
-                  },
-                },
-              },
-              function_call_output: {
-                output: {
-                  result: {
-                    workflow_id: step.id,
-                    step_id: step.process.id,
-                    output: { type: metaProcess.output.spec },
-                  },
-                },
-              },
-            })}`
-          })
-        }
-        for (const newMessage of newMessageQueue.toReversed()) {
-          newMessages.push(await createMessage({
-            thread: thread.id,
-            ...newMessage,
-            response_item: JSON.stringify(inputMessage('developer', `Application workflow state update: ${newMessage.content}`)),
-          }))
-        }
-      }
-      const focusMessages: { role: string, content: string }[] = []
-      if (node_id && graph_id !== node_id) {
-        const fpl = await fpprg.getFPL(node_id)
-        if (!fpl) throw new TRPCError({ code: 'NOT_FOUND', message: node_id })
-        focusMessages.push(
-          { role: 'developer', content: `User is currently looking at step ${fpl.process.id}` }
-        )
-      }
-      newMessages.push(await createMessage({
-        thread: thread.id,
-        role: 'user',
-        content: message,
-        fpl: graph_id,
-        response_item: JSON.stringify(inputMessage('user', message)),
-      }))
-      yield { messages: newMessages.map(publicMessage), fpl: graph_id }
-      const stream = await (await openai).responses.create({
-        model: 'gpt-5-mini',
-        tools: [
-          {
-            type: 'mcp',
-            server_label: 'PWBMCP',
-            server_url: `${process.env.PUBLIC_URL}/mcp`,
-            require_approval: 'never',
-          }
-        ],
-        instructions: dedent`
-          You are an assistant that builds workflows with the playbook workflow builder on behalf of the user using the PWBMCP server tools.
-          Check for applicable published workflows before building a new one, if so 'view' them and respond to the user.
-          Otherwise, iteratively build the workflow with the user. See the MCP server instructions for more information.
-          The user sees the workflow, you do not, so there is nothing for you to directly interpret, analyze, or provide for the user.
-          The user can see when you 'view' or 'extend', so do NOT include specific workflow/step IDs in the output.
-          Do NOT offer to provide results/exports, the user can do this from the UI.
-          Do NOT assume capabilities, only what can be found with options for a given step is possible.
-        `,
-        input: [
-          ...currentMessages.map(messageToResponseInput),
-          ...newMessages.map(messageToResponseInput),
-          ...focusMessages.map(({ role, content }) => inputMessage(role as 'developer', content)),
-        ],
-        stream: true,
-      }, { signal })
-      let fpl: string | undefined
-      const partialMessages: Record<number, ThreadMessage> = {}
-      for await (const event of stream) {
-        console.debug(JSON.stringify(event))
-        if (event.type === 'response.output_item.added') {
-          if (event.item.type === 'mcp_call') {
-            const output = event.item
-            partialMessages[event.output_index] = await createMessage({
-              thread: thread.id,
+      // a subscription which fails with e.g. INTERNAL_SERVER_ERROR is reconnected (so re-sent) by the
+      //  client (tRPC's httpSubscriptionLink): sending isn't safe to repeat (the message would be
+      //  added & answered again), so a failure is reported as an error which isn't retried
+      try {
+        const graph_id = input.graph_id !== 'start' ? input.graph_id : undefined
+        const node_id = input.node_id !== 'start' ? input.node_id : undefined
+        const thread = await getThread(thread_id)
+        const currentMessages = await db.selectFrom('thread_message')
+          .selectAll()
+          .where('thread', '=', thread.id)
+          .orderBy('created', 'asc')
+          .execute()
+        const newMessages: ThreadMessage[] = []
+        const steps = currentMessages.flatMap(msg => msg.fpl ? [msg.fpl] : [])
+        if (graph_id && !steps.includes(graph_id)) {
+          const fpl = await fpprg.getFPL(graph_id)
+          if (!fpl) throw new TRPCError({ code: 'NOT_FOUND', message: graph_id })
+          const krg = await getKRG()
+          const graph_steps = fpl.resolve()
+          const newMessageQueue: { fpl: string, role: string, content: string }[] = []
+          for (const step of graph_steps.toReversed()) {
+            if (steps.includes(step.id)) break
+            const metaProcess = krg.getProcessNode(fpl.process.type)
+            newMessageQueue.push({
+              fpl: step.id,
               role: 'developer',
               content: `${JSON.stringify({
                 function_call: {
-                  name: output.name,
-                  arguments: output.arguments,
+                  name: 'extend',
+                  arguments: {
+                    step: {
+                      type: step.process.type,
+                      arguments: Object.fromEntries(Object.entries(step.process.inputs).map(([key, value]) => [key, { id: value.id }])),
+                      value: step.process.data,
+                    },
+                  },
                 },
                 function_call_output: {
-                  output: output.output,
+                  output: {
+                    result: {
+                      workflow_id: step.id,
+                      step_id: step.process.id,
+                      output: { type: metaProcess.output.spec },
+                    },
+                  },
                 },
-              })}`,
+              })}`
             })
-            newMessages.push(partialMessages[event.output_index])
-            yield { messages: newMessages.map(publicMessage), fpl }
-          } else if (event.item.type === 'message') {
-            partialMessages[event.output_index] = await createMessage({
-              thread: thread.id,
-              role: 'assistant',
-              content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
-              fpl,
-            })
-            newMessages.push(partialMessages[event.output_index])
-            yield { messages: newMessages.map(publicMessage), fpl }
           }
-        } else if (event.type === 'response.output_text.delta') {
-          partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
-            fpl,
-            content: partialMessages[event.output_index].content + event.delta,
-          })
-          yield { messages: newMessages.map(publicMessage), fpl }
-        } else if (event.type === 'response.output_item.done') {
-          if (event.item.type === 'mcp_call') {
-            const output = event.item
-            const outputParsed = McpCallC.safeParse({
-              name: output.name,
-              arguments: JSONTryParse(output.arguments),
-              output: output.output ? JSONTryParse(output.output) : undefined,
-            })
-            fpl = outputParsed.data?.name === 'expand' ? outputParsed.data?.output.result.workflow_id
-              : outputParsed.data?.name === 'options' ? outputParsed.data?.arguments.workflow_id
-              : outputParsed.data?.name === 'view' ? outputParsed.data?.arguments.workflow_id
-              : undefined
-            if (event.output_index in partialMessages) {
-              partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
-                fpl,
-                response_item: JSON.stringify(event.item),
+          for (const newMessage of newMessageQueue.toReversed()) {
+            newMessages.push(await createMessage({
+              thread: thread.id,
+              ...newMessage,
+              response_item: JSON.stringify(inputMessage('developer', `Application workflow state update: ${newMessage.content}`)),
+            }))
+          }
+        }
+        const focusMessages: { role: string, content: string }[] = []
+        if (node_id && graph_id !== node_id) {
+          const fpl = await fpprg.getFPL(node_id)
+          if (!fpl) throw new TRPCError({ code: 'NOT_FOUND', message: node_id })
+          focusMessages.push(
+            { role: 'developer', content: `User is currently looking at step ${fpl.process.id}` }
+          )
+        }
+        newMessages.push(await createMessage({
+          thread: thread.id,
+          role: 'user',
+          content: message,
+          fpl: graph_id,
+          response_item: JSON.stringify(inputMessage('user', message)),
+        }))
+        yield { messages: newMessages.map(publicMessage), fpl: graph_id }
+        const stream = await (await openai).responses.create({
+          model: 'gpt-5-mini',
+          tools: [
+            {
+              type: 'mcp',
+              server_label: 'PWBMCP',
+              server_url: `${process.env.PUBLIC_URL}/mcp`,
+              require_approval: 'never',
+            }
+          ],
+          instructions: dedent`
+            You are an assistant that builds workflows with the playbook workflow builder on behalf of the user using the PWBMCP server tools.
+            Check for applicable published workflows before building a new one, if so 'view' them and respond to the user.
+            Otherwise, iteratively build the workflow with the user. See the MCP server instructions for more information.
+            The user sees the workflow, you do not, so there is nothing for you to directly interpret, analyze, or provide for the user.
+            The user can see when you 'view' or 'extend', so do NOT include specific workflow/step IDs in the output.
+            Do NOT offer to provide results/exports, the user can do this from the UI.
+            Do NOT assume capabilities, only what can be found with options for a given step is possible.
+          `,
+          input: [
+            ...currentMessages.map(messageToResponseInput),
+            ...newMessages.map(messageToResponseInput),
+            ...focusMessages.map(({ role, content }) => inputMessage(role as 'developer', content)),
+          ],
+          stream: true,
+        }, { signal })
+        let fpl: string | undefined
+        const partialMessages: Record<number, ThreadMessage> = {}
+        for await (const event of stream) {
+          console.debug(JSON.stringify(event))
+          if (event.type === 'response.output_item.added') {
+            if (event.item.type === 'mcp_call') {
+              const output = event.item
+              partialMessages[event.output_index] = await createMessage({
+                thread: thread.id,
+                role: 'developer',
                 content: `${JSON.stringify({
                   function_call: {
                     name: output.name,
@@ -304,19 +272,69 @@ export const chatRouter = router({
                   function_call_output: {
                     output: output.output,
                   },
-                })}`
+                })}`,
+              })
+              newMessages.push(partialMessages[event.output_index])
+              yield { messages: newMessages.map(publicMessage), fpl }
+            } else if (event.item.type === 'message') {
+              partialMessages[event.output_index] = await createMessage({
+                thread: thread.id,
+                role: 'assistant',
+                content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
+                fpl,
+              })
+              newMessages.push(partialMessages[event.output_index])
+              yield { messages: newMessages.map(publicMessage), fpl }
+            }
+          } else if (event.type === 'response.output_text.delta') {
+            partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
+              fpl,
+              content: partialMessages[event.output_index].content + event.delta,
+            })
+            yield { messages: newMessages.map(publicMessage), fpl }
+          } else if (event.type === 'response.output_item.done') {
+            if (event.item.type === 'mcp_call') {
+              const output = event.item
+              const outputParsed = McpCallC.safeParse({
+                name: output.name,
+                arguments: JSONTryParse(output.arguments),
+                output: output.output ? JSONTryParse(output.output) : undefined,
+              })
+              fpl = outputParsed.data?.name === 'expand' ? outputParsed.data?.output.result.workflow_id
+                : outputParsed.data?.name === 'options' ? outputParsed.data?.arguments.workflow_id
+                : outputParsed.data?.name === 'view' ? outputParsed.data?.arguments.workflow_id
+                : undefined
+              if (event.output_index in partialMessages) {
+                partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
+                  fpl,
+                  response_item: JSON.stringify(event.item),
+                  content: `${JSON.stringify({
+                    function_call: {
+                      name: output.name,
+                      arguments: output.arguments,
+                    },
+                    function_call_output: {
+                      output: output.output,
+                    },
+                  })}`
+                })
+                yield { messages: newMessages.map(publicMessage), fpl }
+              }
+            } else if (event.item.type === 'message') {
+              partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
+                fpl,
+                response_item: JSON.stringify(event.item),
+                content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
               })
               yield { messages: newMessages.map(publicMessage), fpl }
             }
-          } else if (event.item.type === 'message') {
-            partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
-              fpl,
-              response_item: JSON.stringify(event.item),
-              content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
-            })
-            yield { messages: newMessages.map(publicMessage), fpl }
           }
         }
+      } catch (error) {
+        if (signal?.aborted) return
+        if (error instanceof TRPCError && !retriedCodes.includes(error.code)) throw error
+        console.error('[chat.send]', error)
+        throw new TRPCError({ code: 'UNPROCESSABLE_CONTENT', message: error instanceof Error ? error.message : String(error), cause: error })
       }
     }),
 

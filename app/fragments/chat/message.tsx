@@ -8,6 +8,12 @@ import type { Session } from '@/app/extensions/auth-client'
 import { ExLink } from "@/app/fragments/ex-router"
 
 const ReactMarkdown = dynamic<ReactMarkdownOptions>(() => import('react-markdown'), { ssr: false })
+/** Tool call arguments/outputs are stored as JSON strings (older UI updates stored objects) */
+function parseField(value: unknown): any {
+  if (typeof value === 'string') return JSON.parse(value)
+  return value ?? {}
+}
+
 const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then(({ UserDisplay }) => UserDisplay))
 
 export default function Message({ thread_id, message_id, session, role, children }: React.PropsWithChildren<{ thread_id?: string, message_id?: string, session: Session | null, role: string, embedded?: boolean }>) {
@@ -18,32 +24,32 @@ export default function Message({ thread_id, message_id, session, role, children
     try {
       const data = JSON.parse(children)
       if (data.function_call.name === 'options') {
-        const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
+        const args = parseField(data.function_call.arguments)
         if (args.workflow_id) {
           return <div className="p-1 my-1 italic">Checked possibilities from <ExLink href={`/graph/${args.workflow_id}/expand`}>here</ExLink></div>
         } else {
           return <div className="p-1 my-1 italic">Checking input possibilities</div>
         }
       } else if (data.function_call.name === 'search_published') {
-        const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
+        const args = parseField(data.function_call.arguments)
         if (args.search) {
           return <div className="p-1 my-1 italic">Searched for published workflows about "{args?.search}"</div>
         } else {
           return <div className="p-1 my-1 italic">Searching for published workflows</div>
         }
       } else if (data.function_call.name === 'expand') {
-        const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
+        const output = parseField(data.function_call_output?.output)
         if (output.error) {
           return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
         } else if (output.dry_run) {
           return <div className="p-1 my-1 italic">Checked a step to add to the workflow</div>
-        } else if (output.result?.type) {
-          return <div className="p-1 my-1 italic">Added step to workflow to get {output.result.type}</div>
+        } else if (output.result?.label || output.result?.type) {
+          return <div className="p-1 my-1 italic">Added {output.result.label ?? 'step'} to <ExLink href={`/report/${output.result.workflow_id}`}>the workflow</ExLink>{output.result.type ? ` to get ${output.result.type}` : ''}</div>
         } else {
           return <div className="p-1 my-1 italic">Adding step to workflow</div>
         }
       } else if (data.function_call.name === 'plan') {
-        const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
+        const output = parseField(data.function_call_output?.output)
         if (output.error) {
           return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
         } else if (output.dry_run) {
@@ -52,7 +58,7 @@ export default function Message({ thread_id, message_id, session, role, children
           return <div className="p-1 my-1 italic">Added {output.result?.steps?.length ?? 'several'} steps to the workflow</div>
         }
       } else if (data.function_call.name === 'set_value') {
-        const output = data.function_call_output.output ? JSON.parse(data.function_call_output.output) : {}
+        const output = parseField(data.function_call_output?.output)
         if (output.error) {
           return <div className="p-1 my-1 italic">Agent experienced an error trying to change an input</div>
         } else {
@@ -60,13 +66,23 @@ export default function Message({ thread_id, message_id, session, role, children
         }
       } else if (data.function_call.name === 'find_steps' || data.function_call.name === 'describe' || data.function_call.name === 'help') {
         return <div className="p-1 my-1 italic">Looked up available capabilities</div>
+      } else if (data.function_call.name === 'extend') {
+        // a step added in the UI, as recorded by older threads (these are now recorded as `expand`)
+        const args = parseField(data.function_call.arguments)
+        const output = parseField(data.function_call_output?.output)
+        const workflow_id = output.result?.workflow_id
+        const what = args.label ?? args.step?.type ?? 'a step'
+        return <div className="p-1 my-1 italic">Added {what} to {workflow_id ? <ExLink href={`/report/${workflow_id}`}>the workflow</ExLink> : 'the workflow'}</div>
       } else if (data.function_call.name === 'view') {
-        const args = data.function_call.arguments ? JSON.parse(data.function_call.arguments) : {}
+        const args = parseField(data.function_call.arguments)
         if (args.workflow_id) {
           return <div className="p-1 my-1 italic">Viewing <ExLink href={`/report/${args.workflow_id}`}>the workflow</ExLink></div>
         } else {
           return <div className="p-1 my-1 italic">Attempting to view workflow</div>
         }
+      } else if (typeof data.function_call?.name === 'string') {
+        // a tool without a description here: never show its raw JSON
+        return <div className="p-1 my-1 italic">Agent used {data.function_call.name}</div>
       }
     } catch (error: any) {
       return <div className="p-1 my-1 italic">Agent produced a malformed request</div>

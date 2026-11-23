@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import db from '@/app/db'
 import { getKRG } from '@/app/server-krg'
 import fpprg from '@/app/fpprg'
+import { isPrompt, processArguments, reportLink, stepDescription, summarize } from '@/app/mcp-util'
 import { uuid, type ThreadMessage } from '@/db'
 import cache from '@/utils/global_cache'
 import { authedProcedure, router } from '../init'
@@ -185,39 +186,45 @@ export const chatRouter = router({
           const newMessageQueue: { fpl: string, role: string, content: string }[] = []
           for (const step of graph_steps.toReversed()) {
             if (steps.includes(step.id)) break
-            const metaProcess = krg.getProcessNode(fpl.process.type)
+            // a step added in the UI is recorded as the `expand` call (see app/mcp.ts) which would have
+            //  added it, so the model sees the user's decisions as if they were its own tool calls
+            const metaProcess = krg.getProcessNode(step.process.type)
+            let value: unknown = step.process.data?.value
+            if (value !== undefined) {
+              try { if (metaProcess && isPrompt(metaProcess)) value = metaProcess.codec.decode(value as any) } catch {}
+              value = summarize(value)
+            }
+            const args = {
+              ...(step.parent ? { workflow_id: step.parent.id } : {}),
+              step: {
+                type: step.process.type,
+                arguments: processArguments(step.process),
+                ...(value !== undefined ? { value } : {}),
+              },
+            }
+            const result = {
+              workflow_id: step.id,
+              parent_workflow_id: step.parent?.id ?? null,
+              link: reportLink(step.id),
+              step_id: step.process.id,
+              step_type: step.process.type,
+              type: metaProcess?.output.spec ?? '?',
+              data_type: metaProcess?.output.spec ?? '?',
+              label: metaProcess?.meta.label ?? step.process.type,
+              description: await stepDescription({ krg, fpprg, process: step.process }),
+            }
             newMessageQueue.push({
               fpl: step.id,
               role: 'developer',
-              content: `${JSON.stringify({
-                function_call: {
-                  name: 'extend',
-                  arguments: {
-                    step: {
-                      type: step.process.type,
-                      arguments: Object.fromEntries(Object.entries(step.process.inputs).map(([key, value]) => [key, { id: value.id }])),
-                      value: step.process.data,
-                    },
-                  },
-                },
-                function_call_output: {
-                  output: {
-                    result: {
-                      workflow_id: step.id,
-                      step_id: step.process.id,
-                      output: { type: metaProcess.output.spec },
-                    },
-                  },
-                },
-              })}`
+              content: JSON.stringify({
+                function_call: { name: 'expand', arguments: JSON.stringify(args) },
+                function_call_output: { output: JSON.stringify({ result }) },
+              }),
             })
           }
+          // (no response_item: the model is given the content, exactly like the projection of its own tool calls)
           for (const newMessage of newMessageQueue.toReversed()) {
-            newMessages.push(await createMessage({
-              thread: thread.id,
-              ...newMessage,
-              response_item: JSON.stringify(inputMessage('developer', `Application workflow state update: ${newMessage.content}`)),
-            }))
+            newMessages.push(await createMessage({ thread: thread.id, ...newMessage }))
           }
         }
         const focusMessages: { role: string, content: string }[] = []
@@ -251,7 +258,7 @@ export const chatRouter = router({
             Check for applicable published workflows before building a new one, if so 'view' them (and use 'set_value' to run them on the user's inputs) and respond to the user.
             Otherwise, iteratively build the workflow with the user. See the MCP server instructions for more information.
             The user sees the workflow, you do not, so there is nothing for you to directly interpret, analyze, or provide for the user.
-            The user can see when you 'view' or 'extend', so do NOT include specific workflow/step IDs in the output.
+            The user can see when you 'view', 'expand', 'plan' or 'set_value', so do NOT include specific workflow/step IDs in the output.
             Do NOT offer to provide results/exports, the user can do this from the UI.
             Do NOT assume capabilities, only what can be found with options for a given step is possible.
           `,

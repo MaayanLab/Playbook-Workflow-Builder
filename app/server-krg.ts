@@ -11,7 +11,13 @@ import cache from '@/utils/global_cache'
 
 const componentKRG = cache('server-component-krg', () => {
   const krg = new KRG()
-  metanodes.forEach(metanode => krg.add(metanode))
+  const seen = new Set<string>()
+  metanodes.forEach(metanode => {
+    // a spec registered twice silently shadows the first (only the last can be looked up & resolved)
+    if (seen.has(metanode.spec)) console.warn(`Duplicate metanode spec "${metanode.spec}": only the last registered is usable`)
+    seen.add(metanode.spec)
+    krg.add(metanode)
+  })
   return krg
 })
 

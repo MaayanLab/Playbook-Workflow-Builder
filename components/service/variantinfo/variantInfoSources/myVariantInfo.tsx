@@ -1,4 +1,3 @@
-import { MetaNode } from '@/spec/metanode'
 import { z } from 'zod'
 
   export const MyVariantInfoC = z.object({
@@ -14,15 +13,4 @@ import { z } from 'zod'
     const req = await fetch(link);
     return await req.json()
   }
-  export const MyVariantInfo = MetaNode('MyVariantInfo')
-  .meta({
-    label: 'Variant Information',
-    description: 'A Variant resolved with MyVariantInfo'
-  })
-  .codec(MyVariantInfoC)
-  .view(variantinfo => (
-    <div className="prose max-w-none">
-      {variantinfo._id}
-    </div>
-  ))
-  .build()
+  // the MyVariantInfo data type is defined in components/legacy (with the gene fields its consumers use)

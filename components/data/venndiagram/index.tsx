@@ -6,10 +6,12 @@ import { PlotlyPlot } from '@/components/viz/plotly'
 import { GeneSet } from '@/components/core/set'
 import { GMT } from '../gene_matrix_transpose'
 
-export const VennDiagram = MetaNode('VennDiagram')
+// NOTE: this was also (accidentally) registered as 'VennDiagram', which VennDiagramGMT below shadowed,
+//  so saved 'VennDiagram' steps are the GMT version; this one needed its own spec to be usable
+export const VennDiagram = MetaNode('VennDiagramFromGeneSets')
   .meta({
     label: 'Venn Diagram from Gene Sets',
-    description: 'Construct a ven diagram for 2-6 gene sets. The intersections of between each set will be displayed with a label for the size of each intersection.',
+    description: 'Construct a Venn diagram for 2-6 gene sets. The intersections of between each set will be displayed with a label for the size of each intersection.',
     icon: [supervenn_icon],
   })
   .inputs({sets:[GeneSet]})
@@ -25,7 +27,7 @@ export const VennDiagram = MetaNode('VennDiagram')
     message => props.notify({ type: 'info', message }),
   )})
   .story(props => ({
-    abstract: `${props.inputs?.sets.length} sets were used to create a Venn Diagram.`,
+    abstract: `${props.inputs ? `${props.inputs.sets.length} sets` : 'Sets'} were used to create a Venn Diagram.`,
     legend: `A venn diagram of input gene sets.`,
   }))
   .build()
@@ -33,7 +35,7 @@ export const VennDiagram = MetaNode('VennDiagram')
 export const VennDiagramGMT = MetaNode('VennDiagram')
   .meta({
     label: 'Venn Diagram from Gene Set Library',
-    description: 'Construct a ven diagram for 2-6 gene sets. The intersections of between each set will be displayed with a label for the size of each intersection.',
+    description: 'Construct a Venn diagram for 2-6 gene sets. The intersections of between each set will be displayed with a label for the size of each intersection.',
     icon: [supervenn_icon],
   })
   .inputs({gmt:GMT})

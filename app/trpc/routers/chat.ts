@@ -164,6 +164,8 @@ export const chatRouter = router({
       message: z.string(),
     }))
     .subscription(async function* ({ input: { thread_id, message, ...input }, signal }) {
+      /** Save any streamed text which hasn't been saved yet (when the stream ends early) */
+      let flushPartials = async () => {}
       // a subscription which fails with e.g. INTERNAL_SERVER_ERROR is reconnected (so re-sent) by the
       //  client (tRPC's httpSubscriptionLink): sending isn't safe to repeat (the message would be
       //  added & answered again), so a failure is reported as an error which isn't retried
@@ -271,41 +273,64 @@ export const chatRouter = router({
         }, { signal })
         let fpl: string | undefined
         const partialMessages: Record<number, ThreadMessage> = {}
+        /** Replace a message (in what's sent to the client too, which holds the objects as they were added) */
+        const setPartial = (index: number, message: ThreadMessage) => {
+          partialMessages[index] = message
+          const i = newMessages.findIndex(({ id }) => id === message.id)
+          if (i >= 0) newMessages[i] = message
+          else newMessages.push(message)
+        }
+        /** A tool call as the client renders it (app/fragments/chat/message.tsx) & the model is given it */
+        const mcpCallContent = (item: { name: string, arguments: string, output?: string | null, error?: unknown }) => JSON.stringify({
+          function_call: { name: item.name, arguments: item.arguments },
+          function_call_output: { output: item.output, ...(item.error ? { error: item.error } : {}) },
+        })
+        const textContent = (item: { content: ({ type: 'output_text', text: string } | { type: 'refusal', refusal: string })[] }) =>
+          item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join('')
+        // text deltas are sent to the client as they arrive, but saved at most this often (& when done)
+        const SAVE_INTERVAL_MS = 1000
+        const lastSaved: Record<number, number> = {}
+        /** messages (by output index) with streamed text that isn't saved yet */
+        const unsaved = new Set<number>()
+        flushPartials = async () => {
+          for (const index of unsaved) {
+            const partial = partialMessages[index]
+            try { await updateMessage(partial.id, { fpl: partial.fpl, content: partial.content }) } catch {}
+          }
+          unsaved.clear()
+        }
         for await (const event of stream) {
           console.debug(JSON.stringify(event))
           if (event.type === 'response.output_item.added') {
             if (event.item.type === 'mcp_call') {
-              const output = event.item
-              partialMessages[event.output_index] = await createMessage({
+              setPartial(event.output_index, await createMessage({
                 thread: thread.id,
                 role: 'developer',
-                content: `${JSON.stringify({
-                  function_call: {
-                    name: output.name,
-                    arguments: output.arguments,
-                  },
-                  function_call_output: {
-                    output: output.output,
-                  },
-                })}`,
-              })
-              newMessages.push(partialMessages[event.output_index])
+                content: mcpCallContent(event.item),
+              }))
               yield { messages: newMessages.map(publicMessage), fpl }
             } else if (event.item.type === 'message') {
-              partialMessages[event.output_index] = await createMessage({
+              setPartial(event.output_index, await createMessage({
                 thread: thread.id,
                 role: 'assistant',
-                content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
+                content: textContent(event.item),
                 fpl,
-              })
-              newMessages.push(partialMessages[event.output_index])
+              }))
+              lastSaved[event.output_index] = Date.now()
               yield { messages: newMessages.map(publicMessage), fpl }
             }
           } else if (event.type === 'response.output_text.delta') {
-            partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
-              fpl,
-              content: partialMessages[event.output_index].content + event.delta,
-            })
+            const partial = partialMessages[event.output_index]
+            if (!partial) continue
+            const content = partial.content + event.delta
+            if (Date.now() - (lastSaved[event.output_index] ?? 0) >= SAVE_INTERVAL_MS) {
+              setPartial(event.output_index, await updateMessage(partial.id, { fpl, content }))
+              lastSaved[event.output_index] = Date.now()
+              unsaved.delete(event.output_index)
+            } else {
+              setPartial(event.output_index, { ...partial, fpl: fpl ?? null, content })
+              unsaved.add(event.output_index)
+            }
             yield { messages: newMessages.map(publicMessage), fpl }
           } else if (event.type === 'response.output_item.done') {
             if (event.item.type === 'mcp_call') {
@@ -321,27 +346,21 @@ export const chatRouter = router({
                 : 'output' in call ? call.output.result.workflow_id
                 : call.arguments.workflow_id ?? fpl
               if (event.output_index in partialMessages) {
-                partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
+                setPartial(event.output_index, await updateMessage(partialMessages[event.output_index].id, {
                   fpl,
                   response_item: JSON.stringify(event.item),
-                  content: `${JSON.stringify({
-                    function_call: {
-                      name: output.name,
-                      arguments: output.arguments,
-                    },
-                    function_call_output: {
-                      output: output.output,
-                    },
-                  })}`
-                })
+                  content: mcpCallContent(output),
+                }))
                 yield { messages: newMessages.map(publicMessage), fpl }
               }
             } else if (event.item.type === 'message') {
-              partialMessages[event.output_index] = await updateMessage(partialMessages[event.output_index].id, {
+              if (!(event.output_index in partialMessages)) continue
+              setPartial(event.output_index, await updateMessage(partialMessages[event.output_index].id, {
                 fpl,
                 response_item: JSON.stringify(event.item),
-                content: event.item.content.flatMap(c => c.type === 'output_text' ? [c.text] : c.type === 'refusal' ? [c.refusal] : []).join(''),
-              })
+                content: textContent(event.item),
+              }))
+              unsaved.delete(event.output_index)
               yield { messages: newMessages.map(publicMessage), fpl }
             }
           }
@@ -351,6 +370,9 @@ export const chatRouter = router({
         if (error instanceof TRPCError && !retriedCodes.includes(error.code)) throw error
         console.error('[chat.send]', error)
         throw new TRPCError({ code: 'UNPROCESSABLE_CONTENT', message: error instanceof Error ? error.message : String(error), cause: error })
+      } finally {
+        // (also when the client disconnects, which ends the generator without an error)
+        await flushPartials()
       }
     }),
 

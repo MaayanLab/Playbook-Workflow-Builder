@@ -8,10 +8,61 @@ import type { Session } from '@/app/extensions/auth-client'
 import { ExLink } from "@/app/fragments/ex-router"
 
 const ReactMarkdown = dynamic<ReactMarkdownOptions>(() => import('react-markdown'), { ssr: false })
-/** Tool call arguments/outputs are stored as JSON strings (older UI updates stored objects) */
+/**
+ * Tool call arguments/outputs are stored as JSON strings (older UI updates stored objects); while a
+ *  call is in progress its arguments are empty (or partial) & it has no output yet.
+ */
 function parseField(value: unknown): any {
-  if (typeof value === 'string') return JSON.parse(value)
-  return value ?? {}
+  if (typeof value === 'string') {
+    try { return JSON.parse(value) } catch { return undefined }
+  }
+  return value ?? undefined
+}
+
+const Status = ({ children }: React.PropsWithChildren<{}>) => <div className="p-1 my-1 italic chat-message-in">{children}</div>
+const Link = ({ workflow_id, children }: React.PropsWithChildren<{ workflow_id?: string }>) =>
+  workflow_id ? <ExLink href={`/report/${workflow_id}`}>{children}</ExLink> : <>{children}</>
+
+/** How a tool call is shown: in progress (no output yet), failed, or done */
+function ToolCall({ name, args = {}, output, error }: { name: string, args?: any, output?: any, error?: unknown }) {
+  const failed = Boolean(error || output?.error)
+  const pending = !failed && output === undefined
+  switch (name) {
+    case 'options':
+      if (failed) return <Status>Couldn't check the possibilities for the workflow</Status>
+      return <Status>{pending ? 'Checking' : 'Checked'} {args.workflow_id ? <>possibilities from <ExLink href={`/graph/${args.workflow_id}/expand`}>here</ExLink></> : 'input possibilities'}</Status>
+    case 'search_published':
+      if (failed) return <Status>Couldn't search published workflows</Status>
+      return <Status>{pending ? 'Searching' : 'Searched'} for published workflows{args.search ? <> about "{args.search}"</> : null}</Status>
+    case 'expand':
+      if (failed) return <Status>Agent experienced an error trying to extend the workflow</Status>
+      if (pending) return <Status>Adding a step to the workflow</Status>
+      if (output.dry_run) return <Status>Checked a step to add to the workflow</Status>
+      return <Status>Added {output.result?.label ?? 'a step'} to <Link workflow_id={output.result?.workflow_id}>the workflow</Link>{output.result?.type ? ` to get ${output.result.type}` : ''}</Status>
+    case 'plan':
+      if (failed) return <Status>Agent experienced an error trying to extend the workflow</Status>
+      if (pending) return <Status>Adding {args.steps?.length ?? 'several'} steps to the workflow</Status>
+      if (output.dry_run) return <Status>Checked {output.dry_run.steps?.length ?? 'several'} steps to add to the workflow</Status>
+      return <Status>Added {output.result?.steps?.length ?? 'several'} steps to <Link workflow_id={output.result?.workflow_id}>the workflow</Link></Status>
+    case 'set_value':
+      if (failed) return <Status>Agent experienced an error trying to change an input</Status>
+      if (pending) return <Status>Changing an input of the workflow</Status>
+      return <Status>Changed the {output.result?.label ?? 'input'} of <Link workflow_id={output.result?.workflow_id}>the workflow</Link></Status>
+    case 'find_steps':
+    case 'describe':
+    case 'help':
+      return <Status>{pending ? 'Looking up' : 'Looked up'} available capabilities</Status>
+    case 'view':
+      if (failed) return <Status>Couldn't view the workflow</Status>
+      return <Status>{pending ? 'Viewing' : 'Viewed'} <Link workflow_id={args.workflow_id}>the workflow</Link></Status>
+    case 'extend': {
+      // a step added in the UI, as recorded by older threads (these are now recorded as `expand`)
+      return <Status>Added {args.label ?? args.step?.type ?? 'a step'} to <Link workflow_id={output?.result?.workflow_id}>the workflow</Link></Status>
+    }
+    default:
+      // a tool without a description here: never show its raw JSON
+      return <Status>{pending ? 'Using' : 'Used'} {name}</Status>
+  }
 }
 
 const UserDisplay = dynamic(() => import('@/app/fragments/playbook/avatar').then(({ UserDisplay }) => UserDisplay))
@@ -21,76 +72,19 @@ export default function Message({ thread_id, message_id, session, role, children
   const trpc = useTRPC()
   const { mutateAsync: sendFeedback } = useMutation(trpc.chat.feedback.mutationOptions())
   if (role === 'developer' && typeof children === 'string') {
-    try {
-      const data = JSON.parse(children)
-      if (data.function_call.name === 'options') {
-        const args = parseField(data.function_call.arguments)
-        if (args.workflow_id) {
-          return <div className="p-1 my-1 italic">Checked possibilities from <ExLink href={`/graph/${args.workflow_id}/expand`}>here</ExLink></div>
-        } else {
-          return <div className="p-1 my-1 italic">Checking input possibilities</div>
-        }
-      } else if (data.function_call.name === 'search_published') {
-        const args = parseField(data.function_call.arguments)
-        if (args.search) {
-          return <div className="p-1 my-1 italic">Searched for published workflows about "{args?.search}"</div>
-        } else {
-          return <div className="p-1 my-1 italic">Searching for published workflows</div>
-        }
-      } else if (data.function_call.name === 'expand') {
-        const output = parseField(data.function_call_output?.output)
-        if (output.error) {
-          return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
-        } else if (output.dry_run) {
-          return <div className="p-1 my-1 italic">Checked a step to add to the workflow</div>
-        } else if (output.result?.label || output.result?.type) {
-          return <div className="p-1 my-1 italic">Added {output.result.label ?? 'step'} to <ExLink href={`/report/${output.result.workflow_id}`}>the workflow</ExLink>{output.result.type ? ` to get ${output.result.type}` : ''}</div>
-        } else {
-          return <div className="p-1 my-1 italic">Adding step to workflow</div>
-        }
-      } else if (data.function_call.name === 'plan') {
-        const output = parseField(data.function_call_output?.output)
-        if (output.error) {
-          return <div className="p-1 my-1 italic">Agent experienced an error trying to extend workflow</div>
-        } else if (output.dry_run) {
-          return <div className="p-1 my-1 italic">Checked {output.dry_run.steps?.length ?? 'several'} steps to add to the workflow</div>
-        } else {
-          return <div className="p-1 my-1 italic">Added {output.result?.steps?.length ?? 'several'} steps to the workflow</div>
-        }
-      } else if (data.function_call.name === 'set_value') {
-        const output = parseField(data.function_call_output?.output)
-        if (output.error) {
-          return <div className="p-1 my-1 italic">Agent experienced an error trying to change an input</div>
-        } else {
-          return <div className="p-1 my-1 italic">Changed the {output.result?.label ?? 'input'} of the workflow</div>
-        }
-      } else if (data.function_call.name === 'find_steps' || data.function_call.name === 'describe' || data.function_call.name === 'help') {
-        return <div className="p-1 my-1 italic">Looked up available capabilities</div>
-      } else if (data.function_call.name === 'extend') {
-        // a step added in the UI, as recorded by older threads (these are now recorded as `expand`)
-        const args = parseField(data.function_call.arguments)
-        const output = parseField(data.function_call_output?.output)
-        const workflow_id = output.result?.workflow_id
-        const what = args.label ?? args.step?.type ?? 'a step'
-        return <div className="p-1 my-1 italic">Added {what} to {workflow_id ? <ExLink href={`/report/${workflow_id}`}>the workflow</ExLink> : 'the workflow'}</div>
-      } else if (data.function_call.name === 'view') {
-        const args = parseField(data.function_call.arguments)
-        if (args.workflow_id) {
-          return <div className="p-1 my-1 italic">Viewing <ExLink href={`/report/${args.workflow_id}`}>the workflow</ExLink></div>
-        } else {
-          return <div className="p-1 my-1 italic">Attempting to view workflow</div>
-        }
-      } else if (typeof data.function_call?.name === 'string') {
-        // a tool without a description here: never show its raw JSON
-        return <div className="p-1 my-1 italic">Agent used {data.function_call.name}</div>
-      }
-    } catch (error: any) {
-      return <div className="p-1 my-1 italic">Agent produced a malformed request</div>
-    }
+    let data: any
+    try { data = JSON.parse(children) } catch {}
+    if (typeof data?.function_call?.name !== 'string') return <Status>Agent produced a malformed request</Status>
+    return <ToolCall
+      name={data.function_call.name}
+      args={parseField(data.function_call.arguments)}
+      output={parseField(data.function_call_output?.output)}
+      error={data.function_call_output?.error}
+    />
   }
   return (
     <>
-      <div className={classNames('chat', { 'chat-end': role === 'user', 'chat-start': role !== 'user' })}>
+      <div className={classNames('chat chat-message-in', { 'chat-end': role === 'user', 'chat-start': role !== 'user' })}>
         <div className="chat-header">
           {role !== 'user' ? "PWB" : <UserDisplay session={session} />}
         </div>

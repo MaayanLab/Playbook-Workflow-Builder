@@ -33,9 +33,11 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
   const trpc = useTRPC()
   const trpcClient = useTRPCClient()
   const queryClient = useQueryClient()
+  const [sendPending, setSendPending] = React.useState(false)
   const { data, isFetched } = useQuery({
     ...trpc.chat.messages.queryOptions(thread_id ? { thread_id } : skipToken),
-    refetchInterval: 1000,
+    // (paused while a reply streams in: the stream is newer than the db, a poll would roll it back)
+    refetchInterval: sendPending ? false : 1000,
   })
   const { messages, fpl } = data ?? { messages: undefined, fpl: null }
   // navigate to the workflow when the assistant moves the thread to a new one (from the graph, to
@@ -58,7 +60,6 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
     if (isFetched || previousFpl.current !== undefined) previousFpl.current = current
   }, [data, isFetched, fpl])
   const createChat = useMutation(trpc.chat.create.mutationOptions())
-  const [sendPending, setSendPending] = React.useState(false)
   const [sendError, setSendError] = React.useState<Error | null>(null)
   const submit = React.useCallback(async ({ thread_id, ...body }: { message: string, graph_id?: string, node_id?: string, thread_id?: string }) => {
     try {
@@ -230,7 +231,7 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
                   I experienced an error: {sendError.message}
                 </Message>
                 : null}
-              {sendPending ?
+              {sendPending && messages?.[messages.length - 1]?.role !== 'assistant' ?
                 <Message role="assistant" session={session}>
                   <span className="loading loading-dots loading-lg mt-2"></span>
                 </Message>
@@ -238,7 +239,8 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
               {messages?.toReversed().map((message, i) => {
                 const head = !embedded && 'fpl' in message && message.fpl && fpl_to_metapath[message.fpl]
                 return (
-                  <React.Fragment key={i}>
+                  // keyed by id (the optimistic user message has none yet) so bubbles keep their place as messages arrive
+                  <React.Fragment key={message.id || `pending-${i}`}>
                     {head ?
                       <Cell
                         session_id={session_id}
@@ -256,7 +258,10 @@ export default function Page({ mode, session_id, graph_id, node_id, thread_id: i
                       session={session}
                       embedded={embedded}
                     >
-                      {message.content}
+                      {/* a reply which hasn't produced any text yet is shown as typing */}
+                      {message.role === 'assistant' && message.content === ''
+                        ? <span className="loading loading-dots loading-lg mt-2"></span>
+                        : message.content}
                     </Message>
                   </React.Fragment>
                 )

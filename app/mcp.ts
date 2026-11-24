@@ -360,8 +360,9 @@ const instructions = dedent`
   - generate plots and construct persistent reports with full provenance
 
   ## Usage Patterns
-  1. Check 'search_published' for a published workflow that already does what the user wants. If one does, 'view' it,
-     and use 'set_value' to run it on the user's inputs.
+  1. Check 'search_published' for a published workflow that already does what the user wants. If one does, 'view' it
+     (which opens it for the user, and lists its steps & values), and use 'set_value' to run it on the user's inputs:
+     nothing else is needed to use a published workflow.
   2. Otherwise start with 'options' (no workflow_id) to see input steps, and 'expand' with one of them and a 'value'.
   3. Continue with 'options' on the returned workflow_id (or the 'next_options' included in expand's response), and 'expand'
      with the chosen type and its 'suggested_arguments'. Use 'find_steps'/'describe' to look for a specific capability,
@@ -719,15 +720,16 @@ function buildServer() {
 
   server.registerTool('search_published', {
     title: 'Search Published Workflow Apps',
-    description: 'Find published workflows that already do what the user wants. Their workflow_id works with view, options, expand and set_value (to run it on the user\'s inputs).',
+    description: 'Find published workflows that already do what the user wants. To use one: call view with its workflow_id (this opens it for the user and lists its steps, including which take values & their format), then, if the user gave their own inputs, call set_value on those steps. No other lookups are needed.',
     inputSchema: {
       search: z.string().describe('A search that will identify relevant workflows, structure of the workflow like tools, databases, input/output types are relevant, specific biological entities are NOT.'),
     },
     outputSchema: {
       result: z.object({
         workflow_id: z.string(), title: z.string(), description: z.string().nullish(),
-        dataSources: z.string().nullish(), inputs: z.string().nullish(), outputs: z.string().nullish(), link: z.string(),
+        dataSources: z.string().nullish(), inputs: z.string().nullish(), outputs: z.string().nullish(),
       }).array().optional(),
+      hint: z.string().optional(),
       error: ErrorC.optional(),
     },
     annotations: { readOnlyHint: true },
@@ -743,13 +745,17 @@ function buildServer() {
       ...community.map(p => ({
         workflow_id: p.playbook, title: p.title ?? 'Untitled', description: p.description, dataSources: undefined, inputs: p.inputs, outputs: p.outputs,
       })),
-    ].map(p => ({ ...p, link: reportLink(p.workflow_id) }))
-    return { result }
+    ]
+    // (no links: view opens the workflow for the user, and gives its link)
+    if (result.length === 0) {
+      return { result, hint: 'No published workflow matched. Search for what the workflow does or takes, e.g. "GEO study re-analysis" or "gene set enrichment", rather than specific genes, accessions or other entities.' }
+    }
+    return { result, hint: 'view the best match to open it for the user, then set_value its input steps to run it on the user\'s inputs.' }
   }))
 
   server.registerTool('view', {
     title: 'View a workflow by id',
-    description: 'The steps of a workflow: step_ids, types, arguments, values, status, and (with include_output) output summaries.',
+    description: 'Open a workflow (for the user, in the chat) & list its steps: step_ids, types, arguments, values (with their format, for set_value), status, and (with include_output) output summaries. summary.failures lists the steps which failed themselves; the other errors are steps blocked by them.',
     inputSchema: {
       workflow_id: z.string(),
       step_id: z.string().nullish().describe('only include the output of this step'),
@@ -761,10 +767,18 @@ function buildServer() {
         link: z.string(),
         title: z.string().nullish(),
         description: z.string().nullish(),
+        summary: z.object({
+          done: z.number(), pending: z.number(), waiting_for_input: z.number(), error: z.number(),
+          failures: z.array(z.object({ step_id: z.string(), label: z.string(), error: z.string(), blocks: z.number() }))
+            .describe('the steps which failed themselves (other errors are steps blocked by these)'),
+        }),
         steps: StepResultC.extend({
           workflow_id: z.string().describe('the workflow id ending at this step (to branch off from here)'),
           arguments: z.record(z.string(), z.unknown()),
           value: z.unknown().optional(),
+          requires_value: z.boolean().optional().describe('this step takes a value, which set_value can change'),
+          value_format: z.unknown().optional().describe('the value\'s JSON schema & an example, for set_value'),
+          blocked_by: z.string().optional().describe('the failed step (failures) this error is caused by'),
         }).array(),
       }).optional(),
       error: ErrorC.optional(),
@@ -787,20 +801,52 @@ function buildServer() {
         try { if (processNode && isPrompt(processNode)) value = processNode.codec.decode(value as any) } catch {}
         value = summarize(value)
       }
+      const format = processNode ? valueFormat(processNode) : undefined
       return {
         workflow_id: step.id,
         ...await stepResult(krg, step.process, outputProps),
         arguments: processArguments(step.process),
         value,
+        requires_value: format ? true : undefined,
+        value_format: format ? { json_schema: format.json_schema, example: format.example } : undefined,
       }
     }))
+    // an error in a step makes every step depending on it fail too: point those at the step which failed
+    const byId = new Map(result.map(step => [step.step_id, step]))
+    const blockedBy = new Map<string, string>()
+    const rootOf = (step_id: string, seen = new Set<string>()): string | undefined => {
+      if (blockedBy.has(step_id)) return blockedBy.get(step_id)
+      const step = byId.get(step_id)
+      if (!step || step.status !== 'error' || seen.has(step_id)) return undefined
+      seen.add(step_id)
+      const inputIds = dict.values(step.arguments as Record<string, { step_id: string } | { step_ids: string[] }>)
+        .flatMap(arg => 'step_ids' in arg ? arg.step_ids : [arg.step_id])
+      for (const input of inputIds) {
+        if (byId.get(input)?.status === 'error') {
+          const root = rootOf(input, seen) ?? input
+          blockedBy.set(step_id, root)
+          return root
+        }
+      }
+      return undefined
+    }
+    result.forEach(step => rootOf(step.step_id))
+    const viewSteps = result.map(step => blockedBy.has(step.step_id) ? { ...step, blocked_by: blockedBy.get(step.step_id) } : step)
+    const failures = viewSteps.filter(step => step.status === 'error' && !blockedBy.has(step.step_id)).map(step => ({
+      step_id: step.step_id,
+      label: step.label,
+      error: 'error' in step ? String(step.error) : '',
+      blocks: [...blockedBy.values()].filter(root => root === step.step_id).length,
+    }))
+    const count = (status: string) => viewSteps.filter(step => step.status === status).length
     return {
       result: {
         workflow_id: fpl.id,
         link: reportLink(fpl.id),
         title: fpl.playbook_metadata?.title || null,
         description: fpl.playbook_metadata?.description || null,
-        steps: result,
+        summary: { done: count('done'), pending: count('pending'), waiting_for_input: count('waiting_for_input'), error: count('error'), failures },
+        steps: viewSteps,
       },
     }
   }))

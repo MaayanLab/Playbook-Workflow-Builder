@@ -30,14 +30,14 @@ The same guide is available to agents through the `help` tool.
 | tool | purpose |
 | --- | --- |
 | `help` | this guide |
-| `search_published(search)` | published workflows; their `workflow_id` works with every other tool |
+| `search_published(search)` | published workflows. To use one: `view` it (which opens it for the user), then `set_value` its input steps; an empty result comes with a `hint` on how to search |
 | `options(workflow_id?, step_id?, q?, limit?, include_disabled?)` | what can be added after the latest (or given) step; input steps when there's no workflow. Each option has `suggested_arguments` (ready for `expand`), `candidates` per argument, `requires_value`/`value_example`, or `disabled_because` |
 | `find_steps(q?, input_type?, output_type?, limit?)` | search every step type, e.g. everything producing `Set[Gene]` |
 | `describe(type?, q?)` | a step type (arguments, output, value format) or data type (example, schema, producers, consumers); no type lists data types |
 | `expand(workflow_id?, step, dry_run?, include_output?, wait_seconds?)` | add one step; returns the new `workflow_id`, `parent_workflow_id`, status, `link` & `next_options` |
 | `plan(workflow_id?, steps, dry_run?, include_output?, wait_seconds?)` | add several steps atomically; steps refer to earlier ones with `{"ref": "..."}` (refs default to the index, `"0"`, `"1"`, ...) |
 | `set_value(workflow_id, step_id, value)` | change an input's value, recomputing what depends on it; returns `step_id_changes` (old → new) |
-| `view(workflow_id, step_id?, include_output?, wait_seconds?)` | the steps of a workflow with arguments, values, status (and outputs) |
+| `view(workflow_id, step_id?, include_output?, wait_seconds?)` | the steps of a workflow with arguments, values (with `requires_value` & `value_format` for `set_value`), status (and outputs). `summary.failures` lists the steps which failed themselves; other errors carry `blocked_by`, the failed step causing them |
 
 Example: a gene's tissue expression.
 

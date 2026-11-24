@@ -93,6 +93,10 @@ export const KFTumorExpression = MetaNode('KFTumorExpression')
     description: 'Use KF API to obtain tumors expressing the given gene',
     pagerank: 1,
     external: true,
+    // the Open Pediatric Cancer Atlas API is no longer available (the endpoint now serves the Molecular
+    //  Targets Platform website, and openpedcan-api.d3b.io no longer resolves): hidden until there's a
+    //  replacement, existing workflows keep the step (& its error). KFTumorExpressionFromGene shares this meta.
+    hidden: true,
   })
   .inputs({ gene_info: GeneInfo })
   .output(TumorGeneExpression)

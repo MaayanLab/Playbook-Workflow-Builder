@@ -21,8 +21,15 @@ def main(ensembl_id: str) -> dict:
         response = session.get(api_url,params=query_params)
         response.raise_for_status()
 
+    # the API's address now serves the Molecular Targets Platform website (HTML) instead
+    if 'json' not in response.headers.get('content-type', ''):
+        raise RuntimeError(
+            'The Open Pediatric Cancer Atlas API is no longer available '
+            f'({api_url} returned {response.headers.get("content-type") or "no content type"} rather than JSON)'
+        )
 
-    request_df = pd.read_json(path_or_buf=response.text,orient='records')
+    # (pandas >= 2.1 doesn't accept literal JSON in read_json, it's read as a path)
+    request_df = pd.DataFrame(response.json())
 
     gene_expression_df = request_df[['TPM_mean','TPM_sd','TPM_median',
                                      'Disease','Gene_symbol','Gene_Ensembl_ID',

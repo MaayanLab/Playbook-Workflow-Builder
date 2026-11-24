@@ -8,6 +8,7 @@ import { Metapath, useMetapathInputs } from '@/app/fragments/metapath'
 import { useStory } from '@/app/fragments/story'
 import { Abstract, FigureCaption, References } from './story'
 import { useTRPCClient } from '@/app/trpc/client'
+import { InputError, isInputError, WaitingForInput } from '@/app/fragments/report/blocked-by'
 
 export default function Prompt({ session_id, krg, processNode, outputNode, output, id, head, metapath, status }: { session_id?: string, krg: KRG, processNode: PromptMetaNode, outputNode: DataMetaNode, output: any, id: string, head: Metapath, metapath: Metapath[], status: string | undefined }) {
   const router = useExRouter()
@@ -58,14 +59,16 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           />
           {/* <FigureCaption id={head.id} story={{ ...story, ast: astFiltered }} /> */}
         </>
-        : <div className="prose max-w-none">Waiting for input</div>}
+        : <div className="prose max-w-none"><WaitingForInput krg={krg} id={id} head={head} link={{ mode: 'graph', session_id }} /></div>}
       {status ? (
         <div className="alert shadow-lg place-content-start align-middle">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <code className="prose max-w-none whitespace-pre-line">{status}</code>
         </div>
       ) : null}
-      {outputNode && outputNode.spec === 'Error' && output ? <>{outputNode.view(output)}</> : null}
+      {outputNode && outputNode.spec === 'Error' && output ? (isInputError(output)
+        ? <InputError krg={krg} id={id} head={head} output={output} link={{ mode: 'graph', session_id }} />
+        : <>{outputNode.view(output)}</>) : null}
       <References story={{ ...story, ast: astFiltered }} />
     </div>
   )

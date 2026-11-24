@@ -9,6 +9,7 @@ import { useStory } from '@/app/fragments/story'
 import { Waypoint } from '@/app/components/waypoint'
 import SafeRender from '@/utils/saferender'
 import { AbstractPart, FigureCaption, Methods } from './story'
+import { InputError, isInputError, WaitingForInput } from './blocked-by'
 import { useExRouter } from '@/app/fragments/ex-router'
 
 const Markdown = dynamic(() => import('@/app/components/Markdown'))
@@ -93,10 +94,11 @@ export default function Cell({ session_id, krg, id, head, cellMetadata, setCellM
                   <code className="prose max-w-none whitespace-pre-line">{status}</code>
                 </div>
               ) : null}
-              {outputNode?.view && output ? <>
+              {outputNode?.spec === 'Error' && isInputError(output) ? <InputError krg={krg} id={id} head={head} output={output} />
+                : outputNode?.view && output ? <>
                 <SafeRender component={outputNode.view} props={output} />
                 <FigureCaption id={head.id} story={story} />
-              </> : isLoading ? 'Waiting for results' : 'Waiting for input'}
+              </> : isLoading ? 'Waiting for results' : <WaitingForInput krg={krg} id={id} head={head} />}
             </div>
           </div>}
           <div className={classNames('border-t-secondary border-t-2 mt-2', { 'hidden': !('prompt' in processNode) && !currentCellMetadata.data_visible })}>

@@ -11,6 +11,7 @@ import classNames from 'classnames'
 import { AbstractPart, FigureCaption } from './story'
 import { useTRPCClient } from '@/app/trpc/client'
 import { useQueryClient } from '@tanstack/react-query'
+import { InputError, isInputError } from './blocked-by'
 
 const Icon = dynamic(() => import('@/app/components/icon'))
 
@@ -93,7 +94,7 @@ export default function Prompt({ session_id, krg, processNode, outputNode, outpu
           <code className="prose max-w-none whitespace-pre-line">{status}</code>
         </div>
       ) : null}
-      {outputNode && outputNode.spec === 'Error' && output ? outputNode.view(output) : null}
+      {outputNode && outputNode.spec === 'Error' && output ? (isInputError(output) ? <InputError krg={krg} id={id} head={head} output={output} /> : outputNode.view(output)) : null}
     </div>
   )
 }

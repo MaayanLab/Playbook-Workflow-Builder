@@ -8,6 +8,7 @@ import { useStory } from '@/app/fragments/story'
 import SafeRender from '@/utils/saferender'
 import { Abstract, FigureCaption, Methods, References } from './story'
 import { useTRPCClient } from '@/app/trpc/client'
+import { InputError, isInputError, WaitingForInput } from '@/app/fragments/report/blocked-by'
 
 const Prompt = dynamic(() => import('@/app/fragments/graph/prompt'))
 
@@ -50,7 +51,8 @@ export default function Cell({ session_id, krg, id, head, metapath }: { session_
             ) : null}
             {!outputNode ? <div>Loading...</div>
               : !outputNode?.view || output === undefined ? <div className="prose">Loading...</div>
-              : output === null ? <div className="prose max-w-none">Waiting for input</div>
+              : output === null ? <div className="prose max-w-none"><WaitingForInput krg={krg} id={id} head={head} link={{ mode: 'graph', session_id }} /></div>
+              : outputNode.spec === 'Error' && isInputError(output) ? <InputError krg={krg} id={id} head={head} output={output} link={{ mode: 'graph', session_id }} />
               : <SafeRender component={outputNode.view} props={output} />}
             <FigureCaption id={head.id} story={{ ...story, ast: astFiltered }} />
             <References story={{ ...story, ast: astFiltered }} />
